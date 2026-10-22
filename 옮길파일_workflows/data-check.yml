@@ -1,0 +1,48 @@
+# 변경 요청(PR) 검사: CSV 형식 검사 → 데이터 만들기 → 관문 1 검증 → 결과를 PR 댓글로
+name: 데이터 검사
+on:
+  pull_request:
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false            # 그림 파일은 필요 없음 (LFS 사용량 절약)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: CSV 검사·데이터 만들기
+        id: build
+        run: |
+          set -o pipefail
+          python tools/data_build.py 2>&1 | tee build.txt
+      - name: 관문 1 검증
+        id: gate
+        run: node tools/gate1_check.js --md gate1.md
+      - name: 결과 정리
+        if: always()
+        run: |
+          {
+            echo '## 데이터 검사 결과'
+            echo
+            echo '```'
+            cat build.txt 2>/dev/null || echo '(검사를 실행하지 못했습니다)'
+            echo '```'
+            echo
+            if [ -f gate1.md ]; then cat gate1.md; else echo '관문 1 검증은 데이터 검사를 통과한 뒤에 실행됩니다.'; fi
+          } > report.md
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: PR에 댓글 남기기
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = require('fs').readFileSync('report.md', 'utf8');
+            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body });

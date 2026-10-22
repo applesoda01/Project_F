@@ -5,11 +5,11 @@
 ## 고치는 순서
 
 1. CSV를 엑셀이나 구글 시트로 엽니다. 저장할 때는 **CSV UTF-8** 형식으로 저장합니다(한글이 깨지지 않게).
-2. 검사와 반영: `python tools/data_build.py`
+2. (선택) 미리 검사: `python tools/data_build.py`. 깃허브에 올리면 같은 검사가 자동으로 돌아 결과를 댓글로 알려 줍니다.
    - 오류가 있으면 어느 파일 몇 행이 왜 틀렸는지 알려 주고, 게임 데이터는 바꾸지 않습니다.
    - 통과하면 `prototype/js/data_gen.js`가 새로 만들어집니다. 이 파일은 직접 고치지 않습니다.
 3. `prototype/index.html`을 열어 확인합니다. 밸런스를 고쳤다면 개발 패널의 **관문 1 검증**도 눌러 봅니다.
-4. GitHub Desktop에서 커밋하고 올립니다. CSV와 `data_gen.js`를 함께 올려야 합니다.
+4. 깃허브에 올립니다. 웹에서 고쳐 올리는 방법은 [docs/github_guide.md](../docs/github_guide.md)를 보세요. `data_gen.js`는 반영될 때 자동으로 다시 만들어지므로 같이 올리지 않아도 됩니다.
 
 ## 파일
 

@@ -13,3 +13,5 @@
 | [history/](history) | 인수인계 메모 |
 
 문서는 Markdown(.md)으로 씁니다. 표·목록 위주로 짧게, 수치는 [가안] 표시.
+
+- [github_guide.md](github_guide.md) — 깃허브 작업 안내 (외부 작업자 수정 방법, 자동 검사, 최신 빌드, 처음 설정)

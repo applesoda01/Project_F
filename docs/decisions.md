@@ -22,6 +22,7 @@
 | 대화창 틀 18px(한 겹), 양피지 불투명도 조절 가능 (기본값 미정, 85% 제안) | 1차 우드 시안의 안쪽 테두리(14번) 제거 | [art/dialog](art/dialog/scene_alpha_grid.png) |
 | 접수원 리나는 카운터 가운데 고정, 걷지 않음. 새 스프라이트 시트(대기·인사·안내·독서)로 교체 | 리소스 교체. 모험가는 용건과 상관없이 한 줄로 응대받음 | [art/asset_rules.md](art/asset_rules.md) |
 | 게임 데이터를 코드에서 분리해 `data/*.csv`로 관리 (밸런스 82항목, 대화 13장면, 말풍선, 의뢰 종류, 이름, 요리, 스킬). `tools/data_build.py`가 검사 후 `data_gen.js` 생성, 게임·시뮬레이터 공통 사용 | 외부 작업자가 깃허브로 직접 수정. 분리 후에도 관문 1 결과 동일(436G, 75.9%) | [data/README.md](../data/README.md) |
+| 깃허브 자동화: PR마다 데이터 검사·관문 1 결과를 댓글로, main 반영 시 data_gen.js 자동 갱신과 최신 빌드 배포(Pages + 압축 파일) | 외부 작업자는 웹에서 CSV만 고치면 됨. 승인된 변경만 반영 | [github_guide.md](github_guide.md) |
 
 ## 2026-10-21
 
