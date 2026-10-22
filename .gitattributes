@@ -1,0 +1,10 @@
+# 큰 그림·문서 파일은 Git LFS로 관리 (git lfs install 후 적용됨)
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.pptx filter=lfs diff=lfs merge=lfs -text
+# 글자 파일은 줄바꿈 통일
+*.md text eol=lf
+*.js text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.py text eol=lf

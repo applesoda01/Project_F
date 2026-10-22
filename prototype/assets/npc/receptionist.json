@@ -1,0 +1,95 @@
+{
+  "character": "receptionist",
+  "cell_size": [
+    256,
+    256
+  ],
+  "pivot": {
+    "x": 0.5,
+    "y_px_from_top": 244,
+    "note": "bottom-center. 256px upscale (Real-ESRGAN anime6B x4 -> 256) of the 128px original; originals in art_source/receptionist_128"
+  },
+  "background": "transparent (RGBA)",
+  "idle": {
+    "image": "receptionist_idle_blink.png",
+    "frames": [
+      "open",
+      "half_closed",
+      "closed"
+    ],
+    "blink": {
+      "sequence": [
+        1,
+        2,
+        1,
+        0
+      ],
+      "timing_seconds": [
+        0.055,
+        0.085,
+        0.08
+      ],
+      "interval_seconds": [
+        2.5,
+        5.5
+      ],
+      "note": "Hold frame 0. Every 2.5-5.5 s (random) play half -> closed -> half -> open."
+    },
+    "breathing": {
+      "type": "procedural",
+      "scale_y": [
+        1.0,
+        1.015
+      ],
+      "period_seconds": 3.0,
+      "anchor": "bottom (pivot y)",
+      "note": "No video needed; scale the idle sprite vertically around the feet."
+    }
+  },
+  "motions": {
+    "greet": {
+      "label": "greeting",
+      "variants": [
+        "receptionist_greet_a.png"
+      ],
+      "use": "player approaches"
+    },
+    "guide": {
+      "label": "pointing / guiding",
+      "variants": [
+        "receptionist_guide_a.png",
+        "receptionist_guide_b.png"
+      ],
+      "use": "dialogue / guidance"
+    },
+    "read": {
+      "label": "reading the book",
+      "variants": [
+        "receptionist_read_a.png",
+        "receptionist_read_b.png"
+      ],
+      "use": "random idle motion"
+    }
+  },
+  "motion_sheet": {
+    "columns": 12,
+    "rows": 6,
+    "frames": 72,
+    "fps": 24,
+    "duration_seconds": 3.0,
+    "frame_index_to_cell": "col = i % 12, row = floor(i / 12)",
+    "loop": false,
+    "note": "Every motion starts and ends in the idle pose (eyes open), so it connects seamlessly to the idle."
+  },
+  "random_idle": {
+    "interval_seconds": 6,
+    "interval_jitter_seconds": 2,
+    "rules": [
+      "Stay in idle (breathing + blink) until the interval timer elapses.",
+      "Pick a random group from [read, guide, greet] and a random variant within the group (read and guide have A/B).",
+      "Do not pick the same group twice in a row.",
+      "After the motion ends, return to idle and restart the timer with interval +/- jitter.",
+      "Event overrides: greet on player approach, guide when dialogue starts."
+    ]
+  }
+}

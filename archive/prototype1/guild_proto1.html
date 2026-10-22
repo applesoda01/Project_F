@@ -1,0 +1,1241 @@
+<title>길드 프로토타입 1차</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 레이아웃: 상단 고정 시간 바 + 3열 운영판(게시판 / 모험가 / 장부). 길드 장부의 녹회색 톤, 등급은 고유색 배지 */
+:root {
+  --bg: #eef1ed; --panel: #ffffff; --panel2: #f6f8f5; --line: #d6ddd6; --ink: #1b231f; --muted: #5b6a62;
+  --accent: #2f6b5a; --accent-ink: #ffffff; --ok: #2e7d4f; --bad: #b3402f; --warn: #b7791f;
+  --gF: #3f7d63; --gE: #5f8f3f; --gD: #8a7a2e; --gC: #a85e2c; --gB: #8e3f4f; --gA: #5a4b8f; --gS: #2b5d8f;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121715; --panel: #1b221f; --panel2: #202925; --line: #2e3934; --ink: #e3eae6; --muted: #98a79f;
+  --accent: #5fb398; --accent-ink: #0d1411; --ok: #6cc28f; --bad: #ec7d6b; --warn: #e0b052; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121715; --panel: #1b221f; --panel2: #202925; --line: #2e3934; --ink: #e3eae6; --muted: #98a79f;
+  --accent: #5fb398; --accent-ink: #0d1411; --ok: #6cc28f; --bad: #ec7d6b; --warn: #e0b052; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.5; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 40px }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel) }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line);
+  margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px)));
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)) }
+.topin { max-width: 1400px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center }
+.brand { font-weight: 700; font-size: 15px }
+.brand small { color: var(--muted); font-weight: 400; margin-left: 6px }
+.date { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 15px; min-width: 150px }
+.wkbar { width: 120px; height: 5px; background: var(--line); border-radius: 9px; overflow: hidden }
+.wkbar i { display: block; height: 100%; width: 0; background: var(--accent) }
+.speed { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden }
+.speed button { border: 0; border-radius: 0; padding: 6px 10px; background: transparent }
+.speed button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink) }
+.kpis { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-left: auto }
+.kpi { display: flex; flex-direction: column; line-height: 1.2 }
+.kpi b { font-family: var(--font-mono); font-size: 15px; font-variant-numeric: tabular-nums }
+.kpi span { color: var(--muted); font-size: 11.5px; letter-spacing: 0.04em }
+.main { max-width: 1400px; margin: 16px auto 0; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start }
+@media (max-width: 1150px) { .main { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) } .col3 { grid-column: 1 / -1 } }
+@media (max-width: 760px) { .main { grid-template-columns: minmax(0, 1fr) } }
+.col { display: flex; flex-direction: column; gap: 16px; min-width: 0 }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0 }
+.panel h2 { font-size: 13.5px; margin: 0 0 8px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px }
+.panel h2 small { color: var(--muted); font-weight: 400; font-size: 12px }
+button { font: inherit; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 5px 10px; cursor: pointer }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700 }
+button:disabled { opacity: 0.5; cursor: default }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.g { display: inline-grid; place-items: center; min-width: 20px; height: 18px; padding: 0 5px; border-radius: 4px; color: #fff; font: 700 11.5px var(--font-mono) }
+.report { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; align-items: center }
+.report img { width: 84px; height: 94px; object-fit: cover; object-position: top; border-radius: 8px; background: #fff; border: 1px solid var(--line) }
+.report p { margin: 0 }
+.report .who { color: var(--muted); font-size: 12px }
+.board { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px }
+.card { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 9px; display: flex; flex-direction: column; gap: 4px; min-width: 0 }
+.card .t { display: flex; align-items: center; gap: 6px; font-weight: 700 }
+.card .req { font-size: 12px; color: var(--muted) }
+.card .row { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 12.5px }
+.card button { padding: 2px 7px; font-size: 12px }
+.empty { color: var(--muted); font-size: 13px; padding: 6px 0 }
+.filter { display: grid; grid-template-columns: 34px minmax(0, 1fr) 48px; gap: 6px 10px; align-items: center; font-size: 13px }
+.filter input[type=range] { width: 100% }
+.tablewrap { overflow-x: auto }
+table { border-collapse: collapse; width: 100%; font-size: 12.8px }
+th, td { text-align: left; padding: 5px 6px; border-bottom: 1px solid var(--line); white-space: nowrap }
+th { color: var(--muted); font-weight: 500; font-size: 12px }
+td.n, th.n { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums }
+tr.adv { cursor: pointer }
+tr.adv:hover td { background: var(--panel2) }
+tr.det td { white-space: normal; background: var(--panel2); font-size: 12.5px }
+.st { display: inline-block; font-size: 11.5px; padding: 0 7px; border-radius: 99px; border: 1px solid var(--line) }
+.st.town { color: var(--ok); border-color: var(--ok) } .st.quest { color: var(--accent); border-color: var(--accent); background: var(--panel2) } .st.away { color: var(--muted) } .st.gone { color: var(--bad); border-color: var(--bad) }
+.bars { display: grid; grid-template-columns: 40px minmax(0, 1fr) 34px; gap: 3px 8px; align-items: center; margin-top: 4px }
+.bars i { display: block; height: 7px; border-radius: 4px; background: var(--accent) }
+.bars .bg { background: var(--line); border-radius: 4px }
+.ledger { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 3px 12px; font-size: 13px }
+.ledger .n { font-family: var(--font-mono); text-align: right; font-variant-numeric: tabular-nums }
+.ledger .h { color: var(--muted); font-size: 12px }
+.ledger .tot { font-weight: 700; border-top: 1px solid var(--line); padding-top: 4px }
+.pos { color: var(--ok) } .neg { color: var(--bad) }
+.fac { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 5px 8px; align-items: center; font-size: 13px }
+.fac .c { font-family: var(--font-mono); color: var(--muted); font-size: 12px }
+.meals { display: flex; flex-wrap: wrap; gap: 6px }
+.meal { font-size: 12.5px; padding: 3px 8px; border-radius: 99px; border: 1px solid var(--line); background: var(--panel2) }
+.meal.lock { color: var(--muted); border-style: dashed; background: transparent }
+.log { max-height: 340px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; font-size: 12.8px }
+.log div { padding: 2px 0 2px 8px; border-left: 3px solid var(--line) }
+.log .w { color: var(--muted); font-family: var(--font-mono); font-size: 11.5px; margin-right: 6px }
+.log .k-success { border-color: var(--ok) } .log .k-fail, .log .k-warn { border-color: var(--bad) } .log .k-depart { border-color: var(--accent) } .log .k-grow, .log .k-unlock, .log .k-build { border-color: var(--warn) } .log .k-ledger { border-color: var(--ink); font-weight: 500 } .log .k-arrive { border-color: var(--gE) }
+.debug { display: flex; flex-wrap: wrap; gap: 6px; align-items: center }
+.verify { margin-top: 10px; font-size: 13px }
+.verify table td { white-space: normal }
+.pill { display: inline-block; padding: 0 8px; border-radius: 99px; font-family: var(--font-mono); font-size: 12px }
+.pill.ok { background: color-mix(in srgb, var(--ok) 18%, transparent); color: var(--ok) } .pill.bad { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad) }
+.note { color: var(--muted); font-size: 12.5px; margin: 6px 0 0 }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+<div class="top"><div class="topin">
+  <div class="brand">이세계 모험가 길드<small>프로토타입 1차 · 코어 루프</small></div>
+  <div><div class="date" id="date">1년차 1월 1주</div><div class="wkbar" aria-hidden="true"><i id="wk"></i></div></div>
+  <div class="speed" role="group" aria-label="속도">
+    <button id="sp0" aria-pressed="false" title="일시정지 (스페이스)">❚❚</button>
+    <button id="sp1" aria-pressed="true">1배</button>
+    <button id="sp2" aria-pressed="false">2배</button>
+    <button id="sp4" aria-pressed="false">4배</button>
+    <button id="sp8" aria-pressed="false">8배</button>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><b id="kGrade">F</b><span>길드 등급</span></div>
+    <div class="kpi"><b id="kGold">0</b><span>금고 (G)</span></div>
+    <div class="kpi"><b id="kTrust">50</b><span>신뢰도</span></div>
+    <div class="kpi"><b id="kPop">150</b><span>마을 인구</span></div>
+    <div class="kpi"><b id="kAdv">0</b><span>모험가</span></div>
+  </div>
+</div></div>
+
+<div class="main">
+  <div class="col">
+    <section class="panel">
+      <div class="report">
+        <img id="lina" alt="접수원 리나">
+        <div><p class="who">접수원 리나 · 월간 보고</p><p id="reportText">마스터, 오늘부터 길드 업무 시작이에요. 게시판에 의뢰가 들어오면 모험가분들이 알아서 골라 가실 거예요.</p></div>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>의뢰 게시판 <small id="boardInfo"></small></h2>
+      <div class="board" id="board"></div>
+      <p class="note">의뢰서를 떼면 등록비·위약금(보상의 10%)과 신뢰도 −2가 발생합니다.</p>
+    </section>
+    <section class="panel">
+      <h2>필터 (게시판 칸 배분) <small>길드 등급까지</small></h2>
+      <div class="filter" id="filter"></div>
+      <p class="note">높은 등급에 칸을 많이 주면 정예 육성, 낮은 등급에 남기면 신인 육성이 됩니다.</p>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel">
+      <h2>모험가 <small>행을 누르면 능력치 · 성향은 디버그용으로 전부 공개</small></h2>
+      <div class="tablewrap"><table id="advs"></table></div>
+    </section>
+    <section class="panel">
+      <h2>의뢰 수행 중 <small id="activeInfo"></small></h2>
+      <div class="tablewrap"><table id="active"></table></div>
+    </section>
+  </div>
+
+  <div class="col col3">
+    <section class="panel">
+      <h2>길드 수지 <small>건설 투자는 제외</small></h2>
+      <div class="ledger" id="ledger"></div>
+    </section>
+    <section class="panel">
+      <h2>시설</h2>
+      <div class="fac" id="fac"></div>
+    </section>
+    <section class="panel">
+      <h2>식당 메뉴 <small>식재료를 처음 얻으면 해금</small></h2>
+      <div class="meals" id="meals"></div>
+    </section>
+    <section class="panel">
+      <h2>길드 일지</h2>
+      <div class="log" id="log" aria-live="polite"></div>
+    </section>
+    <section class="panel">
+      <h2>디버그 · 관문 1 검증</h2>
+      <div class="debug">
+        <button id="dMonth">한 달 진행</button>
+        <button id="dYear">1년 진행</button>
+        <button id="dGold">금고 +5,000</button>
+        <button id="dGradeDown">등급 −</button>
+        <button id="dGradeUp">등급 +</button>
+      </div>
+      <div class="debug" style="margin-top:8px">
+        <button id="save">저장</button>
+        <button id="load">불러오기</button>
+        <button id="newGame">새 게임</button>
+        <button class="primary" id="verify">관문 1 검증 실행</button>
+      </div>
+      <div class="verify" id="verifyOut"><p class="note">새 게임 100판을 화면 없이 1년씩 돌려, 시뮬레이터와 같은 숫자가 나오는지 확인합니다. 승급과 전투는 M4에서 넣으므로, 디버그 등급 변경은 의뢰 등급 확인용입니다.</p></div>
+    </section>
+  </div>
+</div>
+<script>
+/* 이세계 모험가 길드 — 밸런스 시뮬레이터 엔진 v0.1
+   주 단위로 진행(1개월 = 4주, 1년 = 48주). 모든 수치는 CFG에서 바꿀 수 있음. */
+(function (root) {
+  'use strict';
+  const GR = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
+  const ST = ['힘', '민첩', '지력', '정신', '기교'];
+  const WPM = 4, WPY = 48;
+
+  function defaults() {
+    return {
+      run: { runs: 100, maxYears: 20, seed: 1 },
+      quest: {
+        ref: [15, 25, 35, 45, 60, 75, 90],        // 판정 기준치
+        reqCount: [1, 1, 2, 2, 3, 3, 4],           // 요구 능력치 수
+        reward: [100, 200, 400, 800, 1500, 3000, 6000],
+        weeks: [1, 1, 1, 2, 2, 2, 3],              // 소요 주
+        perMonth: 10,                              // 기본 월 유입량
+        boardCap: [6, 8, 10, 12, 14, 16, 18],
+        partyAssist: 0.25,                         // 파티원 보조 계수
+        deathBase: [0.01, 0.01, 0.03, 0.03, 0.05, 0.05, 0.08],
+        subGrowth: 0.2,                            // 성공 시 유형 능력치 성장
+        bossMult: 1.15                             // 보스급 기준치 배수
+      },
+      growth: {
+        xpBase: 80, xpGradeMult: 2.0,              // 성공 경험치 = xpBase × mult^등급
+        xpFailRate: 0.3,
+        lvA: 20, lvB: 1.55,                        // 다음 레벨 필요 경험치 = A × Lv^B
+        lvCap: [30, 40, 50],
+        trainPerWeek: 0.10,                        // 훈련장·도서관 주간 훈련량
+        statCap: 100
+      },
+      adv: {
+        arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,
+        startCount: 5, startCore: 15, startOther: 6,
+        attachSuccess: 2, attachPerMonthInTown: 1,
+        visitBaseWeeks: 2,
+        leaveAfterYears: 2, leaveAttach: 20,
+        heirDelayWeeks: 24
+      },
+      econ: {
+        startGold: 3000, feeBase: 0.10, feePerInfo: 0.02,
+        subsidy: [300, 500, 800, 1200, 2000, 3000, 4500],
+        buildCost: [0, 2000, 4000, 8000, 15000, 30000, 0],
+        upkeepRate: 0.015,
+        tavernPerAdvWeek: 4, tavernGradeMult: 1.6,
+        resaleRate: 0.08,
+        effectCost: [0.10, 0.20, 0.35],
+        mealPriceRate: 0.15, mealMargin: 0.60, mealBuyRate: [0.30, 0.60, 0.90],
+        mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5
+      },
+      gear: {
+        weaponPrice: [150, 400, 1000, 2500, 6000, 14000, 30000], setMult: 3.0,
+        weaponStat: [3, 5, 8, 12, 16, 21, 27], armorStat: [1, 2, 4, 6, 8, 10, 13],
+        accStat: [2, 3, 5, 7, 10, 13, 17], weaponAtk: [10, 18, 28, 40, 55, 72, 92],
+        reserveMult: [2.0, 1.0, 0.3]               // 절약 / 보통 / 낭비
+      },
+      promo: {
+        N: [2, 3, 3, 4, 4, 5],
+        bossRefillWeeks: 6,
+        invasionScale: 16, raidScale: 4, battleK: 6, battleDeathWin: 0.01, battleDeathLoss: 0.03,
+        raidMonths: [8, 6, 5, 4, 3],
+        sCandidates: 2
+      },
+      town: {
+        startPop: 150, growthBase: 0.012, growthPerGrade: 0.002, perResident: 1,
+        stages: [300, 1000, 3000, 8000], inflowMult: [1.0, 1.3, 1.6, 2.0, 2.5],
+        raidLoss: 0.05, invasionLoss: 0.10
+      },
+      ending: {
+        officerScale: [4.0, 4.3, 4.6], demonScale: 6.0,
+        demonPopMult: [1.0, 1.0, 1.0, 0.85, 0.70],
+        rebirthYear: 15, rebirthTotal: 300,
+        mainRetryWeeks: 8, demonRetryWeeks: 24,
+        demonHeirFallbackYear: 8
+      }
+    };
+  }
+
+  // 플레이어 성향(봇)
+  const BOTS = {
+    balanced: { name: '균형형', bossTh: 0.60, promoteTh: 0.60, filterFocus: 0.5, buildEffects: 1 },
+    elite:    { name: '정예형', bossTh: 0.50, promoteTh: 0.50, filterFocus: 0.8, buildEffects: 0.5 },
+    nurture:  { name: '육성형', bossTh: 0.70, promoteTh: 0.85, filterFocus: 0.2, buildEffects: 1.5 },
+    safe:     { name: '안전형', bossTh: 0.75, promoteTh: 0.75, filterFocus: 0.4, buildEffects: 1 }
+  };
+
+  // 시설: [이름, 등급]
+  const FAC = [
+    ['관리소', 1], ['집무실', 1], ['훈련장', 2], ['창고', 2], ['추모실', 2],
+    ['정보실', 3], ['의무실', 3], ['도서관', 3], ['해체장', 4], ['휴게실', 5], ['명예의 전당', 5]
+  ];
+  const PROMO_FAC = [null, '관리소', '훈련장', '의무실', '해체장', '명예의 전당']; // F→E … A→S
+
+  function rng(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0; let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function simulate(cfg, botKey, seed) {
+    const R = rng(seed);
+    const bot = BOTS[botKey];
+    const Q = cfg.quest, G = cfg.growth, A = cfg.adv, E = cfg.econ, GE = cfg.gear, P = cfg.promo, T = cfg.town, EN = cfg.ending;
+    const ri = n => Math.floor(R() * n);
+    const pick = arr => arr[ri(arr.length)];
+
+    const s = {
+      week: 0, grade: 0, gold: E.startGold, pop: T.startPop, trust: 50,
+      op: 0, built: {}, eff: {}, meals: [0, 0, 0, 0, 0, 0, 0], advs: [], board: [], nextId: 1,
+      boss: [], bossDone: 0, bossRefill: [], invasionCooldown: 0,
+      nextRaid: P.raidMonths[0] * WPM, heirsQueue: [],
+      phase: 'normal', officer: 0, mainCooldown: 0, demonFlagFallback: false, ended: false, rebirthAdded: false,
+      st: { reach: [0, null, null, null, null, null, null], end: null, endRebirth: false, deaths: 0, battleDeaths: 0, heirs: 0,
+        qDone: 0, qFail: 0, raidsW: 0, raidsL: 0, invW: 0, invL: 0, goldYear: [], advYear: [], lvYear: [], popYear: [],
+        firstNetF: [], firstStage2: null, firstStage3: null, lvAt2: [], lvAt3: [], demonAwake: false, demonFallback: false,
+        negMonths: 0, mealIncome: 0, mealsUnlocked: [], officerFails: 0, demonFails: 0, rebirth: false, facWeek: {} }
+    };
+    for (const f of ['게시판', '접수대', '주점', '판매창구']) s.built[f] = true;
+
+    const has = f => !!s.built[f];
+    const effN = f => s.eff[f] || 0;
+    const popStage = () => { let k = 0; for (const t of T.stages) if (s.pop >= t) k++; return k; };
+    const feeRate = () => E.feeBase + E.feePerInfo * effN('정보실');
+
+    function newAdv(opts) {
+      opts = opts || {};
+      const core = opts.core != null ? opts.core : ri(5);
+      const stats = [0, 0, 0, 0, 0].map((_, i) => i === core ? A.startCore + R() * 4 : A.startOther + R() * 3);
+      const g = opts.grade || 0;
+      const a = {
+        id: s.nextId++, core, stage: 1, pair: null, cls: 'base', stats, lv: 1, xp: 0, bank: 0,
+        grade: 0, ach: 0, attach: opts.attach || 0, risk: opts.risk != null ? opts.risk : ri(3), spend: ri(3), social: ri(3),
+        wallet: 0, gear: -1, busy: 0, alive: true, joined: s.week, heirOf: opts.heirOf || null, heirWeek: opts.heirOf ? s.week : null,
+        demonHeir: !!opts.demonHeir, demonMark: false, rebirth: !!opts.rebirth, external: g > 0
+      };
+      if (g > 0) { // 외부 고등급 방문자: 등급에 맞게 성장시킴
+        for (let i = 0; i < 5; i++) a.stats[i] += Q.ref[g] * (i === core ? 0.9 : 0.4);
+        a.lv = [1, 5, 10, 18, 26, 35, 45][g]; a.grade = g; a.stage = g >= 3 ? 2 : 1;
+        if (a.stage === 2) { a.pair = [core, (core + 1 + ri(4)) % 5]; a.cls = 'combo'; }
+      }
+      s.advs.push(a); return a;
+    }
+
+    function finalStat(a, i) {
+      let v = Math.min(G.statCap, a.stats[i]);
+      if (a.gear >= 0) {
+        if (i === a.core) v += GE.weaponStat[a.gear];
+        if (a.pair && a.pair.includes(i) && i !== a.core) v += GE.armorStat[a.gear];
+        if (i === (a.core + 2) % 5) v += GE.accStat[a.gear];
+      }
+      return v;
+    }
+    const power = a => { let t = 0; for (let i = 0; i < 5; i++) t += finalStat(a, i); return t + (a.gear >= 0 ? GE.weaponAtk[a.gear] : 0) * 0.5; };
+    const skillBonus = a => [0.03, 0.06, 0.10][a.stage - 1];
+
+    function makeQuest(g, boss) {
+      const type = ri(5);
+      const n = Q.reqCount[g];
+      const req = [type];
+      while (req.length < n) { const k = ri(5); if (!req.includes(k)) req.push(k); }
+      const R0 = Q.ref[g] * n * (0.85 + R() * 0.30) * (boss ? Q.bossMult : 1);
+      return { g, type, req, r: R0 / n, boss: !!boss };
+    }
+
+    function successP(party, q) {
+      let F = 0, bottleneck = false;
+      for (const k of q.req) {
+        const vals = party.map(a => finalStat(a, k) * (k === a.core ? 1 + skillBonus(a) : 1)).sort((x, y) => y - x);
+        const P0 = vals[0] + Q.partyAssist * vals.slice(1).reduce((x, y) => x + y, 0);
+        const fill = Math.min(P0 / q.r, 1.5);
+        if (fill < 0.5) bottleneck = true;
+        F += fill;
+      }
+      F /= q.req.length;
+      let p = 0.55 + 1.1 * (F - 1);
+      p = Math.max(0.05, Math.min(0.97, p));
+      if (bottleneck) p /= 2;
+      return p;
+    }
+    function perceived(a, p) {
+      const err = Math.max(0, 0.10 - 0.02 * effN('정보실'));
+      return Math.min(1, p * [0.9, 1.0, 1.2][a.risk] + (R() * 2 - 1) * err);
+    }
+
+    function gainXp(a, xp) {
+      a.xp += xp;
+      for (;;) {
+        const need = G.lvA * Math.pow(a.lv, G.lvB);
+        if (a.xp < need) break;
+        if (a.lv >= G.lvCap[a.stage - 1]) { a.bank += a.xp; a.xp = 0; break; }
+        a.xp -= need; a.lv++; levelUp(a);
+      }
+    }
+    function levelUp(a) {
+      const g = new Array(5).fill(0);
+      if (a.stage === 1) { for (let i = 0; i < 5; i++) g[i] = i === a.core ? 2.0 : 0.4; }
+      else if (a.cls === 'spec') { for (let i = 0; i < 5; i++) g[i] = i === a.core ? (a.stage === 2 ? 2.4 : 2.8) : (a.stage === 2 ? 0.525 : 0.325); }
+      else if (a.cls === 'combo') { for (let i = 0; i < 5; i++) g[i] = a.pair.includes(i) ? (a.stage === 2 ? 1.8 : (i === a.pair[0] ? 2.2 : 2.0)) : (a.stage === 2 ? 0.3 : 0.433); }
+      else if (a.cls === 'ext') { for (let i = 0; i < 5; i++) g[i] = a.pair.includes(i) ? 1.5 : 0.5; }
+      for (let i = 0; i < 5; i++) a.stats[i] = Math.min(G.statCap, a.stats[i] + g[i]);
+    }
+    function attachTier(a) { return a.attach >= 90 ? 3 : a.attach >= 60 ? 2 : a.attach >= 30 ? 1 : 0; }
+
+    function tryPromoteClass(a) {
+      const base = [0.40, 0.65, 0.90, 1.00][attachTier(a)];
+      const st = a.stats;
+      if (a.stage === 1 && has('관리소')) {
+        const others = [0, 1, 2, 3, 4].filter(i => i !== a.core).sort((x, y) => st[y] - st[x]);
+        const b = others[0];
+        const combo = (st[a.core] >= 35 && st[b] >= 35) || (st[a.core] >= 40 && st[b] >= 30) || (st[b] >= 40 && st[a.core] >= 30);
+        const spec = st[a.core] >= 50 && (a.core === 2 || a.core === 3); // 마도사·신관만 3차로 이어짐
+        if (!combo && !spec) return;
+        if (R() > Math.min(1, base * 1.2)) return;
+        a.stage = 2;
+        if (combo) { a.cls = 'combo'; a.pair = [a.core, b]; } else { a.cls = 'spec'; a.pair = [a.core]; }
+        onStage(a, 2);
+      } else if (a.stage === 2) {
+        if (a.cls === 'spec') {
+          if (s.grade >= 3 && st[a.core] >= 80) { if (R() <= base * 0.9) { a.stage = 3; onStage(a, 3); } }
+          return;
+        }
+        const [x, y] = a.pair;
+        const hi = Math.max(st[x], st[y]), lo = Math.min(st[x], st[y]);
+        const deep = s.grade >= 3 && ((lo >= 60) || (hi >= 70 && lo >= 55));
+        const third = [0, 1, 2, 3, 4].filter(i => !a.pair.includes(i)).sort((p, q) => st[q] - st[p])[0];
+        const ext = s.grade >= 5 && st[x] >= 45 && st[y] >= 45 && st[third] >= 45 && st[x] + st[y] + st[third] >= 150;
+        if (!deep && !ext) return;
+        if (R() > base * 0.9) return;
+        a.stage = 3;
+        if (!deep) { a.cls = 'ext'; a.pair = [x, y, third]; }
+        onStage(a, 3);
+      }
+    }
+    function onStage(a, n) {
+      if (n === 2) { if (s.st.firstStage2 == null) s.st.firstStage2 = s.week; s.st.lvAt2.push(a.lv); }
+      if (n === 3) { if (s.st.firstStage3 == null) s.st.firstStage3 = s.week; s.st.lvAt3.push(a.lv); }
+      if (a.bank > 0) { const b = a.bank; a.bank = 0; gainXp(a, b); }
+    }
+    function tryGradeUp(a) {
+      const lvReq = [0, 5, 10, 18, 26, 35, 45], achReq = [0, 5, 5, 7, 7, 10, 10];
+      const n = a.grade + 1;
+      if (n > 6 || n > s.grade || n === 6) return; // S급은 길드 S 승급 순간에만
+      if (a.lv >= lvReq[n] && a.ach >= achReq[n]) { a.grade = n; a.ach = 0; }
+    }
+
+    function kill(a, byDemon) {
+      a.alive = false; s.st.deaths++; if (byDemon) s.st.battleDeaths++;
+      s.trust = Math.max(0, s.trust - (byDemon ? 0 : 1));
+      s.heirsQueue.push({ at: s.week + A.heirDelayWeeks, core: R() < 0.7 ? a.core : ri(5), demon: byDemon, risk: byDemon ? 2 : (a.risk === 2 ? 0 : a.risk) });
+    }
+
+    function present(a) {
+      if (!a.alive || a.busy > 0) return false;
+      if (a.attach >= 100) return true;
+      if (a.heirWeek != null && s.week - a.heirWeek < WPY) return R() < 0.8;
+      const interval = A.visitBaseWeeks * (1 + (100 - a.attach) / 50);
+      return R() < Math.min(1, 2 / interval);
+    }
+
+    function generateQuests() {
+      const mult = T.inflowMult[popStage()] * (0.7 + 0.6 * s.trust / 100) * (1 + 0.1 * s.grade) * (1 + 0.1 * Math.min(1, effN('접수대')));
+      const n = Math.round(Q.perMonth * mult / WPM + R() * 0.5);
+      const cap = Q.boardCap[s.grade] + [0, 2, 5, 5][Math.min(3, effN('게시판'))];
+      for (let i = 0; i < n; i++) {
+        // 필터: 상위 등급 집중도(filterFocus)에 따라 배분
+        let g = s.grade;
+        const r = R();
+        if (r > bot.filterFocus) g = ri(s.grade + 1);
+        if (s.board.length < cap) s.board.push(makeQuest(g, false));
+      }
+    }
+
+    function mealFor(q) { // 그 의뢰 등급 이하에서 가장 높은 해금 요리 등급
+      for (let g = q.g; g >= 0; g--) if (s.meals[g] > 0) return g;
+      return -1;
+    }
+    function runQuest(party, q) {
+      let mealB = 0;
+      const mg = mealFor(q);
+      if (mg >= 0) {
+        let eaters = 0;
+        for (const a of party) {
+          const price = Q.reward[mg] * E.mealPriceRate;
+          if (a.wallet >= price && R() < E.mealBuyRate[a.spend]) { a.wallet -= price; s.gold += price * E.mealMargin; s.op += price * E.mealMargin; s.st.mealIncome += price * E.mealMargin; eaters++; }
+        }
+        // 메뉴가 2개 열려 있으면 의뢰 유형에 맞는 요리를 고를 확률이 높음
+        mealB = (eaters / party.length) * E.mealBonus[mg] * (s.meals[mg] >= 2 ? 1 : 0.6) * (1 + 0.5 * (effN('주점') >= 3 ? 1 : 0));
+      }
+      const p = Math.min(0.97, successP(party, q) * (1 + mealB));
+      const ok = R() < p;
+      const fee = q.boss ? 0 : q.reward != null ? 0 : 0;
+      const reward = Q.reward[q.g] * (q.boss ? 2 : 1);
+      if (ok) {
+        s.st.qDone++;
+        if ((q.type === 0 || q.type === 1 || (q.type === 2 && (q.g === 2 || q.g === 6))) && s.meals[q.g] < 2 && R() < E.mealUnlockChance) { s.meals[q.g]++; s.st.mealsUnlocked.push(s.week); }
+        const inc = reward * feeRate() + reward * E.resaleRate * (1 + 0.1 * effN('판매창구'));
+        s.gold += inc; s.op += inc;
+        const each = reward * (1 - feeRate()) / party.length;
+        for (const a of party) {
+          a.wallet += each;
+          gainXp(a, G.xpBase * Math.pow(G.xpGradeMult, q.g));
+          a.stats[q.type] = Math.min(G.statCap, a.stats[q.type] + Q.subGrowth);
+          a.attach = Math.min(100, a.attach + A.attachSuccess * (1 + 0.2 * Math.min(1, effN('휴게실'))));
+          if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
+          tryGradeUp(a);
+        }
+        s.trust = Math.min(100, s.trust + 0.3);
+      } else {
+        s.st.qFail++;
+        s.trust = Math.max(0, s.trust - 0.6);
+        for (const a of party) {
+          gainXp(a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate);
+          const d = Q.deathBase[q.g] * [0.5, 1, 1.5][a.risk] * (1 - 0.15 * Math.min(1, effN('의무실')));
+          if (R() < d) kill(a, false);
+        }
+      }
+      return ok;
+    }
+
+    function adventurersChoose() {
+      const idle = s.advs.filter(present);
+      for (const a of idle) {
+        if (a.busy > 0 || !a.alive) continue;
+        const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
+        const lo = Math.max(0, a.grade + range[0]), hi = Math.min(s.grade, a.grade + range[1]);
+        const th = [0.70, 0.55, 0.35][a.risk];
+        const cands = s.board.map((q, i) => ({ q, i })).filter(o => o.q.g >= lo && o.q.g <= hi).sort((x, y) => y.q.g - x.q.g);
+        for (const { q, i } of cands) {
+          let party = [a];
+          let pp = perceived(a, successP(party, q));
+          if (pp < [0.30, 0.50, 0.70][a.social]) {
+            const mates = idle.filter(b => b !== a && b.busy === 0 && b.alive && Math.abs(b.grade - q.g) <= 1).slice(0, 4);
+            for (const m of mates) { party.push(m); if (perceived(a, successP(party, q)) >= th) break; }
+            pp = perceived(a, successP(party, q));
+          }
+          if (pp >= th) {
+            s.board.splice(i, 1);
+            for (const m of party) m.busy = Q.weeks[q.g];
+            runQuest(party, q);
+            break;
+          }
+        }
+      }
+    }
+
+    function bestParty(pool, q, n) {
+      const sorted = pool.slice().sort((x, y) => power(y) - power(x));
+      let party = [];
+      for (const a of sorted) { party.push(a); if (party.length >= n) break; if (successP(party, q) >= 0.95) break; }
+      return party;
+    }
+
+    function bossStep() {
+      const g = s.grade;
+      if (g >= 6 || s.phase !== 'normal') return;
+      const need = PROMO_FAC[g];
+      if (need && !has(need)) return;
+      if (g === 5 && s.advs.filter(a => a.alive && !a.external && a.grade >= 5 && a.lv >= 45).length < P.sCandidates) {
+        // S급 후보가 부족해도 보스급 의뢰는 진행 가능
+      }
+      // 보충
+      const vis = P.N[g] + 2;
+      s.bossRefill = s.bossRefill.filter(w => { if (w <= s.week) { s.boss.push(makeQuest(g + 1, true)); return false; } return true; });
+      while (s.boss.length + s.bossRefill.length < vis) s.boss.push(makeQuest(g + 1, true));
+      if (s.bossDone >= P.N[g]) return;
+      const pool = s.advs.filter(a => a.alive && a.busy === 0);
+      for (let i = 0; i < s.boss.length; i++) {
+        const q = s.boss[i];
+        const party = bestParty(pool.filter(a => a.busy === 0), q, 5);
+        if (!party.length) break;
+        const p = successP(party, q);
+        if (p >= bot.bossTh) {
+          s.boss.splice(i, 1); i--;
+          for (const m of party) m.busy = Q.weeks[q.g];
+          const ok = runQuest(party, q);
+          if (ok) { s.bossDone++; s.bossRefill.push(s.week + P.bossRefillWeeks); }
+          else s.boss.push(makeQuest(g + 1, true));
+          if (s.bossDone >= P.N[g]) break;
+        }
+      }
+    }
+
+    function townPower(participants) { return participants.reduce((t, a) => t + power(a), 0); }
+    const typical = g => 5 * Q.ref[g] * 0.75;
+    function battle(enemy, participants, kindDemon) {
+      const our = townPower(participants);
+      const x = our / Math.max(1, enemy) - 1;
+      const pw = 1 / (1 + Math.exp(-cfg.promo.battleK * x));
+      const win = R() < pw;
+      for (const a of participants) {
+        const d = (win ? cfg.promo.battleDeathWin : cfg.promo.battleDeathLoss) * [0.5, 1, 1.5][a.risk] * (1 - 0.15 * Math.min(1, effN('의무실')));
+        if (!a.rebirth && R() < d) kill(a, kindDemon);
+      }
+      return { win, pw };
+    }
+    function defenders() {
+      const list = s.advs.filter(a => a.alive && a.busy === 0 && (a.attach >= 100 || R() < 0.6));
+      // 보상금
+      let cost = 0; for (const a of list) if (a.attach < 100) cost += Q.reward[a.grade] * (a.attach >= 60 ? 0.5 : 1.0);
+      s.gold -= cost; s.op -= cost;
+      return list;
+    }
+
+    function invasionStep() {
+      const g = s.grade;
+      if (g >= 6 || s.phase !== 'normal' || s.bossDone < P.N[g] || s.invasionCooldown > s.week) return;
+      if (g === 5 && s.advs.filter(a => a.alive && !a.external && a.grade >= 5 && a.lv >= 45).length < P.sCandidates) return;
+      const enemy = P.invasionScale * typical(g + 1) * 0.5;
+      const est = (() => { const d = s.advs.filter(a => a.alive); const pw = d.reduce((t, a) => t + power(a) * (a.attach >= 100 ? 1 : 0.6), 0); const x = pw / enemy - 1; return 1 / (1 + Math.exp(-P.battleK * x)); })();
+      if (est < bot.promoteTh && s.week - (s.st.reach[g] || 0) < 6 * WPY) return; // 보류 (단, 6년 이상 정체면 강행)
+      const res = battle(enemy, defenders(), true);
+      if (res.win) {
+        s.st.invW++; s.grade++; s.st.reach[s.grade] = s.week; s.bossDone = 0; s.boss = []; s.bossRefill = [];
+        if (s.grade === 6) {
+          for (const a of s.advs) if (a.alive && !a.external && a.grade === 5 && a.lv >= 45) a.grade = 6;
+          s.phase = 'officers'; s.officer = 0; s.mainCooldown = s.week + 4;
+        }
+      } else {
+        s.st.invL++; s.pop *= (1 - T.invasionLoss); s.invasionCooldown = s.week + 2 * WPM;
+      }
+    }
+
+    function raidStep() {
+      if (s.week < s.nextRaid) return;
+      s.nextRaid = s.week + P.raidMonths[popStage()] * WPM;
+      if (s.invasionCooldown > s.week) return;
+      const enemy = P.raidScale * typical(s.grade) * 0.5;
+      const res = battle(enemy, defenders(), true);
+      if (res.win) s.st.raidsW++; else { s.st.raidsL++; s.pop *= (1 - T.raidLoss); s.trust = Math.max(0, s.trust - 5); }
+    }
+
+    function endgameStep() {
+      if (s.phase === 'normal' || s.ended || s.week < s.mainCooldown) return;
+      const pool = s.advs.filter(a => a.alive && a.busy === 0);
+      const top = pool.slice().sort((x, y) => power(y) - power(x)).slice(0, 5);
+      if (s.phase === 'officers') {
+        const enemy = EN.officerScale[s.officer] * typical(6) * 0.5;
+        const res = battle(enemy, top, true);
+        if (res.win) { s.officer++; s.mainCooldown = s.week + 3 * WPM; if (s.officer >= 3) s.phase = 'demon'; }
+        else { s.st.officerFails++; s.pop *= 0.97; s.mainCooldown = s.week + EN.mainRetryWeeks; }
+      } else if (s.phase === 'demon') {
+        const avg = top.reduce((t, a) => t + a.grade, 0) / Math.max(1, top.length);
+        if (top.length < 5 || avg < 5) { s.mainCooldown = s.week + WPM; return; }
+        // 마인 각성 확인
+        if (!s.st.demonAwake && s.advs.some(a => a.alive && a.demonHeir && a.stage >= 2 && a.attach >= 70)) s.st.demonAwake = true;
+        const enemy = EN.demonScale * typical(6) * 0.5 * EN.demonPopMult[popStage()];
+        const res = battle(enemy, top, true);
+        if (res.win) { s.ended = true; s.st.end = s.week; s.st.endRebirth = top.some(a => a.rebirth); }
+        else { s.st.demonFails++; s.mainCooldown = s.week + EN.demonRetryWeeks; }
+      }
+    }
+
+    function monthly() {
+      // 수입
+      s.gold += E.subsidy[s.grade]; s.op += E.subsidy[s.grade];
+      const inTown = s.advs.filter(a => a.alive && a.busy === 0).length;
+      const tav = inTown * WPM * 0.5 * E.tavernPerAdvWeek * Math.pow(E.tavernGradeMult, s.grade) * (1 + 0.15 * Math.min(1, effN('주점')));
+      s.gold += tav; s.op += tav;
+      // 유지비
+      let up = 0; for (const [f, g] of FAC) if (has(f)) up += E.buildCost[g] * E.upkeepRate;
+      s.gold -= up; s.op -= up;
+      // 건설: 승급 필수 시설 우선, 이후 등급 순
+      const order = FAC.filter(([, g]) => g <= s.grade).slice().sort((x, y) => (PROMO_FAC.includes(y[0]) ? 1 : 0) - (PROMO_FAC.includes(x[0]) ? 1 : 0));
+      for (const [f, g] of order) {
+        if (has(f)) continue;
+        const c = E.buildCost[g];
+        if (s.gold - c >= 500) { s.gold -= c; s.built[f] = true; s.st.facWeek[f] = s.week; }
+      }
+      // 시설 효과 개방 (금전 부분만 모델링)
+      const effFac = ['정보실', '의무실', '훈련장', '도서관', '휴게실', '주점', '접수대', '게시판', '판매창구'];
+      for (const f of effFac) {
+        const baseG = f === '주점' || f === '접수대' || f === '게시판' || f === '판매창구' ? 0 : FAC.find(x => x[0] === f)[1];
+        if (!(has(f))) continue;
+        const max = f === '정보실' ? 5 : 3;
+        const n = effN(f); if (n >= max) continue;
+        const effG = Math.min(6, baseG + Math.min(n, 2));
+        if (effG > s.grade + 1) continue; // 소재 등급이 아직 없음
+        const cost = E.buildCost[Math.max(1, effG)] * E.effectCost[Math.min(2, n)];
+        if (s.gold - cost >= 1000 / bot.buildEffects) { s.gold -= cost; s.eff[f] = n + 1; }
+      }
+      // 인구
+      const residents = s.advs.filter(a => a.alive && a.attach >= 100).length;
+      s.pop += s.pop * (T.growthBase + T.growthPerGrade * s.grade) + residents * T.perResident;
+      // 애착(마을에 머문 모험가)
+      for (const a of s.advs) if (a.alive && a.busy === 0) a.attach = Math.min(100, a.attach + A.attachPerMonthInTown * 0.5);
+      // 이탈
+      for (const a of s.advs) if (a.alive && !a.rebirth && a.attach < A.leaveAttach && s.week - a.joined > A.leaveAfterYears * WPY) a.alive = false;
+      // 신규 모험가
+      const lam = A.arrivalPerMonth * (1 + A.arrivalPerGrade * s.grade);
+      let k = Math.floor(lam); if (R() < lam - k) k++;
+      for (let i = 0; i < k; i++) {
+        const ext = R() < 0.05 && s.grade > 0 ? Math.min(6, s.grade + (R() < 0.3 ? 2 : 1)) : 0;
+        const a = newAdv({ grade: ext });
+        if (s.demonFlagFallback) { a.demonHeir = true; a.heirWeek = s.week; s.demonFlagFallback = false; s.st.demonFallback = true; }
+      }
+      // 2세
+      s.heirsQueue = s.heirsQueue.filter(h => { if (h.at <= s.week) { newAdv({ core: h.core, heirOf: true, demonHeir: h.demon, risk: h.risk }); s.st.heirs++; return false; } return true; });
+      // 전직 제안 (월 1회)
+      for (const a of s.advs) if (a.alive) tryPromoteClass(a);
+      // 장비 구매
+      for (const a of s.advs) {
+        if (!a.alive) continue;
+        const ng = Math.min(s.grade, a.gear + 1);
+        if (ng <= a.gear) continue;
+        const price = GE.weaponPrice[ng] * GE.setMult;
+        if (a.wallet >= price * (1 + GE.reserveMult[a.spend] * 0.5)) { a.wallet -= price; a.gear = ng; }
+      }
+      if (s.gold < 0) s.st.negMonths++;
+      if (s.week < WPY) s.st.firstNetF.push(s.op);
+      s.op = 0;
+    }
+
+    function weekly() {
+      // 훈련
+      for (const a of s.advs) {
+        if (!a.alive || a.busy > 0) continue;
+        if (has('훈련장')) { const m = 1 + [0, 0.15, 0.40, 0.40][Math.min(3, effN('훈련장'))]; for (const i of [0, 1, 4]) if (i === a.core || (a.pair && a.pair.includes(i))) a.stats[i] = Math.min(G.statCap, a.stats[i] + G.trainPerWeek * m); }
+        if (has('도서관')) { const m = 1 + (effN('도서관') ? 0.15 : 0); for (const i of [2, 3]) if (i === a.core || (a.pair && a.pair.includes(i))) a.stats[i] = Math.min(G.statCap, a.stats[i] + G.trainPerWeek * m); }
+      }
+      if (s.week % WPM === 0) generateQuests();
+      adventurersChoose();
+      bossStep();
+      invasionStep();
+      raidStep();
+      endgameStep();
+      for (const a of s.advs) if (a.busy > 0) a.busy--;
+    }
+
+    // 시작 모험가 3명
+    for (let i = 0; i < A.startCount; i++) newAdv({ attach: 20 });
+
+    const maxW = cfg.run.maxYears * WPY;
+    for (s.week = 0; s.week < maxW && !s.ended; s.week++) {
+      if (!s.rebirthAdded && s.week === (EN.rebirthYear - 1) * WPY) {
+        s.rebirthAdded = true; s.st.rebirth = true;
+        const a = newAdv({ risk: 0 }); a.rebirth = true; a.stage = 3; a.cls = 'ext'; a.pair = [0, 1, 2]; a.lv = 45;
+        a.stats = [0, 0, 0, 0, 0].map(() => EN.rebirthTotal / 5); a.grade = Math.min(6, s.grade + 2); a.gear = s.grade;
+      }
+      if (!s.demonFlagFallback && !s.st.demonFallback && s.week === EN.demonHeirFallbackYear * WPY && !s.advs.some(a => a.alive && a.demonHeir)) s.demonFlagFallback = true;
+      weekly();
+      if (s.week % WPM === WPM - 1) monthly();
+      if (s.week % WPY === WPY - 1) {
+        const alive = s.advs.filter(a => a.alive);
+        const top = alive.slice().sort((x, y) => y.lv - x.lv).slice(0, 5);
+        s.st.goldYear.push(s.gold); s.st.advYear.push(alive.length); s.st.popYear.push(s.pop);
+        s.st.lvYear.push(top.length ? top.reduce((t, a) => t + a.lv, 0) / top.length : 0);
+      }
+    }
+    s.st.finalGrade = s.grade;
+    s.st.dbg = { bossDone: s.bossDone, cand: s.advs.filter(a => a.alive && !a.external && a.grade >= 5 && a.lv >= 45).length, gradeA: s.advs.filter(a => a.alive && a.grade === 5).length, gradeB: s.advs.filter(a => a.alive && a.grade === 4).length, lv45: s.advs.filter(a => a.alive && a.lv >= 45).length, alive: s.advs.filter(a=>a.alive).length, maxLv: Math.max(...s.advs.filter(a=>a.alive).map(a=>a.lv)), stage3: s.advs.filter(a=>a.alive&&a.stage===3).length, top: s.advs.filter(a=>a.alive).sort((x,y)=>y.lv-x.lv).slice(0,14).map(a=>'g'+a.grade+'L'+a.lv+'s'+a.stage+'r'+a.risk+'x'+(a.rebirth?1:0)) };
+    s.st.finalPop = s.pop;
+    return s.st;
+  }
+
+  function quant(arr, q) { if (!arr.length) return null; const b = arr.slice().sort((x, y) => x - y); return b[Math.min(b.length - 1, Math.floor(b.length * q))]; }
+
+  function aggregate(results, cfg) {
+    const n = results.length, Y = cfg.run.maxYears;
+    const yr = w => w == null ? null : w / WPY;
+    const out = { n };
+    out.reach = [];
+    for (let g = 1; g <= 6; g++) {
+      const v = results.map(r => r.reach[g]).filter(x => x != null).map(yr);
+      out.reach.push({ grade: GR[g], pct: v.length / n, p10: quant(v, 0.1), med: quant(v, 0.5), p90: quant(v, 0.9) });
+    }
+    const ends = results.map(r => r.end).filter(x => x != null).map(yr);
+    out.endPct = ends.length / n; out.end15 = results.filter(r => r.end != null && r.end < 15 * WPY).length / n;
+    out.endMed = quant(ends, 0.5); out.endP10 = quant(ends, 0.1); out.endP90 = quant(ends, 0.9);
+    out.endHist = new Array(Y).fill(0); for (const e of ends) out.endHist[Math.min(Y - 1, Math.floor(e))]++;
+    out.rebirthPct = results.filter(r => r.rebirth).length / n;
+    out.rebirthEndPct = results.filter(r => r.endRebirth).length / n;
+    const avg = f => results.reduce((t, r) => t + f(r), 0) / n;
+    out.deaths = avg(r => r.deaths); out.heirs = avg(r => r.heirs);
+    out.successRate = avg(r => r.qDone / Math.max(1, r.qDone + r.qFail));
+    out.raidWin = avg(r => r.raidsW / Math.max(1, r.raidsW + r.raidsL));
+    out.invLoss = avg(r => r.invL);
+    out.negMonths = avg(r => r.negMonths);
+    out.bankruptPct = results.filter(r => r.negMonths > 0).length / n;
+    out.netF = avg(r => r.firstNetF.length ? r.firstNetF.reduce((a, b) => a + b, 0) / r.firstNetF.length : 0);
+    const s2 = results.map(r => r.firstStage2).filter(x => x != null).map(yr), s3 = results.map(r => r.firstStage3).filter(x => x != null).map(yr);
+    out.stage2Year = quant(s2, 0.5); out.stage3Year = quant(s3, 0.5);
+    const l2 = [].concat(...results.map(r => r.lvAt2)), l3 = [].concat(...results.map(r => r.lvAt3));
+    out.lvAt2 = l2.length ? l2.reduce((a, b) => a + b, 0) / l2.length : null;
+    out.lvAt3 = l3.length ? l3.reduce((a, b) => a + b, 0) / l3.length : null;
+    out.demonAwakePct = results.filter(r => r.demonAwake).length / n;
+    out.demonFallbackPct = results.filter(r => r.demonFallback).length / n;
+    const series = key => { const rows = []; for (let y = 0; y < Y; y++) { const v = results.map(r => r[key][y]).filter(x => x != null); rows.push(v.length ? { p10: quant(v, 0.1), med: quant(v, 0.5), p90: quant(v, 0.9) } : null); } return rows; };
+    out.gold = series('goldYear'); out.advs = series('advYear'); out.lv = series('lvYear'); out.pop = series('popYear');
+    return out;
+  }
+
+  const api = { defaults, simulate, aggregate, BOTS, GR, ST, WPY };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildSim = api;
+})(this);
+
+</script>
+<script>
+/* 이세계 모험가 길드 — 프로토타입 게임 규칙 (M1: 코어 루프)
+   화면과 분리된 순수 로직. 유니티 이식 시 이 파일을 C#으로 옮긴다.
+   수치는 밸런스 시뮬레이터(GuildSim.defaults)와 같은 값을 쓴다. */
+(function (root) {
+  'use strict';
+  const GR = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
+  const STATS = ['힘', '민첩', '지력', '정신', '기교'];
+  const CLASS1 = ['전사', '궁수', '마법사', '성직자', '도적'];
+  const QTYPE = ['토벌', '사냥·채집', '조사', '호위·구호', '탐사'];
+  const RISK = ['신중', '보통', '무모'], SPEND = ['절약', '보통', '낭비'], SOCIAL = ['독불장군', '보통', '사교적'];
+  const WPM = 4, WPY = 48;
+  const NAMES = ['아론', '벨라', '카스', '다리아', '에단', '피오나', '가빈', '헤라', '이반', '줄리아', '켄트', '루나', '마커스', '니나', '오웬', '페넬로페', '퀸', '로사', '세스', '타냐',
+    '울릭', '베라', '웨스', '자라', '알마', '브루노', '클라라', '데인', '엘사', '펠릭', '그레타', '호레이스', '이리스', '잭', '카야', '레오', '미라벨', '네드', '올가', '피터',
+    '리타', '사일러스', '테오', '우나', '빅터', '윌라', '엘런', '노아', '아이다', '벤', '실비아', '조엘', '헬가', '라이언', '소피', '토빈', '마야', '다넬', '에이미', '고든'];
+
+  function attachRng(s) { s.R = function () { s.rngState = (s.rngState + 0x6D2B79F5) >>> 0; let t = s.rngState; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; return s; }
+  function serialize(s) { const o = Object.assign({}, s); delete o.R; return JSON.stringify(o); }
+  function deserialize(str) { return attachRng(JSON.parse(str)); }
+
+  function newGame(cfg, seed) {
+    const s = {
+      cfg, seed: seed >>> 0, rngState: seed >>> 0,
+      week: 0, grade: 0, gold: cfg.econ.startGold, trust: 50, pop: cfg.town.startPop,
+      built: { 게시판: true, 접수대: true, 주점: true, 판매창구: true }, eff: {}, meals: [0, 0, 0, 0, 0, 0, 0],
+      filter: [1, 0, 0, 0, 0, 0, 0], // 게시판 칸 배분 (등급별 비율)
+      advs: [], board: [], active: [], nextId: 1, log: [],
+      month: blankLedger(), lastMonth: null, history: [],
+      stats: { done: 0, fail: 0 }
+    };
+    attachRng(s);
+    for (let i = 0; i < cfg.adv.startCount; i++) spawnAdv(s, { attach: 20, quiet: true });
+    log(s, '길드가 문을 열었습니다. 모험가 ' + cfg.adv.startCount + '명이 첫 손님으로 찾아왔습니다.', 'info');
+    return s;
+  }
+  function hasBatchim(w) { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; }
+  function J(w, a, b) { return w + (hasBatchim(w) ? a : b); }
+  const names = party => party.map(m => m.name).join('·');
+  function blankLedger() { return { fee: 0, resale: 0, meal: 0, tavern: 0, subsidy: 0, upkeep: 0, other: 0, quests: 0, success: 0 }; }
+  const ri = (s, n) => Math.floor(s.R() * n);
+  function log(s, text, kind) { s.log.unshift({ week: s.week, text, kind: kind || 'info' }); if (s.log.length > 200) s.log.pop(); }
+  const effN = (s, f) => s.eff[f] || 0;
+  const popStage = s => { let k = 0; for (const t of s.cfg.town.stages) if (s.pop >= t) k++; return k; };
+  const feeRate = s => s.cfg.econ.feeBase + s.cfg.econ.feePerInfo * effN(s, '정보실');
+  function boardCap(s) { return s.cfg.quest.boardCap[s.grade] + [0, 2, 5, 5][Math.min(3, effN(s, '게시판'))]; }
+
+  function spawnAdv(s, o) {
+    o = o || {};
+    const A = s.cfg.adv;
+    const core = o.core != null ? o.core : ri(s, 5);
+    const used = new Set(s.advs.map(a => a.name));
+    let name = NAMES[ri(s, NAMES.length)]; for (let k = 0; k < 20 && used.has(name); k++) name = NAMES[ri(s, NAMES.length)];
+    const a = {
+      id: s.nextId++, name, core, cls: CLASS1[core], stage: 1, pair: null,
+      stats: [0, 0, 0, 0, 0].map((_, i) => i === core ? A.startCore + s.R() * 4 : A.startOther + s.R() * 3),
+      lv: 1, xp: 0, bank: 0, grade: 0, ach: 0, attach: o.attach || 0,
+      risk: ri(s, 3), spend: ri(s, 3), social: ri(s, 3), wallet: 0, gear: -1,
+      state: 'away', until: 0, joined: s.week, alive: true, done: 0
+    };
+    s.advs.push(a);
+    if (!o.quiet) log(s, `${a.cls} ${J(a.name, '이', '가')} 길드를 처음 찾아왔습니다.`, 'arrive');
+    return a;
+  }
+
+  function finalStat(s, a, i) {
+    const GE = s.cfg.gear; let v = Math.min(s.cfg.growth.statCap, a.stats[i]);
+    if (a.gear >= 0) { if (i === a.core) v += GE.weaponStat[a.gear]; if (i === (a.core + 2) % 5) v += GE.accStat[a.gear]; }
+    return v;
+  }
+  function makeQuest(s, g) {
+    const Q = s.cfg.quest; const type = ri(s, 5); const n = Q.reqCount[g]; const req = [type];
+    while (req.length < n) { const k = ri(s, 5); if (!req.includes(k)) req.push(k); }
+    const R0 = Q.ref[g] * n * (0.85 + s.R() * 0.30);
+    return { id: s.nextId++, g, type, req, r: R0 / n, reward: Q.reward[g], posted: s.week };
+  }
+  function successP(s, party, q) {
+    const Q = s.cfg.quest; let F = 0, bottleneck = false;
+    for (const k of q.req) {
+      const vals = party.map(a => finalStat(s, a, k) * (k === a.core ? 1 + [0.03, 0.06, 0.10][a.stage - 1] : 1)).sort((x, y) => y - x);
+      const P0 = vals[0] + Q.partyAssist * vals.slice(1).reduce((x, y) => x + y, 0);
+      const fill = Math.min(P0 / q.r, 1.5); if (fill < 0.5) bottleneck = true; F += fill;
+    }
+    F /= q.req.length;
+    let p = Math.max(0.05, Math.min(0.97, 0.55 + 1.1 * (F - 1)));
+    if (bottleneck) p /= 2;
+    return p;
+  }
+  function perceived(s, a, p) { const err = Math.max(0, 0.10 - 0.02 * effN(s, '정보실')); return Math.min(1, p * [0.9, 1.0, 1.2][a.risk] + (s.R() * 2 - 1) * err); }
+
+  function gainXp(s, a, xp) {
+    const G = s.cfg.growth; a.xp += xp;
+    for (;;) {
+      const need = G.lvA * Math.pow(a.lv, G.lvB);
+      if (a.xp < need) break;
+      if (a.lv >= G.lvCap[a.stage - 1]) { a.bank += a.xp; a.xp = 0; break; }
+      a.xp -= need; a.lv++;
+      for (let i = 0; i < 5; i++) a.stats[i] = Math.min(G.statCap, a.stats[i] + (i === a.core ? 2.0 : 0.4));
+      log(s, `${a.name}의 레벨이 ${a.lv}${[1,3,6,7,8,0].includes(a.lv % 10) || a.lv % 10 === 0 ? '이' : '가'} 되었습니다.`, 'grow');
+    }
+  }
+  function tryGradeUp(s, a) {
+    const lvReq = [0, 5, 10, 18, 26, 35, 45], achReq = [0, 5, 5, 7, 7, 10, 10]; const n = a.grade + 1;
+    if (n > 6 || n > s.grade || n === 6) return;
+    if (a.lv >= lvReq[n] && a.ach >= achReq[n]) { a.grade = n; a.ach = 0; log(s, `${J(a.name, '이', '가')} ${GR[n]}급 모험가가 되었습니다.`, 'grow'); }
+  }
+
+  // ---------- 플레이어 행동 ----------
+  function setFilter(s, weights) { s.filter = weights.map((w, g) => g <= s.grade ? Math.max(0, w) : 0); }
+  function withdrawQuest(s, qid) {
+    const i = s.board.findIndex(q => q.id === qid); if (i < 0) return false;
+    const q = s.board[i]; const cost = Math.round(q.reward * 0.10);
+    s.board.splice(i, 1); s.gold -= cost; s.month.other -= cost; s.trust = Math.max(0, s.trust - 2);
+    log(s, `${GR[q.g]}급 ${QTYPE[q.type]} 의뢰를 게시판에서 뗐습니다. 등록비·위약금 ${cost}G, 신뢰도 −2.`, 'warn');
+    return true;
+  }
+  function debugSetGrade(s, g) { s.grade = Math.max(0, Math.min(6, g)); log(s, `[디버그] 길드 등급을 ${GR[s.grade]}로 바꿨습니다.`, 'debug'); }
+
+  // ---------- 진행 ----------
+  function generateQuests(s) {
+    const Q = s.cfg.quest, T = s.cfg.town;
+    const mult = T.inflowMult[popStage(s)] * (0.7 + 0.6 * s.trust / 100) * (1 + 0.1 * s.grade) * (1 + 0.1 * Math.min(1, effN(s, '접수대')));
+    const n = Math.round(Q.perMonth * mult / WPM + s.R() * 0.5);
+    const cap = boardCap(s);
+    // 필터: 등급별 칸 배분
+    const tot = s.filter.slice(0, s.grade + 1).reduce((a, b) => a + b, 0) || 1;
+    const quota = s.filter.map((w, g) => g <= s.grade ? Math.round(cap * w / tot) : 0);
+    for (let i = 0; i < n; i++) {
+      let r = s.R() * tot, g = 0; for (; g <= s.grade; g++) { r -= s.filter[g]; if (r <= 0) break; } g = Math.min(g, s.grade);
+      const count = s.board.filter(q => q.g === g).length;
+      if (s.board.length < cap && count < Math.max(1, quota[g])) s.board.push(makeQuest(s, g));
+    }
+  }
+  function present(s, a) {
+    if (!a.alive || a.state === 'quest') return false;
+    if (a.attach >= 100) return true;
+    const interval = s.cfg.adv.visitBaseWeeks * (1 + (100 - a.attach) / 50);
+    return s.R() < Math.min(1, 2 / interval);
+  }
+  function mealFor(s, q) { for (let g = q.g; g >= 0; g--) if (s.meals[g] > 0) return g; return -1; }
+
+  function departures(s) {
+    const Q = s.cfg.quest, E = s.cfg.econ;
+    for (const a of s.advs) { if (!a.alive || a.state === 'quest') continue; a.state = present(s, a) ? 'town' : 'away'; }
+    const idle = s.advs.filter(a => a.state === 'town');
+    for (const a of idle) {
+      if (a.state !== 'town') continue;
+      const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
+      const lo = Math.max(0, a.grade + range[0]), hi = Math.min(s.grade, a.grade + range[1]);
+      const th = [0.70, 0.55, 0.35][a.risk];
+      const cands = s.board.filter(q => q.g >= lo && q.g <= hi).sort((x, y) => y.g - x.g);
+      for (const q of cands) {
+        let party = [a];
+        let pp = perceived(s, a, successP(s, party, q));
+        if (pp < [0.30, 0.50, 0.70][a.social]) {
+          const mates = idle.filter(b => b !== a && b.state === 'town' && Math.abs(b.grade - q.g) <= 1).slice(0, 4);
+          for (const m of mates) { party.push(m); if (perceived(s, a, successP(s, party, q)) >= th) break; }
+          pp = perceived(s, a, successP(s, party, q));
+        }
+        if (pp < th) continue;
+        s.board.splice(s.board.indexOf(q), 1);
+        // 출발 전 식사
+        let eaters = 0; const mg = mealFor(s, q);
+        if (mg >= 0) for (const m of party) {
+          const price = Q.reward[mg] * E.mealPriceRate;
+          if (m.wallet >= price && s.R() < E.mealBuyRate[m.spend]) { m.wallet -= price; const inc = price * E.mealMargin; s.gold += inc; s.month.meal += inc; eaters++; }
+        }
+        const mealB = mg >= 0 ? (eaters / party.length) * E.mealBonus[mg] * (s.meals[mg] >= 2 ? 1 : 0.6) : 0;
+        const p = Math.min(0.97, successP(s, party, q) * (1 + mealB));
+        const weeks = Q.weeks[q.g];
+        for (const m of party) { m.state = 'quest'; m.until = s.week + weeks; }
+        s.active.push({ q, party: party.map(m => m.id), p, back: s.week + weeks, ate: eaters });
+        log(s, `${J(names(party), '이', '가')} ${GR[q.g]}급 ${QTYPE[q.type]} 의뢰를 맡아 떠났습니다.${eaters ? ' (출발 전 식사 ' + eaters + '명)' : ''}`, 'depart');
+        break;
+      }
+    }
+  }
+
+  function returns(s) {
+    const Q = s.cfg.quest, G = s.cfg.growth, A = s.cfg.adv, E = s.cfg.econ;
+    const back = s.active.filter(x => x.back <= s.week); s.active = s.active.filter(x => x.back > s.week);
+    for (const x of back) {
+      const party = x.party.map(id => s.advs.find(a => a.id === id));
+      const ok = s.R() < x.p; const q = x.q; s.month.quests++;
+      if (ok) {
+        s.stats.done++; s.month.success++;
+        const fee = q.reward * feeRate(s), resale = q.reward * E.resaleRate;
+        s.gold += fee + resale; s.month.fee += fee; s.month.resale += resale;
+        const each = q.reward * (1 - feeRate(s)) / party.length;
+        for (const a of party) {
+          a.wallet += each; a.done++;
+          gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g));
+          a.stats[q.type] = Math.min(G.statCap, a.stats[q.type] + Q.subGrowth);
+          a.attach = Math.min(100, a.attach + A.attachSuccess);
+          if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
+          tryGradeUp(s, a);
+        }
+        s.trust = Math.min(100, s.trust + 0.3);
+        // 요리 해금
+        if ((q.type === 0 || q.type === 1 || (q.type === 2 && (q.g === 2 || q.g === 6))) && s.meals[q.g] < 2 && s.R() < E.mealUnlockChance) {
+          s.meals[q.g]++; log(s, `새 식재료를 얻어 ${GR[q.g]}급 요리가 식당 메뉴에 올랐습니다.`, 'unlock');
+        }
+        log(s, `${J(names(party), '이', '가')} ${GR[q.g]}급 ${QTYPE[q.type]} 의뢰에 성공했습니다. 길드 수입 ${Math.round(fee + resale)}G.`, 'success');
+      } else {
+        s.stats.fail++; s.trust = Math.max(0, s.trust - 0.6);
+        for (const a of party) gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate);
+        log(s, `${J(names(party), '이', '가')} ${GR[q.g]}급 ${QTYPE[q.type]} 의뢰에 실패했습니다.`, 'fail');
+      }
+      for (const a of party) { a.state = 'town'; a.until = 0; }
+    }
+  }
+
+  function monthly(s) {
+    const E = s.cfg.econ, A = s.cfg.adv, T = s.cfg.town, GE = s.cfg.gear;
+    s.gold += E.subsidy[s.grade]; s.month.subsidy += E.subsidy[s.grade];
+    const inTown = s.advs.filter(a => a.alive && a.state !== 'quest').length;
+    const tav = inTown * WPM * 0.5 * E.tavernPerAdvWeek * Math.pow(E.tavernGradeMult, s.grade);
+    s.gold += tav; s.month.tavern += tav;
+    let up = 0; for (const f of Object.keys(s.built)) up += (FAC_COST[f] != null ? E.buildCost[FAC_COST[f]] : 0) * E.upkeepRate;
+    s.gold -= up; s.month.upkeep -= up;
+    const residents = s.advs.filter(a => a.alive && a.attach >= 100).length;
+    s.pop += s.pop * (T.growthBase + T.growthPerGrade * s.grade) + residents * T.perResident;
+    for (const a of s.advs) if (a.alive && a.state !== 'quest') a.attach = Math.min(100, a.attach + A.attachPerMonthInTown * 0.5);
+    for (const a of s.advs) if (a.alive && a.attach < A.leaveAttach && s.week - a.joined > A.leaveAfterYears * WPY && a.state !== 'quest') { a.alive = false; log(s, `${J(a.name, '이', '가')} 이 마을을 떠났습니다. (애착도 ${Math.round(a.attach)})`, 'warn'); }
+    const lam = A.arrivalPerMonth * (1 + A.arrivalPerGrade * s.grade);
+    let k = Math.floor(lam); if (s.R() < lam - k) k++;
+    for (let i = 0; i < k; i++) spawnAdv(s, {});
+    for (const a of s.advs) {
+      if (!a.alive) continue;
+      const ng = Math.min(s.grade, a.gear + 1); if (ng <= a.gear) continue;
+      const price = GE.weaponPrice[ng] * GE.setMult;
+      if (a.wallet >= price * (1 + GE.reserveMult[a.spend] * 0.5)) { a.wallet -= price; a.gear = ng; log(s, `${J(a.name, '이', '가')} ${GR[ng]}급 장비를 샀습니다. (${Math.round(price)}G)`, 'grow'); }
+    }
+    const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other;
+    s.month.net = net;
+    s.lastMonth = s.month; s.history.push(Object.assign({ week: s.week }, s.month));
+    log(s, `${dateLabel(s.week)} 결산: 운영 순이익 ${Math.round(net)}G (의뢰 ${s.month.quests}건, 성공 ${s.month.success}건)`, 'ledger');
+    s.month = blankLedger();
+  }
+  const FAC_COST = { 게시판: null, 접수대: null, 주점: null, 판매창구: null, 관리소: 1, 집무실: 1, 훈련장: 2, 창고: 2, 추모실: 2, 정보실: 3, 의무실: 3, 도서관: 3, 해체장: 4, 휴게실: 5, '명예의 전당': 5 };
+
+  function build(s, f) {
+    const g = FAC_COST[f]; if (g == null || s.built[f]) return false;
+    if (g > s.grade) { log(s, `${J(f, '은', '는')} ${GR[g]}급 길드부터 지을 수 있습니다.`, 'warn'); return false; }
+    const c = s.cfg.econ.buildCost[g]; if (s.gold < c) { log(s, `${f} 건설비 ${c}G가 부족합니다.`, 'warn'); return false; }
+    s.gold -= c; s.built[f] = true; log(s, `${J(f, '을', '를')} 지었습니다. (${c}G)`, 'build'); return true;
+  }
+
+  function stepWeek(s) {
+    if (s.week % WPM === 0) generateQuests(s);
+    returns(s);
+    departures(s);
+    s.week++;
+    if (s.week % WPM === 0) monthly(s);
+  }
+  function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
+
+  const api = { serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, dateLabel, boardCap, feeRate, spawnAdv, log };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
+})(this);
+
+</script>
+<script>window.GAME_DATA={"skills": [{"line": "힘", "stage": "1차", "class": "전사", "name": "더블 스윙", "type": "공격", "effect": "2연타"}, {"line": "힘", "stage": "2차", "class": "광전사 (종결)", "name": "광란의 연격", "type": "공격", "effect": "3연타. 자신의 체력이 낮을수록 피해 증가"}, {"line": "힘", "stage": "2차", "class": "레인저", "name": "질주 베기", "type": "공격", "effect": "돌진해 후열의 적을 벰"}, {"line": "힘", "stage": "2차", "class": "마검사", "name": "마력 검격", "type": "공격", "effect": "물리 + 마법 피해를 함께 줌"}, {"line": "힘", "stage": "2차", "class": "기사", "name": "방패 강타", "type": "공격", "effect": "피해 + 적의 공격을 자신에게 유도"}, {"line": "힘", "stage": "2차", "class": "쌍검사", "name": "쌍검 난무", "type": "공격", "effect": "4연타, 치명 확률 증가"}, {"line": "힘", "stage": "3차 심화", "class": "레인저 로드", "name": "대지 가르기", "type": "공격", "effect": "직선 방향 광역 돌진"}, {"line": "힘", "stage": "3차 심화", "class": "마검성", "name": "마인검", "type": "공격", "effect": "방어와 마법 방어를 무시하는 일격"}, {"line": "힘", "stage": "3차 심화", "class": "성기사", "name": "성광 방패격", "type": "공격", "effect": "피해 + 주변 아군에게 작은 보호막"}, {"line": "힘", "stage": "3차 심화", "class": "검무사", "name": "검무", "type": "공격", "effect": "주변 광역 6연타"}, {"line": "힘", "stage": "3차 확장", "class": "배틀메이지", "name": "섬광 돌격", "type": "공격", "effect": "돌진 경로에 마력 폭발"}, {"line": "힘", "stage": "3차 확장", "class": "용기사", "name": "용의 낙하", "type": "공격", "effect": "도약 후 착지 지점 광역 피해"}, {"line": "힘", "stage": "3차 확장", "class": "검객", "name": "일섬", "type": "공격", "effect": "단일 대상 초고피해, 치명 확정"}, {"line": "힘", "stage": "3차 확장", "class": "룬 기사", "name": "룬 각인 베기", "type": "디버프", "effect": "피해 + 룬 각인. 각인된 적은 아군에게 받는 피해 증가"}, {"line": "힘", "stage": "3차 확장", "class": "마도 공학자", "name": "마력 해머", "type": "공격", "effect": "마력 장치 망치로 광역 피해 + 기절"}, {"line": "힘", "stage": "3차 확장", "class": "검성", "name": "검기 결계", "type": "버프", "effect": "파티 물리 공격력 증가 (전투 시작 시, 주기적)"}, {"line": "민첩", "stage": "1차", "class": "궁수", "name": "연사", "type": "공격", "effect": "2연발"}, {"line": "민첩", "stage": "2차", "class": "레인저", "name": "질주 사격", "type": "공격", "effect": "이동하며 사격, 사격 후 거리 벌림"}, {"line": "민첩", "stage": "2차", "class": "사냥꾼 (종결)", "name": "삼연시", "type": "공격", "effect": "3연발, 짐승형 적에게 추가 피해"}, {"line": "민첩", "stage": "2차", "class": "마궁사", "name": "마력 화살", "type": "공격", "effect": "일직선 관통 마법 피해"}, {"line": "민첩", "stage": "2차", "class": "수도사", "name": "연환권", "type": "공격", "effect": "근접 맨손 연타"}, {"line": "민첩", "stage": "2차", "class": "추적자", "name": "추적 화살", "type": "공격", "effect": "반드시 명중"}, {"line": "민첩", "stage": "3차 심화", "class": "레인저 로드", "name": "바람의 화살비", "type": "공격", "effect": "넓은 범위에 화살비"}, {"line": "민첩", "stage": "3차 심화", "class": "마궁성", "name": "성운 관통", "type": "공격", "effect": "일직선상의 모든 적을 꿰뚫는 마법 화살"}, {"line": "민첩", "stage": "3차 심화", "class": "권성", "name": "백열권", "type": "공격", "effect": "초고속 연타 + 잠시 회피 증가"}, {"line": "민첩", "stage": "3차 심화", "class": "저격수", "name": "원거리 저격", "type": "공격", "effect": "가장 뒤의 적 또는 보스에게 고피해"}, {"line": "민첩", "stage": "3차 확장", "class": "배틀메이지", "name": "마력 연탄", "type": "공격", "effect": "마력탄 연속 발사"}, {"line": "민첩", "stage": "3차 확장", "class": "용기사", "name": "창 투척", "type": "공격", "effect": "관통하는 창 투척"}, {"line": "민첩", "stage": "3차 확장", "class": "검객", "name": "발도 잔영", "type": "공격", "effect": "순식간에 여러 적 사이를 지나며 연속 베기"}, {"line": "민첩", "stage": "3차 확장", "class": "신궁", "name": "신탁의 화살", "type": "공격", "effect": "하늘에서 떨어지는 화살. 적 피해 + 주변 아군 소량 회복"}, {"line": "민첩", "stage": "3차 확장", "class": "명사수", "name": "도약 사격", "type": "공격", "effect": "적 사이를 튕겨 다니는 화살"}, {"line": "민첩", "stage": "3차 확장", "class": "무희", "name": "회전 칼날춤", "type": "버프", "effect": "파티 회피 증가 (전투 시작 시, 주기적)"}, {"line": "지력", "stage": "1차", "class": "마법사", "name": "파이어볼", "type": "공격", "effect": "화염 단일 마법"}, {"line": "지력", "stage": "2차", "class": "마검사", "name": "화염검", "type": "공격", "effect": "무기에 화염을 둘러 연속 공격"}, {"line": "지력", "stage": "2차", "class": "마궁사", "name": "화염 화살", "type": "공격", "effect": "맞은 적 주변에 화염 피해"}, {"line": "지력", "stage": "2차", "class": "마도사", "name": "플레임 버스트", "type": "공격", "effect": "화염 광역 폭발"}, {"line": "지력", "stage": "2차", "class": "점성술사", "name": "별똥", "type": "공격", "effect": "별빛 낙하 + 아군의 다음 공격 명중 증가"}, {"line": "지력", "stage": "2차", "class": "연금술사", "name": "산성 플라스크", "type": "디버프", "effect": "투척 피해 + 방어 감소"}, {"line": "지력", "stage": "3차 심화", "class": "마검성", "name": "업화검", "type": "공격", "effect": "베는 자리에 불타는 지대가 남음"}, {"line": "지력", "stage": "3차 심화", "class": "마궁성", "name": "유성 화살", "type": "공격", "effect": "유성처럼 떨어지는 광역 화살"}, {"line": "지력", "stage": "3차 심화", "class": "대마도사", "name": "메테오", "type": "공격", "effect": "전장 광역 초고피해"}, {"line": "지력", "stage": "3차 심화", "class": "예언자", "name": "운명의 별", "type": "공격", "effect": "적 1체에 표식, 잠시 후 큰 폭발"}, {"line": "지력", "stage": "3차 심화", "class": "연성술사", "name": "대연성", "type": "디버프", "effect": "지면을 변성시켜 광역 산성 지대 생성"}, {"line": "지력", "stage": "3차 확장", "class": "배틀메이지", "name": "연쇄 번개", "type": "공격", "effect": "적 사이를 튀는 번개"}, {"line": "지력", "stage": "3차 확장", "class": "룬 기사", "name": "룬 폭발", "type": "공격", "effect": "각인된 룬을 터뜨려 광역 피해"}, {"line": "지력", "stage": "3차 확장", "class": "마도 공학자", "name": "마력포", "type": "공격", "effect": "마력 장치로 원거리 포격 (화약 아님)"}, {"line": "지력", "stage": "3차 확장", "class": "신궁", "name": "별빛 시위", "type": "버프", "effect": "자신의 다음 3발이 마법 피해 추가"}, {"line": "지력", "stage": "3차 확장", "class": "명사수", "name": "마력 폭렬 화살", "type": "공격", "effect": "맞으면 마력이 폭발하는 화살"}, {"line": "지력", "stage": "3차 확장", "class": "환술사", "name": "환영 분신", "type": "디버프", "effect": "분신으로 적을 혼란시킴"}, {"line": "정신", "stage": "1차", "class": "성직자", "name": "힐", "type": "회복", "effect": "아군 1명 회복"}, {"line": "정신", "stage": "2차", "class": "기사", "name": "수호의 맹세", "type": "보호", "effect": "피격된 아군의 피해 일부를 대신 받음"}, {"line": "정신", "stage": "2차", "class": "수도사", "name": "기공 치유", "type": "회복", "effect": "자신 회복, 연타 후 추가 회복"}, {"line": "정신", "stage": "2차", "class": "점성술사", "name": "별의 가호", "type": "회복", "effect": "회복 + 다음 피해 감소"}, {"line": "정신", "stage": "2차", "class": "신관", "name": "성역의 빛", "type": "회복", "effect": "파티 전체 회복"}, {"line": "정신", "stage": "2차", "class": "광대", "name": "웃음의 응원", "type": "회복", "effect": "소량 회복 + 잠시 공격 속도 증가"}, {"line": "정신", "stage": "3차 심화", "class": "성기사", "name": "성스러운 방벽", "type": "보호", "effect": "파티 전체 보호막"}, {"line": "정신", "stage": "3차 심화", "class": "권성", "name": "금강불괴", "type": "보호", "effect": "잠시 자신이 받는 피해 무효 + 회복"}, {"line": "정신", "stage": "3차 심화", "class": "예언자", "name": "운명 유예", "type": "보호", "effect": "쓰러질 피해를 1회 버팀"}, {"line": "정신", "stage": "3차 심화", "class": "대신관", "name": "대치유", "type": "회복", "effect": "파티 대량 회복 + 상태 이상 해제"}, {"line": "정신", "stage": "3차 심화", "class": "바드", "name": "치유의 노래", "type": "버프", "effect": "파티 지속 회복 (전투 시작 시, 주기적)"}, {"line": "정신", "stage": "3차 확장", "class": "용기사", "name": "용의 가호", "type": "보호", "effect": "파티 속성 피해 감소 + 소량 회복"}, {"line": "정신", "stage": "3차 확장", "class": "룬 기사", "name": "수호 룬", "type": "보호", "effect": "아군 1명에게 피해 감소 룬"}, {"line": "정신", "stage": "3차 확장", "class": "검성", "name": "명경지수", "type": "버프", "effect": "파티 마법 방어 증가 + 소량 회복 (전투 시작 시, 주기적)"}, {"line": "정신", "stage": "3차 확장", "class": "신궁", "name": "생명의 화살", "type": "회복", "effect": "멀리 있는 아군에게 회복 화살"}, {"line": "정신", "stage": "3차 확장", "class": "무희", "name": "치유의 춤", "type": "버프", "effect": "주변 아군 지속 회복 (전투 시작 시, 주기적)"}, {"line": "정신", "stage": "3차 확장", "class": "환술사", "name": "환영 대역", "type": "보호", "effect": "피격 대상 대신 환영이 공격을 받음"}, {"line": "기교", "stage": "1차", "class": "도적", "name": "급소 찌르기", "type": "공격", "effect": "치명 확률이 높은 일격"}, {"line": "기교", "stage": "2차", "class": "쌍검사", "name": "교차 베기", "type": "디버프", "effect": "피해 + 출혈"}, {"line": "기교", "stage": "2차", "class": "추적자", "name": "약점 간파", "type": "디버프", "effect": "표적의 방어 감소 (파티 공유)"}, {"line": "기교", "stage": "2차", "class": "연금술사", "name": "독 바르기", "type": "디버프", "effect": "일정 시간 공격에 독 부여"}, {"line": "기교", "stage": "2차", "class": "광대", "name": "속임수", "type": "디버프", "effect": "적을 혼란시켜 다른 적을 공격하게 함"}, {"line": "기교", "stage": "2차", "class": "괴도 (종결)", "name": "그림자 습격", "type": "공격", "effect": "은신 후 치명 확정 일격. 의뢰에서 소재 추가 획득 (경제)"}, {"line": "기교", "stage": "3차 심화", "class": "검무사", "name": "칼날 폭풍", "type": "디버프", "effect": "주변 광역 출혈"}, {"line": "기교", "stage": "3차 심화", "class": "저격수", "name": "급소 저격", "type": "공격", "effect": "치명 피해 3배"}, {"line": "기교", "stage": "3차 심화", "class": "연성술사", "name": "맹독 연성", "type": "디버프", "effect": "광역 독 + 방어 감소"}, {"line": "기교", "stage": "3차 심화", "class": "바드", "name": "불협화음", "type": "디버프", "effect": "적 광역 공격력 감소"}, {"line": "기교", "stage": "3차 확장", "class": "검객", "name": "간파 반격", "type": "공격", "effect": "회피에 성공하면 치명 반격"}, {"line": "기교", "stage": "3차 확장", "class": "마도 공학자", "name": "마력 덫", "type": "디버프", "effect": "마력 덫 설치, 밟은 적 기절"}, {"line": "기교", "stage": "3차 확장", "class": "검성", "name": "무념 일격", "type": "공격", "effect": "방어 무시 치명 일격"}, {"line": "기교", "stage": "3차 확장", "class": "명사수", "name": "약점 연사", "type": "공격", "effect": "약점이 드러난 적에게 연속 치명"}, {"line": "기교", "stage": "3차 확장", "class": "무희", "name": "매혹의 스텝", "type": "디버프", "effect": "주변 적 혼란"}, {"line": "기교", "stage": "3차 확장", "class": "환술사", "name": "악몽", "type": "디버프", "effect": "수면 + 지속 피해"}], "equipment": [{"grade": "F", "kind": "검", "name": "나무 검"}, {"grade": "F", "kind": "활", "name": "나무 단궁"}, {"grade": "F", "kind": "지팡이", "name": "나무 지팡이"}, {"grade": "F", "kind": "성구", "name": "견습 메이스"}, {"grade": "F", "kind": "단검", "name": "견습 단검"}, {"grade": "E", "kind": "검", "name": "청동 검"}, {"grade": "E", "kind": "활", "name": "청동 각궁"}, {"grade": "E", "kind": "지팡이", "name": "청동 장식 지팡이"}, {"grade": "E", "kind": "성구", "name": "청동 메이스"}, {"grade": "E", "kind": "단검", "name": "청동 단검"}, {"grade": "D", "kind": "검", "name": "철 검"}, {"grade": "D", "kind": "활", "name": "철심 장궁"}, {"grade": "D", "kind": "지팡이", "name": "철테 지팡이"}, {"grade": "D", "kind": "성구", "name": "철 메이스"}, {"grade": "D", "kind": "단검", "name": "철 단검"}, {"grade": "C", "kind": "검", "name": "강철 장검"}, {"grade": "C", "kind": "활", "name": "강철 복합궁"}, {"grade": "C", "kind": "지팡이", "name": "마정석 지팡이"}, {"grade": "C", "kind": "성구", "name": "강철 성구"}, {"grade": "C", "kind": "단검", "name": "강철 스틸레토"}, {"grade": "B", "kind": "검", "name": "미스릴 장검"}, {"grade": "B", "kind": "활", "name": "미스릴 장궁"}, {"grade": "B", "kind": "지팡이", "name": "미스릴 지팡이"}, {"grade": "B", "kind": "성구", "name": "미스릴 성구"}, {"grade": "B", "kind": "단검", "name": "미스릴 단검"}, {"grade": "A", "kind": "검", "name": "아다만 대검"}, {"grade": "A", "kind": "활", "name": "아다만 강궁"}, {"grade": "A", "kind": "지팡이", "name": "아다만 마장"}, {"grade": "A", "kind": "성구", "name": "아다만 성추"}, {"grade": "A", "kind": "단검", "name": "아다만 단도"}, {"grade": "S", "kind": "검", "name": "용골검"}, {"grade": "S", "kind": "활", "name": "용근궁"}, {"grade": "S", "kind": "지팡이", "name": "용안 지팡이"}, {"grade": "S", "kind": "성구", "name": "용린 성구"}, {"grade": "S", "kind": "단검", "name": "용아 단검"}, {"grade": "F", "kind": "중갑", "name": "누비 갑옷"}, {"grade": "F", "kind": "경갑", "name": "가죽 조끼"}, {"grade": "F", "kind": "로브", "name": "견습 로브"}, {"grade": "E", "kind": "중갑", "name": "청동 흉갑"}, {"grade": "E", "kind": "경갑", "name": "경화 가죽 갑옷"}, {"grade": "E", "kind": "로브", "name": "문양 로브"}, {"grade": "D", "kind": "중갑", "name": "철 사슬 갑옷"}, {"grade": "D", "kind": "경갑", "name": "철편 가죽 갑옷"}, {"grade": "D", "kind": "로브", "name": "마직 로브"}, {"grade": "C", "kind": "중갑", "name": "강철 판금 갑옷"}, {"grade": "C", "kind": "경갑", "name": "강철 비늘 경갑"}, {"grade": "C", "kind": "로브", "name": "마정 로브"}, {"grade": "B", "kind": "중갑", "name": "미스릴 판금 갑옷"}, {"grade": "B", "kind": "경갑", "name": "미스릴 사슬 경갑"}, {"grade": "B", "kind": "로브", "name": "미스릴사 로브"}, {"grade": "A", "kind": "중갑", "name": "아다만 판금 갑옷"}, {"grade": "A", "kind": "경갑", "name": "아다만 경갑"}, {"grade": "A", "kind": "로브", "name": "성좌 로브"}, {"grade": "S", "kind": "중갑", "name": "용린 갑옷"}, {"grade": "S", "kind": "경갑", "name": "용피 경갑"}, {"grade": "S", "kind": "로브", "name": "용익 로브"}, {"grade": "F", "kind": "반지", "name": "나무 반지"}, {"grade": "F", "kind": "발찌", "name": "가죽 발찌"}, {"grade": "F", "kind": "목걸이", "name": "나무 구슬 목걸이"}, {"grade": "F", "kind": "묵주", "name": "나무 묵주"}, {"grade": "F", "kind": "장갑", "name": "가죽 장갑"}, {"grade": "E", "kind": "반지", "name": "청동 반지"}, {"grade": "E", "kind": "발찌", "name": "청동 발찌"}, {"grade": "E", "kind": "목걸이", "name": "청동 목걸이"}, {"grade": "E", "kind": "묵주", "name": "청동 묵주"}, {"grade": "E", "kind": "장갑", "name": "청동 징 장갑"}, {"grade": "D", "kind": "반지", "name": "철 반지"}, {"grade": "D", "kind": "발찌", "name": "철 발찌"}, {"grade": "D", "kind": "목걸이", "name": "철 목걸이"}, {"grade": "D", "kind": "묵주", "name": "철 묵주"}, {"grade": "D", "kind": "장갑", "name": "철편 장갑"}, {"grade": "C", "kind": "반지", "name": "강철 반지"}, {"grade": "C", "kind": "발찌", "name": "강철 발찌"}, {"grade": "C", "kind": "목걸이", "name": "마정석 목걸이"}, {"grade": "C", "kind": "묵주", "name": "강철 묵주"}, {"grade": "C", "kind": "장갑", "name": "강철 장갑"}, {"grade": "B", "kind": "반지", "name": "미스릴 반지"}, {"grade": "B", "kind": "발찌", "name": "미스릴 발찌"}, {"grade": "B", "kind": "목걸이", "name": "미스릴 목걸이"}, {"grade": "B", "kind": "묵주", "name": "미스릴 묵주"}, {"grade": "B", "kind": "장갑", "name": "미스릴 장갑"}, {"grade": "A", "kind": "반지", "name": "아다만 반지"}, {"grade": "A", "kind": "발찌", "name": "아다만 발찌"}, {"grade": "A", "kind": "목걸이", "name": "아다만 목걸이"}, {"grade": "A", "kind": "묵주", "name": "아다만 묵주"}, {"grade": "A", "kind": "장갑", "name": "아다만 장갑"}, {"grade": "S", "kind": "반지", "name": "용의 반지"}, {"grade": "S", "kind": "발찌", "name": "용의 발찌"}, {"grade": "S", "kind": "목걸이", "name": "용의 목걸이"}, {"grade": "S", "kind": "묵주", "name": "용의 묵주"}, {"grade": "S", "kind": "장갑", "name": "용의 장갑"}], "equipmentStats": [{"등급": "F", "무기 주 능력치": "+3", "무기 공격력": "10", "방어구 능력치 (2개 각각)": "+1", "방어구 방어·마법 방어 (주력 / 보조)": "8 / 3", "장신구 능력치": "+2", "장신구 행운": "—"}, {"등급": "E", "무기 주 능력치": "+5", "무기 공격력": "18", "방어구 능력치 (2개 각각)": "+2", "방어구 방어·마법 방어 (주력 / 보조)": "14 / 6", "장신구 능력치": "+3", "장신구 행운": "—"}, {"등급": "D", "무기 주 능력치": "+8", "무기 공격력": "28", "방어구 능력치 (2개 각각)": "+4", "방어구 방어·마법 방어 (주력 / 보조)": "22 / 9", "장신구 능력치": "+5", "장신구 행운": "—"}, {"등급": "C", "무기 주 능력치": "+12", "무기 공격력": "40", "방어구 능력치 (2개 각각)": "+6", "방어구 방어·마법 방어 (주력 / 보조)": "32 / 13", "장신구 능력치": "+7", "장신구 행운": "—"}, {"등급": "B", "무기 주 능력치": "+16", "무기 공격력": "55", "방어구 능력치 (2개 각각)": "+8", "방어구 방어·마법 방어 (주력 / 보조)": "44 / 18", "장신구 능력치": "+10", "장신구 행운": "+2"}, {"등급": "A", "무기 주 능력치": "+21", "무기 공격력": "72", "방어구 능력치 (2개 각각)": "+10", "방어구 방어·마법 방어 (주력 / 보조)": "58 / 24", "장신구 능력치": "+13", "장신구 행운": "+3"}, {"등급": "S", "무기 주 능력치": "+27", "무기 공격력": "92", "방어구 능력치 (2개 각각)": "+13", "방어구 방어·마법 방어 (주력 / 보조)": "74 / 30", "장신구 능력치": "+17", "장신구 행운": "+5"}], "materials": [{"grade": "F", "questType": "토벌", "name": "슬라임 점액", "needsProcessing": false}, {"grade": "F", "questType": "사냥·채집", "name": "참나무 가지", "needsProcessing": false}, {"grade": "F", "questType": "조사", "name": "희미한 마석", "needsProcessing": false}, {"grade": "F", "questType": "호위·구호", "name": "무명천", "needsProcessing": false}, {"grade": "F", "questType": "탐사", "name": "고철 조각", "needsProcessing": false}, {"grade": "E", "questType": "토벌", "name": "고블린 뼈", "needsProcessing": false}, {"grade": "E", "questType": "사냥·채집", "name": "사슴 가죽", "needsProcessing": false}, {"grade": "E", "questType": "조사", "name": "마석 조각", "needsProcessing": false}, {"grade": "E", "questType": "호위·구호", "name": "문양 천", "needsProcessing": false}, {"grade": "E", "questType": "탐사", "name": "구리 원석", "needsProcessing": false}, {"grade": "D", "questType": "토벌", "name": "오크 엄니", "needsProcessing": false}, {"grade": "D", "questType": "사냥·채집", "name": "흑곰 가죽", "needsProcessing": false}, {"grade": "D", "questType": "조사", "name": "마정석", "needsProcessing": false}, {"grade": "D", "questType": "호위·구호", "name": "마직 천", "needsProcessing": false}, {"grade": "D", "questType": "탐사", "name": "철광석", "needsProcessing": false}, {"grade": "C", "questType": "토벌", "name": "트롤 뿔", "needsProcessing": false}, {"grade": "C", "questType": "사냥·채집", "name": "그리폰 깃털", "needsProcessing": false}, {"grade": "C", "questType": "조사", "name": "고급 마정석", "needsProcessing": false}, {"grade": "C", "questType": "호위·구호", "name": "축복받은 천", "needsProcessing": false}, {"grade": "C", "questType": "탐사", "name": "흑철광", "needsProcessing": false}, {"grade": "B", "questType": "토벌", "name": "와이번 비늘", "needsProcessing": true}, {"grade": "B", "questType": "사냥·채집", "name": "세계수 가지", "needsProcessing": true}, {"grade": "B", "questType": "조사", "name": "정령석", "needsProcessing": true}, {"grade": "B", "questType": "호위·구호", "name": "은빛 실타래", "needsProcessing": true}, {"grade": "B", "questType": "탐사", "name": "미스릴 원석", "needsProcessing": true}, {"grade": "A", "questType": "토벌", "name": "키메라 뿔", "needsProcessing": true}, {"grade": "A", "questType": "사냥·채집", "name": "불사조 깃털", "needsProcessing": true}, {"grade": "A", "questType": "조사", "name": "성좌석", "needsProcessing": true}, {"grade": "A", "questType": "호위·구호", "name": "성은 실타래", "needsProcessing": true}, {"grade": "A", "questType": "탐사", "name": "아다만 원석", "needsProcessing": true}, {"grade": "S", "questType": "토벌", "name": "용의 유해", "needsProcessing": true}, {"grade": "S", "questType": "사냥·채집", "name": "용근", "needsProcessing": true}, {"grade": "S", "questType": "조사", "name": "용안석", "needsProcessing": true}, {"grade": "S", "questType": "호위·구호", "name": "용익막", "needsProcessing": true}, {"grade": "S", "questType": "탐사", "name": "운철", "needsProcessing": true}], "facilityEffects": [{"facility": "의뢰 게시판", "material": "호위·구호", "effects": ["게시판 칸 +2", "필터에 의뢰 유형 조건 추가", "게시판 칸 +3, 특별 칸 1개 (원하는 의뢰 1건 고정 게시)"]}, {"facility": "접수대", "material": "조사", "effects": ["월간 보고에 다음 달 예상 유입 표시", "신뢰도 상승량 +10%", "의뢰 유입량 +10%"]}, {"facility": "주점·식당", "material": "사냥·채집", "effects": ["매출 +15%", "파티 결성 확률 증가, 함께 식사한 모험가 친밀도 +10%", "모든 요리 효과 +50% (출발 전 식사는 기본 기능, 12-2.6 참고)"]}, {"facility": "소재 판매 창구", "material": "탐사", "effects": ["판매 마진 +10%", "대장간 납품 시 상점 진열 등급 +1 보너스", "판매 마진 +15% (합계 +25%)"]}, {"facility": "모험가 관리소", "material": "조사", "effects": ["모험가의 정확한 능력치 수치 공개", "성향 공개가 애착 한 단계 앞당겨짐", "전직 제안 수락 확률 +10%p"]}, {"facility": "길드 마스터 집무실", "material": "—", "effects": ["효과 없음 (메인·서브 의뢰인을 만나는 서사 공간)", "", ""]}, {"facility": "훈련장", "material": "토벌", "effects": ["힘·민첩·기교 훈련 효율 +15%", "동시 훈련 인원 +2", "훈련 효율 +25% (합계 +40%)"]}, {"facility": "창고", "material": "탐사", "effects": ["보관 용량 +50%", "보관 용량 +50% (합계 +100%)", "장비 보관대: 유품과 대여 장비를 용량과 별도로 보관"]}, {"facility": "추모실", "material": "호위·구호", "effects": ["모험가 사망 시 명성 하락 −30%", "2세의 첫 1년 경험치 +20%", "유품 복원 비용 −30%"]}, {"facility": "의무실", "material": "호위·구호", "effects": ["의뢰 실패 시 사망 확률 −15%", "부상 회복 속도 +30%", "방어전에서 쓰러진 모험가 복귀 시간 단축"]}, {"facility": "도서관", "material": "조사", "effects": ["지력·정신 훈련 효율 +15%", "매달 전직 소문 1개 추가", "레시피·시설 효과 소문 1개 추가"]}, {"facility": "해체장", "material": "토벌", "effects": ["가공 비용 −20%", "가공 시 한 단계 아래 소재가 부산물로 나옴", "가공 비용 −40%, 가공 대기 없음"]}, {"facility": "휴게실", "material": "사냥·채집", "effects": ["애착도 상승량 +20%", "친밀도 상승량 +20%", "이사(거주 해제) 기준을 애착 60 → 50으로 완화"]}, {"facility": "명예의 전당", "material": "모든 계열 1개씩", "effects": ["매달 명성 소폭 상승", "고등급 모험가의 방문 확률 증가", "명예의 전당에 오른 모험가의 2세는 초기 능력치 +10%"]}], "meals": [{"grade": "F", "name": "멧돼지 스테이크 정식", "ingredient": "멧돼지 고기 (사냥)", "effect": "힘 +3%"}, {"grade": "F", "name": "들버섯 수프", "ingredient": "들버섯 (채집)", "effect": "정신 +3%"}, {"grade": "E", "name": "늑대 고기 스튜", "ingredient": "늑대 고기 (토벌)", "effect": "힘 +4%"}, {"grade": "E", "name": "산딸기 파이", "ingredient": "산딸기 (채집)", "effect": "민첩 +4%"}, {"grade": "D", "name": "흑곰 갈비찜", "ingredient": "흑곰 고기 (사냥)", "effect": "힘·정신 +4%"}, {"grade": "D", "name": "마력 버섯 리소토", "ingredient": "마력 버섯 (조사)", "effect": "지력 +5%"}, {"grade": "C", "name": "그리폰 알 오믈렛", "ingredient": "그리폰 알 (사냥)", "effect": "민첩·기교 +5%"}, {"grade": "C", "name": "트롤 뼈 곰탕", "ingredient": "트롤 뼈 (토벌)", "effect": "체력 회복 + 정신 +5%"}, {"grade": "B", "name": "와이번 꼬치구이", "ingredient": "와이번 고기 (토벌)", "effect": "힘·민첩 +6%"}, {"grade": "B", "name": "세계수 꿀 케이크", "ingredient": "세계수 꿀 (채집)", "effect": "지력·정신 +6%"}, {"grade": "A", "name": "키메라 3종 모둠", "ingredient": "키메라 고기 (토벌)", "effect": "모든 능력치 +5%"}, {"grade": "A", "name": "불사조 수프", "ingredient": "불사조 깃털 (사냥)", "effect": "사망 확률 −20%"}, {"grade": "S", "name": "용 꼬리 스테이크", "ingredient": "용 꼬리 (토벌)", "effect": "모든 능력치 +8%"}, {"grade": "S", "name": "별빛 만찬", "ingredient": "운철·성좌석 (탐사·조사)", "effect": "모든 능력치 +6%, 애착 +5"}], "mainQuests": [{"grade": "F", "slot": "통합", "title": "첫 의뢰", "desc": "옛 파티가 전멸한 숲 가장자리 정찰, 오래된 야영 흔적 발견, 마스터의 회상. 추모실을 짓는 계기", "presentation": "일지", "risk": "낮음"}, {"grade": "E", "slot": "통합", "title": "녹슨 문장", "desc": "옛 파티의 문장이 새겨진 장비 조각. 사고 지점이 공식 기록과 다르다는 첫 위화감", "presentation": "일지", "risk": "낮음"}, {"grade": "D", "slot": "원인", "title": "맞지 않는 상처", "desc": "이 지역 마물의 발톱이 아니라 무기에 베인 상처", "presentation": "일지", "risk": "보통"}, {"grade": "D", "slot": "생존", "title": "약초꾼의 기억", "desc": "기절한 마스터를 본 곳이 동굴 입구였다는 증언 (쓰러진 자리와 다름)", "presentation": "일지", "risk": "낮음"}, {"grade": "C", "slot": "원인", "title": "숲속의 석비", "desc": "금이 간 고대 석비(봉인의 외곽) 발견. 분기① 영주에게 보고 / 길드만 앎", "presentation": "일지", "risk": "보통"}, {"grade": "C", "slot": "생존", "title": "마지막 야영지", "desc": "동료들의 마지막 야영지와 덮어 둔 망토. 접수원이 오빠의 망토임을 알아보고 서로의 정체를 깨달음", "presentation": "일지", "risk": "보통"}, {"grade": "B", "slot": "원인", "title": "매복의 흔적", "desc": "인위적인 함정과 마왕군의 표식. 의도된 습격", "presentation": "일지", "risk": "높음"}, {"grade": "B", "slot": "생존", "title": "동료의 일지", "desc": "접수원 오빠의 일지 발견. 봉인의 균열을 알리려 했고, 마스터를 숨긴 사람이 오빠였음을 확인. 이후 접수원이 일지를 품고 다님", "presentation": "일지", "risk": "높음"}, {"grade": "B", "slot": "정점", "title": "그날의 숲", "desc": "같은 숲에 마왕군 재출현. 지명한 파티가 마스터가 쓰러졌던 자리를 지키며 싸움. 분기② 누구를 보내는가 (생사가 에필로그에 반영)", "presentation": "탑뷰", "risk": "높음"}, {"grade": "A", "slot": "원인", "title": "이름 없는 간부", "desc": "원수 간부의 이름과 목적. 다른 봉인이 깨질 때 마력이 들끓었다는 소식 (마력 복선)", "presentation": "일지", "risk": "높음"}, {"grade": "A", "slot": "생존", "title": "돌아온 이름들", "desc": "동료들의 마지막 행적 완성, 유품 귀환. 추모실 연출", "presentation": "일지", "risk": "보통"}, {"grade": "A", "slot": "전환", "title": "성 아래의 빛", "desc": "영주가 성이 봉인의 핵이라고 고백, 직후 간부의 첫 공격. 분기③ 봉인과 마력의 관계를 더 조사함 / 하지 않음", "presentation": "탑뷰", "risk": "높음"}, {"grade": "S", "slot": "간부 1", "title": "선봉", "desc": "전조 단계의 시작. 봉인을 직접 깨려는 첫 간부", "presentation": "탑뷰", "risk": "높음"}, {"grade": "S", "slot": "간부 2", "title": "지친 왕의 그림자", "desc": "\"마왕님은 이미 지치셨다\"는 말. 분기④ 믿고 추적함 / 무시함", "presentation": "탑뷰", "risk": "높음"}, {"grade": "S", "slot": "간부 3", "title": "원수", "desc": "원수 간부 토벌, 마스터가 빚을 갚는 장면", "presentation": "탑뷰", "risk": "매우 높음"}, {"grade": "S", "slot": "마왕", "title": "덜 풀린 왕", "desc": "마왕전. 승리하면 엔딩 1", "presentation": "탑뷰", "risk": "매우 높음"}]};window.LINA={"smile": "data:image/jpeg;base64,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", "serious": "data:image/jpeg;base64,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", "laugh": "data:image/jpeg;base64,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", "worried": "data:image/jpeg;base64,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"};</script>
+<script>
+(function () {
+  'use strict';
+  const Gm = window.GuildGame, Sim = window.GuildSim, L = window.LINA;
+  const $ = id => document.getElementById(id);
+  const GR = Gm.GR;
+  const gBadge = g => `<span class="g" style="background:var(--g${GR[g]})">${GR[g]}</span>`;
+  const fmt = n => Math.round(n).toLocaleString();
+  const SAVE_KEY = 'guildProto1';
+  const WEEK_MS = 30000; // 1배속: 1주 = 30초 (1개월 = 120초)
+
+  let s = Gm.newGame(Sim.defaults(), (Date.now() % 1e9) >>> 0);
+  let speed = 1, acc = 0, last = performance.now(), openAdv = null;
+
+  // ---------- 그리기 ----------
+  function render() {
+    $('date').textContent = Gm.dateLabel(s.week);
+    $('kGrade').textContent = GR[s.grade];
+    $('kGold').textContent = fmt(s.gold); $('kGold').className = s.gold < 0 ? 'neg' : '';
+    $('kTrust').textContent = Math.round(s.trust);
+    $('kPop').textContent = fmt(s.pop);
+    $('kAdv').textContent = s.advs.filter(a => a.alive).length;
+    renderBoard(); renderFilter(); renderAdvs(); renderActive(); renderLedger(); renderFac(); renderMeals(); renderLog();
+  }
+  function reqText(q) { return q.req.map(k => `${Gm.STATS[k]} ${Math.round(q.r)}`).join(' · '); }
+  function renderBoard() {
+    const cap = Gm.boardCap(s);
+    $('boardInfo').textContent = `${s.board.length} / ${cap}칸`;
+    $('board').innerHTML = s.board.length ? s.board.map(q => `
+      <div class="card"><div class="t">${gBadge(q.g)}${Gm.QTYPE[q.type]}</div>
+      <div class="req">필요: ${reqText(q)}</div>
+      <div class="row"><span class="n">${fmt(q.reward)}G · ${s.week - q.posted}주째</span><button data-wd="${q.id}">떼기</button></div></div>`).join('')
+      : '<div class="empty">게시된 의뢰가 없습니다. 의뢰는 매달 초에 들어옵니다.</div>';
+  }
+  function renderFilter() {
+    let h = '';
+    const cap = Gm.boardCap(s);
+    const tot = s.filter.slice(0, s.grade + 1).reduce((a, b) => a + b, 0) || 1;
+    for (let g = 0; g <= s.grade; g++) {
+      h += `<span>${gBadge(g)}</span><input type="range" min="0" max="10" step="1" value="${s.filter[g]}" id="flt${g}" aria-label="${GR[g]}급 비중"><span class="n" style="text-align:right">${Math.round(cap * s.filter[g] / tot)}칸</span>`;
+    }
+    const el = $('filter');
+    if (el.dataset.g !== String(s.grade) || !el.querySelector('input')) { el.innerHTML = h; el.dataset.g = s.grade; }
+    else for (let g = 0; g <= s.grade; g++) el.children[g * 3 + 2].textContent = Math.round(cap * s.filter[g] / tot) + '칸';
+  }
+  function advStatus(a) {
+    if (!a.alive) return '<span class="st gone">떠남</span>';
+    if (a.state === 'quest') return `<span class="st quest">의뢰 중 ${Math.max(0, a.until - s.week)}주</span>`;
+    if (a.state === 'town') return '<span class="st town">마을</span>';
+    return '<span class="st away">다른 마을</span>';
+  }
+  function renderAdvs() {
+    const list = s.advs.filter(a => a.alive).sort((x, y) => y.lv - x.lv || x.id - y.id);
+    let h = '<tr><th>이름</th><th>직업</th><th>등급</th><th class="n">Lv</th><th class="n">주력</th><th>상태</th><th class="n">애착</th><th class="n">소지금</th></tr>';
+    for (const a of list) {
+      h += `<tr class="adv" data-adv="${a.id}"><td>${a.name}</td><td>${a.cls}</td><td>${gBadge(a.grade)}</td><td class="n">${a.lv}</td><td class="n">${Gm.STATS[a.core]} ${Math.round(a.stats[a.core])}</td><td>${advStatus(a)}</td><td class="n">${Math.round(a.attach)}</td><td class="n">${fmt(a.wallet)}</td></tr>`;
+      if (openAdv === a.id) {
+        const bars = a.stats.map((v, i) => `<span>${Gm.STATS[i]}</span><span class="bg"><i style="width:${Math.min(100, v)}%"></i></span><span class="n">${v.toFixed(1)}</span>`).join('');
+        h += `<tr class="det"><td colspan="8">성향: 위험 ${Gm.RISK[a.risk]} · 소비 ${Gm.SPEND[a.spend]} · 사교 ${Gm.SOCIAL[a.social]} · 장비 ${a.gear >= 0 ? GR[a.gear] + '급 세트' : '없음'} · 의뢰 성공 ${a.done}회 · 실적 ${a.ach}<div class="bars">${bars}</div></td></tr>`;
+      }
+    }
+    $('advs').innerHTML = h;
+  }
+  function renderActive() {
+    $('activeInfo').textContent = `${s.active.length}건`;
+    if (!s.active.length) { $('active').innerHTML = '<tr><td class="empty">지금 나가 있는 파티가 없습니다.</td></tr>'; return; }
+    let h = '<tr><th>의뢰</th><th>파티</th><th class="n">성공 확률</th><th class="n">귀환</th></tr>';
+    for (const x of s.active) {
+      const names = x.party.map(id => (s.advs.find(a => a.id === id) || {}).name).join('·');
+      h += `<tr><td>${gBadge(x.q.g)} ${Gm.QTYPE[x.q.type]}</td><td>${names}</td><td class="n">${Math.round(x.p * 100)}%</td><td class="n">${Math.max(0, x.back - s.week)}주 뒤</td></tr>`;
+    }
+    $('active').innerHTML = h;
+  }
+  function ledgerRows(m) {
+    if (!m) return null;
+    return [['중계료', m.fee], ['소재 판매 차익', m.resale], ['식사 판매', m.meal], ['주점 매출', m.tavern], ['왕국 보조금', m.subsidy], ['시설 유지비', m.upkeep], ['기타 (의뢰서 떼기 등)', m.other]];
+  }
+  function renderLedger() {
+    const cur = ledgerRows(s.month), prev = ledgerRows(s.lastMonth);
+    let h = '<span class="h">항목</span><span class="h n">이번 달 (진행 중)</span><span class="h n">지난달</span>';
+    cur.forEach((r, i) => { h += `<span>${r[0]}</span><span class="n">${fmt(r[1])}</span><span class="n">${prev ? fmt(prev[i][1]) : '—'}</span>`; });
+    const curNet = cur.reduce((t, r) => t + r[1], 0);
+    h += `<span class="tot">운영 순이익</span><span class="n tot ${curNet < 0 ? 'neg' : 'pos'}">${fmt(curNet)}</span><span class="n tot ${s.lastMonth && s.lastMonth.net < 0 ? 'neg' : 'pos'}">${s.lastMonth ? fmt(s.lastMonth.net) : '—'}</span>`;
+    const hist = s.history.slice(-12);
+    if (hist.length) {
+      const avg = hist.reduce((t, m) => t + m.net, 0) / hist.length;
+      const succ = hist.reduce((t, m) => t + m.success, 0), qn = hist.reduce((t, m) => t + m.quests, 0);
+      h += `<span class="h" style="grid-column:1/-1;margin-top:6px">최근 ${hist.length}개월 평균 순이익 ${fmt(avg)}G · 의뢰 성공률 ${qn ? Math.round(succ / qn * 100) : 0}% (목표 약 430G, 65~85%)</span>`;
+    }
+    $('ledger').innerHTML = h;
+  }
+  const FACS = ['관리소', '집무실', '훈련장', '창고', '추모실', '정보실', '의무실', '도서관', '해체장', '휴게실', '명예의 전당'];
+  const FACNAME = { 관리소: '모험가 관리소', 집무실: '길드 마스터 집무실' };
+  function renderFac() {
+    let h = '';
+    for (const f of ['게시판', '접수대', '주점', '판매창구']) h += `${gBadge(0)}<span>${{ 게시판: '의뢰 게시판', 접수대: '접수대', 주점: '주점·식당', 판매창구: '소재 판매 창구' }[f]}</span><span class="c">운영 중</span>`;
+    for (const f of FACS) {
+      const g = Gm.FAC_COST[f], cost = s.cfg.econ.buildCost[g];
+      const right = s.built[f] ? '<span class="c">운영 중</span>' : g > s.grade ? `<span class="c">${GR[g]}급부터</span>` : `<button data-build="${f}" ${s.gold < cost ? 'disabled' : ''}>짓기 ${fmt(cost)}G</button>`;
+      h += `${gBadge(g)}<span>${FACNAME[f] || f}</span>${right}`;
+    }
+    $('fac').innerHTML = h;
+  }
+  function renderMeals() {
+    const meals = window.GAME_DATA.meals;
+    $('meals').innerHTML = meals.map((m, i) => {
+      const g = GR.indexOf(m.grade), k = i % 2; const open = s.meals[g] > k;
+      return `<span class="meal ${open ? '' : 'lock'}" title="${m.ingredient} → ${m.effect}">${gBadge(g)} ${open ? m.name : '???'}</span>`;
+    }).join('');
+  }
+  function renderLog() {
+    $('log').innerHTML = s.log.slice(0, 80).map(e => `<div class="k-${e.kind}"><span class="w">${Gm.dateLabel(e.week).replace('년차 ', '/').replace('월 ', '/').replace('주', '')}</span>${e.text}</div>`).join('');
+  }
+  function monthlyReport() {
+    const m = s.lastMonth; if (!m) return;
+    let face = 'smile', text;
+    const succ = m.quests ? Math.round(m.success / m.quests * 100) : 0;
+    if (m.net < 0) { face = 'worried'; text = `마스터, 지난달은 ${fmt(-m.net)}G 적자였어요. 의뢰 ${m.quests}건 중 ${m.success}건 성공이에요. 게시판 칸 배분을 한번 봐 주시겠어요?`; }
+    else if (m.net >= 500 && succ >= 60) { face = 'laugh'; text = `지난달은 순조로웠어요! 순이익 ${fmt(m.net)}G, 의뢰 ${m.quests}건 중 ${m.success}건 성공(${succ}%)이에요.${m.meal > 0 ? ' 식당 매출도 ' + fmt(m.meal) + 'G 나왔어요.' : ''}`; }
+    else if (succ < 60 && m.quests > 0) { face = 'serious'; text = `지난달 의뢰 성공률이 ${succ}%로 낮았어요. 모험가분들 실력에 비해 의뢰가 버거운 것 같아요. 순이익은 ${fmt(m.net)}G예요.`; }
+    else text = `지난달 결산이에요. 순이익 ${fmt(m.net)}G, 의뢰 ${m.quests}건 중 ${m.success}건 성공했어요. 지금 길드에는 모험가 ${s.advs.filter(a => a.alive).length}분이 계세요.`;
+    $('lina').src = L[face]; $('reportText').textContent = text;
+  }
+
+  // ---------- 진행 ----------
+  function step(n) { for (let i = 0; i < n; i++) { const m = Math.floor(s.week / 4); Gm.stepWeek(s); if (Math.floor(s.week / 4) !== m) { monthlyReport(); autosave(); } } render(); }
+  function loop(t) {
+    const dt = Math.min(1000, t - last); last = t;
+    if (speed > 0) {
+      acc += dt * speed;
+      while (acc >= WEEK_MS) { acc -= WEEK_MS; step(1); }
+      $('wk').style.width = (acc / WEEK_MS * 100).toFixed(1) + '%';
+    }
+    requestAnimationFrame(loop);
+  }
+  function setSpeed(v) { speed = v; for (const k of [0, 1, 2, 4, 8]) $('sp' + k).setAttribute('aria-pressed', String(k === v)); }
+
+  // ---------- 저장 ----------
+  function autosave() { try { localStorage.setItem(SAVE_KEY, Gm.serialize(s)); } catch (e) { /* 저장소를 쓸 수 없는 환경 */ } }
+  function load() {
+    try { const t = localStorage.getItem(SAVE_KEY); if (!t) { Gm.log(s, '저장된 게임이 없습니다.', 'warn'); render(); return; }
+      s = Gm.deserialize(t); s.cfg = Object.assign(Sim.defaults(), s.cfg); Gm.log(s, '저장한 게임을 불러왔습니다.', 'info'); monthlyReport(); render(); }
+    catch (e) { Gm.log(s, '저장 데이터를 불러오지 못했습니다.', 'warn'); render(); }
+  }
+
+  // ---------- 관문 1 검증 ----------
+  function verify() {
+    const btn = $('verify'); btn.disabled = true; $('verifyOut').innerHTML = '<p class="note">계산 중…</p>';
+    setTimeout(() => {
+      const N = 100; let op = 0, d = 0, f = 0, q = 0;
+      for (let i = 0; i < N; i++) { const g = Gm.newGame(Sim.defaults(), 7000 + i); for (let w = 0; w < 48; w++) Gm.stepWeek(g); op += g.history.reduce((t, m) => t + m.net, 0) / g.history.length; d += g.stats.done; f += g.stats.fail; }
+      const cfg = Sim.defaults(); cfg.run.maxYears = 1; let o2 = 0, d2 = 0, f2 = 0;
+      for (let i = 0; i < N; i++) { const r = Sim.simulate(cfg, 'balanced', 7000 + i); o2 += r.firstNetF.reduce((a, b) => a + b, 0) / r.firstNetF.length; d2 += r.qDone; f2 += r.qFail; }
+      const gOp = op / N, sOp = o2 / N, gS = d / (d + f), sS = d2 / (d2 + f2);
+      const pill = (ok, t) => `<span class="pill ${ok ? 'ok' : 'bad'}">${t}</span>`;
+      const okOp = gOp >= 300 && gOp <= 600 && Math.abs(gOp - sOp) / sOp < 0.1;
+      const okS = gS >= 0.65 && gS <= 0.85 && Math.abs(gS - sS) < 0.05;
+      $('verifyOut').innerHTML = `<table>
+        <tr><th>지표</th><th class="n">게임</th><th class="n">시뮬레이터</th><th>판정</th></tr>
+        <tr><td>첫해 월 운영 순이익</td><td class="n">${fmt(gOp)}G</td><td class="n">${fmt(sOp)}G</td><td>${pill(okOp, okOp ? '통과' : '확인 필요')}</td></tr>
+        <tr><td>의뢰 성공률</td><td class="n">${(gS * 100).toFixed(1)}%</td><td class="n">${(sS * 100).toFixed(1)}%</td><td>${pill(okS, okS ? '통과' : '확인 필요')}</td></tr>
+        <tr><td>연간 의뢰 수 (1판 평균)</td><td class="n">${((d + f) / N).toFixed(1)}</td><td class="n">${((d2 + f2) / N).toFixed(1)}</td><td class="note">참고</td></tr>
+      </table><p class="note">기준: 순이익 300~600G이면서 시뮬레이터와 10% 이내, 성공률 65~85%이면서 5%p 이내. 시뮬레이터는 소규모 습격의 방어전 보상금까지 포함하므로 약간 차이가 날 수 있습니다.</p>`;
+      btn.disabled = false;
+    }, 30);
+  }
+
+  // ---------- 이벤트 ----------
+  document.addEventListener('click', e => {
+    const t = e.target.closest('button, tr.adv'); if (!t) return;
+    if (t.dataset.wd) { Gm.withdrawQuest(s, Number(t.dataset.wd)); render(); }
+    else if (t.dataset.build) { Gm.build(s, t.dataset.build); render(); }
+    else if (t.dataset.adv) { const id = Number(t.dataset.adv); openAdv = openAdv === id ? null : id; renderAdvs(); }
+  });
+  $('filter').addEventListener('input', e => { const m = e.target.id.match(/^flt(\d)$/); if (!m) return; const w = s.filter.slice(); w[Number(m[1])] = Number(e.target.value); Gm.setFilter(s, w); renderFilter(); });
+  for (const k of [0, 1, 2, 4, 8]) $('sp' + k).addEventListener('click', () => setSpeed(k));
+  document.addEventListener('keydown', e => { if (e.code === 'Space' && !/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName)) { e.preventDefault(); setSpeed(speed ? 0 : 1); } });
+  $('dMonth').addEventListener('click', () => step(4));
+  $('dYear').addEventListener('click', () => step(48));
+  $('dGold').addEventListener('click', () => { s.gold += 5000; Gm.log(s, '[디버그] 금고에 5,000G를 넣었습니다.', 'debug'); render(); });
+  $('dGradeUp').addEventListener('click', () => { Gm.debugSetGrade(s, s.grade + 1); if (!s.filter[s.grade]) { const w = s.filter.slice(); w[s.grade] = 5; Gm.setFilter(s, w); } render(); });
+  $('dGradeDown').addEventListener('click', () => { Gm.debugSetGrade(s, s.grade - 1); Gm.setFilter(s, s.filter); render(); });
+  $('save').addEventListener('click', () => { autosave(); Gm.log(s, '게임을 저장했습니다.', 'info'); render(); });
+  $('load').addEventListener('click', load);
+  $('newGame').addEventListener('click', () => { s = Gm.newGame(Sim.defaults(), (Date.now() % 1e9) >>> 0); $('lina').src = L.smile; $('reportText').textContent = '마스터, 새 길드를 열었어요. 이번에도 잘 부탁드려요!'; render(); });
+  $('verify').addEventListener('click', verify);
+
+  // 첫 화면: 실제로 돌아가는 상태를 보이도록 2주 진행 후 시작
+  $('lina').src = L.smile;
+  step(2);
+  requestAnimationFrame(t => { last = t; requestAnimationFrame(loop); });
+})();
+
+</script>

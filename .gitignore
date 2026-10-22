@@ -1,0 +1,12 @@
+# 묶은 미리보기 (python tools/bundle_preview.py 로 다시 만듦)
+dist/
+# 업스케일 모델 (README의 방법으로 받기)
+tools/upscale/*.pth
+tools/upscale/*.onnx
+# 운영체제·편집기
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
+*.tmp
+__pycache__/

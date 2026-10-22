@@ -1,0 +1,133 @@
+<title>길드 프로토타입 개발 순서</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 레이아웃: 위에 전체 흐름도, 아래에 단계별 범위·완료 기준 표. 기획 문서와 같은 녹회색 장부 톤 */
+:root {
+  --bg: #f3f5f2; --panel: #ffffff; --line: #d9dfd9; --ink: #1c2420; --muted: #5d6b64; --accent: #2f6b5a;
+  --p1: #e3efe8; --p2: #ece6f5; --gate: #fbefd9;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141917; --panel: #1c2320; --line: #2f3a35; --ink: #e4ebe7; --muted: #9aa9a1; --accent: #5fb398;
+  --p1: #1d3327; --p2: #2a2440; --gate: #3a2f17; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141917; --panel: #1c2320; --line: #2f3a35; --ink: #e4ebe7; --muted: #9aa9a1; --accent: #5fb398;
+  --p1: #1d3327; --p2: #2a2440; --gate: #3a2f17; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px }
+.wrap { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px }
+h1 { font-size: 24px; margin: 0; text-wrap: balance }
+h2 { font-size: 17px; margin: 0 0 10px }
+.sub { color: var(--muted); margin: 4px 0 0; max-width: 72ch }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; min-width: 0 }
+.diagram { overflow-x: auto }
+.diagram pre.mermaid { margin: 0; background: transparent; min-width: 640px }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); margin-top: 10px }
+.legend i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); vertical-align: -2px; margin-right: 6px }
+.tablewrap { overflow-x: auto }
+table { border-collapse: collapse; width: 100%; font-size: 14px }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top }
+th { color: var(--muted); font-weight: 500; white-space: nowrap }
+td.id { font-family: var(--font-mono); white-space: nowrap; color: var(--accent); font-weight: 500 }
+.phase { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; white-space: nowrap }
+.ph1 { background: var(--p1) } .ph2 { background: var(--p2) } .gt { background: var(--gate) }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px }
+ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px }
+.note { color: var(--muted); font-size: 13.5px }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>길드 프로토타입 개발 순서</h1>
+    <p class="sub">이세계 모험가 길드(가칭) 기획 v0.1과 밸런스 시뮬레이터를 바탕으로, 플레이 가능한 프로토타입을 만드는 순서입니다. 프로토타입은 스팀 데모를 겸하며, 본편 수치 그대로 F~D급까지 약 2~3시간 분량입니다. 단계마다 플레이테스트 관문을 두어, 재미가 확인된 뒤에 다음으로 넘어갑니다.</p>
+  </header>
+
+  <section class="panel">
+    <h2>전체 흐름</h2>
+    <div class="diagram">
+<pre class="mermaid">
+flowchart TD
+  M0["M0 준비<br/>엔진 결정 · 기획 데이터를 표로 옮기기<br/>(스킬·장비·소재·시설·요리·퀘스트)"]
+  M1["M1 코어 루프 (화면 최소)<br/>시간(주·월, 일시정지·배속) · 의뢰 생성 · 게시판·필터<br/>성공 판정 · 보상·중계료 · 식사 판매 · 월간 수지"]
+  V1{"관문 1<br/>시뮬레이터 수치와 일치?"}
+  M2["M2 길드 화면<br/>단면도 1층 로비·별관·지하 1층 · 모험가 걷기<br/>(방문 → 게시판 → 주점 → 출발)<br/>접수원 월간 보고 · 시설 건설"]
+  M3["M3 육성<br/>레벨·능력치 성장 · 1→2차 전직(제안·수락)<br/>장비 F~D · 대장간 · 요리 F~D · 훈련장"]
+  G1{"관문 2<br/>지켜보는 재미·키우는 재미가 있는가?"}
+  M4["M4 승급과 마을<br/>보스급 의뢰(N+2 동시 공개) · 승급 침공 F→E, E→D<br/>마을 탑뷰 · 자동 전투 · 소규모 습격 · 인구 단계"]
+  M5["M5 관계와 상실<br/>애착도·성향 · 파티 결성 · 사망·추모실 · 2세"]
+  M6["M6 서사 F~D<br/>메인 4개(지명·일지·집무실 보고)<br/>핵심 건물 서브 D (성당·사냥꾼 조합·망루)"]
+  G2{"관문 3<br/>2~3시간 안에 D급과 첫 2차 전직까지<br/>몰입해서 진행되는가?"}
+  D1(["데모 빌드 (프로토타입)<br/>본편 수치 그대로 · F~D급<br/>D급 메인 「약초꾼의 기억」 + 첫 2차 전직에서 종료"])
+  N["데모 이후<br/>C~S급 확장 · 리나 정체 공개(C급)<br/>3차 전직 · 간부전·마왕전 · 엔딩"]
+  T["밸런스 조정<br/>시뮬레이터로 수치 실험 → 게임에 반영"]
+
+  M0 --> M1 --> V1
+  V1 -- 아니오 --> T
+  V1 -- 예 --> M2 --> M3 --> G1
+  G1 -- 아니오 --> T
+  G1 -- 예 --> M4 --> M5 --> M6 --> G2
+  G2 -- 아니오 --> T
+  G2 -- 예 --> D1 -.-> N
+  T -.-> M1
+
+  classDef ph1 fill:#e3efe8,stroke:#2f6b5a,color:#1c2420
+  classDef ph2 fill:#ece6f5,stroke:#5a4b8f,color:#1c2420
+  classDef gate fill:#fbefd9,stroke:#b7791f,color:#1c2420
+  classDef done fill:#2f6b5a,stroke:#2f6b5a,color:#ffffff
+  class M0,M1,M2,M3,M4,M5,M6 ph1
+  class N ph2
+  class V1,G1,G2,T gate
+  class D1 done
+</pre>
+    </div>
+    <div class="legend">
+      <span><i style="background:#e3efe8"></i>프로토타입·데모 (F~D급)</span>
+      <span><i style="background:#ece6f5"></i>데모 이후 (C~S급, 엔딩)</span>
+      <span><i style="background:#fbefd9"></i>관문 · 밸런스 조정</span>
+      <span><i style="background:#2f6b5a"></i>빌드 완성 지점</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>단계별 범위와 완료 기준</h2>
+    <div class="tablewrap"><table>
+      <tr><th>단계</th><th>만드는 것</th><th>사용하는 기획 데이터</th><th>완료 기준</th></tr>
+      <tr><td class="id">M0</td><td>엔진 결정, 데이터 표(CSV·JSON) 작성, 시뮬레이터 엔진 로직을 기준 코드로 정리</td><td>콘텐츠 초안 4종, 요리 14종, 메인 16칸, 경제 수치</td><td>모든 수치를 코드 수정 없이 표에서 바꿀 수 있음</td></tr>
+      <tr><td class="id">M1</td><td>주·월 시간, 의뢰 생성과 게시판·필터, 능력치 프로필 판정, 중계료·식사 판매와 월간 수지. 디버그 화면 수준</td><td>의뢰·판정 규칙, 경제 수치, 요리</td><td>첫해 월 운영 순이익 약 430G, 의뢰 성공률 65~85% (시뮬레이터와 같은 값)</td></tr>
+      <tr><td class="id">M2</td><td>길드 단면도(1층 로비·별관·지하 1층), 걸어 다니는 모험가, 접수원(리나) 월간 보고, 시설 건설</td><td>길드 공간, 접수원 표정 6종(임시)</td><td>의뢰를 고르고 떠났다 돌아오는 모습이 화면에서 읽힘</td></tr>
+      <tr><td class="id">M3</td><td>레벨과 직업별 성장, 1→2차 전직, 장비 F~D·대장간, 요리 F~D, 훈련장</td><td>성장치·전직 조건, 장비 F~D 39종, 요리 6종</td><td>2차 전직이 Lv 18 전후, 모험가마다 성장 경로가 달라 보임</td></tr>
+      <tr><td class="id">관문 2</td><td colspan="3">내부 플레이테스트. 개입 없이 지켜보기만 해도 재미있는지, 키운 모험가에게 애정이 생기는지 확인. 아니면 M1~M3를 조정</td></tr>
+      <tr><td class="id">M4</td><td>보스급 의뢰 동시 공개, 승급 침공 2회(F→E, E→D), 마을 탑뷰, 자동 전투, 소규모 습격, 인구 단계</td><td>승급, 자동 전투 규칙, 방어전 규칙</td><td>승급 간격이 시뮬레이터 기준(약 1~2년)과 맞고, 방어전 승패가 화면에서 이해됨</td></tr>
+      <tr><td class="id">M5</td><td>애착도·성향, 파티 결성, 사망과 추모실, 2세 등장</td><td>성향 3축, 사망·계승</td><td>죽음이 아프게 느껴지고 2세가 반갑게 느껴짐</td></tr>
+      <tr><td class="id">M6</td><td>메인 F~D 4개(첫 의뢰, 녹슨 문장, 맞지 않는 상처, 약초꾼의 기억): 지명·수락 확률·일지·집무실 보고. 핵심 건물 서브 D(성당, 사냥꾼 조합, 망루)</td><td>메인 16칸 중 4칸, 일지 변형 문장, 서브 의뢰인 3명</td><td>D급 메인 「약초꾼의 기억」까지 이어서 플레이 가능</td></tr>
+      <tr><td class="id">관문 3</td><td colspan="3">데모 플레이테스트. 외부 테스터가 2~3시간 안에 D급과 첫 2차 전직까지 몰입해서 진행하는지 확인. 통과하면 데모 빌드</td></tr>
+      <tr><td class="id">데모 이후</td><td colspan="3">C~S급 확장(2층·지하 2층·3층·옥상, 3차 전직, B급 이상 소재), 리나 정체 공개(C급), 메인·서브 C~A, 간부전·마왕전·엔딩, 전생자, 다회차</td></tr>
+    </table></div>
+  </section>
+
+  <section class="cols">
+    <div class="panel">
+      <h2>이 순서의 이유</h2>
+      <ul>
+        <li>재미의 중심(모험가가 알아서 움직이고 성장하는 모습)을 M3까지 먼저 확인합니다. 여기서 재미가 없으면 그 뒤 기능은 의미가 없습니다.</li>
+        <li>본편 수치를 그대로 쓰므로, 데모 플레이 기록이 곧 기획 수치의 검증 자료가 됩니다.</li>
+        <li>M1은 시뮬레이터와 같은 규칙이라, 숫자가 맞는지 바로 대조할 수 있습니다.</li>
+        <li>종료 지점은 약초꾼의 증언("마스터가 쓰러진 자리가 다르다")과 첫 2차 전직이라, 서사와 육성 양쪽에서 다음이 궁금한 상태로 끝납니다.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h2>뒤로 미룬 것</h2>
+      <ul>
+        <li>C급 이후 전부 (리나 정체 공개, 3차 전직, 엔딩 포함)</li>
+        <li>엔딩 2(재봉인)·3(계승), 마인 계보와 잠식도</li>
+        <li>3차 확장 직업, 용사·현자 히든 서브</li>
+        <li>스팀 도전 과제, 스팀 덱 대응</li>
+        <li>최종 일러스트 (리나 슬픔 표정, 일지 없는 버전 등)</li>
+      </ul>
+      <p class="note">플레이테스트 결과에 따라 순서는 바뀔 수 있습니다.</p>
+    </div>
+  </section>
+</div>

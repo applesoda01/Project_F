@@ -1,0 +1,983 @@
+<title>길드 밸런스 시뮬레이터</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 레이아웃: 왼쪽 설정 패널 + 오른쪽 결과(점검표 → 그래프). 길드 장부 같은 차분한 녹회색 */
+:root {
+  --bg: #f3f5f2; --panel: #ffffff; --line: #d9dfd9; --ink: #1c2420; --muted: #5d6b64;
+  --accent: #2f6b5a; --accent-ink: #ffffff;
+  --ok: #2e7d4f; --warn: #b7791f; --bad: #b3402f; --ok-bg: #e3f2e8; --warn-bg: #fbefd9; --bad-bg: #f8e1dc;
+  --b1: #2f6b5a; --b2: #b5532f; --b3: #4b5bb5; --b4: #8a7d1f;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141917; --panel: #1c2320; --line: #2f3a35; --ink: #e4ebe7; --muted: #9aa9a1;
+  --accent: #5fb398; --accent-ink: #0d1411;
+  --ok: #6cc28f; --warn: #e0b052; --bad: #ec7d6b; --ok-bg: #1d3327; --warn-bg: #3a2f17; --bad-bg: #3d211c;
+  --b1: #5fb398; --b2: #e48a63; --b3: #8d9cf0; --b4: #cfc05a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141917; --panel: #1c2320; --line: #2f3a35; --ink: #e4ebe7; --muted: #9aa9a1;
+  --accent: #5fb398; --accent-ink: #0d1411;
+  --ok: #6cc28f; --warn: #e0b052; --bad: #ec7d6b; --ok-bg: #1d3327; --warn-bg: #3a2f17; --bad-bg: #3d211c;
+  --b1: #5fb398; --b2: #e48a63; --b3: #8d9cf0; --b4: #cfc05a; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px }
+.wrap { max-width: 1320px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px }
+h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; text-wrap: balance }
+.sub { color: var(--muted); margin: 2px 0 0; max-width: 70ch }
+.grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 18px; align-items: start }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr) } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0 }
+.panel h2 { font-size: 14px; margin: 0 0 10px; letter-spacing: 0.02em }
+.controls { display: flex; flex-direction: column; gap: 12px }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+label.chk { display: inline-flex; gap: 6px; align-items: center; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; user-select: none }
+label.chk .dot { width: 9px; height: 9px; border-radius: 50% }
+button { font: inherit; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 7px 12px; cursor: pointer }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700 }
+button:disabled { opacity: 0.55; cursor: default }
+button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.progress { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden }
+.progress > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .15s }
+details { border-top: 1px solid var(--line); padding: 8px 0 }
+details:first-of-type { border-top: 0 }
+summary { cursor: pointer; font-weight: 500 }
+.field { display: grid; grid-template-columns: minmax(0, 1fr) 132px; gap: 8px; align-items: center; margin-top: 7px }
+.field span { color: var(--muted); font-size: 13px }
+.field input { width: 100%; font-family: var(--font-mono); font-size: 12.5px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink) }
+.field input.wide { grid-column: 1 / -1 }
+.field.arr { grid-template-columns: minmax(0, 1fr) }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums }
+.tablewrap { overflow-x: auto }
+table { border-collapse: collapse; width: 100%; font-size: 13px }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top }
+th { color: var(--muted); font-weight: 500; white-space: nowrap }
+td.num, th.num { text-align: right }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-family: var(--font-mono); white-space: nowrap }
+.pill.ok { background: var(--ok-bg); color: var(--ok) } .pill.warn { background: var(--warn-bg); color: var(--warn) } .pill.bad { background: var(--bad-bg); color: var(--bad) } .pill.ref { background: var(--bg); color: var(--muted); border: 1px solid var(--line) }
+.charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px }
+@media (max-width: 700px) { .charts { grid-template-columns: minmax(0, 1fr) } }
+.chart svg { width: 100%; height: auto; display: block }
+.chart .cap { color: var(--muted); font-size: 12.5px; margin: 6px 0 0 }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12.5px; color: var(--muted) }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px }
+textarea { width: 100%; min-height: 120px; font-family: var(--font-mono); font-size: 12px; background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 8px }
+.note { color: var(--muted); font-size: 12.5px }
+.findings { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px }
+@media (prefers-reduced-motion: reduce) { .progress > i { transition: none } }
+</style>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>길드 밸런스 시뮬레이터</h1>
+      <p class="sub">이세계 모험가 길드(가칭)의 규칙대로 가상의 길드 마스터가 최대 20년을 반복해서 플레이합니다. 왼쪽 수치를 바꾸고 실행하면, 기획 목표에서 벗어난 항목이 표시됩니다. 수치는 모두 [가안]입니다.</p>
+    </div>
+    <div class="legend" id="legendTop"></div>
+  </header>
+
+  <div class="grid">
+    <aside class="panel controls" aria-label="설정">
+      <div>
+        <h2>실행</h2>
+        <div class="row" id="botChecks"></div>
+        <div class="field"><span>플레이 성향당 반복 횟수</span><input id="runs" type="number" min="10" max="1000" step="10" value="100"></div>
+        <div class="field"><span>최대 연수</span><input id="maxYears" type="number" min="10" max="30" step="1" value="20"></div>
+        <div class="row" style="margin-top:10px">
+          <button class="primary" id="runBtn">시뮬레이션 실행</button>
+          <button id="resetBtn">기본값으로</button>
+        </div>
+        <div class="progress" style="margin-top:10px" aria-hidden="true"><i id="prog"></i></div>
+        <p class="note" id="status">기본 설정 결과를 표시 중입니다.</p>
+      </div>
+      <div id="params"></div>
+      <details>
+        <summary>설정 저장·불러오기 (JSON)</summary>
+        <p class="note">현재 설정을 복사해 두었다가, 붙여 넣고 적용하면 그대로 돌아옵니다.</p>
+        <textarea id="cfgText" aria-label="설정 JSON"></textarea>
+        <div class="row"><button id="copyBtn">복사</button><button id="applyBtn">붙여 넣은 설정 적용</button></div>
+      </details>
+    </aside>
+
+    <main class="controls" style="min-width:0">
+      <section class="panel">
+        <h2>기획 목표 점검</h2>
+        <div class="tablewrap"><table id="targets"></table></div>
+        <p class="note">목표 범위는 기획서의 가안에서 가져왔습니다. 초록은 범위 안, 노랑은 조금 벗어남, 빨강은 크게 벗어남, 회색은 참고 지표입니다.</p>
+      </section>
+      <section class="panel">
+        <h2>눈에 띄는 점</h2>
+        <ul class="findings" id="findings"></ul>
+      </section>
+      <section class="charts">
+        <div class="panel chart"><h2>길드 등급 도달 시점 (중앙값)</h2><div id="c_reach"></div><p class="cap">점선은 목표 (약 2년마다 승급, S급 12년차)</p></div>
+        <div class="panel chart"><h2>엔딩(마왕 토벌) 연도 분포</h2><div id="c_end"></div><p class="cap">해당 연도에 엔딩을 본 반복의 비율</p></div>
+        <div class="panel chart"><h2>길드 금고 (연말, 중앙값)</h2><div id="c_gold"></div><p class="cap">단위 G</p></div>
+        <div class="panel chart"><h2>상위 5명 평균 레벨 (연말, 중앙값)</h2><div id="c_lv"></div><p class="cap">점선: 2차 무렵 Lv 18, 3차 무렵 Lv 30, 말기 Lv 45</p></div>
+        <div class="panel chart"><h2>활동 중인 모험가 수</h2><div id="c_adv"></div><p class="cap">연말 기준, 중앙값</p></div>
+        <div class="panel chart"><h2>마을 인구</h2><div id="c_pop"></div><p class="cap">점선: 마을 단계 경계 (300 / 1,000 / 3,000 / 8,000)</p></div>
+      </section>
+      <section class="panel">
+        <h2>이 시뮬레이터가 다루는 범위 (v0.1)</h2>
+        <div class="tablewrap"><table>
+          <tr><th>포함</th><td>리소스 의뢰 판정(능력치 프로필), 레벨·능력치 성장, 1~3차 전직, 모험가 등급, 애착·성향에 따른 방문과 수주, 보스급 의뢰 동시 공개와 승급 침공, 소규모 습격, 시설 건설과 주요 시설 효과, 길드·모험가 경제, 사망과 2세, 마인 대체 규칙, S급 후보, 간부 3전과 마왕전, 15년차 전생자</td></tr>
+          <tr><th>간이 처리</th><td>전투는 아군 전력 합 대비 적 전력의 승률 곡선으로 계산합니다. 장비는 세트 하나로, 소재는 금전 효과로 묶었습니다. 메인·서브 퀘스트와 선물, 정보 구매는 아직 넣지 않았습니다. 첫해 월 순이익은 운영 수입(중계료, 소재 차익, 식사, 주점, 보조금)에서 유지비와 방어전 보상금을 뺀 값이며 건설 투자는 제외합니다.</td></tr>
+          <tr><th>플레이 성향</th><td>균형형(보통 판단), 정예형(상위 등급에 집중, 빠른 승급), 육성형(승급 보류, 고른 육성), 안전형(위험한 판단 회피)</td></tr>
+        </table></div>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+/* 이세계 모험가 길드 — 밸런스 시뮬레이터 엔진 v0.1
+   주 단위로 진행(1개월 = 4주, 1년 = 48주). 모든 수치는 CFG에서 바꿀 수 있음. */
+(function (root) {
+  'use strict';
+  const GR = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
+  const ST = ['힘', '민첩', '지력', '정신', '기교'];
+  const WPM = 4, WPY = 48;
+
+  function defaults() {
+    return {
+      run: { runs: 100, maxYears: 20, seed: 1 },
+      quest: {
+        ref: [15, 25, 35, 45, 60, 75, 90],        // 판정 기준치
+        reqCount: [1, 1, 2, 2, 3, 3, 4],           // 요구 능력치 수
+        reward: [100, 200, 400, 800, 1500, 3000, 6000],
+        weeks: [1, 1, 1, 2, 2, 2, 3],              // 소요 주
+        perMonth: 10,                              // 기본 월 유입량
+        boardCap: [6, 8, 10, 12, 14, 16, 18],
+        partyAssist: 0.25,                         // 파티원 보조 계수
+        deathBase: [0.01, 0.01, 0.03, 0.03, 0.05, 0.05, 0.08],
+        subGrowth: 0.2,                            // 성공 시 유형 능력치 성장
+        bossMult: 1.15                             // 보스급 기준치 배수
+      },
+      growth: {
+        xpBase: 80, xpGradeMult: 2.0,              // 성공 경험치 = xpBase × mult^등급
+        xpFailRate: 0.3,
+        lvA: 20, lvB: 1.55,                        // 다음 레벨 필요 경험치 = A × Lv^B
+        lvCap: [30, 40, 50],
+        trainPerWeek: 0.10,                        // 훈련장·도서관 주간 훈련량
+        statCap: 100
+      },
+      adv: {
+        arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,
+        startCount: 5, startCore: 15, startOther: 6,
+        attachSuccess: 2, attachPerMonthInTown: 1,
+        visitBaseWeeks: 2,
+        leaveAfterYears: 2, leaveAttach: 20,
+        heirDelayWeeks: 24
+      },
+      econ: {
+        startGold: 3000, feeBase: 0.10, feePerInfo: 0.02,
+        subsidy: [300, 500, 800, 1200, 2000, 3000, 4500],
+        buildCost: [0, 2000, 4000, 8000, 15000, 30000, 0],
+        upkeepRate: 0.015,
+        tavernPerAdvWeek: 4, tavernGradeMult: 1.6,
+        resaleRate: 0.08,
+        effectCost: [0.10, 0.20, 0.35],
+        mealPriceRate: 0.15, mealMargin: 0.60, mealBuyRate: [0.30, 0.60, 0.90],
+        mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5
+      },
+      gear: {
+        weaponPrice: [150, 400, 1000, 2500, 6000, 14000, 30000], setMult: 3.0,
+        weaponStat: [3, 5, 8, 12, 16, 21, 27], armorStat: [1, 2, 4, 6, 8, 10, 13],
+        accStat: [2, 3, 5, 7, 10, 13, 17], weaponAtk: [10, 18, 28, 40, 55, 72, 92],
+        reserveMult: [2.0, 1.0, 0.3]               // 절약 / 보통 / 낭비
+      },
+      promo: {
+        N: [2, 3, 3, 4, 4, 5],
+        bossRefillWeeks: 6,
+        invasionScale: 16, raidScale: 4, battleK: 6, battleDeathWin: 0.01, battleDeathLoss: 0.03,
+        raidMonths: [8, 6, 5, 4, 3],
+        sCandidates: 2
+      },
+      town: {
+        startPop: 150, growthBase: 0.012, growthPerGrade: 0.002, perResident: 1,
+        stages: [300, 1000, 3000, 8000], inflowMult: [1.0, 1.3, 1.6, 2.0, 2.5],
+        raidLoss: 0.05, invasionLoss: 0.10
+      },
+      ending: {
+        officerScale: [4.0, 4.3, 4.6], demonScale: 6.0,
+        demonPopMult: [1.0, 1.0, 1.0, 0.85, 0.70],
+        rebirthYear: 15, rebirthTotal: 300,
+        mainRetryWeeks: 8, demonRetryWeeks: 24,
+        demonHeirFallbackYear: 8
+      }
+    };
+  }
+
+  // 플레이어 성향(봇)
+  const BOTS = {
+    balanced: { name: '균형형', bossTh: 0.60, promoteTh: 0.60, filterFocus: 0.5, buildEffects: 1 },
+    elite:    { name: '정예형', bossTh: 0.50, promoteTh: 0.50, filterFocus: 0.8, buildEffects: 0.5 },
+    nurture:  { name: '육성형', bossTh: 0.70, promoteTh: 0.85, filterFocus: 0.2, buildEffects: 1.5 },
+    safe:     { name: '안전형', bossTh: 0.75, promoteTh: 0.75, filterFocus: 0.4, buildEffects: 1 }
+  };
+
+  // 시설: [이름, 등급]
+  const FAC = [
+    ['관리소', 1], ['집무실', 1], ['훈련장', 2], ['창고', 2], ['추모실', 2],
+    ['정보실', 3], ['의무실', 3], ['도서관', 3], ['해체장', 4], ['휴게실', 5], ['명예의 전당', 5]
+  ];
+  const PROMO_FAC = [null, '관리소', '훈련장', '의무실', '해체장', '명예의 전당']; // F→E … A→S
+
+  function rng(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6D2B79F5) >>> 0; let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function simulate(cfg, botKey, seed) {
+    const R = rng(seed);
+    const bot = BOTS[botKey];
+    const Q = cfg.quest, G = cfg.growth, A = cfg.adv, E = cfg.econ, GE = cfg.gear, P = cfg.promo, T = cfg.town, EN = cfg.ending;
+    const ri = n => Math.floor(R() * n);
+    const pick = arr => arr[ri(arr.length)];
+
+    const s = {
+      week: 0, grade: 0, gold: E.startGold, pop: T.startPop, trust: 50,
+      op: 0, built: {}, eff: {}, meals: [0, 0, 0, 0, 0, 0, 0], advs: [], board: [], nextId: 1,
+      boss: [], bossDone: 0, bossRefill: [], invasionCooldown: 0,
+      nextRaid: P.raidMonths[0] * WPM, heirsQueue: [],
+      phase: 'normal', officer: 0, mainCooldown: 0, demonFlagFallback: false, ended: false, rebirthAdded: false,
+      st: { reach: [0, null, null, null, null, null, null], end: null, endRebirth: false, deaths: 0, battleDeaths: 0, heirs: 0,
+        qDone: 0, qFail: 0, raidsW: 0, raidsL: 0, invW: 0, invL: 0, goldYear: [], advYear: [], lvYear: [], popYear: [],
+        firstNetF: [], firstStage2: null, firstStage3: null, lvAt2: [], lvAt3: [], demonAwake: false, demonFallback: false,
+        negMonths: 0, mealIncome: 0, mealsUnlocked: [], officerFails: 0, demonFails: 0, rebirth: false, facWeek: {} }
+    };
+    for (const f of ['게시판', '접수대', '주점', '판매창구']) s.built[f] = true;
+
+    const has = f => !!s.built[f];
+    const effN = f => s.eff[f] || 0;
+    const popStage = () => { let k = 0; for (const t of T.stages) if (s.pop >= t) k++; return k; };
+    const feeRate = () => E.feeBase + E.feePerInfo * effN('정보실');
+
+    function newAdv(opts) {
+      opts = opts || {};
+      const core = opts.core != null ? opts.core : ri(5);
+      const stats = [0, 0, 0, 0, 0].map((_, i) => i === core ? A.startCore + R() * 4 : A.startOther + R() * 3);
+      const g = opts.grade || 0;
+      const a = {
+        id: s.nextId++, core, stage: 1, pair: null, cls: 'base', stats, lv: 1, xp: 0, bank: 0,
+        grade: 0, ach: 0, attach: opts.attach || 0, risk: opts.risk != null ? opts.risk : ri(3), spend: ri(3), social: ri(3),
+        wallet: 0, gear: -1, busy: 0, alive: true, joined: s.week, heirOf: opts.heirOf || null, heirWeek: opts.heirOf ? s.week : null,
+        demonHeir: !!opts.demonHeir, demonMark: false, rebirth: !!opts.rebirth, external: g > 0
+      };
+      if (g > 0) { // 외부 고등급 방문자: 등급에 맞게 성장시킴
+        for (let i = 0; i < 5; i++) a.stats[i] += Q.ref[g] * (i === core ? 0.9 : 0.4);
+        a.lv = [1, 5, 10, 18, 26, 35, 45][g]; a.grade = g; a.stage = g >= 3 ? 2 : 1;
+        if (a.stage === 2) { a.pair = [core, (core + 1 + ri(4)) % 5]; a.cls = 'combo'; }
+      }
+      s.advs.push(a); return a;
+    }
+
+    function finalStat(a, i) {
+      let v = Math.min(G.statCap, a.stats[i]);
+      if (a.gear >= 0) {
+        if (i === a.core) v += GE.weaponStat[a.gear];
+        if (a.pair && a.pair.includes(i) && i !== a.core) v += GE.armorStat[a.gear];
+        if (i === (a.core + 2) % 5) v += GE.accStat[a.gear];
+      }
+      return v;
+    }
+    const power = a => { let t = 0; for (let i = 0; i < 5; i++) t += finalStat(a, i); return t + (a.gear >= 0 ? GE.weaponAtk[a.gear] : 0) * 0.5; };
+    const skillBonus = a => [0.03, 0.06, 0.10][a.stage - 1];
+
+    function makeQuest(g, boss) {
+      const type = ri(5);
+      const n = Q.reqCount[g];
+      const req = [type];
+      while (req.length < n) { const k = ri(5); if (!req.includes(k)) req.push(k); }
+      const R0 = Q.ref[g] * n * (0.85 + R() * 0.30) * (boss ? Q.bossMult : 1);
+      return { g, type, req, r: R0 / n, boss: !!boss };
+    }
+
+    function successP(party, q) {
+      let F = 0, bottleneck = false;
+      for (const k of q.req) {
+        const vals = party.map(a => finalStat(a, k) * (k === a.core ? 1 + skillBonus(a) : 1)).sort((x, y) => y - x);
+        const P0 = vals[0] + Q.partyAssist * vals.slice(1).reduce((x, y) => x + y, 0);
+        const fill = Math.min(P0 / q.r, 1.5);
+        if (fill < 0.5) bottleneck = true;
+        F += fill;
+      }
+      F /= q.req.length;
+      let p = 0.55 + 1.1 * (F - 1);
+      p = Math.max(0.05, Math.min(0.97, p));
+      if (bottleneck) p /= 2;
+      return p;
+    }
+    function perceived(a, p) {
+      const err = Math.max(0, 0.10 - 0.02 * effN('정보실'));
+      return Math.min(1, p * [0.9, 1.0, 1.2][a.risk] + (R() * 2 - 1) * err);
+    }
+
+    function gainXp(a, xp) {
+      a.xp += xp;
+      for (;;) {
+        const need = G.lvA * Math.pow(a.lv, G.lvB);
+        if (a.xp < need) break;
+        if (a.lv >= G.lvCap[a.stage - 1]) { a.bank += a.xp; a.xp = 0; break; }
+        a.xp -= need; a.lv++; levelUp(a);
+      }
+    }
+    function levelUp(a) {
+      const g = new Array(5).fill(0);
+      if (a.stage === 1) { for (let i = 0; i < 5; i++) g[i] = i === a.core ? 2.0 : 0.4; }
+      else if (a.cls === 'spec') { for (let i = 0; i < 5; i++) g[i] = i === a.core ? (a.stage === 2 ? 2.4 : 2.8) : (a.stage === 2 ? 0.525 : 0.325); }
+      else if (a.cls === 'combo') { for (let i = 0; i < 5; i++) g[i] = a.pair.includes(i) ? (a.stage === 2 ? 1.8 : (i === a.pair[0] ? 2.2 : 2.0)) : (a.stage === 2 ? 0.3 : 0.433); }
+      else if (a.cls === 'ext') { for (let i = 0; i < 5; i++) g[i] = a.pair.includes(i) ? 1.5 : 0.5; }
+      for (let i = 0; i < 5; i++) a.stats[i] = Math.min(G.statCap, a.stats[i] + g[i]);
+    }
+    function attachTier(a) { return a.attach >= 90 ? 3 : a.attach >= 60 ? 2 : a.attach >= 30 ? 1 : 0; }
+
+    function tryPromoteClass(a) {
+      const base = [0.40, 0.65, 0.90, 1.00][attachTier(a)];
+      const st = a.stats;
+      if (a.stage === 1 && has('관리소')) {
+        const others = [0, 1, 2, 3, 4].filter(i => i !== a.core).sort((x, y) => st[y] - st[x]);
+        const b = others[0];
+        const combo = (st[a.core] >= 35 && st[b] >= 35) || (st[a.core] >= 40 && st[b] >= 30) || (st[b] >= 40 && st[a.core] >= 30);
+        const spec = st[a.core] >= 50 && (a.core === 2 || a.core === 3); // 마도사·신관만 3차로 이어짐
+        if (!combo && !spec) return;
+        if (R() > Math.min(1, base * 1.2)) return;
+        a.stage = 2;
+        if (combo) { a.cls = 'combo'; a.pair = [a.core, b]; } else { a.cls = 'spec'; a.pair = [a.core]; }
+        onStage(a, 2);
+      } else if (a.stage === 2) {
+        if (a.cls === 'spec') {
+          if (s.grade >= 3 && st[a.core] >= 80) { if (R() <= base * 0.9) { a.stage = 3; onStage(a, 3); } }
+          return;
+        }
+        const [x, y] = a.pair;
+        const hi = Math.max(st[x], st[y]), lo = Math.min(st[x], st[y]);
+        const deep = s.grade >= 3 && ((lo >= 60) || (hi >= 70 && lo >= 55));
+        const third = [0, 1, 2, 3, 4].filter(i => !a.pair.includes(i)).sort((p, q) => st[q] - st[p])[0];
+        const ext = s.grade >= 5 && st[x] >= 45 && st[y] >= 45 && st[third] >= 45 && st[x] + st[y] + st[third] >= 150;
+        if (!deep && !ext) return;
+        if (R() > base * 0.9) return;
+        a.stage = 3;
+        if (!deep) { a.cls = 'ext'; a.pair = [x, y, third]; }
+        onStage(a, 3);
+      }
+    }
+    function onStage(a, n) {
+      if (n === 2) { if (s.st.firstStage2 == null) s.st.firstStage2 = s.week; s.st.lvAt2.push(a.lv); }
+      if (n === 3) { if (s.st.firstStage3 == null) s.st.firstStage3 = s.week; s.st.lvAt3.push(a.lv); }
+      if (a.bank > 0) { const b = a.bank; a.bank = 0; gainXp(a, b); }
+    }
+    function tryGradeUp(a) {
+      const lvReq = [0, 5, 10, 18, 26, 35, 45], achReq = [0, 5, 5, 7, 7, 10, 10];
+      const n = a.grade + 1;
+      if (n > 6 || n > s.grade || n === 6) return; // S급은 길드 S 승급 순간에만
+      if (a.lv >= lvReq[n] && a.ach >= achReq[n]) { a.grade = n; a.ach = 0; }
+    }
+
+    function kill(a, byDemon) {
+      a.alive = false; s.st.deaths++; if (byDemon) s.st.battleDeaths++;
+      s.trust = Math.max(0, s.trust - (byDemon ? 0 : 1));
+      s.heirsQueue.push({ at: s.week + A.heirDelayWeeks, core: R() < 0.7 ? a.core : ri(5), demon: byDemon, risk: byDemon ? 2 : (a.risk === 2 ? 0 : a.risk) });
+    }
+
+    function present(a) {
+      if (!a.alive || a.busy > 0) return false;
+      if (a.attach >= 100) return true;
+      if (a.heirWeek != null && s.week - a.heirWeek < WPY) return R() < 0.8;
+      const interval = A.visitBaseWeeks * (1 + (100 - a.attach) / 50);
+      return R() < Math.min(1, 2 / interval);
+    }
+
+    function generateQuests() {
+      const mult = T.inflowMult[popStage()] * (0.7 + 0.6 * s.trust / 100) * (1 + 0.1 * s.grade) * (1 + 0.1 * Math.min(1, effN('접수대')));
+      const n = Math.round(Q.perMonth * mult / WPM + R() * 0.5);
+      const cap = Q.boardCap[s.grade] + [0, 2, 5, 5][Math.min(3, effN('게시판'))];
+      for (let i = 0; i < n; i++) {
+        // 필터: 상위 등급 집중도(filterFocus)에 따라 배분
+        let g = s.grade;
+        const r = R();
+        if (r > bot.filterFocus) g = ri(s.grade + 1);
+        if (s.board.length < cap) s.board.push(makeQuest(g, false));
+      }
+    }
+
+    function mealFor(q) { // 그 의뢰 등급 이하에서 가장 높은 해금 요리 등급
+      for (let g = q.g; g >= 0; g--) if (s.meals[g] > 0) return g;
+      return -1;
+    }
+    function runQuest(party, q) {
+      let mealB = 0;
+      const mg = mealFor(q);
+      if (mg >= 0) {
+        let eaters = 0;
+        for (const a of party) {
+          const price = Q.reward[mg] * E.mealPriceRate;
+          if (a.wallet >= price && R() < E.mealBuyRate[a.spend]) { a.wallet -= price; s.gold += price * E.mealMargin; s.op += price * E.mealMargin; s.st.mealIncome += price * E.mealMargin; eaters++; }
+        }
+        // 메뉴가 2개 열려 있으면 의뢰 유형에 맞는 요리를 고를 확률이 높음
+        mealB = (eaters / party.length) * E.mealBonus[mg] * (s.meals[mg] >= 2 ? 1 : 0.6) * (1 + 0.5 * (effN('주점') >= 3 ? 1 : 0));
+      }
+      const p = Math.min(0.97, successP(party, q) * (1 + mealB));
+      const ok = R() < p;
+      const fee = q.boss ? 0 : q.reward != null ? 0 : 0;
+      const reward = Q.reward[q.g] * (q.boss ? 2 : 1);
+      if (ok) {
+        s.st.qDone++;
+        if ((q.type === 0 || q.type === 1 || (q.type === 2 && (q.g === 2 || q.g === 6))) && s.meals[q.g] < 2 && R() < E.mealUnlockChance) { s.meals[q.g]++; s.st.mealsUnlocked.push(s.week); }
+        const inc = reward * feeRate() + reward * E.resaleRate * (1 + 0.1 * effN('판매창구'));
+        s.gold += inc; s.op += inc;
+        const each = reward * (1 - feeRate()) / party.length;
+        for (const a of party) {
+          a.wallet += each;
+          gainXp(a, G.xpBase * Math.pow(G.xpGradeMult, q.g));
+          a.stats[q.type] = Math.min(G.statCap, a.stats[q.type] + Q.subGrowth);
+          a.attach = Math.min(100, a.attach + A.attachSuccess * (1 + 0.2 * Math.min(1, effN('휴게실'))));
+          if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
+          tryGradeUp(a);
+        }
+        s.trust = Math.min(100, s.trust + 0.3);
+      } else {
+        s.st.qFail++;
+        s.trust = Math.max(0, s.trust - 0.6);
+        for (const a of party) {
+          gainXp(a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate);
+          const d = Q.deathBase[q.g] * [0.5, 1, 1.5][a.risk] * (1 - 0.15 * Math.min(1, effN('의무실')));
+          if (R() < d) kill(a, false);
+        }
+      }
+      return ok;
+    }
+
+    function adventurersChoose() {
+      const idle = s.advs.filter(present);
+      for (const a of idle) {
+        if (a.busy > 0 || !a.alive) continue;
+        const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
+        const lo = Math.max(0, a.grade + range[0]), hi = Math.min(s.grade, a.grade + range[1]);
+        const th = [0.70, 0.55, 0.35][a.risk];
+        const cands = s.board.map((q, i) => ({ q, i })).filter(o => o.q.g >= lo && o.q.g <= hi).sort((x, y) => y.q.g - x.q.g);
+        for (const { q, i } of cands) {
+          let party = [a];
+          let pp = perceived(a, successP(party, q));
+          if (pp < [0.30, 0.50, 0.70][a.social]) {
+            const mates = idle.filter(b => b !== a && b.busy === 0 && b.alive && Math.abs(b.grade - q.g) <= 1).slice(0, 4);
+            for (const m of mates) { party.push(m); if (perceived(a, successP(party, q)) >= th) break; }
+            pp = perceived(a, successP(party, q));
+          }
+          if (pp >= th) {
+            s.board.splice(i, 1);
+            for (const m of party) m.busy = Q.weeks[q.g];
+            runQuest(party, q);
+            break;
+          }
+        }
+      }
+    }
+
+    function bestParty(pool, q, n) {
+      const sorted = pool.slice().sort((x, y) => power(y) - power(x));
+      let party = [];
+      for (const a of sorted) { party.push(a); if (party.length >= n) break; if (successP(party, q) >= 0.95) break; }
+      return party;
+    }
+
+    function bossStep() {
+      const g = s.grade;
+      if (g >= 6 || s.phase !== 'normal') return;
+      const need = PROMO_FAC[g];
+      if (need && !has(need)) return;
+      if (g === 5 && s.advs.filter(a => a.alive && !a.external && a.grade >= 5 && a.lv >= 45).length < P.sCandidates) {
+        // S급 후보가 부족해도 보스급 의뢰는 진행 가능
+      }
+      // 보충
+      const vis = P.N[g] + 2;
+      s.bossRefill = s.bossRefill.filter(w => { if (w <= s.week) { s.boss.push(makeQuest(g + 1, true)); return false; } return true; });
+      while (s.boss.length + s.bossRefill.length < vis) s.boss.push(makeQuest(g + 1, true));
+      if (s.bossDone >= P.N[g]) return;
+      const pool = s.advs.filter(a => a.alive && a.busy === 0);
+      for (let i = 0; i < s.boss.length; i++) {
+        const q = s.boss[i];
+        const party = bestParty(pool.filter(a => a.busy === 0), q, 5);
+        if (!party.length) break;
+        const p = successP(party, q);
+        if (p >= bot.bossTh) {
+          s.boss.splice(i, 1); i--;
+          for (const m of party) m.busy = Q.weeks[q.g];
+          const ok = runQuest(party, q);
+          if (ok) { s.bossDone++; s.bossRefill.push(s.week + P.bossRefillWeeks); }
+          else s.boss.push(makeQuest(g + 1, true));
+          if (s.bossDone >= P.N[g]) break;
+        }
+      }
+    }
+
+    function townPower(participants) { return participants.reduce((t, a) => t + power(a), 0); }
+    const typical = g => 5 * Q.ref[g] * 0.75;
+    function battle(enemy, participants, kindDemon) {
+      const our = townPower(participants);
+      const x = our / Math.max(1, enemy) - 1;
+      const pw = 1 / (1 + Math.exp(-cfg.promo.battleK * x));
+      const win = R() < pw;
+      for (const a of participants) {
+        const d = (win ? cfg.promo.battleDeathWin : cfg.promo.battleDeathLoss) * [0.5, 1, 1.5][a.risk] * (1 - 0.15 * Math.min(1, effN('의무실')));
+        if (!a.rebirth && R() < d) kill(a, kindDemon);
+      }
+      return { win, pw };
+    }
+    function defenders() {
+      const list = s.advs.filter(a => a.alive && a.busy === 0 && (a.attach >= 100 || R() < 0.6));
+      // 보상금
+      let cost = 0; for (const a of list) if (a.attach < 100) cost += Q.reward[a.grade] * (a.attach >= 60 ? 0.5 : 1.0);
+      s.gold -= cost; s.op -= cost;
+      return list;
+    }
+
+    function invasionStep() {
+      const g = s.grade;
+      if (g >= 6 || s.phase !== 'normal' || s.bossDone < P.N[g] || s.invasionCooldown > s.week) return;
+      if (g === 5 && s.advs.filter(a => a.alive && !a.external && a.grade >= 5 && a.lv >= 45).length < P.sCandidates) return;
+      const enemy = P.invasionScale * typical(g + 1) * 0.5;
+      const est = (() => { const d = s.advs.filter(a => a.alive); const pw = d.reduce((t, a) => t + power(a) * (a.attach >= 100 ? 1 : 0.6), 0); const x = pw / enemy - 1; return 1 / (1 + Math.exp(-P.battleK * x)); })();
+      if (est < bot.promoteTh && s.week - (s.st.reach[g] || 0) < 6 * WPY) return; // 보류 (단, 6년 이상 정체면 강행)
+      const res = battle(enemy, defenders(), true);
+      if (res.win) {
+        s.st.invW++; s.grade++; s.st.reach[s.grade] = s.week; s.bossDone = 0; s.boss = []; s.bossRefill = [];
+        if (s.grade === 6) {
+          for (const a of s.advs) if (a.alive && !a.external && a.grade === 5 && a.lv >= 45) a.grade = 6;
+          s.phase = 'officers'; s.officer = 0; s.mainCooldown = s.week + 4;
+        }
+      } else {
+        s.st.invL++; s.pop *= (1 - T.invasionLoss); s.invasionCooldown = s.week + 2 * WPM;
+      }
+    }
+
+    function raidStep() {
+      if (s.week < s.nextRaid) return;
+      s.nextRaid = s.week + P.raidMonths[popStage()] * WPM;
+      if (s.invasionCooldown > s.week) return;
+      const enemy = P.raidScale * typical(s.grade) * 0.5;
+      const res = battle(enemy, defenders(), true);
+      if (res.win) s.st.raidsW++; else { s.st.raidsL++; s.pop *= (1 - T.raidLoss); s.trust = Math.max(0, s.trust - 5); }
+    }
+
+    function endgameStep() {
+      if (s.phase === 'normal' || s.ended || s.week < s.mainCooldown) return;
+      const pool = s.advs.filter(a => a.alive && a.busy === 0);
+      const top = pool.slice().sort((x, y) => power(y) - power(x)).slice(0, 5);
+      if (s.phase === 'officers') {
+        const enemy = EN.officerScale[s.officer] * typical(6) * 0.5;
+        const res = battle(enemy, top, true);
+        if (res.win) { s.officer++; s.mainCooldown = s.week + 3 * WPM; if (s.officer >= 3) s.phase = 'demon'; }
+        else { s.st.officerFails++; s.pop *= 0.97; s.mainCooldown = s.week + EN.mainRetryWeeks; }
+      } else if (s.phase === 'demon') {
+        const avg = top.reduce((t, a) => t + a.grade, 0) / Math.max(1, top.length);
+        if (top.length < 5 || avg < 5) { s.mainCooldown = s.week + WPM; return; }
+        // 마인 각성 확인
+        if (!s.st.demonAwake && s.advs.some(a => a.alive && a.demonHeir && a.stage >= 2 && a.attach >= 70)) s.st.demonAwake = true;
+        const enemy = EN.demonScale * typical(6) * 0.5 * EN.demonPopMult[popStage()];
+        const res = battle(enemy, top, true);
+        if (res.win) { s.ended = true; s.st.end = s.week; s.st.endRebirth = top.some(a => a.rebirth); }
+        else { s.st.demonFails++; s.mainCooldown = s.week + EN.demonRetryWeeks; }
+      }
+    }
+
+    function monthly() {
+      // 수입
+      s.gold += E.subsidy[s.grade]; s.op += E.subsidy[s.grade];
+      const inTown = s.advs.filter(a => a.alive && a.busy === 0).length;
+      const tav = inTown * WPM * 0.5 * E.tavernPerAdvWeek * Math.pow(E.tavernGradeMult, s.grade) * (1 + 0.15 * Math.min(1, effN('주점')));
+      s.gold += tav; s.op += tav;
+      // 유지비
+      let up = 0; for (const [f, g] of FAC) if (has(f)) up += E.buildCost[g] * E.upkeepRate;
+      s.gold -= up; s.op -= up;
+      // 건설: 승급 필수 시설 우선, 이후 등급 순
+      const order = FAC.filter(([, g]) => g <= s.grade).slice().sort((x, y) => (PROMO_FAC.includes(y[0]) ? 1 : 0) - (PROMO_FAC.includes(x[0]) ? 1 : 0));
+      for (const [f, g] of order) {
+        if (has(f)) continue;
+        const c = E.buildCost[g];
+        if (s.gold - c >= 500) { s.gold -= c; s.built[f] = true; s.st.facWeek[f] = s.week; }
+      }
+      // 시설 효과 개방 (금전 부분만 모델링)
+      const effFac = ['정보실', '의무실', '훈련장', '도서관', '휴게실', '주점', '접수대', '게시판', '판매창구'];
+      for (const f of effFac) {
+        const baseG = f === '주점' || f === '접수대' || f === '게시판' || f === '판매창구' ? 0 : FAC.find(x => x[0] === f)[1];
+        if (!(has(f))) continue;
+        const max = f === '정보실' ? 5 : 3;
+        const n = effN(f); if (n >= max) continue;
+        const effG = Math.min(6, baseG + Math.min(n, 2));
+        if (effG > s.grade + 1) continue; // 소재 등급이 아직 없음
+        const cost = E.buildCost[Math.max(1, effG)] * E.effectCost[Math.min(2, n)];
+        if (s.gold - cost >= 1000 / bot.buildEffects) { s.gold -= cost; s.eff[f] = n + 1; }
+      }
+      // 인구
+      const residents = s.advs.filter(a => a.alive && a.attach >= 100).length;
+      s.pop += s.pop * (T.growthBase + T.growthPerGrade * s.grade) + residents * T.perResident;
+      // 애착(마을에 머문 모험가)
+      for (const a of s.advs) if (a.alive && a.busy === 0) a.attach = Math.min(100, a.attach + A.attachPerMonthInTown * 0.5);
+      // 이탈
+      for (const a of s.advs) if (a.alive && !a.rebirth && a.attach < A.leaveAttach && s.week - a.joined > A.leaveAfterYears * WPY) a.alive = false;
+      // 신규 모험가
+      const lam = A.arrivalPerMonth * (1 + A.arrivalPerGrade * s.grade);
+      let k = Math.floor(lam); if (R() < lam - k) k++;
+      for (let i = 0; i < k; i++) {
+        const ext = R() < 0.05 && s.grade > 0 ? Math.min(6, s.grade + (R() < 0.3 ? 2 : 1)) : 0;
+        const a = newAdv({ grade: ext });
+        if (s.demonFlagFallback) { a.demonHeir = true; a.heirWeek = s.week; s.demonFlagFallback = false; s.st.demonFallback = true; }
+      }
+      // 2세
+      s.heirsQueue = s.heirsQueue.filter(h => { if (h.at <= s.week) { newAdv({ core: h.core, heirOf: true, demonHeir: h.demon, risk: h.risk }); s.st.heirs++; return false; } return true; });
+      // 전직 제안 (월 1회)
+      for (const a of s.advs) if (a.alive) tryPromoteClass(a);
+      // 장비 구매
+      for (const a of s.advs) {
+        if (!a.alive) continue;
+        const ng = Math.min(s.grade, a.gear + 1);
+        if (ng <= a.gear) continue;
+        const price = GE.weaponPrice[ng] * GE.setMult;
+        if (a.wallet >= price * (1 + GE.reserveMult[a.spend] * 0.5)) { a.wallet -= price; a.gear = ng; }
+      }
+      if (s.gold < 0) s.st.negMonths++;
+      if (s.week < WPY) s.st.firstNetF.push(s.op);
+      s.op = 0;
+    }
+
+    function weekly() {
+      // 훈련
+      for (const a of s.advs) {
+        if (!a.alive || a.busy > 0) continue;
+        if (has('훈련장')) { const m = 1 + [0, 0.15, 0.40, 0.40][Math.min(3, effN('훈련장'))]; for (const i of [0, 1, 4]) if (i === a.core || (a.pair && a.pair.includes(i))) a.stats[i] = Math.min(G.statCap, a.stats[i] + G.trainPerWeek * m); }
+        if (has('도서관')) { const m = 1 + (effN('도서관') ? 0.15 : 0); for (const i of [2, 3]) if (i === a.core || (a.pair && a.pair.includes(i))) a.stats[i] = Math.min(G.statCap, a.stats[i] + G.trainPerWeek * m); }
+      }
+      if (s.week % WPM === 0) generateQuests();
+      adventurersChoose();
+      bossStep();
+      invasionStep();
+      raidStep();
+      endgameStep();
+      for (const a of s.advs) if (a.busy > 0) a.busy--;
+    }
+
+    // 시작 모험가 3명
+    for (let i = 0; i < A.startCount; i++) newAdv({ attach: 20 });
+
+    const maxW = cfg.run.maxYears * WPY;
+    for (s.week = 0; s.week < maxW && !s.ended; s.week++) {
+      if (!s.rebirthAdded && s.week === (EN.rebirthYear - 1) * WPY) {
+        s.rebirthAdded = true; s.st.rebirth = true;
+        const a = newAdv({ risk: 0 }); a.rebirth = true; a.stage = 3; a.cls = 'ext'; a.pair = [0, 1, 2]; a.lv = 45;
+        a.stats = [0, 0, 0, 0, 0].map(() => EN.rebirthTotal / 5); a.grade = Math.min(6, s.grade + 2); a.gear = s.grade;
+      }
+      if (!s.demonFlagFallback && !s.st.demonFallback && s.week === EN.demonHeirFallbackYear * WPY && !s.advs.some(a => a.alive && a.demonHeir)) s.demonFlagFallback = true;
+      weekly();
+      if (s.week % WPM === WPM - 1) monthly();
+      if (s.week % WPY === WPY - 1) {
+        const alive = s.advs.filter(a => a.alive);
+        const top = alive.slice().sort((x, y) => y.lv - x.lv).slice(0, 5);
+        s.st.goldYear.push(s.gold); s.st.advYear.push(alive.length); s.st.popYear.push(s.pop);
+        s.st.lvYear.push(top.length ? top.reduce((t, a) => t + a.lv, 0) / top.length : 0);
+      }
+    }
+    s.st.finalGrade = s.grade;
+    s.st.dbg = { bossDone: s.bossDone, cand: s.advs.filter(a => a.alive && !a.external && a.grade >= 5 && a.lv >= 45).length, gradeA: s.advs.filter(a => a.alive && a.grade === 5).length, gradeB: s.advs.filter(a => a.alive && a.grade === 4).length, lv45: s.advs.filter(a => a.alive && a.lv >= 45).length, alive: s.advs.filter(a=>a.alive).length, maxLv: Math.max(...s.advs.filter(a=>a.alive).map(a=>a.lv)), stage3: s.advs.filter(a=>a.alive&&a.stage===3).length, top: s.advs.filter(a=>a.alive).sort((x,y)=>y.lv-x.lv).slice(0,14).map(a=>'g'+a.grade+'L'+a.lv+'s'+a.stage+'r'+a.risk+'x'+(a.rebirth?1:0)) };
+    s.st.finalPop = s.pop;
+    return s.st;
+  }
+
+  function quant(arr, q) { if (!arr.length) return null; const b = arr.slice().sort((x, y) => x - y); return b[Math.min(b.length - 1, Math.floor(b.length * q))]; }
+
+  function aggregate(results, cfg) {
+    const n = results.length, Y = cfg.run.maxYears;
+    const yr = w => w == null ? null : w / WPY;
+    const out = { n };
+    out.reach = [];
+    for (let g = 1; g <= 6; g++) {
+      const v = results.map(r => r.reach[g]).filter(x => x != null).map(yr);
+      out.reach.push({ grade: GR[g], pct: v.length / n, p10: quant(v, 0.1), med: quant(v, 0.5), p90: quant(v, 0.9) });
+    }
+    const ends = results.map(r => r.end).filter(x => x != null).map(yr);
+    out.endPct = ends.length / n; out.end15 = results.filter(r => r.end != null && r.end < 15 * WPY).length / n;
+    out.endMed = quant(ends, 0.5); out.endP10 = quant(ends, 0.1); out.endP90 = quant(ends, 0.9);
+    out.endHist = new Array(Y).fill(0); for (const e of ends) out.endHist[Math.min(Y - 1, Math.floor(e))]++;
+    out.rebirthPct = results.filter(r => r.rebirth).length / n;
+    out.rebirthEndPct = results.filter(r => r.endRebirth).length / n;
+    const avg = f => results.reduce((t, r) => t + f(r), 0) / n;
+    out.deaths = avg(r => r.deaths); out.heirs = avg(r => r.heirs);
+    out.successRate = avg(r => r.qDone / Math.max(1, r.qDone + r.qFail));
+    out.raidWin = avg(r => r.raidsW / Math.max(1, r.raidsW + r.raidsL));
+    out.invLoss = avg(r => r.invL);
+    out.negMonths = avg(r => r.negMonths);
+    out.bankruptPct = results.filter(r => r.negMonths > 0).length / n;
+    out.netF = avg(r => r.firstNetF.length ? r.firstNetF.reduce((a, b) => a + b, 0) / r.firstNetF.length : 0);
+    const s2 = results.map(r => r.firstStage2).filter(x => x != null).map(yr), s3 = results.map(r => r.firstStage3).filter(x => x != null).map(yr);
+    out.stage2Year = quant(s2, 0.5); out.stage3Year = quant(s3, 0.5);
+    const l2 = [].concat(...results.map(r => r.lvAt2)), l3 = [].concat(...results.map(r => r.lvAt3));
+    out.lvAt2 = l2.length ? l2.reduce((a, b) => a + b, 0) / l2.length : null;
+    out.lvAt3 = l3.length ? l3.reduce((a, b) => a + b, 0) / l3.length : null;
+    out.demonAwakePct = results.filter(r => r.demonAwake).length / n;
+    out.demonFallbackPct = results.filter(r => r.demonFallback).length / n;
+    const series = key => { const rows = []; for (let y = 0; y < Y; y++) { const v = results.map(r => r[key][y]).filter(x => x != null); rows.push(v.length ? { p10: quant(v, 0.1), med: quant(v, 0.5), p90: quant(v, 0.9) } : null); } return rows; };
+    out.gold = series('goldYear'); out.advs = series('advYear'); out.lv = series('lvYear'); out.pop = series('popYear');
+    return out;
+  }
+
+  const api = { defaults, simulate, aggregate, BOTS, GR, ST, WPY };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildSim = api;
+})(this);
+
+</script>
+<script>window.GUILD_SIM_INITIAL={"agg":{"balanced":{"n":100,"reach":[{"grade":"E","pct":1,"p10":1.8333333333333333,"med":2.1666666666666665,"p90":2.75},{"grade":"D","pct":1,"p10":2.5,"med":2.9375,"p90":3.75},{"grade":"C","pct":1,"p10":3.125,"med":3.6875,"p90":4.625},{"grade":"B","pct":1,"p10":4.1875,"med":4.895833333333333,"p90":6.270833333333333},{"grade":"A","pct":1,"p10":5.708333333333333,"med":6.895833333333333,"p90":9.8125},{"grade":"S","pct":0.92,"p10":8.729166666666666,"med":13.020833333333334,"p90":15.666666666666666}],"endPct":0.83,"end15":0.45,"endMed":14.833333333333334,"endP10":10.895833333333334,"endP90":17.416666666666668,"endHist":[0,0,0,0,0,0,0,0,3,3,3,7,8,6,15,15,10,7,3,3],"rebirthPct":0.7,"rebirthEndPct":0.39,"deaths":32.41,"heirs":31.15,"successRate":0.7628736087109255,"raidWin":0.9891472181742986,"invLoss":19.93,"negMonths":0.51,"bankruptPct":0.3,"netF":435.40483333333344,"stage2Year":3.8125,"stage3Year":5.729166666666667,"lvAt2":14.945054945054945,"lvAt3":34.02717391304348,"demonAwakePct":0.06,"demonFallbackPct":0.12,"gold":[{"p10":5500.400000000001,"med":5843.200000000002,"p90":6185.400000000002},{"p10":2269.760000000011,"med":10537.600000000011,"p90":11594.000000000011},{"p10":1065.520000000015,"med":3657.480000000022,"p90":9576.400000000005},{"p10":1075.8639999999768,"med":3443.2972800000134,"p90":8180.016000000009},{"p10":1532.4048000000057,"med":4672.229440000014,"p90":10742.741760000023},{"p10":2398.3376000000226,"med":9931.040640000028,"p90":27949.51840000002},{"p10":6984.302399999965,"med":45647.02656,"p90":99226.70688000004},{"p10":30991.98272000003,"med":119465.66649600005,"p90":215286.44435200005},{"p10":80649.13804800008,"med":209334.651776,"p90":331268.48147199996},{"p10":157629.98963200004,"med":318406.1152000001,"p90":443030.1227519998},{"p10":238904.78304000004,"med":428336.4823039998,"p90":576504.0904959999},{"p10":300839.71583999984,"med":516706.20870399993,"p90":713546.3336320001},{"p10":355860.4684159999,"med":597084.4908543997,"p90":856138.985472},{"p10":422591.3838079999,"med":714005.891776,"p90":1010256.723264},{"p10":500753.3496959995,"med":727884.8598399995,"p90":1047390.9314560005},{"p10":594679.9075840001,"med":814121.2336383999,"p90":1198278.76},{"p10":648403.2314880004,"med":924163.382848,"p90":1409114.6927615993},{"p10":667361.7840640008,"med":999031.1796224006,"p90":1572776.784409598},{"p10":663488.0862720008,"med":1208125.6525440002,"p90":1900438.8512383988},{"p10":672275.5473920009,"med":1121083.5041280005,"p90":1968927.6077440027}],"advs":[{"p10":13,"med":15,"p90":16},{"p10":22,"med":24,"p90":26},{"p10":30,"med":33,"p90":36},{"p10":35,"med":39,"p90":43},{"p10":38,"med":42,"p90":45},{"p10":39,"med":42,"p90":46},{"p10":39,"med":43,"p90":49},{"p10":40,"med":44,"p90":49},{"p10":39,"med":44,"p90":50},{"p10":38,"med":45,"p90":50},{"p10":38,"med":45,"p90":50},{"p10":38,"med":45,"p90":50},{"p10":38,"med":43,"p90":49},{"p10":38,"med":43,"p90":50},{"p10":39,"med":45,"p90":52},{"p10":39,"med":47,"p90":56},{"p10":41,"med":47,"p90":57},{"p10":37,"med":44,"p90":52},{"p10":39,"med":43,"p90":53},{"p10":38,"med":42,"p90":51}],"lv":[{"p10":6.4,"med":6.8,"p90":7.2},{"p10":7.6,"med":8,"p90":9.2},{"p10":9.8,"med":11.4,"p90":13.8},{"p10":13.4,"med":17.2,"p90":21.6},{"p10":18.4,"med":23.2,"p90":28},{"p10":23.6,"med":29.8,"p90":35.8},{"p10":29.2,"med":34.8,"p90":41.8},{"p10":33.4,"med":40.2,"p90":45.8},{"p10":35.2,"med":43,"p90":48.6},{"p10":34.8,"med":45.6,"p90":49.6},{"p10":37.8,"med":46.4,"p90":50},{"p10":39.4,"med":48,"p90":50},{"p10":40.6,"med":48.2,"p90":50},{"p10":41,"med":49,"p90":50},{"p10":44.6,"med":49.6,"p90":50},{"p10":45,"med":49.8,"p90":50},{"p10":45.4,"med":50,"p90":50},{"p10":46,"med":50,"p90":50},{"p10":39.8,"med":50,"p90":50},{"p10":39,"med":49,"p90":50}],"pop":[{"p10":173.08419362738792,"med":173.08419362738792,"p90":173.08419362738792},{"p10":161.77394565167282,"med":179.7488285018587,"p90":200.11562593421687},{"p10":123.20181143657837,"med":163.66109817359091,"p90":215.85020045532593},{"p10":131.685762624419,"med":191.3107326284338,"p90":274.53001745145644},{"p10":169.62104109358012,"med":244.12207807899404,"p90":365.674815933076},{"p10":193.05090810271935,"med":322.93317644429527,"p90":452.0216930663926},{"p10":216.4138584873356,"med":395.973156754059,"p90":633.5343129239868},{"p10":293.4933278707449,"med":531.5559223407273,"p90":852.545723461986},{"p10":306.8335122302874,"med":691.742538096722,"p90":1135.3621380460247},{"p10":382.0430502561769,"med":901.0454185572677,"p90":1494.7211339460364},{"p10":482.87959056133036,"med":1167.1076899104096,"p90":2000.0077424832216},{"p10":578.332920356334,"med":1525.2374165026665,"p90":2725.0450718519123},{"p10":702.3220093546844,"med":2078.696551629132,"p90":3636.6779461041733},{"p10":843.4370465202438,"med":2775.246889807732,"p90":4831.669015547071},{"p10":1012.443528182823,"med":2757.108431341342,"p90":5079.544177906925},{"p10":1109.912746198716,"med":2884.3606931259155,"p90":6510.021274719797},{"p10":1791.9654915694907,"med":3865.634147064568,"p90":9198.291926900141},{"p10":2315.299597279349,"med":5291.054302178156,"p90":12329.023704100602},{"p10":3148.5234636113146,"med":7381.050138636406,"p90":18399.930265859475},{"p10":1650.9666717159973,"med":9379.274521385503,"p90":19822.340606856913}]},"elite":{"n":100,"reach":[{"grade":"E","pct":1,"p10":1.6666666666666667,"med":2.1666666666666665,"p90":3},{"grade":"D","pct":1,"p10":2.4166666666666665,"med":3,"p90":4.166666666666667},{"grade":"C","pct":1,"p10":3.0833333333333335,"med":3.7083333333333335,"p90":4.9375},{"grade":"B","pct":1,"p10":4.291666666666667,"med":5.291666666666667,"p90":7.083333333333333},{"grade":"A","pct":1,"p10":5.791666666666667,"med":7.270833333333333,"p90":9.875},{"grade":"S","pct":0.8,"p10":8.645833333333334,"med":13.666666666666666,"p90":16.916666666666668}],"endPct":0.58,"end15":0.34,"endMed":14.5625,"endP10":10.333333333333334,"endP90":17.5,"endHist":[0,0,0,0,0,0,0,0,2,1,9,4,5,5,8,12,4,5,3,0],"rebirthPct":0.74,"rebirthEndPct":0.25,"deaths":33.16,"heirs":32.47,"successRate":0.7651477195004874,"raidWin":0.9886516875906151,"invLoss":25.07,"negMonths":0.41,"bankruptPct":0.27,"netF":431.4281666666668,"stage2Year":3.8958333333333335,"stage3Year":5.8125,"lvAt2":17.11111111111111,"lvAt3":35.50984067478913,"demonAwakePct":0.01,"demonFallbackPct":0.09,"gold":[{"p10":5448.000000000001,"med":5786.200000000004,"p90":6135.400000000003},{"p10":2515.400000000015,"med":9679.600000000013,"p90":11134.400000000014},{"p10":1194.7504000000117,"med":3536.4000000000165,"p90":10569.800000000027},{"p10":1711.8560000000161,"med":3937.8256000000147,"p90":9115.816000000024},{"p10":1974.7728000000207,"med":4380.771200000009,"p90":12106.320000000003},{"p10":3066.2268800000256,"med":9174.676159999999,"p90":32237.430720000026},{"p10":7104.393599999985,"med":34729.44640000004,"p90":107690.97382400003},{"p10":18515.99360000003,"med":97408.81337600002,"p90":208295.50240000008},{"p10":72231.27136,"med":193373.79776,"p90":332234.4926080001},{"p10":121018.0030079999,"med":284410.19123200007,"p90":468362.7990528},{"p10":181132.8816,"med":369948.73055999994,"p90":599623.3500160003},{"p10":254948.8115200001,"med":460578.787712,"p90":689630.9809792},{"p10":329257.00800000003,"med":591428.97152,"p90":831297.3917440007},{"p10":383043.01567999995,"med":690849.0128000004,"p90":945319.2192640001},{"p10":428393.43263999996,"med":736846.7722112007,"p90":1038521.1308160007},{"p10":535536.5272191999,"med":790610.8095360004,"p90":1206191.6609280014},{"p10":603964.1072000008,"med":898976.3101440009,"p90":1372873.1847679992},{"p10":654166.9598080008,"med":1046568.7353087998,"p90":1558322.5411455987},{"p10":702260.0731776003,"med":1173903.483571202,"p90":1763089.4539776004},{"p10":739100.4416640006,"med":1234368.5869439987,"p90":1995954.8849279974}],"advs":[{"p10":12,"med":14,"p90":16},{"p10":21,"med":23,"p90":26},{"p10":29,"med":32,"p90":36},{"p10":33,"med":38,"p90":41},{"p10":36,"med":41,"p90":46},{"p10":37,"med":41,"p90":47},{"p10":37,"med":42,"p90":48},{"p10":38,"med":44,"p90":48},{"p10":37,"med":42,"p90":48},{"p10":37,"med":42,"p90":48},{"p10":37,"med":41,"p90":46},{"p10":34,"med":40,"p90":46},{"p10":34,"med":40,"p90":47},{"p10":35,"med":40,"p90":44},{"p10":35,"med":40,"p90":45},{"p10":35,"med":40,"p90":45},{"p10":36,"med":41,"p90":45},{"p10":36,"med":41,"p90":47},{"p10":36,"med":40,"p90":46},{"p10":34,"med":40,"p90":46}],"lv":[{"p10":6.4,"med":6.8,"p90":7.2},{"p10":7.6,"med":8.2,"p90":9.8},{"p10":9.4,"med":11.4,"p90":14.4},{"p10":13,"med":16.8,"p90":23},{"p10":18,"med":23,"p90":29.6},{"p10":23.2,"med":29.6,"p90":36},{"p10":26.8,"med":34,"p90":41.4},{"p10":30.2,"med":38.8,"p90":47.2},{"p10":30.8,"med":42.2,"p90":49.2},{"p10":33,"med":45,"p90":50},{"p10":32.4,"med":45,"p90":50},{"p10":32.6,"med":45.2,"p90":50},{"p10":32.6,"med":48,"p90":50},{"p10":37.2,"med":48,"p90":50},{"p10":43.6,"med":49.2,"p90":50},{"p10":42.6,"med":49.4,"p90":50},{"p10":44,"med":50,"p90":50},{"p10":44,"med":50,"p90":50},{"p10":44,"med":50,"p90":50},{"p10":44.2,"med":50,"p90":50}],"pop":[{"p10":173.08419362738792,"med":173.08419362738792,"p90":173.08419362738792},{"p10":145.59655108650557,"med":179.7488285018587,"p90":200.90737837946423},{"p10":110.44465877586839,"med":149.58906761518048,"p90":194.8387265208076},{"p10":115.44142154174297,"med":164.53597778038218,"p90":240.2200567608481},{"p10":137.06652465469995,"med":203.38390493211415,"p90":304.8117045471879},{"p10":169.35704613565215,"med":250.09528863299468,"p90":360.5207753242397},{"p10":200.11567827291736,"med":308.4747199855719,"p90":519.401830408227},{"p10":218.46084955365697,"med":415.3247377609239,"p90":649.1103545834346},{"p10":249.16828623045404,"med":516.0712594989304,"p90":837.7109102338898},{"p10":263.66251151123714,"med":686.0836628785945,"p90":1141.0721795944098},{"p10":331.27829253055967,"med":908.3002176851769,"p90":1493.5488940503658},{"p10":432.6004945458481,"med":1113.148303207363,"p90":2053.8561688338696},{"p10":544.0407689135436,"med":1486.762587497325,"p90":2875.2766635874823},{"p10":575.002164052336,"med":1997.947622403168,"p90":3852.287485493122},{"p10":638.6223840875792,"med":2437.8371152734358,"p90":4742.840741055524},{"p10":877.2632013003021,"med":2404.355690391024,"p90":6432.634440016859},{"p10":1220.9541394710795,"med":3800.6482518019106,"p90":8347.53598992744},{"p10":1678.0066822048739,"med":5002.606879822635,"p90":10962.468562476028},{"p10":2277.777276397995,"med":5643.047644067932,"p90":12527.33621932172},{"p10":2917.837996626368,"med":7433.150120194008,"p90":14064.564982473255}]},"nurture":{"n":100,"reach":[{"grade":"E","pct":1,"p10":2.1666666666666665,"med":2.4166666666666665,"p90":3},{"grade":"D","pct":1,"p10":3.0833333333333335,"med":3.6666666666666665,"p90":4.583333333333333},{"grade":"C","pct":1,"p10":3.8333333333333335,"med":4.583333333333333,"p90":6.083333333333333},{"grade":"B","pct":1,"p10":4.9375,"med":5.9375,"p90":7.333333333333333},{"grade":"A","pct":1,"p10":6.125,"med":7.270833333333333,"p90":8.875},{"grade":"S","pct":0.98,"p10":9.375,"med":13.083333333333334,"p90":16.25}],"endPct":0.81,"end15":0.42,"endMed":14.916666666666666,"endP10":11.479166666666666,"endP90":18.083333333333332,"endHist":[0,0,0,0,0,0,0,0,0,0,4,6,6,11,15,8,10,12,5,4],"rebirthPct":0.73,"rebirthEndPct":0.4,"deaths":34.84,"heirs":33.44,"successRate":0.7824581774789617,"raidWin":0.9932950952571176,"invLoss":14.38,"negMonths":0.42,"bankruptPct":0.2,"netF":431.10166666666686,"stage2Year":4.5625,"stage3Year":6.5625,"lvAt2":12.301872074882995,"lvAt3":28.790812720848056,"demonAwakePct":0.1,"demonFallbackPct":0.08,"gold":[{"p10":5496.800000000002,"med":5769.800000000002,"p90":6079.400000000002},{"p10":11222.000000000015,"med":11670.200000000013,"p90":12210.200000000013},{"p10":6087.120000000017,"med":8569.240000000013,"p90":13514.800000000025},{"p10":1300.8064000000086,"med":6851.912000000009,"p90":16458.23999999999},{"p10":1158.2188800000113,"med":5491.544320000006,"p90":18832.920000000002},{"p10":1181.4380800000035,"med":5944.734080000024,"p90":21171.55520000001},{"p10":3432.1423999999934,"med":13230.58777599999,"p90":50681.368640000015},{"p10":7894.051520000001,"med":56493.37273600001,"p90":146844.94047999996},{"p10":41426.820480000024,"med":154812.92531200004,"p90":255812.8823040001},{"p10":134958.47615999996,"med":256483.50265600006,"p90":390112.5940352001},{"p10":222691.33472,"med":371029.7878399996,"p90":530958.4638080006},{"p10":317119.06611199985,"med":483516.55315200007,"p90":674615.2878976004},{"p10":431130.75372799987,"med":597194.224064,"p90":855877.8798976004},{"p10":528408.3794559997,"med":723297.6579200001,"p90":1013461.3192959997},{"p10":608377.8945279999,"med":831750.4861311998,"p90":1185966.1942015998},{"p10":695792.7928319994,"med":1027479.8530816004,"p90":1375788.283968},{"p10":803084.0724991998,"med":1215134.0415231993,"p90":1621392.8713216002},{"p10":921535.1109120005,"med":1377591.9582719996,"p90":1788552.574924799},{"p10":1136244.7681920002,"med":1543101.2251520008,"p90":1992611.6595967996},{"p10":1265368.4230399993,"med":1697844.8208512005,"p90":2215648.098111999}],"advs":[{"p10":12,"med":15,"p90":16},{"p10":22,"med":24,"p90":27},{"p10":29,"med":33,"p90":36},{"p10":33,"med":37,"p90":41},{"p10":35,"med":41,"p90":45},{"p10":40,"med":44,"p90":49},{"p10":42,"med":47,"p90":52},{"p10":44,"med":48,"p90":55},{"p10":45,"med":50,"p90":56},{"p10":46,"med":51,"p90":56},{"p10":46,"med":51,"p90":57},{"p10":47,"med":53,"p90":59},{"p10":48,"med":54,"p90":61},{"p10":47,"med":55,"p90":61},{"p10":46,"med":56,"p90":64},{"p10":48,"med":59,"p90":67},{"p10":47,"med":59,"p90":66},{"p10":49,"med":61,"p90":65},{"p10":48,"med":61,"p90":66},{"p10":52,"med":61,"p90":71}],"lv":[{"p10":6.2,"med":6.8,"p90":7.2},{"p10":7.4,"med":8,"p90":8.6},{"p10":9,"med":10.4,"p90":11.8},{"p10":11.4,"med":14,"p90":16.8},{"p10":14.4,"med":18.6,"p90":23.8},{"p10":18.4,"med":23.8,"p90":31.4},{"p10":22.6,"med":30.4,"p90":37},{"p10":29,"med":36,"p90":43.4},{"p10":33.6,"med":40.6,"p90":45.8},{"p10":36.8,"med":43.2,"p90":49},{"p10":39,"med":45,"p90":50},{"p10":41,"med":46.6,"p90":50},{"p10":39.8,"med":48,"p90":50},{"p10":41,"med":48.8,"p90":50},{"p10":44.6,"med":49.2,"p90":50},{"p10":46,"med":50,"p90":50},{"p10":47.6,"med":50,"p90":50},{"p10":47.4,"med":50,"p90":50},{"p10":48,"med":50,"p90":50},{"p10":46,"med":50,"p90":50}],"pop":[{"p10":173.08419362738792,"med":173.08419362738792,"p90":173.08419362738792},{"p10":199.7209205576208,"med":199.7209205576208,"p90":199.7209205576208},{"p10":170.67769829033813,"med":215.32324562870897,"p90":239.73045934753696},{"p10":180.13355645168045,"med":233.689528477497,"p90":303.32938619633967},{"p10":206.8362797410334,"med":291.07171992261857,"p90":389.46880414900915},{"p10":234.22580500028025,"med":339.26643067995076,"p90":519.6235508480005},{"p10":290.74427626144404,"med":452.03763613015786,"p90":729.8716088131747},{"p10":363.21974141020786,"med":618.9689532796797,"p90":1013.0478528746213},{"p10":454.88295949510916,"med":866.1207695300546,"p90":1385.2263349769228},{"p10":650.0367930732468,"med":1145.4899680137173,"p90":1885.8111408798563},{"p10":862.4488130307317,"med":1523.5396869661683,"p90":2546.272781181975},{"p10":1053.6028859159885,"med":2033.4355879453913,"p90":3398.6225517476614},{"p10":1340.2096146459314,"med":2754.988160994704,"p90":4533.215944898217},{"p10":1903.5709680232706,"med":3696.152885604835,"p90":6179.782688791296},{"p10":2203.0634424563864,"med":4300.181758658059,"p90":7892.715288418403},{"p10":2785.6442549745057,"med":5585.486512331353,"p90":9796.212837297717},{"p10":3649.238788046645,"med":7733.366133056627,"p90":11665.25022577201},{"p10":5078.71728514359,"med":9630.213577857827,"p90":14265.368669674432},{"p10":8897.34193966436,"med":12646.094356039253,"p90":16444.87152323792},{"p10":11787.180998114998,"med":15797.569242081809,"p90":23298.062954391753}]},"safe":{"n":100,"reach":[{"grade":"E","pct":1,"p10":2,"med":2.3333333333333335,"p90":2.9166666666666665},{"grade":"D","pct":1,"p10":2.8333333333333335,"med":3.3333333333333335,"p90":4.416666666666667},{"grade":"C","pct":1,"p10":3.4583333333333335,"med":4.145833333333333,"p90":5.333333333333333},{"grade":"B","pct":1,"p10":4.75,"med":5.541666666666667,"p90":7.25},{"grade":"A","pct":1,"p10":6.208333333333333,"med":7.5625,"p90":11.25},{"grade":"S","pct":0.9,"p10":9.166666666666666,"med":12.416666666666666,"p90":16.833333333333332}],"endPct":0.75,"end15":0.46,"endMed":14.333333333333334,"endP10":10.75,"endP90":18.125,"endHist":[0,0,0,0,0,0,0,0,1,2,6,3,6,9,19,11,7,3,4,4],"rebirthPct":0.73,"rebirthEndPct":0.37,"deaths":32.66,"heirs":31.65,"successRate":0.7706855702703453,"raidWin":0.9884140171629678,"invLoss":16.74,"negMonths":0.27,"bankruptPct":0.16,"netF":436.4199999999998,"stage2Year":4.145833333333333,"stage3Year":6.145833333333333,"lvAt2":13.589304812834225,"lvAt3":31.216566005176876,"demonAwakePct":0.04,"demonFallbackPct":0.12,"gold":[{"p10":5618.8,"med":5815.800000000002,"p90":6114.600000000002},{"p10":10913.400000000012,"med":11687.400000000009,"p90":12128.80000000001},{"p10":2329.1200000000094,"med":7083.960000000017,"p90":10663.640000000005},{"p10":958.3360000000093,"med":4733.336000000011,"p90":13072.19999999999},{"p10":1485.3184000000056,"med":4315.179199999988,"p90":14541.595200000022},{"p10":1837.204800000005,"med":8100.097088000017,"p90":31842.629760000025},{"p10":4020.660480000024,"med":30918.28608000002,"p90":68194.63264000004},{"p10":14453.854976000031,"med":78838.80832000004,"p90":175631.02745599998},{"p10":54078.399999999594,"med":167200.33036800002,"p90":284542.7186559999},{"p10":125682.59551999994,"med":262611.1762559999,"p90":411470.02796799986},{"p10":207104.42848000015,"med":375261.17740800005,"p90":497857.0778751997},{"p10":259449.85663999987,"med":479220.0265088,"p90":641911.1181439998},{"p10":340191.21209599986,"med":607227.6425856,"p90":805790.7634944001},{"p10":418107.30451199954,"med":696519.7632512001,"p90":983455.1198847995},{"p10":476776.98943999986,"med":777302.5964160002,"p90":1010449.8010624002},{"p10":572093.5692160001,"med":877832.5193600014,"p90":1133386.6614271998},{"p10":613126.3005440001,"med":954008.4222464004,"p90":1272280.8153856008},{"p10":675214.2410240006,"med":1088580.4851456,"p90":1477470.3251968005},{"p10":697922.0842880005,"med":1203728.7709184,"p90":1734743.3754623989},{"p10":694809.4097280003,"med":1348063.7521536003,"p90":1978269.0050432}],"advs":[{"p10":12,"med":14,"p90":16},{"p10":22,"med":24,"p90":26},{"p10":29,"med":33,"p90":36},{"p10":33,"med":38,"p90":41},{"p10":37,"med":41,"p90":45},{"p10":39,"med":43,"p90":47},{"p10":39,"med":44,"p90":50},{"p10":41,"med":46,"p90":52},{"p10":42,"med":47,"p90":53},{"p10":41,"med":47,"p90":52},{"p10":41,"med":46,"p90":53},{"p10":41,"med":47,"p90":54},{"p10":41,"med":47,"p90":53},{"p10":39,"med":46,"p90":53},{"p10":39,"med":46,"p90":56},{"p10":41,"med":46,"p90":57},{"p10":39,"med":48,"p90":59},{"p10":41,"med":48,"p90":57},{"p10":39,"med":48,"p90":56},{"p10":40,"med":48,"p90":56}],"lv":[{"p10":6.2,"med":6.6,"p90":7.2},{"p10":7.4,"med":8,"p90":8.6},{"p10":9.2,"med":10.8,"p90":12.8},{"p10":12,"med":15,"p90":18.8},{"p10":16,"med":20.2,"p90":26},{"p10":21.2,"med":26.4,"p90":32.8},{"p10":24.6,"med":31.8,"p90":38},{"p10":29.2,"med":35.6,"p90":42.8},{"p10":30.6,"med":40.4,"p90":46.6},{"p10":32.4,"med":44.4,"p90":49},{"p10":34,"med":45.8,"p90":49.6},{"p10":36.2,"med":46,"p90":50},{"p10":37.8,"med":47,"p90":50},{"p10":39,"med":48,"p90":50},{"p10":42.4,"med":48.6,"p90":50},{"p10":42.8,"med":49.2,"p90":50},{"p10":42.2,"med":49,"p90":50},{"p10":42.8,"med":49,"p90":50},{"p10":44,"med":48,"p90":50},{"p10":42,"med":48.4,"p90":50}],"pop":[{"p10":164.42998394601852,"med":173.08419362738792,"p90":173.08419362738792},{"p10":179.7488285018587,"med":199.7209205576208,"p90":199.7209205576208},{"p10":154.5046422547487,"med":192.79463897187864,"p90":233.20312410619957},{"p10":156.1742596398751,"med":210.3870822420783,"p90":282.25662825657844},{"p10":180.39205832637157,"med":272.87362269307044,"p90":389.43700888994425},{"p10":225.95404607097765,"med":373.6624422949176,"p90":510.53126847763684},{"p10":297.0837694798312,"med":436.42972931381433,"p90":685.8331830371366},{"p10":355.79871606233195,"med":576.4428538287892,"p90":947.1430043299262},{"p10":376.5221657193315,"med":786.6400692870492,"p90":1300.624585289785},{"p10":495.07804966614566,"med":1008.0965441798854,"p90":1744.1090504079525},{"p10":629.1372112710167,"med":1267.2835957104892,"p90":2145.718236732322},{"p10":707.8134600436476,"med":1531.8217115440868,"p90":2828.793883381565},{"p10":929.9951050247075,"med":2031.362955378617,"p90":3786.3504239364725},{"p10":1228.7859435631597,"med":2622.467678839416,"p90":5044.614760546265},{"p10":1194.2599541671116,"med":3076.210129925623,"p90":6094.892631754226},{"p10":1342.198188271968,"med":3751.5650535169507,"p90":7542.026723963949},{"p10":1779.0215355201947,"med":4458.232879204266,"p90":9651.029139845103},{"p10":2422.71628288241,"med":5679.621267706858,"p90":11478.45848950608},{"p10":3331.084974312906,"med":8483.720586187255,"p90":16897.42530745417},{"p10":4542.526660130592,"med":11008.127114866447,"p90":22007.55002490041}]}},"cfg":{"run":{"runs":100,"maxYears":20,"seed":1},"quest":{"ref":[15,25,35,45,60,75,90],"reqCount":[1,1,2,2,3,3,4],"reward":[100,200,400,800,1500,3000,6000],"weeks":[1,1,1,2,2,2,3],"perMonth":10,"boardCap":[6,8,10,12,14,16,18],"partyAssist":0.25,"deathBase":[0.01,0.01,0.03,0.03,0.05,0.05,0.08],"subGrowth":0.2,"bossMult":1.15},"growth":{"xpBase":80,"xpGradeMult":2,"xpFailRate":0.3,"lvA":20,"lvB":1.55,"lvCap":[30,40,50],"trainPerWeek":0.1,"statCap":100},"adv":{"arrivalPerMonth":0.8,"arrivalPerGrade":0.1,"startCount":5,"startCore":15,"startOther":6,"attachSuccess":2,"attachPerMonthInTown":1,"visitBaseWeeks":2,"leaveAfterYears":2,"leaveAttach":20,"heirDelayWeeks":24},"econ":{"startGold":3000,"feeBase":0.1,"feePerInfo":0.02,"subsidy":[300,500,800,1200,2000,3000,4500],"buildCost":[0,2000,4000,8000,15000,30000,0],"upkeepRate":0.015,"tavernPerAdvWeek":4,"tavernGradeMult":1.6,"resaleRate":0.08,"effectCost":[0.1,0.2,0.35],"mealPriceRate":0.15,"mealMargin":0.6,"mealBuyRate":[0.3,0.6,0.9],"mealBonus":[0.03,0.04,0.045,0.05,0.06,0.05,0.07],"mealUnlockChance":0.5},"gear":{"weaponPrice":[150,400,1000,2500,6000,14000,30000],"setMult":3,"weaponStat":[3,5,8,12,16,21,27],"armorStat":[1,2,4,6,8,10,13],"accStat":[2,3,5,7,10,13,17],"weaponAtk":[10,18,28,40,55,72,92],"reserveMult":[2,1,0.3]},"promo":{"N":[2,3,3,4,4,5],"bossRefillWeeks":6,"invasionScale":16,"raidScale":4,"battleK":6,"battleDeathWin":0.01,"battleDeathLoss":0.03,"raidMonths":[8,6,5,4,3],"sCandidates":2},"town":{"startPop":150,"growthBase":0.012,"growthPerGrade":0.002,"perResident":1,"stages":[300,1000,3000,8000],"inflowMult":[1,1.3,1.6,2,2.5],"raidLoss":0.05,"invasionLoss":0.1},"ending":{"officerScale":[4,4.3,4.6],"demonScale":6,"demonPopMult":[1,1,1,0.85,0.7],"rebirthYear":15,"rebirthTotal":300,"mainRetryWeeks":8,"demonRetryWeeks":24,"demonHeirFallbackYear":8}}};</script>
+<script>
+(function () {
+  'use strict';
+  const S = window.GuildSim;
+  const BOTKEYS = Object.keys(S.BOTS);
+  const COLORS = { balanced: 'var(--b1)', elite: 'var(--b2)', nurture: 'var(--b3)', safe: 'var(--b4)' };
+  const $ = id => document.getElementById(id);
+
+  const SCHEMA = [
+    ['의뢰와 판정', [
+      ['quest.ref', '판정 기준치 F~S'], ['quest.reqCount', '요구 능력치 수 F~S'], ['quest.reward', '의뢰 보상 F~S (G)'],
+      ['quest.perMonth', '기본 월 의뢰 유입량'], ['quest.partyAssist', '파티원 보조 계수'], ['quest.deathBase', '실패 시 사망 확률 F~S'],
+      ['quest.bossMult', '보스급 기준치 배수'], ['quest.subGrowth', '성공 시 유형 능력치 성장']]],
+    ['성장과 레벨', [
+      ['growth.xpBase', '성공 경험치 기본값'], ['growth.xpGradeMult', '등급당 경험치 배수'], ['growth.lvA', '필요 경험치 계수 A'],
+      ['growth.lvB', '필요 경험치 지수 B'], ['growth.lvCap', '레벨 상한 1차·2차·3차'], ['growth.trainPerWeek', '주간 훈련량']]],
+    ['모험가', [
+      ['adv.startCount', '시작 모험가 수'], ['adv.arrivalPerMonth', '월 신규 방문 수'], ['adv.arrivalPerGrade', '길드 등급당 방문 증가율'], ['adv.attachSuccess', '성공 시 애착 상승'],
+      ['adv.attachPerMonthInTown', '마을 체류 월간 애착 상승'], ['adv.leaveAfterYears', '이탈 판정 시작 (년)'], ['adv.leaveAttach', '이탈 기준 애착'],
+      ['adv.heirDelayWeeks', '2세 등장까지 (주)']]],
+    ['경제', [
+      ['econ.startGold', '시작 자금'], ['econ.feeBase', '기본 중계료율'], ['econ.subsidy', '왕국 보조금 F~S (월)'],
+      ['econ.buildCost', '시설 건설비 F~S'], ['econ.upkeepRate', '월 유지비 (건설비 대비)'], ['econ.tavernPerAdvWeek', '주점 매출 (모험가·주당)'],
+      ['econ.resaleRate', '소재 판매 차익 (보상 대비)'], ['econ.mealPriceRate', '식사 가격 (요리 등급 의뢰 보상 대비)'], ['econ.mealMargin', '식사 마진'], ['econ.mealBuyRate', '식사 구매율 절약·보통·낭비'], ['econ.mealBonus', '요리 효과 F~S'], ['gear.weaponPrice', '무기 상점가 F~S'], ['gear.setMult', '장비 세트 가격 배수']]],
+    ['승급과 전투', [
+      ['promo.N', '승급 보스급 의뢰 수 F→E ~ A→S'], ['promo.bossRefillWeeks', '보스급 의뢰 보충 (주)'], ['promo.invasionScale', '승급 침공 적 규모'],
+      ['promo.raidScale', '소규모 습격 적 규모'], ['promo.raidMonths', '습격 주기 (마을 단계별, 개월)'], ['promo.battleK', '전투 승률 곡선 기울기'],
+      ['promo.battleDeathWin', '전투 승리 시 사망 확률'], ['promo.battleDeathLoss', '전투 패배 시 사망 확률'], ['promo.sCandidates', 'S급 후보 필요 인원']]],
+    ['마을과 엔딩', [
+      ['town.startPop', '시작 인구'], ['town.growthBase', '월 인구 증가율'], ['town.raidLoss', '습격 패배 인구 감소'], ['town.invasionLoss', '침공 패배 인구 감소'],
+      ['ending.officerScale', '간부 1~3 전력'], ['ending.demonScale', '마왕 전력'], ['ending.demonPopMult', '마왕 전력 배수 (마을 단계별)'],
+      ['ending.rebirthYear', '전생자 등장 연차'], ['ending.demonHeirFallbackYear', '마인 대체 규칙 연차']]]
+  ];
+
+  let cfg = S.defaults();
+  let results = null;
+
+  const getP = (o, p) => p.split('.').reduce((x, k) => x[k], o);
+  const setP = (o, p, v) => { const ks = p.split('.'); const last = ks.pop(); ks.reduce((x, k) => x[k], o)[last] = v; };
+
+  function buildParams() {
+    const root = $('params'); root.innerHTML = '';
+    SCHEMA.forEach(([title, items], gi) => {
+      const d = document.createElement('details'); if (gi === 0) d.open = false;
+      const sm = document.createElement('summary'); sm.textContent = title; d.appendChild(sm);
+      for (const [path, label] of items) {
+        const v = getP(cfg, path);
+        const f = document.createElement('div'); f.className = 'field' + (Array.isArray(v) ? ' arr' : '');
+        const sp = document.createElement('span'); sp.textContent = label;
+        const inp = document.createElement('input'); inp.id = 'p_' + path.replace('.', '_'); inp.value = Array.isArray(v) ? v.join(', ') : v;
+        if (Array.isArray(v)) inp.className = 'wide';
+        inp.addEventListener('change', () => {
+          const cur = getP(cfg, path);
+          if (Array.isArray(cur)) {
+            const arr = inp.value.split(/[,\s]+/).filter(Boolean).map(Number);
+            if (arr.length === cur.length && arr.every(x => isFinite(x))) setP(cfg, path, arr); else inp.value = cur.join(', ');
+          } else { const n = Number(inp.value); if (isFinite(n)) setP(cfg, path, n); else inp.value = cur; }
+          syncText();
+        });
+        f.appendChild(sp); f.appendChild(inp); d.appendChild(f);
+      }
+      root.appendChild(d);
+    });
+    $('runs').value = cfg.run.runs; $('maxYears').value = cfg.run.maxYears;
+    syncText();
+  }
+  function syncText() { $('cfgText').value = JSON.stringify(cfg, null, 1); }
+
+  function buildBotChecks() {
+    const box = $('botChecks'); box.innerHTML = '';
+    const lg = $('legendTop'); lg.innerHTML = '';
+    for (const k of BOTKEYS) {
+      const l = document.createElement('label'); l.className = 'chk';
+      l.innerHTML = `<input type="checkbox" id="bot_${k}" checked><i class="dot" style="background:${COLORS[k]}"></i>${S.BOTS[k].name}`;
+      box.appendChild(l);
+      const s = document.createElement('span'); s.innerHTML = `<i style="background:${COLORS[k]}"></i>${S.BOTS[k].name}`; lg.appendChild(s);
+    }
+  }
+
+  // ---------- 실행 ----------
+  function run() {
+    cfg.run.runs = Math.max(10, Math.min(1000, Number($('runs').value) || 100));
+    cfg.run.maxYears = Math.max(10, Math.min(30, Number($('maxYears').value) || 20));
+    syncText();
+    const bots = BOTKEYS.filter(k => $('bot_' + k).checked);
+    if (!bots.length) { $('status').textContent = '플레이 성향을 하나 이상 고르세요.'; return; }
+    const total = bots.length * cfg.run.runs; let done = 0;
+    const raw = {}; bots.forEach(b => raw[b] = []);
+    $('runBtn').disabled = true; $('status').textContent = '계산 중…';
+    const frozen = JSON.parse(JSON.stringify(cfg));
+    let bi = 0, ri = 0;
+    function step() {
+      const t0 = performance.now();
+      while (performance.now() - t0 < 40 && bi < bots.length) {
+        raw[bots[bi]].push(S.simulate(frozen, bots[bi], frozen.run.seed * 100000 + ri));
+        ri++; done++;
+        if (ri >= frozen.run.runs) { ri = 0; bi++; }
+      }
+      $('prog').style.width = (done / total * 100).toFixed(1) + '%';
+      if (bi < bots.length) { setTimeout(step, 0); return; }
+      const agg = {}; for (const b of bots) agg[b] = S.aggregate(raw[b], frozen);
+      results = { agg, cfg: frozen };
+      render();
+      $('runBtn').disabled = false;
+      $('status').textContent = `완료: 성향 ${bots.length}종 × ${frozen.run.runs}회`;
+    }
+    setTimeout(step, 10);
+  }
+
+  // ---------- 목표 점검 ----------
+  const f1 = x => x == null ? '—' : x.toFixed(1);
+  const pct = x => x == null ? '—' : Math.round(x * 100) + '%';
+  function judge(v, lo, hi, tol) {
+    if (v == null || !isFinite(v)) return 'bad';
+    if (v >= lo && v <= hi) return 'ok';
+    const d = v < lo ? (lo - v) / Math.max(1e-9, Math.abs(lo)) : (v - hi) / Math.max(1e-9, Math.abs(hi));
+    return d <= tol ? 'warn' : 'bad';
+  }
+  function gaps(a) {
+    const m = a.reach.map(r => r.med);
+    const pts = [0].concat(m);
+    const diffs = []; for (let i = 1; i < pts.length; i++) if (pts[i] != null && pts[i - 1] != null) diffs.push(pts[i] - pts[i - 1]);
+    return diffs;
+  }
+  const TARGETS = [
+    { name: '첫 엔딩 연도 (중앙값)', unit: '년', goal: '13~15', get: a => a.endMed, lo: 13, hi: 15, tol: 0.15, fmt: f1 },
+    { name: '15년 안에 엔딩을 본 비율', goal: '50% 이상', get: a => a.end15, lo: 0.5, hi: 1, tol: 0.3, fmt: pct },
+    { name: '20년 안에 엔딩을 본 비율', goal: '90% 이상', get: a => a.endPct, lo: 0.9, hi: 1, tol: 0.15, fmt: pct },
+    { name: 'S급 도달 연도 (중앙값)', unit: '년', goal: '11~13', get: a => a.reach[5].med, lo: 11, hi: 13, tol: 0.15, fmt: f1 },
+    { name: '승급 간격 평균', unit: '년', goal: '1.5~2.5', get: a => { const d = gaps(a); return d.length ? d.reduce((x, y) => x + y, 0) / d.length : null; }, lo: 1.5, hi: 2.5, tol: 0.25, fmt: f1 },
+    { name: '가장 긴 승급 간격', unit: '년', goal: '3.5 이하', get: a => { const d = gaps(a); return d.length ? Math.max(...d) : null; }, lo: 0, hi: 3.5, tol: 0.3, fmt: f1 },
+    { name: '2차 전직 시 평균 레벨', goal: '15~21 (목표 18)', get: a => a.lvAt2, lo: 15, hi: 21, tol: 0.2, fmt: f1 },
+    { name: '3차 전직 시 평균 레벨', goal: '27~33 (목표 30)', get: a => a.lvAt3, lo: 27, hi: 33, tol: 0.2, fmt: f1 },
+    { name: '첫해 월 운영 순이익', unit: 'G', goal: '300~600 (기획 약 430)', get: a => a.netF, lo: 300, hi: 600, tol: 0.35, fmt: x => x == null ? '—' : Math.round(x).toLocaleString() },
+    { name: '금고가 마이너스가 된 반복', goal: '10% 이하', get: a => a.bankruptPct, lo: 0, hi: 0.1, tol: 1.5, fmt: pct },
+    { name: '의뢰 성공률', goal: '65~85%', get: a => a.successRate, lo: 0.65, hi: 0.85, tol: 0.1, fmt: pct },
+    { name: '소규모 습격 방어율', goal: '70~95%', get: a => a.raidWin, lo: 0.7, hi: 0.95, tol: 0.08, fmt: pct },
+    { name: '사망자 수 (전체 기간)', unit: '명', goal: '10~25 [가안]', get: a => a.deaths, lo: 10, hi: 25, tol: 0.3, fmt: f1 },
+    { name: '전생자 등장 비율', goal: '참고 (낮을수록 15년 안에 클리어)', get: a => a.rebirthPct, ref: true, fmt: pct },
+    { name: '마인 각성 비율', goal: '참고', get: a => a.demonAwakePct, ref: true, fmt: pct },
+    { name: '마인 대체 규칙 발동 비율', goal: '참고', get: a => a.demonFallbackPct, ref: true, fmt: pct },
+    { name: '활동 모험가 수 (10년차)', unit: '명', goal: '참고', get: a => a.advs[9] && a.advs[9].med, ref: true, fmt: f1 }
+  ];
+  function renderTargets(bots) {
+    const t = $('targets');
+    let h = '<tr><th>지표</th><th>목표</th>' + bots.map(b => `<th class="num" style="color:${COLORS[b]}">${S.BOTS[b].name}</th>`).join('') + '</tr>';
+    for (const T of TARGETS) {
+      h += `<tr><td>${T.name}${T.unit ? ` <span class="note">(${T.unit})</span>` : ''}</td><td class="note">${T.goal}</td>`;
+      for (const b of bots) {
+        const v = T.get(results.agg[b]);
+        const cls = T.ref ? 'ref' : judge(v, T.lo, T.hi, T.tol);
+        h += `<td class="num"><span class="pill ${cls}">${T.fmt(v)}</span></td>`;
+      }
+      h += '</tr>';
+    }
+    t.innerHTML = h;
+  }
+
+  function renderFindings(bots) {
+    const issues = [
+      { test: a => a.reach[4].med != null && a.reach[5].med != null && a.reach[5].med - a.reach[4].med > 3.5, val: a => f1(a.reach[5].med - a.reach[4].med) + '년',
+        text: 'A급에서 S급까지 오래 걸립니다. S급 후보(A급 + Lv 45) 조건이나 고레벨 경험치가 병목일 가능성이 큽니다' },
+      { test: a => a.reach[4].med != null && a.reach[4].med < 8, val: a => 'A급 ' + f1(a.reach[4].med) + '년',
+        text: '중반(C~A) 승급이 목표보다 빠르게 압축되어 있습니다' },
+      { test: a => a.deaths > 25, val: a => f1(a.deaths) + '명', text: '전체 사망자가 많습니다. 실패 사망 확률이나 전투 패배 시 사망 확률을 낮춰 볼 만합니다' },
+      { test: a => a.bankruptPct > 0.1, val: a => pct(a.bankruptPct), text: '금고가 마이너스가 된 반복이 많습니다. 방어전 보상금과 건설 시점이 겹치는지 확인이 필요합니다' },
+      { test: a => a.netF < 300, val: a => Math.round(a.netF) + 'G', text: 'F급 첫해 월 순이익이 기획 가안(약 430G)보다 낮습니다. 주점 매출이나 보조금을 확인해 볼 만합니다' },
+      { test: a => a.lvAt2 != null && a.lvAt2 < 15, val: a => 'Lv ' + f1(a.lvAt2), text: '2차 전직이 목표(Lv 18)보다 이릅니다. 훈련량이나 의뢰 성장치가 레벨 성장보다 빠릅니다' },
+      { test: a => a.endPct < 0.9, val: a => pct(1 - a.endPct), text: '20년 안에 엔딩을 못 본 반복이 있습니다' }
+    ];
+    const out = [];
+    for (const I of issues) {
+      const hit = bots.filter(b => I.test(results.agg[b]));
+      if (hit.length) out.push(`${I.text}. <span class="note">${hit.map(b => S.BOTS[b].name + ' ' + I.val(results.agg[b])).join(' · ')}</span>`);
+    }
+    if (!out.length) out.push('모든 목표가 범위 안에 있습니다.');
+    $('findings').innerHTML = out.map(x => `<li>${x}</li>`).join('');
+  }
+
+  // ---------- SVG 차트 ----------
+  function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
+  function fmtAxis(v) { if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(v % 1e6 ? 1 : 0) + 'M'; if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(v % 1e3 ? 1 : 0) + 'k'; return String(Math.round(v * 100) / 100); }
+  function chart(el, { xs, series, yMax, refLines, bar }) {
+    const W = 520, H = 250, L = 46, Rr = 12, Tt = 12, B = 30;
+    let ymax = yMax || 0;
+    if (!yMax) for (const s of series) for (const p of s.data) if (p != null) ymax = Math.max(ymax, p);
+    if (refLines) for (const r of refLines) if (r.y != null) ymax = Math.max(ymax, r.y);
+    ymax = niceMax(ymax * 1.05);
+    const n = xs.length;
+    const xp = i => L + (n === 1 ? (W - L - Rr) / 2 : i * (W - L - Rr) / (n - 1));
+    const yp = v => Tt + (H - Tt - B) * (1 - v / ymax);
+    let g = '';
+    for (let k = 0; k <= 4; k++) { const v = ymax * k / 4, y = yp(v); g += `<line x1="${L}" x2="${W - Rr}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="1"/><text x="${L - 6}" y="${y + 4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--font-mono)">${fmtAxis(v)}</text>`; }
+    const every = Math.ceil(n / 10);
+    xs.forEach((x, i) => { if (i % every === 0 || i === n - 1) g += `<text x="${xp(i)}" y="${H - 10}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--font-mono)">${x}</text>`; });
+    if (refLines) for (const r of refLines) {
+      if (r.points) { const d = r.points.map((v, i) => v == null ? '' : `${i && r.points[i - 1] != null ? 'L' : 'M'}${xp(i)},${yp(v)}`).join(''); g += `<path d="${d}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/>`; }
+      else { const y = yp(r.y); g += `<line x1="${L}" x2="${W - Rr}" y1="${y}" y2="${y}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="4 4"/>`; }
+    }
+    if (bar) {
+      const k = series.length, bw = Math.max(2, (W - L - Rr) / n / (k + 1));
+      series.forEach((s, si) => s.data.forEach((v, i) => { if (!v) return; const x = xp(i) - (k * bw) / 2 + si * bw; g += `<rect x="${x}" y="${yp(v)}" width="${bw - 1}" height="${yp(0) - yp(v)}" fill="${s.color}" opacity="0.85"/>`; }));
+    } else {
+      for (const s of series) {
+        let d = '', prev = false;
+        s.data.forEach((v, i) => { if (v == null) { prev = false; return; } d += `${prev ? 'L' : 'M'}${xp(i)},${yp(v)}`; prev = true; });
+        g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.2" stroke-linejoin="round"/>`;
+        const lastI = s.data.map((v, i) => v == null ? -1 : i).filter(i => i >= 0).pop();
+        if (lastI != null) g += `<circle cx="${xp(lastI)}" cy="${yp(s.data[lastI])}" r="3.2" fill="${s.color}"/>`;
+      }
+    }
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+  }
+
+  function render() {
+    const bots = Object.keys(results.agg);
+    renderTargets(bots); renderFindings(bots);
+    const Y = results.cfg.run.maxYears;
+    const years = Array.from({ length: Y }, (_, i) => i + 1);
+    const ser = f => bots.map(b => ({ color: COLORS[b], data: f(results.agg[b]) }));
+    chart($('c_reach'), { xs: ['E', 'D', 'C', 'B', 'A', 'S'], series: ser(a => a.reach.map(r => r.med)), refLines: [{ points: [2, 4, 6, 8, 10, 12] }] });
+    chart($('c_end'), { xs: years, series: ser(a => a.endHist.map(c => c / a.n)), bar: true });
+    chart($('c_gold'), { xs: years, series: ser(a => a.gold.map(x => x && x.med)) });
+    chart($('c_lv'), { xs: years, series: ser(a => a.lv.map(x => x && x.med)), refLines: [{ y: 18 }, { y: 30 }, { y: 45 }], yMax: 50 });
+    chart($('c_adv'), { xs: years, series: ser(a => a.advs.map(x => x && x.med)) });
+    chart($('c_pop'), { xs: years, series: ser(a => a.pop.map(x => x && x.med)), refLines: [{ y: 300 }, { y: 1000 }, { y: 3000 }, { y: 8000 }] });
+  }
+
+  // ---------- 이벤트 ----------
+  $('runBtn').addEventListener('click', run);
+  $('resetBtn').addEventListener('click', () => { cfg = S.defaults(); buildParams(); $('status').textContent = '기본값으로 돌렸습니다. 실행을 누르면 다시 계산합니다.'; });
+  $('copyBtn').addEventListener('click', () => {
+    const ta = $('cfgText');
+    const done = () => { $('status').textContent = '설정을 복사했습니다.'; };
+    try { navigator.clipboard.writeText(ta.value).then(done, () => { ta.select(); $('status').textContent = '자동 복사가 막혀 있어 텍스트를 선택해 두었습니다. 직접 복사하세요.'; }); }
+    catch (e) { ta.select(); }
+  });
+  $('applyBtn').addEventListener('click', () => {
+    try { const c = JSON.parse($('cfgText').value); const d = S.defaults(); for (const k of Object.keys(d)) Object.assign(d[k], c[k] || {}); cfg = d; buildParams(); $('status').textContent = '설정을 적용했습니다. 실행을 누르면 계산합니다.'; }
+    catch (e) { $('status').textContent = 'JSON 형식이 올바르지 않습니다. 복사한 설정 전체를 붙여 넣었는지 확인하세요.'; }
+  });
+
+  buildBotChecks(); buildParams();
+  if (window.GUILD_SIM_INITIAL) { results = window.GUILD_SIM_INITIAL; render(); $('status').textContent = `기본 설정 결과 (성향 4종 × ${results.cfg.run.runs}회, 미리 계산됨). 수치를 바꾸고 실행하면 다시 계산합니다.`; }
+  else run();
+})();
+
+</script>
