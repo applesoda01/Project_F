@@ -1,0 +1,83 @@
+﻿구분,항목,값,설명
+quest,ref,15|25|35|45|60|75|90,판정 기준치
+quest,reqCount,1|1|2|2|3|3|4,요구 능력치 수
+quest,reward,100|200|400|800|1500|3000|6000,
+quest,weeks,1|1|1|2|2|2|3,소요 주
+quest,perMonth,10,기본 월 유입량
+quest,boardCap,6|8|10|12|14|16|18,
+quest,partyAssist,0.25,파티원 보조 계수
+quest,deathBase,0.01|0.01|0.03|0.03|0.05|0.05|0.08,
+quest,subGrowth,0.2,성공 시 유형 능력치 성장
+quest,bossMult,1.15,보스급 기준치 배수
+growth,xpBase,80,성공 경험치 = xpBase × mult^등급
+growth,xpGradeMult,2,
+growth,xpFailRate,0.3,
+growth,lvA,20,다음 레벨 필요 경험치 = A × Lv^B
+growth,lvB,1.55,
+growth,lvCap,30|40|50,
+growth,trainPerWeek,0.1,훈련장·도서관 주간 훈련량
+growth,statCap,100,
+adv,arrivalPerMonth,0.8,"arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)"
+adv,arrivalPerGrade,0.1,
+adv,startCount,5,
+adv,startCore,15,
+adv,startOther,6,
+adv,attachSuccess,2,
+adv,attachPerMonthInTown,1,
+adv,visitBaseWeeks,2,
+adv,leaveAfterYears,2,
+adv,leaveAttach,20,
+adv,heirDelayWeeks,24,
+econ,startGold,3000,
+econ,feeBase,0.1,
+econ,feePerInfo,0.02,
+econ,subsidy,300|500|800|1200|2000|3000|4500,
+econ,buildCost,0|2000|4000|8000|15000|30000|0,
+econ,upkeepRate,0.015,
+econ,tavernPerAdvWeek,4,
+econ,tavernGradeMult,1.6,
+econ,resaleRate,0.08,
+econ,effectCost,0.1|0.2|0.35,
+econ,mealPriceRate,0.15,
+econ,mealMargin,0.6,
+econ,mealBuyRate,0.3|0.6|0.9,
+econ,mealBonus,0.03|0.04|0.045|0.05|0.06|0.05|0.07,
+econ,mealUnlockChance,0.5,
+gear,weaponPrice,150|400|1000|2500|6000|14000|30000,
+gear,setMult,3,
+gear,weaponStat,3|5|8|12|16|21|27,
+gear,armorStat,1|2|4|6|8|10|13,
+gear,accStat,2|3|5|7|10|13|17,
+gear,weaponAtk,10|18|28|40|55|72|92,
+gear,reserveMult,2|1|0.3,절약 / 보통 / 낭비
+promo,N,2|3|3|4|4|5,
+promo,bossRefillWeeks,6,
+promo,invasionScale,16,
+promo,raidScale,4,
+promo,battleK,6,
+promo,battleDeathWin,0.01,
+promo,battleDeathLoss,0.03,
+promo,raidMonths,8|6|5|4|3,
+promo,sCandidates,2,
+fame,succ,0.4|0.8|1.2|1.6|2|2.4|3,의뢰 성공 시 등급별 상승
+fame,fail,0.6|1.2|1.8|2.4|3|3.6|4.5,의뢰 실패 시 등급별 하락 (등급이 높을수록 크게)
+fame,gradeUp,0|25|50|75|100|125|150,길드 승급 시 상승
+fame,maxBonus,0.6,"명성 보정 = 1 + 0.6 × min(1, 명성/500) → 최대 1.6배 (명성 도입 전 S급 보정과 같음)"
+fame,full,500,
+fame,cap,1000,
+town,startPop,150,
+town,growthBase,0.012,
+town,growthPerGrade,0.002,
+town,perResident,1,
+town,stages,300|1000|3000|8000,
+town,inflowMult,1|1.3|1.6|2|2.5,
+town,raidLoss,0.05,
+town,invasionLoss,0.1,
+ending,officerScale,4|4.3|4.6,
+ending,demonScale,6,
+ending,demonPopMult,1|1|1|0.85|0.7,
+ending,rebirthYear,15,
+ending,rebirthTotal,300,
+ending,mainRetryWeeks,8,
+ending,demonRetryWeeks,24,
+ending,demonHeirFallbackYear,8,

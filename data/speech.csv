@@ -1,0 +1,97 @@
+﻿상황,말투,대사,메모
+accept,bold,이 정도는 식은 죽 먹기지!,수주 · 호탕
+accept,bold,제일 센 걸로 줘요!,수주 · 호탕
+accept,bold,빨리 끝내고 올게!,수주 · 호탕
+accept,careful,조건부터 다시 볼게요…,수주 · 조심
+accept,careful,이건 해볼 만하겠네요.,수주 · 조심
+accept,careful,무리는 안 하겠습니다.,수주 · 조심
+accept,friendly,다 같이 가면 금방이죠!,수주 · 다정
+accept,friendly,"이 의뢰, 같이 할 사람?",수주 · 다정
+accept,friendly,"리나 씨, 이걸로 할게요!",수주 · 다정
+accept,loner,…이걸로.,수주 · 무뚝뚝
+accept,loner,혼자로 충분해.,수주 · 무뚝뚝
+accept,loner,접수 부탁하지.,수주 · 무뚝뚝
+accept,plain,이 의뢰 맡을게요!,수주 · 보통
+accept,plain,이걸로 할게요.,수주 · 보통
+accept,plain,접수 부탁드려요.,수주 · 보통
+depart,bold,가자아!,출발 · 호탕
+depart,bold,금방 돌아온다!,출발 · 호탕
+depart,careful,준비물 다 챙겼지?,출발 · 조심
+depart,careful,조심해서 다녀올게요.,출발 · 조심
+depart,friendly,다녀오겠습니다~!,출발 · 다정
+depart,friendly,다들 힘내자!,출발 · 다정
+depart,loner,…간다.,출발 · 무뚝뚝
+depart,loner,다녀오지.,출발 · 무뚝뚝
+depart,plain,다녀오겠습니다!,출발 · 보통
+depart,plain,출발!,출발 · 보통
+success,bold,역시 나야!,성공 · 호탕
+success,bold,싱거웠는걸?,성공 · 호탕
+success,careful,무사히 끝났어요.,성공 · 조심
+success,careful,계획대로였어요.,성공 · 조심
+success,friendly,다들 수고했어!,성공 · 다정
+success,friendly,"해냈어요, 리나 씨!",성공 · 다정
+success,loner,…끝났다.,성공 · 무뚝뚝
+success,loner,보고하지.,성공 · 무뚝뚝
+success,plain,다녀왔습니다!,성공 · 보통
+success,plain,의뢰 완료!,성공 · 보통
+fail,bold,다음엔 안 진다!,실패 · 호탕
+fail,bold,"쳇, 운이 없었어.",실패 · 호탕
+fail,careful,…무리였나 봐요.,실패 · 조심
+fail,careful,준비가 부족했어요.,실패 · 조심
+fail,friendly,"미안해요, 실패했어요…",실패 · 다정
+fail,friendly,그래도 다들 무사해요.,실패 · 다정
+fail,loner,…실패다.,실패 · 무뚝뚝
+fail,loner,말할 것 없다.,실패 · 무뚝뚝
+fail,plain,…실패했어요.,실패 · 보통
+fail,plain,면목 없네요.,실패 · 보통
+levelup,bold,몸이 가벼워!,레벨업 · 호탕
+levelup,careful,조금 늘었네요.,레벨업 · 조심
+levelup,friendly,레벨 올랐어요!,레벨업 · 다정
+levelup,loner,…강해졌군.,레벨업 · 무뚝뚝
+levelup,plain,레벨이 올랐다!,레벨업 · 보통
+gradeup,bold,이제 진짜 시작이다!,승급 · 호탕
+gradeup,careful,승급… 해냈네요.,승급 · 조심
+gradeup,friendly,저 승급했어요!,승급 · 다정
+gradeup,loner,…당연하지.,승급 · 무뚝뚝
+gradeup,plain,승급했다!,승급 · 보통
+meal,bold,고기! 고기 주세요!,식사 · 호탕
+meal,careful,든든히 먹고 가야죠.,식사 · 조심
+meal,friendly,같이 먹자!,식사 · 다정
+meal,loner,…밥.,식사 · 무뚝뚝
+meal,plain,배부터 채우자!,식사 · 보통
+drink,bold,한 잔 더!,음료 · 호탕
+drink,careful,따뜻한 차 한 잔이요.,음료 · 조심
+drink,friendly,다 같이 한 잔 해요!,음료 · 다정
+drink,loner,…물.,음료 · 무뚝뚝
+drink,plain,한 잔 주세요!,음료 · 보통
+first,bold,여기가 길드냐!,첫 방문 · 호탕
+first,careful,"저, 처음 왔는데요…",첫 방문 · 조심
+first,friendly,안녕하세요! 잘 부탁해요!,첫 방문 · 다정
+first,loner,…등록하러 왔다.,첫 방문 · 무뚝뚝
+first,plain,여기가 길드인가요?,첫 방문 · 보통
+chat,bold,다음엔 더 큰 놈 잡아야지,잡담 · 호탕
+chat,bold,심심한데 의뢰 없나,잡담 · 호탕
+chat,careful,장비 손질해야겠다,잡담 · 조심
+chat,careful,무리하면 안 돼,잡담 · 조심
+chat,friendly,여기 분위기 좋다~,잡담 · 다정
+chat,friendly,리나 씨 오늘도 바쁘네,잡담 · 다정
+chat,loner,…,잡담 · 무뚝뚝
+chat,loner,…시끄럽군,잡담 · 무뚝뚝
+chat,plain,오늘은 무슨 의뢰가 있으려나,잡담 · 보통
+chat,plain,배고프다…,잡담 · 보통
+rumor,*,북쪽 숲에 늑대가 늘었대,소문 (잡담 중 30%)
+rumor,*,옆 마을 길드는 문 닫았다던데,소문 (잡담 중 30%)
+rumor,*,옛 용사 파티 얘기 들었어?,소문 (잡담 중 30%)
+rumor,*,광산에서 이상한 빛이 났대,소문 (잡담 중 30%)
+rumor,*,왕국에서 보조금이 늘었다나 봐,소문 (잡담 중 30%)
+lina_meal,lina,오늘의 요리 나왔어요!,리나 말풍선
+lina_drink,lina,음료 나왔어요!,리나 말풍선
+lina_depart,lina,다녀오세요! 조심하시고요.,리나 말풍선
+lina_first,lina,어서 오세요! 처음 오셨죠?,리나 말풍선
+lina_success,lina,수고하셨어요! 소재는 제가 살게요.,리나 말풍선
+lina_fail,lina,무사히 돌아와서 다행이에요.,리나 말풍선
+lina_ledger,lina,이번 달 결산이 나왔어요!,리나 말풍선
+lina_unlock,lina,새 요리가 메뉴에 올랐어요!,리나 말풍선
+lina_idle,lina,의뢰서 정리해야지…,리나 말풍선
+lina_idle,lina,소재 장부가 어디 있더라…,리나 말풍선
+lina_idle,lina,오늘도 힘내자!,리나 말풍선

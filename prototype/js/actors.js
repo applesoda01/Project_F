@@ -103,7 +103,7 @@
       party.forEach((a, i) => {
         busy.add(a.id); const ac = actor(a, EXIT);
         T(ac, 'wait', { t: i * 0.5 }); enter(ac);
-        if (i === 0) visitWindow(ac, ok ? 'sale' : 'quest', { mode: ok ? 'happy' : 'talk', text: ok ? '수고하셨어요! 소재는 제가 살게요.' : '무사히 돌아와서 다행이에요.', dur: 1.6 }, Speech.line(a, ok ? 'success' : 'fail'));
+        if (i === 0) visitWindow(ac, ok ? 'sale' : 'quest', { mode: ok ? 'happy' : 'talk', text: Speech.lina(ok ? 'lina_success' : 'lina_fail'), dur: 1.6 }, Speech.line(a, ok ? 'success' : 'fail'));
         else visitWindow(ac, ok ? 'sale' : 'quest', null, i === 1 ? Speech.line(a, ok ? 'success' : 'fail') : null);
       });
     }
@@ -116,8 +116,8 @@
         const had = D.actors.has(a.id), ac = actor(a, EXIT);
         if (!had) { T(ac, 'wait', { t: i * 0.5 }); enter(ac); } // 이번 주에 마을에 와서 바로 떠나는 경우: 입구에서 들어옴
         busy.add(a.id);
-        if (x.ate && i < x.ate) visitWindow(ac, 'meal', i === 0 ? { mode: 'talk', text: '오늘의 요리 나왔어요!', dur: 1.3 } : null, Speech.line(a, 'meal'));
-        if (i === 0) visitWindow(ac, 'quest', { mode: 'paper', text: '다녀오세요! 조심하시고요.', dur: 1.7, onStart: () => Board.take(qid) }, Speech.line(a, 'accept'));
+        if (x.ate && i < x.ate) visitWindow(ac, 'meal', i === 0 ? { mode: 'talk', text: Speech.lina('lina_meal'), dur: 1.3 } : null, Speech.line(a, 'meal'));
+        if (i === 0) visitWindow(ac, 'quest', { mode: 'paper', text: Speech.lina('lina_depart'), dur: 1.7, onStart: () => Board.take(qid) }, Speech.line(a, 'accept'));
         else T(ac, 'wait', { t: 1.2 });
         T(ac, 'say', { text: i === 0 ? Speech.line(a, 'depart') : '' });
         leave(ac);
@@ -134,7 +134,7 @@
     for (const a of s.advs) {
       if (busy.has(a.id) || !a.alive || a.state !== 'town' || D.actors.has(a.id)) continue;
       const ac = actor(a, EXIT); T(ac, 'wait', { t: Math.random() * 2 }); enter(ac);
-      if (!before.adv.has(a.id)) visitWindow(ac, 'quest', { mode: 'wave', text: '어서 오세요! 처음 오셨죠?', dur: 1.6 }, Speech.line(a, 'first'));
+      if (!before.adv.has(a.id)) visitWindow(ac, 'quest', { mode: 'wave', text: Speech.lina('lina_first'), dur: 1.6 }, Speech.line(a, 'first'));
       settle(ac);
     }
     // 5) 떠남 (마을 밖으로)
@@ -148,8 +148,8 @@
       if (L === before.log) break;
       if (L.kind === 'grow' && L.text.includes('급 모험가가 되었습니다')) { const a = s.advs.find(b => L.text.startsWith(b.name)); const ac = a && D.actors.get(a.id); if (ac) say(ac, Speech.line(a, 'gradeup'), 2.4); }
       if (L.kind === 'grow' && L.text.includes('의 레벨이')) { const a = s.advs.find(b => L.text.startsWith(b.name + '의')); const ac = a && D.actors.get(a.id); if (ac && !ac.bubble) say(ac, Speech.line(a, 'levelup'), 2.2); }
-      if (L.kind === 'ledger' && root.UI && !root.UI.autoReport) Lina.say('이번 달 결산이 나왔어요!', 2.4);
-      if (L.kind === 'unlock') Lina.say('새 요리가 메뉴에 올랐어요!', 2.4);
+      if (L.kind === 'ledger' && root.UI && !root.UI.autoReport) Lina.say(Speech.lina('lina_ledger'), 2.4);
+      if (L.kind === 'unlock') Lina.say(Speech.lina('lina_unlock'), 2.4);
     }
   };
   // 처음 화면: 마을에 있는 모험가를 바로 앉혀 둔다
@@ -214,7 +214,7 @@
       // 한가할 때의 행동: 가끔 식당 창구에서 음료를 시키고 자리로 돌아감 (규칙의 '주점 수입'을 화면에 보여 주는 장식 행동)
       if (!ac.tasks.length && D.t > (ac.idleAt || (ac.idleAt = D.t + 14 + Math.random() * 20))) {
         ac.idleAt = D.t + 22 + Math.random() * 26;
-        if (Math.random() < 0.5 && !Lina.job && Lina.queue.length === 0) { visitWindow(ac, 'meal', { mode: 'talk', text: '음료 나왔어요!', dur: 1.1 }, Speech.line(ac.a, 'drink')); settle(ac); }
+        if (Math.random() < 0.5 && !Lina.job && Lina.queue.length === 0) { visitWindow(ac, 'meal', { mode: 'talk', text: Speech.lina('lina_drink'), dur: 1.1 }, Speech.line(ac.a, 'drink')); settle(ac); }
         else if (ac.loiter != null && Math.random() < 0.6) { release(ac); settle(ac); }
       }
     }

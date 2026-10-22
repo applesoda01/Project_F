@@ -70,7 +70,7 @@
     for (const L of logs) {
       if (TOAST_KIND[L.kind] || (L.kind === 'grow' && L.text.includes('급 모험가'))) toast(L.text, L.kind);
       if (L.kind === 'ledger' && UI.autoReport) UI.monthlyReport();
-      if (L.kind === 'promo' && L.text.includes('제안합니다')) { const nm = L.text.split(/[이가] \d차/)[0]; UI.say([{ face: 'surprised', text: `마스터! ${nm} 씨가 전직 조건을 채웠어요.` }, { face: 'smile', text: '오른쪽 위 "전직 제안"에서 어떤 직업으로 보낼지 정해 주세요.' }]); }
+      if (L.kind === 'promo' && L.text.includes('제안합니다')) { const nm = L.text.split(/[이가] \d차/)[0]; UI.say(UI.lines('promo_ready', { name: nm })); }
     }
   };
 
@@ -226,9 +226,9 @@
   function decide(id, cls) {
     const a = s.advs.find(x => x.id === id), r = Gm.decidePromotion(s, id, cls);
     if (!r || !a) return;
-    if (r.held) UI.say([{ face: 'serious', text: `알겠어요. ${a.name} 씨 전직은 조금 더 지켜볼게요.` }]);
-    else if (r.accepted) { UI.say([{ face: 'surprised', text: `${a.name} 씨가 전직을 받아들였어요!` }, { face: 'laugh', text: `오늘부터 ${a.cls}예요. 레벨 상한도 풀렸어요!` }]); hooks.promoted && hooks.promoted(a); }
-    else UI.say([{ face: 'awkward', text: `${a.name} 씨는 아직 생각이 없대요…` }, { face: 'smile', text: '애착이 깊어지면 마음이 바뀔지도 몰라요. 3개월 뒤에 다시 여쭤볼게요.' }]);
+    if (r.held) UI.say(UI.lines('promo_held', { name: a.name }));
+    else if (r.accepted) { UI.say(UI.lines('promo_accepted', { name: a.name, cls: a.cls })); hooks.promoted && hooks.promoted(a); }
+    else UI.say(UI.lines('promo_declined', { name: a.name }));
     hooks.changed();
   }
 
@@ -285,6 +285,11 @@
 
   // ---------- 리나 대화 (M2-11) ----------
   const Dlg = { open: false, lines: [], cur: null, shown: 0, t: 0, hold: 0 };
+  // 대화 장면 (data/dialog.csv): 장면 이름과 {변수} 값으로 [{face, text}] 를 만든다
+  UI.lines = function (id, vars) {
+    const D = (root.GAME_DATA && root.GAME_DATA.dialog) || {};
+    return (D[id] || []).map(l => ({ face: l.face, text: l.text.replace(/\{(\w+)\}/g, (m0, k) => vars && vars[k] != null ? vars[k] : m0) }));
+  };
   UI.say = function (lines) { // [{face:'smile', text:'…'}, …]
     Dlg.lines.push(...lines);
     if (!Dlg.open) next();
@@ -313,13 +318,14 @@
   UI.monthlyReport = function () { // 1차의 월간 보고 문장을 표정과 함께
     const m = s.lastMonth; if (!m) return;
     const succ = m.quests ? Math.round(m.success / m.quests * 100) : 0, out = [];
-    if (m.net < 0) out.push({ face: 'worried', text: `마스터, 지난달은 ${fmt(-m.net)}G 적자였어요. 의뢰 ${m.quests}건 중 ${m.success}건 성공이에요.` }, { face: 'serious', text: '게시판 칸 배분을 한번 봐 주시겠어요?' });
-    else if (m.net >= 500 && succ >= 60) out.push({ face: 'laugh', text: `지난달은 순조로웠어요! 순이익 ${fmt(m.net)}G, 의뢰 ${m.quests}건 중 ${m.success}건 성공(${succ}%)이에요.` }, ...(m.meal > 0 ? [{ face: 'smile', text: `식당 매출도 ${fmt(m.meal)}G 나왔어요.` }] : []));
-    else if (succ < 60 && m.quests > 0) out.push({ face: 'serious', text: `지난달 의뢰 성공률이 ${succ}%로 낮았어요.` }, { face: 'awkward', text: `모험가분들 실력에 비해 의뢰가 버거운 것 같아요. 순이익은 ${fmt(m.net)}G예요.` });
-    else out.push({ face: 'smile', text: `지난달 결산이에요. 순이익 ${fmt(m.net)}G, 의뢰 ${m.quests}건 중 ${m.success}건 성공했어요.` }, { face: 'smile', text: `지금 길드에는 모험가 ${s.advs.filter(a => a.alive).length}분이 계세요.` });
+    const v = { net: fmt(m.net), loss: fmt(-m.net), quests: m.quests, success: m.success, rate: succ, meal: fmt(m.meal), advs: s.advs.filter(a => a.alive).length };
+    if (m.net < 0) out.push(...UI.lines('monthly_deficit', v));
+    else if (m.net >= 500 && succ >= 60) out.push(...UI.lines('monthly_good', v), ...(m.meal > 0 ? UI.lines('monthly_meal', v) : []));
+    else if (succ < 60 && m.quests > 0) out.push(...UI.lines('monthly_low', v));
+    else out.push(...UI.lines('monthly_normal', v));
     UI.say(out);
   };
-  UI.gradeUp = g => UI.say([{ face: 'surprised', text: `마스터! 길드가 ${GR[g]}급으로 올랐어요!` }, { face: 'laugh', text: '게시판 칸도 늘었고, 새 시설도 지을 수 있어요.' }]);
+  UI.gradeUp = g => UI.say(UI.lines('gradeup', { grade: GR[g] }));
 
   root.UI = UI;
 })(this);

@@ -28,12 +28,12 @@
   function load() {
     let t = null; try { t = localStorage.getItem(SAVE_KEY); } catch (e) { /* 저장소 없음 */ }
     if (!t) { UI.toast('저장된 게임이 없습니다.', 'warn'); return; }
-    try { const ns = Gm.deserialize(t); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); swap(ns, [{ face: 'smile', text: `${Gm.dateLabel(ns.week)}의 길드로 돌아왔어요.` }]); }
+    try { const ns = Gm.deserialize(t); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); swap(ns, UI.lines('load', { date: Gm.dateLabel(ns.week) })); }
     catch (e) { UI.toast('저장 데이터를 불러오지 못했습니다.', 'warn'); }
   }
   function newGame() {
     const ns = Gm.newGame(Sim.defaults(), (Date.now() % 1e9) >>> 0); Gm.stepWeek(ns);
-    swap(ns, [{ face: 'smile', text: '마스터, 새 길드를 열었어요. 이번에도 잘 부탁드려요!' }]);
+    swap(ns, UI.lines('newgame'));
   }
 
   UI.init(stage, s, { setSpeed, save, load, newGame, changed: () => UI.hud(), promoted: a => Director.celebrate(a.id) });
@@ -77,7 +77,7 @@
     q('#dAssets').title = st.missing.length ? '임시: ' + st.missing.join(', ') : '모든 파일을 찾았습니다';
     $('loading').remove();
     Lobby.update(s, 0); Director.init(s); UI.hud();
-    UI.say([{ face: 'smile', text: '어서 오세요, 마스터! 오늘도 길드 문을 열었어요.' }, { face: 'serious', text: '오른쪽 아래 게시판에서 등급별 칸 배분을 정하면, 모험가분들이 알아서 의뢰를 골라 가요.' }]);
+    UI.say(UI.lines('start'));
     requestAnimationFrame(frame);
   });
 })();

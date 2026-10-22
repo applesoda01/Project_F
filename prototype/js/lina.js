@@ -56,7 +56,7 @@
       if (Lina.idleT > Lina.nextIdle) {
         const pick = Object.keys(GROUPS).filter(g => g !== Lina.lastGroup);
         Lina.play(pick[Math.floor(Math.random() * pick.length)]);
-        if (Math.random() < 0.25 && Lina.lastGroup === 'read') Lina.say(['의뢰서 정리해야지…', '소재 장부가 어디 있더라…', '오늘도 힘내자!'][Math.floor(Math.random() * 3)], 1.8);
+        if (Math.random() < 0.25 && Lina.lastGroup === 'read') Lina.say(root.Speech.lina('lina_idle'), 1.8);
       }
     }
     // 깜빡임 (대기 중에만)

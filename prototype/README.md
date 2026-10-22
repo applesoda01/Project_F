@@ -6,7 +6,7 @@
 | --- | --- |
 | `js/game_core.js` | **게임 규칙** (화면과 분리, 유니티 C# 이식 대상) |
 | `js/sim_engine.js` | 시뮬레이터 기본값(`defaults()`)을 게임도 같이 씀. 원본은 `sim/sim_engine.js`와 동일하게 유지 |
-| `js/data.js` | 요리·스킬 데이터 |
+| `js/data_gen.js` | **자동 생성** 게임 데이터 (밸런스·대사·의뢰 종류·이름·요리·스킬). `data/*.csv`를 고친 뒤 `python tools/data_build.py` |
 | `js/manifest.js` · `js/assets.js` | 리소스 목록과 로더 (M2-1) |
 | `js/stage.js` | 1920×1080 화면 구조 (M2-2) |
 | `js/lobby.js` | 로비 그리기·게시판 (M2-3·M2-4) |
@@ -18,4 +18,4 @@
 | `assets/` | 그림 — 규칙은 [docs/art/asset_rules.md](../docs/art/asset_rules.md) |
 | `experiments/` | 시험판 (리나 컷아웃, 전사 옆모습 걷기, 로비 연출, 쪽지 흔들림) |
 
-규칙을 고쳤다면 `sim/sim_engine.js`도 같이 고치고 `prototype/js/sim_engine.js`에 복사한 뒤, 개발 패널의 "관문 1 검증"을 돌려 [docs/balance/gate1.md](../docs/balance/gate1.md)에 기록합니다.
+밸런스 수치는 `data/balance.csv`에서 고칩니다(게임과 시뮬레이터가 같이 읽음). 규칙 코드를 고쳤다면 `sim/sim_engine.js`도 같이 고치고 `prototype/js/sim_engine.js`에 복사한 뒤, 개발 패널의 "관문 1 검증"을 돌려 [docs/balance/gate1.md](../docs/balance/gate1.md)에 기록합니다.

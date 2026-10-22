@@ -1,0 +1,22 @@
+﻿장면,순서,표정,대사,메모
+start,1,smile,"어서 오세요, 마스터! 오늘도 길드 문을 열었어요.",게임 시작
+start,2,serious,"오른쪽 아래 게시판에서 등급별 칸 배분을 정하면, 모험가분들이 알아서 의뢰를 골라 가요.",
+newgame,1,smile,"마스터, 새 길드를 열었어요. 이번에도 잘 부탁드려요!",새 게임
+load,1,smile,{date}의 길드로 돌아왔어요.,불러오기
+gradeup,1,surprised,마스터! 길드가 {grade}급으로 올랐어요!,길드 승급
+gradeup,2,laugh,"게시판 칸도 늘었고, 새 시설도 지을 수 있어요.",
+promo_ready,1,surprised,마스터! {name} 씨가 전직 조건을 채웠어요.,전직 제안 도착
+promo_ready,2,smile,"오른쪽 위 ""전직 제안""에서 어떤 직업으로 보낼지 정해 주세요.",
+promo_held,1,serious,알겠어요. {name} 씨 전직은 조금 더 지켜볼게요.,전직 보류
+promo_accepted,1,surprised,{name} 씨가 전직을 받아들였어요!,전직 수락
+promo_accepted,2,laugh,오늘부터 {cls}예요. 레벨 상한도 풀렸어요!,
+promo_declined,1,awkward,{name} 씨는 아직 생각이 없대요…,전직 거절
+promo_declined,2,smile,애착이 깊어지면 마음이 바뀔지도 몰라요. 3개월 뒤에 다시 여쭤볼게요.,
+monthly_deficit,1,worried,"마스터, 지난달은 {loss}G 적자였어요. 의뢰 {quests}건 중 {success}건 성공이에요.",월간 보고 · 적자
+monthly_deficit,2,serious,게시판 칸 배분을 한번 봐 주시겠어요?,
+monthly_good,1,laugh,"지난달은 순조로웠어요! 순이익 {net}G, 의뢰 {quests}건 중 {success}건 성공({rate}%)이에요.","월간 보고 · 순이익 500G 이상, 성공률 60% 이상"
+monthly_meal,1,smile,식당 매출도 {meal}G 나왔어요.,월간 보고 · 순조로울 때 식당 매출이 있으면 덧붙임
+monthly_low,1,serious,지난달 의뢰 성공률이 {rate}%로 낮았어요.,월간 보고 · 성공률 60% 미만
+monthly_low,2,awkward,모험가분들 실력에 비해 의뢰가 버거운 것 같아요. 순이익은 {net}G예요.,
+monthly_normal,1,smile,"지난달 결산이에요. 순이익 {net}G, 의뢰 {quests}건 중 {success}건 성공했어요.",월간 보고 · 그 밖
+monthly_normal,2,smile,지금 길드에는 모험가 {advs}분이 계세요.,

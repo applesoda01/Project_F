@@ -6,7 +6,7 @@
   const ST = ['힘', '민첩', '지력', '정신', '기교'];
   const WPM = 4, WPY = 48;
 
-  function defaults() {
+  function baseDefaults() { // 코드에 박힌 기본값 (data/balance.csv 가 없을 때만 그대로 쓰임)
     return {
       run: { runs: 100, maxYears: 20, seed: 1 },
       quest: {
@@ -80,6 +80,20 @@
         demonHeirFallbackYear: 8
       }
     };
+  }
+  // 밸런스 수치는 data/balance.csv → prototype/js/data_gen.js 에서 읽어 기본값을 덮어쓴다 (게임·시뮬레이터 공통)
+  function gameData() {
+    if (typeof window !== 'undefined' && window.GAME_DATA) return window.GAME_DATA;
+    if (typeof require === 'function' && typeof __dirname !== 'undefined') {
+      const path = require('path');
+      for (const p of ['data_gen.js', '../prototype/js/data_gen.js']) { try { return require(path.join(__dirname, p)); } catch (e) { /* 다음 경로 */ } }
+    }
+    return null;
+  }
+  function defaults() {
+    const d = baseDefaults(), G = gameData();
+    if (G && G.balance) for (const sec in G.balance) for (const k in G.balance[sec]) if (d[sec] && k in d[sec]) d[sec][k] = JSON.parse(JSON.stringify(G.balance[sec][k]));
+    return d;
   }
 
   // 플레이어 성향(봇)
