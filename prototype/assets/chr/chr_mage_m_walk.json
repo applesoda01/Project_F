@@ -1,0 +1,43 @@
+{
+  "character": "chr_mage_m",
+  "image": "chr_mage_m_walk.png",
+  "image_size": [
+    6144,
+    1024
+  ],
+  "cell_size": [
+    256,
+    256
+  ],
+  "columns": 24,
+  "rows": [
+    "down",
+    "left",
+    "right",
+    "up"
+  ],
+  "animation": {
+    "name": "walk",
+    "frames_per_direction": 24,
+    "fps": 30,
+    "loop": true,
+    "frame_duration_ms": 33.33,
+    "note": "Frame 0 is the contact pose (legs apart). 24 frames = 2 steps = 1 full cycle."
+  },
+  "pivot": {
+    "x": 0.5,
+    "y_px_from_top": 244,
+    "note": "bottom-center, feet at about y=122 of 128"
+  },
+  "character_height_px": 216,
+  "background": "transparent (RGBA)",
+  "rendering": "image-rendering: pixelated is NOT needed; the art is smooth, use bilinear/auto filtering",
+  "directions": {
+    "down": "facing the viewer",
+    "left": "facing left",
+    "right": "already mirrored from left in the sheet, no runtime flip needed",
+    "up": "facing away from the viewer"
+  },
+  "game_note": "게임 규칙 이름: chr_<직업>_<성별>_walk. 이동 거리로 프레임을 넘김(걸음 폭 약 29px/칸 기준), 셀 키 108px → 화면 250px",
+  "upscale": "Real-ESRGAN x4plus_anime_6B로 4배 확대 후 Lanczos로 셀 256px에 맞춤 (원본 128px). 투명 테두리 번짐 방지, 알파도 같은 모델로 확대"
+}
