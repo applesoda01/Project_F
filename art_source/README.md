@@ -9,5 +9,6 @@
 | `walk_sheets_128/` | 받은 걷기 시트 원본 (128px 셀). 게임에는 256px 업스케일본이 들어감 |
 | `corrected/` | **보정본** 16장 (원본과 같은 크기, 잡티·계단 현상 정리). 여성 마법사는 오른쪽 테두리 선도 지움 → `mage_f.png` |
 | `upscaled/` | 업스케일 결과물 (리나 ×2 시험본) |
+| `lobby_bg/` | 로비 배경 v3 (밝은 낮·석재+하늘색·칠판). 합본 1920/3840, 레이어 4장, 게임용 2장, 좌표 json. 게임 코드 좌표 변경 사항은 폴더 안 README |
 
 보정은 `python tools/upscale/correct_batch.py <모델.onnx> art_source/illustrations art_source/corrected` (1024×1536 한 장 약 2분, 1684×2528 약 5분, CPU). 업스케일 방법은 [tools/upscale](../tools/upscale)을 보세요.
