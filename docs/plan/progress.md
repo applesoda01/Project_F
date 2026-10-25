@@ -43,3 +43,13 @@
 | 새 디자인으로 교체 중 | 전사 남녀 걷기 시트 (256px 업스케일) |
 | 임시 | 로비 배경(한 장), 카운터, 가구 Lv1·2, 나머지 직업 SD, 리나 컷아웃, 모서리 UI |
 | 없음 | 새 디자인의 앉은·서 있는 자세, 나머지 직업 걷기 시트, 2차 직업 그림 |
+
+## 리나 눈 깜빡임 (2026-10-25)
+
+| 항목 | 상태 | 비고 |
+| --- | --- | --- |
+| 전신 일러스트 표정 6종 × 3칸 눈 깜빡임 | 완료 | `art_source/receptionist_blink/` 18장. 웃음은 3칸 동일. 방법: [tools/lina_blink/README.md](../../tools/lina_blink/README.md) |
+| 일러스트 기반 3칸 시트 (512 셀) | 완료, 보관만 | `lina_illust_idle_blink_sheet_512.png`. 게임용 `prototype/assets/npc/receptionist_idle_blink.png`(SD 접수원 대기 시트)와는 별개 |
+| 작업 규칙 문서 | 추가 | [../art/작업규칙.md](../art/작업규칙.md) |
+| 접수원 동작 시트 5종 | 기존 | greet·guide a/b·read a/b, 이미 저장소에 있음 |
+| 남은 일 | 대기 | 로비 배경 A/B 선택, 눈 깜빡임을 게임(대화 초상)에 쓸지 결정 |
