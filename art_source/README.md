@@ -16,3 +16,7 @@
 ## receptionist_blink (리나 눈 깜빡임)
 
 `receptionist_blink/lina_<표정>_blink_<open·half·closed>.png` — 표정 6종 × 3칸 = 18장, 1684×2528 투명 아님(원본 캔버스). 머리카락 분해 레이어를 얹은 대머리 6종 위에 눈 영역만 합성했고, 눈 밖 픽셀은 열린 눈 칸과 동일합니다. 웃음은 눈이 이미 감겨 3칸이 같습니다. 대기 깜빡임은 `open` 유지, 2.5~5.5초마다 half → closed → half → open. 전신 일러스트 기반 3칸 시트 `lina_illust_idle_blink_sheet_512.png`(512 셀, 1536×512, 투명 배경, 발밑 y=488·키 432)를 같은 폴더에 따로 보관합니다. 게임용 `prototype/assets/npc/receptionist_idle_blink.png`(SD 접수원 대기 시트)와는 별개이며 게임에는 연결하지 않았습니다.
+
+## receptionist_workfiles (눈 깜빡임 재료)
+
+`bald_6/` 대머리 6종, `hair_layer/` 머리카락 전체 레이어(원본 픽셀)·분리 4부위·분해용 프롬프트, 진지 원본(귀 보정용). 합성 방법은 [tools/lina_blink/README.md](../tools/lina_blink/README.md).
