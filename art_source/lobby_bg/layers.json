@@ -1,0 +1,17 @@
+{
+  "canvas": [1920, 1080],
+  "order_bottom_to_top": ["wall", "floor", "board", "counter"],
+  "rects_px_1920": {
+    "board_frame": [335, 32, 1587, 345],
+    "board_inner_approx": [356, 50, 1566, 328],
+    "counter": [104, 374, 1820, 544],
+    "floor_from_y": 530,
+    "wall_to_y": 540
+  },
+  "game_ready": {
+    "lobby_wall.png": "벽+바닥+게시판(칠판) 합본 1920x1080",
+    "lobby_counter.png": "1920x178, 투명 바탕, 세로 위치 y=372에 놓음",
+    "counter_y": 372
+  },
+  "note": "3840 파일은 좌표 2배. wall 레이어의 게시판·카운터 뒤쪽 면은 자동 채움(가려진 부분 근사). 4장을 쌓으면 원본과 일치."
+}
