@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>리나 클릭 메뉴 시안</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#1b1410;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans CJK KR",system-ui,sans-serif;overflow:hidden}
+:root{--wood:#3a2618;--wood2:#5a3a22;--cream:#fbf1dc;--gold:#e8b44a;--ink:#3b2a1e;--muted:#8a7258}
+#fit{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
+#fit img{position:absolute;display:block}
+.plate{position:absolute;background:linear-gradient(#fff8e8,#f3e3c2);color:var(--ink);border:4px solid var(--wood2);border-radius:18px;box-shadow:0 6px 0 rgba(58,38,24,.55),0 10px 24px rgba(0,0,0,.25)}
+#lina{left:832px;top:170px;width:256px;height:256px;transition:filter .2s}
+#lina.hot{filter:drop-shadow(0 0 3px #ffe9a8) drop-shadow(0 0 10px rgba(232,180,74,.9))}
+#hint{position:absolute;left:900px;top:130px;font-size:18px;font-weight:700;color:#fff3d6;background:rgba(58,38,24,.85);padding:4px 14px;border-radius:12px;display:none}
+/* --- 메뉴 공통 --- */
+.it{position:relative;display:flex;align-items:center;gap:14px;height:64px;padding:0 16px 0 12px;border:0;border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-size:24px;font-weight:700;cursor:pointer;text-align:left;width:100%}
+.it svg{width:44px;height:44px;flex:none}
+.it .sub{display:block;font-size:15px;font-weight:600;color:var(--muted);margin-top:1px}
+.it .tx{flex:1;line-height:1.1}
+.it:hover,.it.hv{background:var(--wood2);color:#fff3d6}
+.it:hover .sub,.it.hv .sub{color:#e8d3ae}
+.cnt{min-width:28px;height:28px;border-radius:14px;background:#c0392b;color:#fff;font-size:16px;font-weight:700;display:grid;place-items:center;padding:0 8px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.new{background:var(--gold);color:#3b2a0a;font-size:14px;font-weight:700;padding:3px 10px;border-radius:10px}
+.it.pro{background:linear-gradient(#fff3c4,#f3d27a)}
+.it.pro:hover,.it.pro.hv{background:var(--wood2)}
+.sep{height:2px;margin:4px 10px;background:rgba(90,58,34,.2);border-radius:1px}
+/* --- 시안 A: 한 장짜리 말풍선 --- */
+#A{display:none}
+#A .plate{left:1120px;top:120px;width:380px;padding:12px 12px 12px}
+#A .head{font-size:18px;color:var(--muted);font-weight:700;padding:4px 12px 8px}
+#A .tail{position:absolute;left:1105px;top:262px;width:28px;height:28px;background:#f6e8cb;border-left:4px solid var(--wood2);border-bottom:4px solid var(--wood2);transform:rotate(45deg);z-index:2}
+/* --- 시안 B: 알약 5개가 부채꼴로 --- */
+#B{display:none}
+#B .pill{position:absolute;width:330px;padding:4px}
+#B .pill .it{height:62px}
+@keyframes pop{from{opacity:0;transform:translateX(-18px) scale(.94)}}
+#B .pill,#A .plate{animation:pop .22s ease-out backwards}
+#B .pill:nth-child(2){animation-delay:.03s}#B .pill:nth-child(3){animation-delay:.06s}#B .pill:nth-child(4){animation-delay:.09s}#B .pill:nth-child(5){animation-delay:.12s}
+
+/* --- 시안 B 2차: 나무 명패형 --- */
+#B .pill{position:absolute;width:340px;height:78px;padding:0;border:0;border-radius:20px;background:linear-gradient(#8a5d38,#4e3120);box-shadow:0 6px 0 rgba(40,24,14,.65),0 12px 22px rgba(0,0,0,.28);transition:transform .15s}
+#B .pill::before{content:"";position:absolute;inset:4px;border-radius:16px;background:linear-gradient(#fffaf0,#f1dfbb);box-shadow:inset 0 0 0 2px #e8b44a,inset 0 -5px 0 rgba(150,105,55,.14)}
+#B .pill::after{content:"";position:absolute;right:10px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:#b58a50;box-shadow:inset 0 1px 0 rgba(255,255,255,.5);opacity:0}
+#B .pill:hover,#B .pill.hv{transform:translateX(12px)}
+#B .pill .it{position:absolute;inset:4px;width:auto;height:auto;border-radius:16px;padding:0 14px 0 10px;gap:12px;z-index:1}
+#B .pill .it:hover,#B .pill .it.hv{background:linear-gradient(#6a4529,#4a2e1b);box-shadow:inset 0 0 0 2px #e8b44a}
+#B .pill .it svg{width:40px;height:40px;padding:0}
+#B .pill .ico{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#fffdf5,#f3dcae);box-shadow:0 0 0 3px #7a5232,0 0 0 5px #e8b44a,0 2px 3px 5px rgba(0,0,0,.15)}
+#B .pill .it.pro{background:linear-gradient(#fff2b8,#f1c85d);overflow:hidden}
+#B .pill .it.pro::after{content:"";position:absolute;top:0;left:-60px;width:36px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);transform:skewX(-20deg);animation:shine 2.6s infinite}
+@keyframes shine{0%,55%{left:-60px}100%{left:360px}}
+#B .pill .it.pro:hover,#B .pill .it.pro.hv{background:linear-gradient(#6a4529,#4a2e1b)}
+#B .pill .it.pro:hover::after,#B .pill .it.pro.hv::after{display:none}
+#B .pill .cnt{position:absolute;right:-8px;top:-8px;z-index:3;border:3px solid #fff8e8}
+#B .pill .new{position:absolute;right:-6px;top:-10px;z-index:3;border:2px solid #7a5232;transform:rotate(6deg)}
+#bar{position:fixed;right:10px;bottom:10px;z-index:9;display:flex;gap:6px;font:700 14px system-ui}
+#bar button{padding:6px 10px;border-radius:8px;border:0;background:#fff3d6;cursor:pointer}
+#bar button.on{background:#e8b44a}
+body.shot #bar{display:none}
+</style></head><body>
+<div id="fit">
+  <img src="lobby_wall.png" style="left:0;top:0;width:1920px;height:1080px">
+  <img id="lina" src="lina.png">
+  <img src="lobby_counter.png" style="left:0;top:372px;width:1920px;height:178px">
+  <div id="hint">클릭해서 말 걸기</div>
+
+  <!-- 시안 A -->
+  <div id="A"><div class="tail"></div><div class="plate"><div class="head">리나 · 무엇을 도와드릴까요?</div><div id="aList"></div></div></div>
+  <!-- 시안 B -->
+  <div id="B"></div>
+</div>
+<div id="bar"></div>
+<script>
+const SVG={
+ talk:'<svg viewBox="0 0 40 40"><path d="M6 8h28a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H19l-8 7v-7H6a3 3 0 0 1-3-3V11a3 3 0 0 1 3-3z" fill="#f6dcc4" stroke="#5a3a22" stroke-width="2.5" stroke-linejoin="round"/><circle cx="13" cy="18" r="2" fill="#5a3a22"/><circle cx="20" cy="18" r="2" fill="#5a3a22"/><circle cx="27" cy="18" r="2" fill="#5a3a22"/></svg>',
+ cook:'<svg viewBox="0 0 40 40"><path d="M7 18h26v8a8 8 0 0 1-8 8H15a8 8 0 0 1-8-8z" fill="#c8995f" stroke="#5a3a22" stroke-width="2.5" stroke-linejoin="round"/><rect x="5" y="14" width="30" height="5" rx="2.5" fill="#e0b878" stroke="#5a3a22" stroke-width="2.5"/><path d="M14 10c-2-2 2-3 0-6M21 10c-2-2 2-3 0-6M28 10c-2-2 2-3 0-6" fill="none" stroke="#8a7258" stroke-width="2.2" stroke-linecap="round"/></svg>',
+ menu:'<svg viewBox="0 0 40 40"><rect x="8" y="4" width="24" height="32" rx="3" fill="#fff3d6" stroke="#5a3a22" stroke-width="2.5"/><path d="M13 12h14M13 19h14M13 26h8" stroke="#8a7258" stroke-width="2.4" stroke-linecap="round"/><circle cx="29" cy="28" r="6" fill="#e8b44a" stroke="#5a3a22" stroke-width="2.2"/><path d="M26.5 28l2 2 3.5-4" fill="none" stroke="#5a3a22" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ promo:'<svg viewBox="0 0 40 40"><path d="M20 3l5 10 11 1.5-8 7.5 2 11L20 28l-10 5 2-11-8-7.5L15 13z" fill="#e8b44a" stroke="#5a3a22" stroke-width="2.5" stroke-linejoin="round"/><path d="M20 12v10M16 16l4-4 4 4" fill="none" stroke="#5a3a22" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ town:'<svg viewBox="0 0 40 40"><path d="M4 36h32" stroke="#5a3a22" stroke-width="2.5" stroke-linecap="round"/><path d="M8 19h24v17H8z" fill="#f6dcc4" stroke="#5a3a22" stroke-width="2.5" stroke-linejoin="round"/><path d="M4 20L20 6l16 14z" fill="#c0642e" stroke="#5a3a22" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 36V26a4 4 0 0 1 8 0v10z" fill="#c8995f" stroke="#5a3a22" stroke-width="2.3" stroke-linejoin="round"/><rect x="26" y="23" width="4" height="4" fill="#e8b44a" stroke="#5a3a22" stroke-width="1.8"/><path d="M29 11V6h4v8" fill="#c8995f" stroke="#5a3a22" stroke-width="2.2" stroke-linejoin="round"/></svg>',
+ quest:'<svg viewBox="0 0 40 40"><path d="M9 6h20a3 3 0 0 1 3 3v22a3 3 0 0 0 3 3H12a3 3 0 0 1-3-3z" fill="#fff3d6" stroke="#5a3a22" stroke-width="2.5" stroke-linejoin="round"/><path d="M32 31v3H12a3 3 0 0 1-3-3" fill="#e0b878" stroke="#5a3a22" stroke-width="2.2" stroke-linejoin="round"/><path d="M15 13h11M15 19h11" stroke="#8a7258" stroke-width="2.4" stroke-linecap="round"/><path d="M26 22v9" stroke="#5a3a22" stroke-width="2.4" stroke-linecap="round"/><path d="M26 22l7 2.5-7 2.5z" fill="#c0392b" stroke="#5a3a22" stroke-width="2" stroke-linejoin="round"/></svg>'
+};
+const ITEMS={
+ talk:{ico:'talk',t:'이야기하기',s:'리나와 대화'},
+ cook:{ico:'cook',t:'요리하기',s:'소재로 새 요리 개발',tag:'NEW'},
+ menu:{ico:'menu',t:'음식 설정하기',s:'판매할 음식 선택',tag:'NEW'},
+ promo:{ico:'promo',t:'전직 제안',s:'전직 가능 모험가',cnt:2,pro:1},
+ town:{ico:'town',t:'마을로 가기',s:'마을로 나가기'},
+ quest:{ico:'quest',t:'메인 퀘스트',s:'지명할 모험가 선택',cnt:1}
+};
+const STATES={pre:['talk','town'],post:['talk','cook','menu','promo','quest','town']};
+function itemB(k,hv){const m=ITEMS[k];return `<div class="pill-in"></div>`}
+function item(k,hv,sub){const m=ITEMS[k];return `<button class="it${m.pro?' pro':''}${hv===k?' hv':''}">${SVG[m.ico]}<span class="tx">${m.t}${sub?`<span class="sub">${m.s}</span>`:''}</span>${m.tag?`<span class="new">${m.tag}</span>`:''}${m.cnt?`<span class="cnt">${m.cnt}</span>`:''}</button>`}
+const q=new URLSearchParams(location.search);
+let v=q.get('v')||'A',s=q.get('s')||'post',hv=q.get('hv')||'',sub=q.get('sub')!=='0';
+if(q.get('shot'))document.body.classList.add('shot');
+function render(){
+  const list=STATES[s];
+  const A=document.getElementById('A'),B=document.getElementById('B');
+  A.style.display=v==='A'?'block':'none';B.style.display=v==='B'?'block':'none';
+  document.getElementById('lina').classList.add('hot');
+  if(v==='A'){
+    const p=A.querySelector('.plate');
+    const sepAt=s==='post'?3:-1; // 전직 계열 앞에 구분선
+    document.getElementById('aList').innerHTML=list.map((k,i)=>(i===sepAt?'<div class="sep"></div>':'')+item(k,hv,sub)).join('');
+    // 높이에 맞춰 꼬리 위치
+    requestAnimationFrame(()=>{const h=p.offsetHeight;A.querySelector('.tail').style.top=(120+Math.min(h/2,150)-14)+'px'});
+  }else{
+    const xs=list.length===6?[0,22,34,34,22,0]:list.length===2?[0,22]:[0,26,36,26,0];const off=xs;
+    const top0=list.length===2?230:120;
+    B.innerHTML=list.map((k,i)=>{const m=ITEMS[k];return `<div class="pill" style="left:${1130+off[i]}px;top:${top0+i*90}px"><button class="it${m.pro?' pro':''}${hv===k?' hv':''}"><span class="ico">${SVG[m.ico]}</span><span class="tx">${m.t}<span class="sub">${m.s}</span></span></button>${m.tag?`<span class="new">${m.tag}</span>`:''}${m.cnt?`<span class="cnt">${m.cnt}</span>`:''}</div>`}).join('');
+  }
+  document.querySelectorAll('#bar button').forEach(b=>b.classList.toggle('on',b.dataset.k===v+s));
+}
+const bar=document.getElementById('bar');
+[['A','pre'],['A','post'],['B','pre'],['B','post']].forEach(([a,b])=>{const e=document.createElement('button');e.dataset.k=a+b;e.textContent=`시안${a}·${b==='pre'?'전직 전':'전직 후'}`;e.onclick=()=>{v=a;s=b;render()};bar.appendChild(e)});
+function fit(){const f=document.getElementById('fit');const k=Math.min(innerWidth/1920,innerHeight/1080);f.style.transform=`scale(${k})`}
+addEventListener('resize',fit);fit();render();
+</script></body></html>

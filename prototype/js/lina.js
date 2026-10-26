@@ -10,7 +10,7 @@
   'use strict';
   const A = root.Assets;
   const X = 960;                                   // 고정 위치
-  const FEET = 470;                                // 발밑 화면 y (카운터 y=428이 다리를 가림, 머리 꼭대기 ≈ 220)
+  const FEET = 414;                                // 발밑 화면 y (카운터 y=372가 다리를 가림, 머리 꼭대기 ≈ 164)
   const H = 250;                                   // 화면에서의 키 (모험가와 같음)
   const WIN = { meal: X, quest: X, sale: X };      // 예전 세 창구 → 모두 가운데
   const GROUPS = { greet: ['greet_a'], guide: ['guide_a', 'guide_b'], read: ['read_a', 'read_b'] };

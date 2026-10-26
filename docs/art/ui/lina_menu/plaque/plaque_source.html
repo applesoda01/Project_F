@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><style>
+body{margin:0;background:transparent}
+.s{position:absolute;left:0;top:0;width:340px;height:84px}
+.pill{position:absolute;left:0;top:0;width:340px;height:78px;border-radius:20px;background:linear-gradient(#8a5d38,#4e3120);box-shadow:0 6px 0 rgba(40,24,14,.65)}
+.pill::before{content:"";position:absolute;inset:4px;border-radius:16px;background:var(--face);box-shadow:var(--line),inset 0 -5px 0 rgba(150,105,55,.14)}
+.n{--face:linear-gradient(#fffaf0,#f1dfbb);--line:inset 0 0 0 2px #e8b44a}
+.sel{--face:linear-gradient(#6a4529,#4a2e1b);--line:inset 0 0 0 3px #f0c04e}
+.hi{--face:linear-gradient(#fff2b8,#f1c85d);--line:inset 0 0 0 2px #e8b44a}
+.lk .pill{background:linear-gradient(#7a736a,#4a443e);box-shadow:0 6px 0 rgba(30,26,22,.6)}
+.lk{--face:linear-gradient(#cdc5b7,#b3ab9d);--line:inset 0 0 0 2px #8f877b}
+</style>
+<div id="n" class="s n"><div class="pill"></div></div>
+<div id="sel" class="s sel"><div class="pill"></div></div>
+<div id="lk" class="s lk"><div class="pill"></div></div>
+<div id="hi" class="s hi"><div class="pill"></div></div>

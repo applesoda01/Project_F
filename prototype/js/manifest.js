@@ -10,7 +10,7 @@
 
   // 로비 레이어
   add('lobby_wall', 'lobby/lobby_wall.png', 1920, 1080, { color: '#e8d6b4' });           // 벽+바닥+게시판 (현재 한 장)
-  add('lobby_counter', 'lobby/lobby_counter.png', 1920, 178, { color: '#8b5a33' });      // 카운터 앞면 (y=428에 놓음)
+  add('lobby_counter', 'lobby/lobby_counter.png', 1920, 178, { color: '#8b5a33' });      // 카운터 앞면 (y=372에 놓음)
   add('npc_lina_idle', 'npc/npc_lina_idle.png', 200, 300, { ax: 0.5, ay: 0, color: '#6b4a7a' });
   // 접수원 리나 (2026.10 교체): 128 셀 시트, 발밑 y=122, 캐릭터 키 108 (모험가와 같은 비율). 256 업스케일본도 그대로 읽음
   const RECEP = { cell: 128, pivotY: 122, charH: 108, cols: 12, rows: 6, fps: 24 };
@@ -27,9 +27,11 @@
 
   // 가구
   for (const lv of [1, 2]) {
-    add(`table_lv${lv}`, `furniture/table_lv${lv}.png`, 320, 200, { ax: 0.5, ay: 1, color: '#9a6a3c' });
-    add(`chair_lv${lv}_front`, `furniture/chair_lv${lv}_front.png`, 96, 128, { ax: 0.5, ay: 1, color: '#a8784a' });
-    add(`chair_lv${lv}_back`, `furniture/chair_lv${lv}_back.png`, 96, 128, { ax: 0.5, ay: 1, color: '#a8784a' });
+    add(`table_lv${lv}`, `furniture/table_lv${lv}.png`, 200, 179, { ax: 0.5, ay: 1, color: '#9a6a3c' }); // 확정 탁자(2026.10): 둥근 상판+기둥, 레벨 2는 임시로 같은 그림
+    add(`chair_lv${lv}_front`, `furniture/chair_lv${lv}_front.png`, 72, 132, { ax: 0.5, ay: 1, color: '#a8784a' });
+    add(`chair_lv${lv}_back`, `furniture/chair_lv${lv}_back.png`, 72, 132, { ax: 0.5, ay: 1, color: '#a8784a' });
+    add(`chair_lv${lv}_side_l`, `furniture/chair_lv${lv}_side_l.png`, 71, 132, { ax: 0.5, ay: 1, color: '#a8784a' }); // 왼쪽 자리 의자(오른쪽=탁자를 봄)
+    add(`chair_lv${lv}_side_r`, `furniture/chair_lv${lv}_side_r.png`, 71, 132, { ax: 0.5, ay: 1, color: '#a8784a' }); // 오른쪽 자리 의자(왼쪽=탁자를 봄)
   }
 
   // 모험가 SD (1차 직업 5종 × 남녀 × 앞·뒤)

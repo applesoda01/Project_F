@@ -38,6 +38,7 @@
 | 모험가 걷기 | `chr/chr_<직업>_<성별>_walk.png` (+ .json) | 시트 | 아래 표 |
 | 전직 후 | `chr/chr_<직업키>_<성별>_<front·back>.png` | 136×250 | 없으면 1차 그림 + 직업 표식. 직업 키는 아래 |
 | 리나(접수원) | `npc/receptionist_idle_blink.png` + `receptionist_greet_a·guide_a·guide_b·read_a·read_b.png` (+ `receptionist.json`) | 시트 | 아래 '접수원' 표. 예전 컷아웃 리그(`lina_*`)는 쓰지 않음 |
+| 리나 메뉴 | `ui/lina_menu/btn_normal·locked·mainquest·hover·selected.png` | 340×84 (파일 680×168) | 명패 5종. 글자·아이콘은 코드(임시 SVG). 수치는 `js/lina_menu.js` 의 P |
 | 리나 초상 | `npc/lina_face_smile·serious·laugh·worried·awkward·surprised.png` | 340×640 | 대화창 상반신 |
 
 ## 걷기 시트

@@ -26,14 +26,15 @@
   // ---------- 좌석 ----------
   D.layout = function (tables) { // Lobby가 테이블 배치를 알려 준다
     const old = D.seats; D.seats = [];
-    tables.forEach((T, i) => {
-      for (const dx of [-88, 88]) {
-        const back = i >= 2; // 앞줄 테이블은 앞자리에 등을 보이고 앉음
-        const seat = back ? { x: T.x + dx, y: T.y + 126, z: T.y + 108, dir: 'back', ap: { x: T.x + dx * 1.5, y: T.y + 175 } }
-          : { x: T.x + dx, y: T.y + 52, z: T.y + 65, dir: 'front', ap: { x: T.x + dx * 1.9, y: T.y + 70 } };
-        const prev = old.find(o => o.x === seat.x && o.y === seat.y); seat.by = prev ? prev.by : null;
-        D.seats.push(seat);
-      }
+    tables.forEach(T => { // 탁자 하나에 4석 (2026-10 확정). 의자 그림 위치는 lobby.js 와 같은 숫자
+      const S = [
+        { x: T.x - 50, y: T.y - 22, z: T.y + 34, dir: 'front', side: 'top', ap: { x: T.x - 135, y: T.y + 6 } },
+        { x: T.x + 50, y: T.y - 22, z: T.y + 34, dir: 'front', side: 'top', ap: { x: T.x + 135, y: T.y + 6 } },
+        // 옆자리: 앉는 그림(옆모습)이 나오기 전까지 임시로 정면을 보고 앉음. side 값으로 나중에 방향을 나눈다
+        { x: T.x - 100, y: T.y + 44, z: T.y + 108, dir: 'front', side: 'left', ap: { x: T.x - 170, y: T.y + 74 } },
+        { x: T.x + 100, y: T.y + 44, z: T.y + 108, dir: 'front', side: 'right', ap: { x: T.x + 170, y: T.y + 74 } }
+      ];
+      for (const seat of S) { const prev = old.find(o => o.x === seat.x && o.y === seat.y); seat.by = prev ? prev.by : null; D.seats.push(seat); }
     });
   };
   function freeSeat(ac) { const fr = D.seats.filter(s => !s.by); if (!fr.length) return null; const s = fr[(ac.id * 7) % fr.length]; s.by = ac.id; return s; }
@@ -252,7 +253,7 @@
   };
   D.bubbles = function (g) {
     for (const ac of D.actors.values()) if (ac.bubble) bubble(g, ac.x, ac.y - (ac.pose === 'sit' ? 240 : 262), ac.bubble.text);
-    if (Lina.bubble) bubble(g, Lina.x + 120, 200, Lina.bubble.text, true);
+    if (Lina.bubble) bubble(g, Lina.x + 120, 144, Lina.bubble.text, true);
   };
   function bubble(g, x, y, text, left) {
     g.save(); g.font = '600 24px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';

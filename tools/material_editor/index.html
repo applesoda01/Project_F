@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>소재 편집기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 레이아웃: 상단 탭 + 좌측 목록(소재는 계열×등급 표) + 우측 상세 패널 + 하단 점검 줄 */
+:root{
+  --bg:#eceff3; --panel:#ffffff; --ink:#1c2430; --muted:#667085; --line:#d6dbe3; --soft:#f5f7fa;
+  --accent:#b4581c; --accent-ink:#ffffff; --focus:#2563eb; --warn:#a15c00; --bad:#b42318; --ok:#1d7a46;
+  --g-F:#7c8594; --g-E:#3f8f5b; --g-D:#2f6fb5; --g-C:#7a4fb0; --g-B:#c06a14; --g-A:#c0392b; --g-S:#a8860a;
+  --font:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161c; --panel:#1b212a; --ink:#e7ebf1; --muted:#98a2b3; --line:#2f3743; --soft:#222a35;
+    --accent:#e0873f; --accent-ink:#1a1209; --focus:#6aa0ff; --warn:#e5a23a; --bad:#f08a80; --ok:#5cc58a;
+    --g-F:#9aa3b2; --g-E:#5cc58a; --g-D:#6aa8ee; --g-C:#a98be0; --g-B:#e59a4a; --g-A:#ef7d70; --g-S:#d9b93f; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12161c; --panel:#1b212a; --ink:#e7ebf1; --muted:#98a2b3; --line:#2f3743; --soft:#222a35;
+  --accent:#e0873f; --accent-ink:#1a1209; --focus:#6aa0ff; --warn:#e5a23a; --bad:#f08a80; --ok:#5cc58a;
+  --g-F:#9aa3b2; --g-E:#5cc58a; --g-D:#6aa8ee; --g-C:#a98be0; --g-B:#e59a4a; --g-A:#ef7d70; --g-S:#d9b93f; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--font);font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+[hidden]{display:none!important}
+
+.wrap{max-width:1500px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left,0px)) 16px}
+header{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;margin-bottom:14px}
+h1{font-size:19px;margin:0;letter-spacing:-.01em}
+h1 small{font-weight:400;color:var(--muted);font-size:12.5px;margin-left:8px}
+.tabs{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px}
+.tab{border:0;background:transparent;padding:7px 16px;border-radius:7px;font-weight:500;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tab .n{font-size:12px;opacity:.8;margin-left:5px}
+.tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:7px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:500}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.saved{font-size:12px;color:var(--muted)}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.side{position:sticky;top:12px}
+.panel h2{margin:0 0 10px;font-size:14px}
+.hint{color:var(--muted);font-size:12.5px}
+
+/* 소재 표 */
+.matrix-scroll{overflow-x:auto}
+table.matrix{border-collapse:separate;border-spacing:6px;width:100%;min-width:760px}
+.matrix th{font-size:12.5px;color:var(--muted);font-weight:500;text-align:center;padding:2px 0}
+.matrix th.g{width:44px;font-weight:700}
+.cell{width:100%;min-height:78px;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:6px 5px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.cell:hover{border-color:var(--accent)}
+.cell[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;background:var(--panel)}
+.cell .nm{font-size:12.5px;line-height:1.25;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ico{width:40px;height:40px;border-radius:7px;display:grid;place-items:center;font-weight:700;font-size:15px;color:#fff;background:var(--gc,var(--g-F));overflow:hidden;flex:none}
+.ico img{width:100%;height:100%;object-fit:contain;background:var(--soft)}
+.ico.lg{width:112px;height:112px;font-size:34px;border-radius:12px}
+.gl{display:inline-block;min-width:22px;text-align:center;border-radius:5px;padding:0 5px;color:#fff;background:var(--gc,var(--g-F));font-size:12px;font-weight:700}
+[data-g="F"]{--gc:var(--g-F)}[data-g="E"]{--gc:var(--g-E)}[data-g="D"]{--gc:var(--g-D)}[data-g="C"]{--gc:var(--g-C)}
+[data-g="B"]{--gc:var(--g-B)}[data-g="A"]{--gc:var(--g-A)}[data-g="S"]{--gc:var(--g-S)}
+.extra-head{display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px}
+.extra-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.chip{display:flex;gap:8px;align-items:center;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:6px 8px;text-align:left}
+.chip[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;background:var(--panel)}
+.chip .t{min-width:0}
+.chip .t b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip .t span{font-size:11.5px;color:var(--muted)}
+
+/* 항목 목록 */
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.card{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:10px;text-align:left}
+.card[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset;background:var(--panel)}
+.card .top{display:flex;gap:8px;align-items:center}
+.card .top b{font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini{display:flex;gap:4px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.mini .ico{width:24px;height:24px;font-size:11px;border-radius:5px}
+.mini .x{margin-right:4px}
+.incomplete{color:var(--warn);font-size:12px}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.qcell{align-items:stretch;text-align:left;min-height:96px}.qcell .nm{font-weight:500;text-align:center}
+.rwi{justify-content:center;gap:5px 4px}.rwc{display:flex;flex-direction:column;align-items:center;gap:1px}.rwc em{font-style:normal;font-size:10.5px;color:var(--muted)}
+.rwc.main .ico{box-shadow:0 0 0 2px var(--accent)}.rwc.main em{color:var(--accent);font-weight:700}
+.rwl{display:grid;gap:1px;font-size:11.5px;line-height:1.35}.rwr{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:4px}
+.rwr i{font-style:normal;color:var(--muted)}.rwr.r-m{font-weight:700}.rwr.r-m i{color:var(--accent)}.rwr span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rwr em{font-style:normal;color:var(--muted)}
+.rw{display:grid;gap:6px;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:8px;margin-bottom:6px}
+.rw .btn{white-space:nowrap;padding:6px 10px}.rw .row select{flex:1}.rw input[type=number]{width:76px;flex:none}.rw select{min-width:0}
+
+/* 상세 */
+.field{display:grid;gap:4px;margin-bottom:10px}
+.field>label,.lbl{font-size:12px;color:var(--muted)}
+input[type=text],input[type=number],select,textarea{width:100%;border:1px solid var(--line);background:var(--panel);border-radius:7px;padding:7px 9px}
+textarea{resize:vertical;min-height:64px}
+.row{display:flex;gap:8px;align-items:center}
+.icobox{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.drop{cursor:pointer;border:2px dashed transparent;border-radius:14px}
+.drop.over{border-color:var(--accent)}
+.badge{display:inline-block;font-size:11.5px;border-radius:5px;padding:1px 7px;border:1px solid var(--line);color:var(--muted)}
+.badge.core{border-color:var(--accent);color:var(--accent)}
+.slot{display:grid;grid-template-columns:28px minmax(0,1fr) 64px;gap:6px;align-items:center;margin-bottom:6px}
+.slot .no{color:var(--muted);text-align:center}
+.usedby{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.usedby button{border:1px solid var(--line);background:var(--soft);border-radius:6px;padding:1px 8px;font-size:12px}
+.confirm{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.msg{font-size:12.5px;margin-top:8px}
+.msg.bad{color:var(--bad)}.msg.ok{color:var(--ok)}
+
+footer.status{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--muted)}
+footer.status b{color:var(--ink);font-weight:500}
+footer.status .w{color:var(--warn)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+@media (max-width:980px){.main{grid-template-columns:minmax(0,1fr)}.side{position:static}}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>소재 편집기<small>이세계 모험가 길드 · 소재·음식·장비·물약 정의</small></h1>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="tools">
+      <span class="saved" id="saved">자동 저장됨</span>
+      <button class="btn primary" id="bFolder" title="Project_F의 data 폴더를 고르면 CSV와 아이콘을 바로 저장합니다">폴더에 저장</button>
+      <button class="btn" id="bZip" title="CSV·아이콘·백업을 zip 하나로 내려받습니다">zip 내보내기</button>
+      <button class="btn" id="bLoad">백업 불러오기</button>
+      <button class="btn" id="bReset">처음 상태로</button>
+      <input type="file" id="fLoad" accept=".json,application/json" hidden>
+      <input type="file" id="fIcon" accept="image/*" hidden>
+    </div>
+  </header>
+
+  <div class="main">
+    <section class="panel" id="left" aria-live="polite"></section>
+    <aside class="panel side" id="right"></aside>
+  </div>
+  <footer class="status" id="status"></footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+/* ========== 기본 데이터 ========== */
+const GRADES = ['F','E','D','C','B','A','S'];
+const LINES = [ // 코어 5계열 + 추가용 계열
+  {k:'slay',  n:'토벌',      core:true,  sub:'마물 부산물'},
+  {k:'hunt',  n:'사냥·채집', core:true,  sub:'동식물'},
+  {k:'study', n:'조사',      core:true,  sub:'마력 결정'},
+  {k:'guard', n:'호위·구호', core:true,  sub:'사례품'},
+  {k:'mine',  n:'탐사',      core:true,  sub:'광석'},
+  {k:'food',  n:'식재료',    core:false},
+  {k:'restore',n:'복원',     core:false},
+  {k:'etc',   n:'기타',      core:false},
+];
+const CORE = { // 등급 순서 F E D C B A S (docs/data/materials_v0.1.md)
+  slay:['슬라임 점액','고블린 뼈','오크 엄니','트롤 뿔','와이번 비늘','키메라 뿔','용의 유해'],
+  hunt:['참나무 가지','사슴 가죽','흑곰 가죽','그리폰 깃털','세계수 가지','불사조 깃털','용근'],
+  study:['희미한 마석','마석 조각','마정석','고급 마정석','정령석','성좌석','용안석'],
+  guard:['무명천','문양 천','마직 천','축복받은 천','은빛 실타래','성은 실타래','용익막'],
+  mine:['고철 조각','구리 원석','철광석','흑철광','미스릴 원석','아다만 원석','운철'],
+};
+const KINDS = [{k:'mat',n:'소재'},{k:'food',n:'음식'},{k:'gear',n:'장비'},{k:'potion',n:'물약'},{k:'quest',n:'퀘스트'}];
+const QCATS = [{k:'req',n:'의뢰'},{k:'main',n:'메인'},{k:'sub',n:'서브'},{k:'promo',n:'승급'},{k:'res',n:'리소스'}];
+const ROLES = ['주','부','복원','기타'];
+const KIND_PREFIX = {food:'food',gear:'gear',potion:'pot'};
+const EFFECT_LABEL = {food:'효과',gear:'능력·설명',potion:'효과'};
+
+function seedQuests(mats){
+  const qs=[], by=(l,g)=>mats.find(m=>m.core&&m.line===l&&m.grade===g);
+  const rest=mats.find(m=>m.name==='수선 숫돌');
+  const core=LINES.filter(l=>l.core);
+  for(const g of GRADES){ const gi=GRADES.indexOf(g);
+    for(const L of core){
+      const rw=[{m:by(L.k,g).id,role:'주',p:100}];
+      if(gi>0) core.filter(o=>o.k!==L.k).forEach(o=>rw.push({m:by(o.k,GRADES[gi-1]).id,role:'부',p:7.5}));
+      if(gi<=3&&rest) rw.push({m:rest.id,role:'복원',p:5});
+      qs.push({id:`q_${L.k}_${g}`,name:`${L.n} ${g}급 의뢰`,cat:'req',grade:g,line:L.k,core:true,
+        desc:gi>0?'부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]':'',rewards:rw});
+    }
+  }
+  return qs;
+}
+function seed(){
+  const mats=[];
+  for(const L of LINES.filter(l=>l.core)) CORE[L.k].forEach((name,i)=>{
+    mats.push({id:`mat_${L.k}_${GRADES[i]}`,name,grade:GRADES[i],line:L.k,core:true,desc:i>=4?'해체장에서 가공해야 제작에 쓸 수 있음':'',icon:null});
+  });
+  let x=0; const add=(name,grade,line,desc)=>{const id='mat_x'+String(++x).padStart(3,'0');mats.push({id,name,grade,line,core:false,desc,icon:null});return id;};
+  const byName=n=>mats.find(m=>m.name===n).id;
+  add('수선 숫돌','F','restore','F~C급 장비·유품 복원. 모든 의뢰에서 5% 확률 획득');
+  add('고대 복원석','B','restore','B~S급 장비·유품 복원. 주기적인 특별 의뢰로 획득');
+  const foods=[ // 등급,요리,재료(새 식재료 또는 기존 소재),효과
+    ['F','멧돼지 스테이크 정식',['멧돼지 고기','F','사냥'],'힘 +3%'],
+    ['F','들버섯 수프',['들버섯','F','채집'],'정신 +3%'],
+    ['E','늑대 고기 스튜',['늑대 고기','E','토벌'],'힘 +4%'],
+    ['E','산딸기 파이',['산딸기','E','채집'],'민첩 +4%'],
+    ['D','흑곰 갈비찜',['흑곰 고기','D','사냥'],'힘·정신 +4%'],
+    ['D','마력 버섯 리소토',['마력 버섯','D','조사'],'지력 +5%'],
+    ['C','그리폰 알 오믈렛',['그리폰 알','C','사냥'],'민첩·기교 +5%'],
+    ['C','트롤 뼈 곰탕',['트롤 뼈','C','토벌'],'체력 회복 + 정신 +5%'],
+    ['B','와이번 꼬치구이',['와이번 고기','B','토벌'],'힘·민첩 +6%'],
+    ['B','세계수 꿀 케이크',['세계수 꿀','B','채집'],'지력·정신 +6%'],
+    ['A','키메라 3종 모둠',['키메라 고기','A','토벌'],'모든 능력치 +5%'],
+    ['A','불사조 수프','불사조 깃털','사망 확률 −20%'],
+    ['S','용 꼬리 스테이크',['용 꼬리','S','토벌'],'모든 능력치 +8%'],
+    ['S','별빛 만찬',['운철','성좌석'],'모든 능력치 +6%, 애착 +5'],
+  ];
+  const items=[]; let f=0;
+  for(const [g,name,ing,eff] of foods){
+    let recipe;
+    if(Array.isArray(ing)&&ing.length===3) recipe=[{m:add(ing[0],ing[1],'food','요리 재료 ('+ing[2]+')'),n:1}];
+    else if(Array.isArray(ing)) recipe=ing.map(n=>({m:byName(n),n:1}));
+    else recipe=[{m:byName(ing),n:1}];
+    items.push({id:'food_'+String(++f).padStart(2,'0'),kind:'food',name,grade:g,desc:eff,recipe,icon:null});
+  }
+  return {version:2,mats,items,quests:seedQuests(mats),seq:{x,food:f,gear:0,pot:0,q:0}};
+}
+
+/* ========== 상태·저장(IndexedDB) ========== */
+let xsort={key:'added',dir:1}; try{const v=JSON.parse(localStorage.getItem('mat_xsort')||'null');if(v&&v.key)xsort=v;}catch(e){}
+let qview='text'; try{qview=localStorage.getItem('mat_qview')||'text';}catch(e){}
+let S=null, tab='mat', sel={mat:null,food:null,gear:null,potion:null,quest:null}, confirming=null, flash=null;
+const DB='mat_editor', STORE='kv';
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
+async function dbGet(){try{const d=await idb();return await new Promise((res,rej)=>{const q=d.transaction(STORE).objectStore(STORE).get('state');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}catch(e){return null;}}
+let saveTimer=null, canSave=true;
+function save(){
+  $('saved').textContent='저장 중…';
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    try{const d=await idb();await new Promise((res,rej)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).put(S,'state');t.oncomplete=res;t.onerror=()=>rej(t.error);});$('saved').textContent='자동 저장됨 (이 브라우저)';}
+    catch(e){canSave=false;$('saved').textContent='자동 저장 불가 · 내보내기로 보관하세요';}
+  },250);
+}
+
+/* ========== 도우미 ========== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const lineName=k=>(LINES.find(l=>l.k===k)||{n:k}).n;
+const mat=id=>S.mats.find(m=>m.id===id);
+const iconHtml=(o,cls='')=>`<span class="ico ${cls}" data-g="${o.grade}">${o.icon?`<img alt="" src="${o.icon}">`:esc(o.grade)}</span>`;
+const usedBy=id=>S.items.filter(i=>i.recipe.some(r=>r.m===id));
+const gotFrom=id=>S.quests.filter(q=>q.rewards.some(r=>r.m===id));
+const quest=id=>S.quests.find(q=>q.id===id);
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200);}
+const nextId=(kind)=>{const p=kind==='mat'?'x':kind==='quest'?'q':KIND_PREFIX[kind];S.seq[p]=(S.seq[p]||0)+1;return S.seq[p];};
+const recipeDone=i=>i.recipe.length>0&&i.recipe.every(r=>r.m&&mat(r.m)&&r.n>=1);
+
+/* ========== 화면: 탭 ========== */
+function renderTabs(){
+  const cnt={mat:S.mats.length,food:0,gear:0,potion:0,quest:S.quests.length};S.items.forEach(i=>cnt[i.kind]++);
+  $('tabs').innerHTML=KINDS.map(k=>`<button class="tab" role="tab" data-tab="${k.k}" aria-selected="${tab===k.k}">${k.n}<span class="n">${cnt[k.k]}</span></button>`).join('');
+}
+
+/* ========== 화면: 소재 ========== */
+const SORTS=[{k:'added',n:'추가한 순'},{k:'name',n:'이름'},{k:'grade',n:'등급'},{k:'line',n:'계열'},{k:'used',n:'쓰이는 곳 수'}];
+function sortedExtras(){
+  const L=LINES.map(l=>l.k), d=xsort.dir, ex=S.mats.filter(m=>!m.core).map((m,i)=>({m,i}));
+  const cmp={added:(a,b)=>a.i-b.i,
+    name:(a,b)=>a.m.name.localeCompare(b.m.name,'ko'),
+    grade:(a,b)=>GRADES.indexOf(a.m.grade)-GRADES.indexOf(b.m.grade),
+    line:(a,b)=>L.indexOf(a.m.line)-L.indexOf(b.m.line),
+    used:(a,b)=>(usedBy(a.m.id).length+gotFrom(a.m.id).length)-(usedBy(b.m.id).length+gotFrom(b.m.id).length)}[xsort.key]||((a,b)=>a.i-b.i);
+  // 같은 값이면 등급 → 이름 순으로 안정 정렬
+  return ex.sort((a,b)=>d*cmp(a,b)||GRADES.indexOf(a.m.grade)-GRADES.indexOf(b.m.grade)||a.m.name.localeCompare(b.m.name,'ko')||a.i-b.i).map(x=>x.m);
+}
+function setSort(k,d){xsort={key:k,dir:d};try{localStorage.setItem('mat_xsort',JSON.stringify(xsort));}catch(e){}render();}
+function matCell(m){return `<button class="cell" data-pick="${m.id}" aria-pressed="${sel.mat===m.id}" title="${esc(m.name)}">${iconHtml(m)}<span class="nm">${esc(m.name)}</span></button>`;}
+function renderMatLeft(){
+  const core=LINES.filter(l=>l.core);
+  let h=`<h2>코어 소재 35종 <span class="hint">· 이름과 아이콘만 바꿀 수 있고 삭제할 수 없습니다</span></h2><div class="matrix-scroll"><table class="matrix"><thead><tr><th></th>${core.map(l=>`<th>${l.n}<br><span class="hint">${l.sub}</span></th>`).join('')}</tr></thead><tbody>`;
+  for(const g of GRADES){
+    h+=`<tr><th class="g"><span class="gl" data-g="${g}">${g}</span></th>${core.map(l=>{const m=S.mats.find(x=>x.core&&x.line===l.k&&x.grade===g);return `<td>${m?matCell(m):''}</td>`;}).join('')}</tr>`;
+  }
+  h+=`</tbody></table></div>`;
+  h+=`<div class="extra-head"><h2 style="margin:0">추가 소재 <span class="hint">· 음식 재료, 복원 재료, 새 소재</span></h2><div class="row"><label class="hint" for="sortKey">정렬</label><select id="sortKey" style="width:auto">${SORTS.map(o=>`<option value="${o.k}" ${o.k===xsort.key?'selected':''}>${o.n}</option>`).join('')}</select><button class="btn" id="sortDir" title="정렬 방향" aria-label="정렬 방향 바꾸기">${xsort.dir>0?'오름차순 ↑':'내림차순 ↓'}</button><button class="btn primary" id="addMat">+ 소재 추가</button></div></div>`;
+  const ex=sortedExtras();
+  if(!ex.length) h+=`<p class="hint">추가한 소재가 없습니다.</p>`;
+  else h+=`<div class="extra-grid">${ex.map(m=>`<button class="chip" data-pick="${m.id}" aria-pressed="${sel.mat===m.id}">${iconHtml(m)}<span class="t"><b>${esc(m.name)}</b><span>${lineName(m.line)} · ${m.grade}</span></span></button>`).join('')}</div>`;
+  return h;
+}
+function renderMatRight(){
+  const m=sel.mat&&mat(sel.mat);
+  if(!m) return `<h2>소재 상세</h2><p class="hint">표나 목록에서 소재를 고르면 이름, 아이콘, 설명을 수정할 수 있습니다.</p>`;
+  const used=usedBy(m.id), got=gotFrom(m.id);
+  let h=`<h2>${m.core?'코어 소재':'추가 소재'} <span class="badge ${m.core?'core':''}">${m.core?'삭제 불가':'삭제 가능'}</span></h2>
+  <div class="icobox"><div class="drop" id="drop" tabindex="0" role="button" aria-label="아이콘 올리기">${iconHtml(m,'lg')}</div>
+    <div><button class="btn" id="upIcon">아이콘 올리기</button><br><button class="btn" id="clrIcon" style="margin-top:6px" ${m.icon?'':'disabled'}>아이콘 지우기</button><div class="hint" style="margin-top:6px">끌어다 놓아도 됩니다.<br>긴 변 512px 이하로 줄여 보관</div></div></div>
+  <div class="field"><label for="fName">이름</label><input type="text" id="fName" value="${esc(m.name)}"></div>`;
+  if(m.core) h+=`<div class="field"><span class="lbl">등급 · 계열</span><div><span class="gl" data-g="${m.grade}">${m.grade}</span> ${lineName(m.line)}</div></div>`;
+  else h+=`<div class="row"><div class="field" style="flex:1"><label for="fGrade">등급</label><select id="fGrade">${GRADES.map(g=>`<option ${g===m.grade?'selected':''}>${g}</option>`).join('')}</select></div>
+    <div class="field" style="flex:2"><label for="fLine">계열</label><select id="fLine">${LINES.map(l=>`<option value="${l.k}" ${l.k===m.line?'selected':''}>${l.n}</option>`).join('')}</select></div></div>`;
+  h+=`<div class="field"><label for="fDesc">설명</label><textarea id="fDesc">${esc(m.desc)}</textarea></div>
+  <div class="field"><span class="lbl">ID <code>${m.id}</code> · 쓰이는 조합법 ${used.length}개</span>${used.length?`<div class="usedby">${used.map(i=>`<button data-jump="${i.id}">${KINDS.find(k=>k.k===i.kind).n} · ${esc(i.name)}</button>`).join('')}</div>`:''}</div>
+  <div class="field"><span class="lbl">얻는 퀘스트 ${got.length}개</span>${got.length?`<div class="usedby">${got.map(q=>{const r=q.rewards.find(x=>x.m===m.id);return `<button data-jumpq="${q.id}">${esc(q.name)} · ${r.role} ${r.p}%</button>`;}).join('')}</div>`:'<span class="hint">연결된 퀘스트가 없습니다. 퀘스트 탭에서 보상으로 넣을 수 있습니다.</span>'}</div>`;
+  if(!m.core){
+    if(confirming===m.id){
+      h+=(used.length||got.length)?`<div class="msg bad">조합법 ${used.length}개, 퀘스트 보상 ${got.length}개에서 쓰이는 소재입니다. 먼저 빼 주세요.</div><button class="btn" id="delNo">닫기</button>`
+        :`<div class="confirm"><span>이 소재를 삭제할까요?</span><button class="btn danger" id="delYes">삭제</button><button class="btn" id="delNo">취소</button></div>`;
+    } else h+=`<button class="btn danger" id="delMat">소재 삭제</button>`;
+  }
+  return h;
+}
+
+/* ========== 화면: 음식·장비·물약 ========== */
+function renderItemsLeft(){
+  const k=tab, kn=KINDS.find(x=>x.k===k).n, items=S.items.filter(i=>i.kind===k);
+  let h=`<div class="extra-head" style="margin-top:0"><h2 style="margin:0">${kn} <span class="hint">· 조합법은 소재 최대 3종</span></h2><button class="btn primary" id="addItem">+ ${kn} 추가</button></div>`;
+  if(!items.length) return h+`<p class="hint">등록된 ${kn}이 없습니다. “${kn} 추가”로 첫 항목을 만드세요.</p>`;
+  h+=`<div class="list">${items.map(i=>`<button class="card" data-pick="${i.id}" aria-pressed="${sel[k]===i.id}">
+    <span class="top"><span class="gl" data-g="${i.grade}">${i.grade}</span><b>${esc(i.name)}</b></span>
+    <span class="mini">${i.recipe.length?i.recipe.map(r=>{const m=mat(r.m);return m?`${iconHtml(m)}<span class="x">×${r.n}</span>`:`<span class="incomplete">미선택</span>`;}).join(''):'<span class="incomplete">조합법 없음</span>'}</span></button>`).join('')}</div>`;
+  return h;
+}
+function renderItemRight(){
+  const i=S.items.find(x=>x.id===sel[tab]);
+  const kn=KINDS.find(x=>x.k===tab).n;
+  if(!i) return `<h2>${kn} 상세</h2><p class="hint">목록에서 고르거나 새로 추가하세요.</p>`;
+  const opts=sel_=>`<option value="">소재 선택…</option>`+LINES.map(l=>{const ms=S.mats.filter(m=>m.line===l.k);return ms.length?`<optgroup label="${l.n}">${ms.map(m=>`<option value="${m.id}" ${m.id===sel_?'selected':''}>${m.grade} · ${esc(m.name)}</option>`).join('')}</optgroup>`:'';}).join('');
+  let h=`<h2>${kn} 상세</h2>
+  <div class="icobox"><div class="drop" id="drop" tabindex="0" role="button" aria-label="아이콘 올리기">${iconHtml(i,'lg')}</div>
+    <div><button class="btn" id="upIcon">아이콘 올리기</button><br><button class="btn" id="clrIcon" style="margin-top:6px" ${i.icon?'':'disabled'}>아이콘 지우기</button></div></div>
+  <div class="row"><div class="field" style="flex:3"><label for="fName">이름</label><input type="text" id="fName" value="${esc(i.name)}"></div>
+    <div class="field" style="flex:1"><label for="fGrade">등급</label><select id="fGrade">${GRADES.map(g=>`<option ${g===i.grade?'selected':''}>${g}</option>`).join('')}</select></div></div>
+  <div class="field"><label for="fDesc">${EFFECT_LABEL[tab]}</label><textarea id="fDesc">${esc(i.desc)}</textarea></div>
+  <div class="lbl" style="margin-bottom:6px">조합법 (소재 1~3종, 수량)</div>`;
+  for(let s=0;s<3;s++){
+    const r=i.recipe[s];
+    h+=`<div class="slot"><span class="no">${s+1}</span><select data-slot="${s}" aria-label="재료 ${s+1}">${opts(r?r.m:'')}</select><input type="number" min="1" max="99" data-qty="${s}" value="${r?r.n:1}" ${r?'':'disabled'} aria-label="수량 ${s+1}"></div>`;
+  }
+  if(!recipeDone(i)) h+=`<div class="msg" style="color:var(--warn)">${i.recipe.length?'재료를 모두 고르세요.':'재료를 1종 이상 고르세요.'}</div>`;
+  const dup=i.recipe.map(r=>r.m).filter((m,ix,a)=>m&&a.indexOf(m)!==ix);
+  if(dup.length) h+=`<div class="msg bad">같은 소재가 두 칸에 있습니다. 수량으로 합치세요.</div>`;
+  h+=`<div class="field" style="margin-top:10px"><span class="lbl">ID <code>${i.id}</code></span></div>`;
+  if(confirming===i.id) h+=`<div class="confirm"><span>삭제할까요?</span><button class="btn danger" id="delYes">삭제</button><button class="btn" id="delNo">취소</button></div>`;
+  else h+=`<button class="btn danger" id="delItem">${kn} 삭제</button>`;
+  return h;
+}
+
+/* ========== 화면: 퀘스트 ========== */
+const catName=k=>(QCATS.find(c=>c.k===k)||{n:k}).n;
+const mainMat=q=>{const r=q.rewards.find(x=>x.role==='주')||q.rewards[0];return r&&mat(r.m);};
+function rwBlock(q){
+  if(!q.rewards.length) return '<span class="incomplete">보상 없음</span>';
+  const tip=q.rewards.map(r=>`${r.role} ${(mat(r.m)||{name:'(미선택)'}).name} ${r.p}%`).join('\n');
+  if(qview==='text') return `<span class="rwl" title="${esc(tip)}">${q.rewards.map(r=>{const m=mat(r.m);return `<span class="rwr r-${r.role==='주'?'m':'s'}"><i>${r.role}</i><span>${m?esc(m.name):'(미선택)'}</span><em>${r.p}%</em></span>`;}).join('')}</span>`;
+  return `<span class="mini rwi" title="${esc(tip)}">${q.rewards.map(r=>{const m=mat(r.m);return `<span class="rwc ${r.role==='주'?'main':''}">${m?iconHtml(m):'<span class="ico" data-g="F">?</span>'}<em>${r.p}</em></span>`;}).join('')}</span>`;
+}
+function qCell(q){return `<button class="cell qcell" data-pick="${q.id}" aria-pressed="${sel.quest===q.id}"><span class="nm">${esc(q.name)}</span>${rwBlock(q)}</button>`;}
+function renderQuestLeft(){
+  const core=LINES.filter(l=>l.core);
+  let h=`<div class="extra-head" style="margin-top:0"><h2 style="margin:0">의뢰 유형 × 등급 35칸 <span class="hint">· 칸에 보상 소재가 바로 보입니다. 칸을 누르면 편집</span></h2><div class="row"><span class="hint">보상 표시</span><button class="btn" id="qvIcon" aria-pressed="${qview==='icon'}">아이콘</button><button class="btn" id="qvText" aria-pressed="${qview==='text'}">이름</button></div></div><div class="matrix-scroll"><table class="matrix"><thead><tr><th></th>${core.map(l=>`<th>${l.n}</th>`).join('')}</tr></thead><tbody>`;
+  for(const g of GRADES) h+=`<tr><th class="g"><span class="gl" data-g="${g}">${g}</span></th>${core.map(l=>{const q=S.quests.find(x=>x.core&&x.line===l.k&&x.grade===g);return `<td>${q?qCell(q):''}</td>`;}).join('')}</tr>`;
+  h+=`</tbody></table></div><div class="extra-head"><h2 style="margin:0">추가 퀘스트 <span class="hint">· 메인·서브·승급·리소스 등 개별 퀘스트</span></h2><button class="btn primary" id="addQuest">+ 퀘스트 추가</button></div>`;
+  const ex=S.quests.filter(q=>!q.core);
+  h+=ex.length?`<div class="list">${ex.map(q=>`<button class="card" data-pick="${q.id}" aria-pressed="${sel.quest===q.id}"><span class="top"><span class="gl" data-g="${q.grade}">${q.grade}</span><b>${esc(q.name)}</b><span class="badge">${catName(q.cat)}</span></span>${rwBlock(q)}</button>`).join('')}</div>`:`<p class="hint">추가한 퀘스트가 없습니다.</p>`;
+  return h;
+}
+function renderQuestRight(){
+  const q=quest(sel.quest);
+  if(!q) return `<h2>퀘스트 상세</h2><p class="hint">칸이나 목록에서 퀘스트를 고르면 보상 소재를 연결할 수 있습니다.</p>`;
+  const opts=cur_=>`<option value="">소재 선택…</option>`+LINES.map(l=>{const ms=S.mats.filter(m=>m.line===l.k);return ms.length?`<optgroup label="${l.n}">${ms.map(m=>`<option value="${m.id}" ${m.id===cur_?'selected':''}>${m.grade} · ${esc(m.name)}</option>`).join('')}</optgroup>`:'';}).join('');
+  let h=`<h2>${q.core?'기본 의뢰':'추가 퀘스트'} <span class="badge ${q.core?'core':''}">${q.core?'삭제 불가':'삭제 가능'}</span></h2>
+  <div class="field"><label for="fName">이름</label><input type="text" id="fName" value="${esc(q.name)}"></div>`;
+  if(q.core) h+=`<div class="field"><span class="lbl">유형 · 등급</span><div><span class="gl" data-g="${q.grade}">${q.grade}</span> ${lineName(q.line)}</div></div>`;
+  else h+=`<div class="row"><div class="field" style="flex:2"><label for="fCat">분류</label><select id="fCat">${QCATS.map(c=>`<option value="${c.k}" ${c.k===q.cat?'selected':''}>${c.n}</option>`).join('')}</select></div>
+    <div class="field" style="flex:1"><label for="fGrade">등급</label><select id="fGrade">${GRADES.map(g=>`<option ${g===q.grade?'selected':''}>${g}</option>`).join('')}</select></div></div>`;
+  h+=`<div class="field"><label for="fDesc">설명</label><textarea id="fDesc">${esc(q.desc)}</textarea></div>
+  <div class="lbl" style="margin-bottom:6px">보상 소재 (구분 · 확률%)</div>`;
+  q.rewards.forEach((r,i)=>{
+    h+=`<div class="rw"><div class="row">${mat(r.m)?iconHtml(mat(r.m)):'<span class="ico" data-g="F">?</span>'}<select data-rwm="${i}" aria-label="보상 소재 ${i+1}">${opts(r.m)}</select></div>
+    <div class="row"><select data-rwr="${i}" aria-label="구분">${ROLES.map(x=>`<option ${x===r.role?'selected':''}>${x}</option>`).join('')}</select><input type="number" min="0" max="100" step="0.5" data-rwp="${i}" value="${r.p}" aria-label="확률"><span class="hint">%</span><button class="btn" data-rwdel="${i}" aria-label="보상 삭제">삭제</button></div></div>`;
+  });
+  h+=`<button class="btn" id="addRw">+ 보상 소재 추가</button>`;
+  if(!q.rewards.length) h+=`<div class="msg" style="color:var(--warn)">보상 소재가 없습니다.</div>`;
+  const miss=q.rewards.filter(r=>!mat(r.m)).length; if(miss) h+=`<div class="msg" style="color:var(--warn)">소재를 고르지 않은 보상 ${miss}개</div>`;
+  const dup=q.rewards.map(r=>r.m).filter((m,ix,a)=>m&&a.indexOf(m)!==ix); if(dup.length) h+=`<div class="msg bad">같은 소재가 두 줄 이상 있습니다.</div>`;
+  h+=`<div class="field" style="margin-top:10px"><span class="lbl">ID <code>${q.id}</code></span></div>`;
+  if(!q.core){ if(confirming===q.id) h+=`<div class="confirm"><span>삭제할까요?</span><button class="btn danger" id="delYes">삭제</button><button class="btn" id="delNo">취소</button></div>`;
+    else h+=`<button class="btn danger" id="delQuest">퀘스트 삭제</button>`; }
+  return h;
+}
+
+/* ========== 화면: 하단 점검 ========== */
+function renderStatus(){
+  const core=S.mats.filter(m=>m.core).length, ex=S.mats.length-core;
+  const c={food:0,gear:0,potion:0};S.items.forEach(i=>c[i.kind]++);
+  const noIcon=S.mats.filter(m=>!m.icon).length;
+  const bad=S.items.filter(i=>!recipeDone(i)).length;
+  const emptyName=[...S.mats,...S.items].filter(o=>!o.name.trim()).length;
+  const names={};[...S.mats].forEach(m=>{const k=m.name.trim();if(k)names[k]=(names[k]||0)+1;});
+  const dupNames=Object.values(names).filter(n=>n>1).length;
+  $('status').innerHTML=`<span>소재 <b>${S.mats.length}</b> (코어 ${core} · 추가 ${ex})</span><span>음식 <b>${c.food}</b> · 장비 <b>${c.gear}</b> · 물약 <b>${c.potion}</b></span>
+  <span>퀘스트 <b>${S.quests.length}</b> · 보상 없음 <b>${S.quests.filter(q=>!q.rewards.length).length}</b></span><span>소재 아이콘 <b>${S.mats.length-noIcon}</b>/${S.mats.length}</span>
+  ${(()=>{const n=S.mats.filter(m=>!gotFrom(m.id).length).length;return n?`<span class="w">획득처 없는 소재 ${n}종</span>`:'';})()}
+  ${bad?`<span class="w">조합법 미완성 ${bad}개</span>`:''}${emptyName?`<span class="w">이름이 빈 항목 ${emptyName}개</span>`:''}${dupNames?`<span class="w">소재 이름 중복 ${dupNames}건</span>`:''}`;
+}
+
+function render(){
+  renderTabs();
+  $('left').innerHTML=tab==='mat'?renderMatLeft():tab==='quest'?renderQuestLeft():renderItemsLeft();
+  $('right').innerHTML=tab==='mat'?renderMatRight():tab==='quest'?renderQuestRight():renderItemRight();
+  renderStatus();
+}
+function rerenderKeepFocus(){const a=document.activeElement&&document.activeElement.id;render();if(a&&$(a)){$(a).focus();try{const l=$(a).value.length;$(a).setSelectionRange&&$(a).setSelectionRange(l,l);}catch(e){}}}
+const cur=()=>tab==='mat'?mat(sel.mat):tab==='quest'?quest(sel.quest):S.items.find(x=>x.id===sel[tab]);
+
+/* ========== 아이콘 업로드 ========== */
+function loadIcon(file){
+  if(!file||!/^image\//.test(file.type)){toast('이미지 파일을 올려 주세요');return;}
+  const o=cur();if(!o)return;
+  const url=URL.createObjectURL(file), im=new Image();
+  im.onload=()=>{
+    const MAX=512, sc=Math.min(1,MAX/Math.max(im.width,im.height));
+    const c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+    o.icon=c.toDataURL('image/png');URL.revokeObjectURL(url);save();render();toast(`아이콘 적용 (${c.width}×${c.height})`);
+  };
+  im.onerror=()=>{URL.revokeObjectURL(url);toast('이미지를 읽지 못했습니다');};
+  im.src=url;
+}
+
+/* ========== 내보내기 ========== */
+const csvCell=v=>{v=String(v??'');return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+const csv=rows=>'﻿'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n')+'\r\n';
+const iconFile=o=>o.icon?`icons/${o.id}.png`:'';
+function buildFiles(){
+  const mrows=[['id','이름','등급','계열','구분','설명','아이콘']];
+  S.mats.forEach(m=>mrows.push([m.id,m.name,m.grade,lineName(m.line),m.core?'코어':'추가',m.desc,iconFile(m)]));
+  const irows=[['id','종류','이름','등급','설명','재료1','수량1','재료2','수량2','재료3','수량3','아이콘']];
+  S.items.forEach(i=>{const r=[];for(let s=0;s<3;s++){const x=i.recipe[s];r.push(x?x.m:'',x?x.n:'');}
+    irows.push([i.id,KINDS.find(k=>k.k===i.kind).n,i.name,i.grade,i.desc,...r,iconFile(i)]);});
+  const qrows=[['id','이름','분류','등급','계열','설명','소재id','소재이름','구분','확률(%)']];
+  S.quests.forEach(q=>{const base=[q.id,q.name,catName(q.cat),q.grade,q.core?lineName(q.line):'',q.desc];
+    if(!q.rewards.length) qrows.push([...base,'','','','']);
+    q.rewards.forEach(r=>qrows.push([...base,r.m,(mat(r.m)||{}).name||'',r.role,r.p]));});
+  const files=[{path:'quests.csv',data:new TextEncoder().encode(csv(qrows))},{path:'materials.csv',data:new TextEncoder().encode(csv(mrows))},
+               {path:'items.csv',data:new TextEncoder().encode(csv(irows))},
+               {path:'backup.json',data:new TextEncoder().encode(JSON.stringify(S))}];
+  [...S.mats,...S.items].forEach(o=>{if(o.icon)files.push({path:iconFile(o),data:dataUrlBytes(o.icon)});});
+  return files;
+}
+function dataUrlBytes(u){const b=atob(u.split(',')[1]),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=t[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;};})();
+function makeZip(files){ // 압축 없이 담는 zip
+  const enc=new TextEncoder(),parts=[],cd=[];let off=0;
+  const d=new Date(),dt=((d.getFullYear()-1980)<<9|(d.getMonth()+1)<<5|d.getDate()),tm=(d.getHours()<<11|d.getMinutes()<<5|d.getSeconds()>>1);
+  for(const f of files){
+    const nm=enc.encode(f.path),crc=CRC(f.data),sz=f.data.length;
+    const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);lh.setUint16(10,tm,true);lh.setUint16(12,dt,true);lh.setUint32(14,crc,true);lh.setUint32(18,sz,true);lh.setUint32(22,sz,true);lh.setUint16(26,nm.length,true);lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),nm,f.data);
+    const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);ch.setUint16(12,tm,true);ch.setUint16(14,dt,true);ch.setUint32(16,crc,true);ch.setUint32(20,sz,true);ch.setUint32(24,sz,true);ch.setUint16(28,nm.length,true);ch.setUint32(42,off,true);
+    cd.push(new Uint8Array(ch.buffer),nm);off+=30+nm.length+sz;
+  }
+  const cdSize=cd.reduce((a,b)=>a+b.length,0);
+  const end=new DataView(new ArrayBuffer(22));end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,cdSize,true);end.setUint32(16,off,true);
+  return new Blob([...parts,...cd,new Uint8Array(end.buffer)],{type:'application/zip'});
+}
+function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+async function saveToFolder(){
+  if(!window.showDirectoryPicker){toast('이 브라우저는 폴더 저장을 지원하지 않습니다. zip 내보내기를 쓰세요');return;}
+  try{
+    const dir=await window.showDirectoryPicker({mode:'readwrite'});
+    const files=buildFiles();let n=0;
+    for(const f of files){
+      const parts=f.path.split('/');let d=dir;
+      for(let i=0;i<parts.length-1;i++)d=await d.getDirectoryHandle(parts[i],{create:true});
+      const fh=await d.getFileHandle(parts[parts.length-1],{create:true});
+      const w=await fh.createWritable();await w.write(f.data);await w.close();n++;
+    }
+    toast(`${dir.name} 폴더에 ${n}개 파일 저장`);
+  }catch(e){if(e.name!=='AbortError')toast('저장하지 못했습니다: '+e.message);}
+}
+
+/* ========== 이벤트 ========== */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,[data-pick]');if(!t)return;
+  if(t.dataset.tab){tab=t.dataset.tab;confirming=null;render();return;}
+  if(t.dataset.pick){sel[tab]=t.dataset.pick;confirming=null;render();return;}
+  if(t.dataset.rwdel!==undefined){const q=cur();if(q){q.rewards.splice(+t.dataset.rwdel,1);save();render();}return;}
+  if(t.dataset.jumpq){tab='quest';sel.quest=t.dataset.jumpq;confirming=null;render();return;}
+  if(t.dataset.jump){const i=S.items.find(x=>x.id===t.dataset.jump);if(i){tab=i.kind;sel[tab]=i.id;confirming=null;render();}return;}
+  switch(t.id){
+    case 'qvIcon':case 'qvText':qview=t.id==='qvText'?'text':'icon';try{localStorage.setItem('mat_qview',qview);}catch(e){}render();break;
+    case 'sortDir':setSort(xsort.key,-xsort.dir);break;
+    case 'addMat':{const n=nextId('mat'),m={id:'mat_x'+String(n).padStart(3,'0'),name:'새 소재',grade:'F',line:'etc',core:false,desc:'',icon:null};S.mats.push(m);sel.mat=m.id;save();render();$('fName').select();break;}
+    case 'addItem':{const p=KIND_PREFIX[tab],n=nextId(tab),i={id:`${p}_${String(n).padStart(2,'0')}`,kind:tab,name:'새 '+KINDS.find(k=>k.k===tab).n,grade:'F',desc:'',recipe:[],icon:null};S.items.push(i);sel[tab]=i.id;save();render();$('fName').select();break;}
+    case 'addQuest':{const n=nextId('quest'),q={id:'q_x'+String(n).padStart(3,'0'),name:'새 퀘스트',cat:'sub',grade:'F',line:'',core:false,desc:'',rewards:[]};S.quests.push(q);sel.quest=q.id;save();render();$('fName').select();break;}
+    case 'addRw':{const q=cur();if(q){q.rewards.push({m:'',role:q.rewards.length?'부':'주',p:q.rewards.length?10:100});save();render();}break;}
+    case 'delQuest':confirming=(cur()||{}).id;render();break;
+    case 'upIcon':$('fIcon').click();break;
+    case 'clrIcon':{const o=cur();if(o){o.icon=null;save();render();}break;}
+    case 'delMat':case 'delItem':confirming=(cur()||{}).id;render();break;
+    case 'delNo':confirming=null;render();break;
+    case 'delYes':{if(tab==='mat'){S.mats=S.mats.filter(m=>m.id!==sel.mat);sel.mat=null;}else if(tab==='quest'){S.quests=S.quests.filter(q=>q.id!==sel.quest);sel.quest=null;}else{S.items=S.items.filter(i=>i.id!==sel[tab]);sel[tab]=null;}confirming=null;save();render();toast('삭제했습니다');break;}
+    case 'bFolder':saveToFolder();break;
+    case 'bZip':download(makeZip(buildFiles()),'materials_export.zip');toast('zip을 내려받았습니다');break;
+    case 'bLoad':$('fLoad').click();break;
+    case 'bReset':
+      if(t.dataset.arm){S=seed();sel={mat:null,food:null,gear:null,potion:null,quest:null};t.dataset.arm='';t.textContent='처음 상태로';save();render();toast('처음 상태로 되돌렸습니다');}
+      else{t.dataset.arm='1';t.textContent='정말 되돌리기 (한 번 더)';setTimeout(()=>{t.dataset.arm='';t.textContent='처음 상태로';},3500);}
+      break;
+  }
+});
+document.addEventListener('input',e=>{
+  const o=cur();if(!o)return;const t=e.target;
+  if(t.id==='fName'){o.name=t.value;save();renderTabs();renderStatus();const el=document.querySelector(`[data-pick="${o.id}"]`);if(el){const nm=el.querySelector('.nm,b');if(nm)nm.textContent=o.name;}}
+  else if(t.id==='fDesc'){o.desc=t.value;save();}
+  else if(t.dataset.rwp!==undefined){const r=o.rewards[+t.dataset.rwp];if(r){r.p=Math.max(0,Math.min(100,parseFloat(t.value)||0));save();}}
+  else if(t.dataset.qty!==undefined){const r=o.recipe[+t.dataset.qty];if(r){r.n=Math.max(1,Math.min(99,parseInt(t.value)||1));save();renderStatus();}}
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='sortKey'){setSort(t.value,xsort.dir);return;}
+  if(t.id==='fIcon'){loadIcon(t.files[0]);t.value='';return;}
+  if(t.id==='fLoad'){const f=t.files[0];t.value='';if(!f)return;f.text().then(s=>{try{const d=JSON.parse(s);if(!d.mats||!d.items)throw 0;S=d;if(!S.quests)S.quests=seedQuests(S.mats);S.seq=S.seq||{};sel={mat:null,food:null,gear:null,potion:null,quest:null};save();render();toast('백업을 불러왔습니다');}catch(x){toast('백업 파일 형식이 맞지 않습니다');}});return;}
+  const o=cur();if(!o)return;
+  if(t.id==='fGrade'){o.grade=t.value;save();render();}
+  else if(t.id==='fLine'){o.line=t.value;save();render();}
+  else if(t.id==='fCat'){o.cat=t.value;save();render();}
+  else if(t.dataset.rwm!==undefined){o.rewards[+t.dataset.rwm].m=t.value;save();render();}
+  else if(t.dataset.rwr!==undefined){o.rewards[+t.dataset.rwr].role=t.value;save();}
+  else if(t.dataset.slot!==undefined){
+    const s=+t.dataset.slot;
+    if(t.value){if(o.recipe[s])o.recipe[s].m=t.value;else{while(o.recipe.length<s)o.recipe.push({m:'',n:1});o.recipe[s]={m:t.value,n:1};}}
+    else{o.recipe.splice(s,1);}
+    save();render();
+  }
+});
+document.addEventListener('dragover',e=>{const d=e.target.closest('#drop');if(d){e.preventDefault();d.classList.add('over');}});
+document.addEventListener('dragleave',e=>{const d=e.target.closest('#drop');if(d)d.classList.remove('over');});
+document.addEventListener('drop',e=>{const d=e.target.closest('#drop');if(d){e.preventDefault();d.classList.remove('over');loadIcon(e.dataTransfer.files[0]);}});
+document.addEventListener('click',e=>{if(e.target.closest('#drop'))$('fIcon').click();});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.id==='drop'){e.preventDefault();$('fIcon').click();}});
+
+(async()=>{
+  const saved=await dbGet();
+  S=saved&&saved.mats&&saved.items?saved:seed();
+  // 이전 저장본에 코어 소재가 빠져 있으면 보충
+  const have=new Set(S.mats.map(m=>m.id));
+  seed().mats.filter(m=>m.core&&!have.has(m.id)).forEach(m=>S.mats.push(m));
+  if(!S.quests){S.quests=seedQuests(S.mats);S.seq.q=S.seq.q||0;}
+  sel.mat='mat_slay_F';
+  render();
+})();
+</script>
+</body>
+</html>

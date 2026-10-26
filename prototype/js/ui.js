@@ -16,6 +16,7 @@
     q = sel => stage.ui.querySelector(sel);
     // 배속
     stage.ui.querySelectorAll('[data-speed]').forEach(b => b.onclick = () => hooks.setSpeed(+b.dataset.speed));
+    q('#ppBtn').onclick = () => hooks.setSpeed(curSp > 0 ? 0 : lastSp);
     // 기능 버튼 → 팝업
     stage.ui.querySelectorAll('[data-pop]').forEach(b => b.onclick = () => UI.open(b.dataset.pop));
     q('#popClose').onclick = UI.close;
@@ -41,12 +42,18 @@
     UI.autoReport = true;
   };
   UI.setState = st => { s = st; openAdv = null; };
-  UI.setSpeed = v => stage.ui.querySelectorAll('[data-speed]').forEach(x => x.classList.toggle('on', +x.dataset.speed === v));
+  const PAUSE_SVG = '<svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg>', PLAY_SVG = '<svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor"/></svg>';
+  let curSp = 1, lastSp = 1; // 일시정지 버튼: 멈추면 직전 배속을 기억했다가 재생 때 되돌림
+  UI.setSpeed = v => {
+    curSp = v; if (v > 0) lastSp = v;
+    stage.ui.querySelectorAll('[data-speed]').forEach(x => x.classList.toggle('on', +x.dataset.speed === v));
+    const pp = q('#ppBtn'); if (pp) { pp.innerHTML = v === 0 ? PLAY_SVG : PAUSE_SVG; pp.classList.toggle('paused', v === 0); pp.title = v === 0 ? '재생 (스페이스)' : '일시정지 (스페이스)'; }
+  };
 
   // ---------- 상태 표시 ----------
   UI.hud = function () {
     q('#hDate').textContent = Gm.dateLabel(s.week);
-    q('#hGrade').className = 'gb big g' + s.grade; q('#hGrade').textContent = GR[s.grade];
+    q('#hGrade').style.backgroundImage = 'url(assets/ui/hud/badge_' + GR[s.grade] + '.png)'; q('#hGrade').title = '길드 등급 ' + GR[s.grade];
     q('#hGold').textContent = fmt(s.gold); q('#hGold').classList.toggle('neg', s.gold < 0);
     q('#hTrust').textContent = Math.round(s.trust);
     q('#hFame').textContent = Math.round(s.fame || 0);

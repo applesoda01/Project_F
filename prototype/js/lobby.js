@@ -9,12 +9,12 @@
   const A = root.Assets;
 
   // ---------- 고정 배치 (1920×1080) ----------
-  const BOARD = { x0: 285, x1: 1650, rows: [68, 210], cols: 12, w: 84, h: 110 };
+  const BOARD = { x0: 370, x1: 1550, rows: [64, 204], cols: 12, w: 84, h: 110 };
   const SLOTS = [];
   for (let k = 0; k < BOARD.cols; k++) for (const y of BOARD.rows) SLOTS.push({ x: Math.round(BOARD.x0 + k * (BOARD.x1 - BOARD.x0 - BOARD.w) / (BOARD.cols - 1)), y });
   // 의뢰가 적을 때도 게시판 전체에 고루 퍼지도록 채우는 순서
   const FILL = [0, 13, 6, 19, 3, 16, 9, 22, 1, 14, 7, 20, 4, 17, 10, 23, 2, 15, 8, 21, 5, 18, 11, 12];
-  const COUNTER_Y = 428;
+  const COUNTER_Y = 372;
   // 테이블 자리 4칸 (뒷줄 2, 앞줄 2). y는 테이블 기준선
   const TABLES = [{ x: 500, y: 700 }, { x: 1420, y: 700 }, { x: 500, y: 920 }, { x: 1420, y: 920 }];
   // 등급 인장 색 (F~S). 'color' 혼합으로 밝기는 원본 인장을 따른다
@@ -125,9 +125,11 @@
       const T = TABLES[i];
       if (i >= nt) { list.push({ z: T.y, f: () => emptyTable(g, T) }); continue; }
       const lv = i === 1 && s.grade >= 1 ? 2 : 1;
-      if (i < 2) for (const dx of [-104, 104]) list.push({ z: T.y + 60, f: () => A.draw(g, `chair_lv${lv}_front`, T.x + dx, T.y + 72) });
-      else for (const dx of [-104, 104]) list.push({ z: T.y + 120, f: () => A.draw(g, `chair_lv${lv}_back`, T.x + dx, T.y + 134) });
-      list.push({ z: T.y + 96, f: () => { g.fillStyle = 'rgba(60,30,10,.18)'; g.beginPath(); g.ellipse(T.x, T.y + 92, 95, 20, 0, 0, 7); g.fill(); A.draw(g, `table_lv${lv}`, T.x, T.y + 96); } });
+      // 탁자 하나에 4석: 위쪽 2석(정면 의자, 탁자 뒤) + 왼쪽·오른쪽 1석씩(옆모습 의자). 좌표는 actors.js 의 D.layout 과 같이 바꿀 것
+      for (const dx of [-50, 50]) list.push({ z: T.y + 30, f: () => A.draw(g, `chair_lv${lv}_front`, T.x + dx, T.y - 2) });
+      list.push({ z: T.y + 106, f: () => A.draw(g, `chair_lv${lv}_side_l`, T.x - 100, T.y + 62) });
+      list.push({ z: T.y + 106, f: () => A.draw(g, `chair_lv${lv}_side_r`, T.x + 100, T.y + 62) });
+      list.push({ z: T.y + 96, f: () => { g.fillStyle = 'rgba(60,30,10,.18)'; g.beginPath(); g.ellipse(T.x, T.y + 92, 70, 13, 0, 0, 7); g.fill(); A.draw(g, `table_lv${lv}`, T.x, T.y + 96); } });
     }
     list.sort((a, b) => a.z - b.z).forEach(o => o.f());
     // 9 말풍선
@@ -138,7 +140,7 @@
     g.save(); g.strokeStyle = 'rgba(255,0,120,.7)'; g.lineWidth = 2;
     SLOTS.forEach((sl, i) => { g.strokeRect(sl.x, sl.y, BOARD.w, BOARD.h); g.fillStyle = 'rgba(255,0,120,.9)'; g.font = '14px sans-serif'; g.fillText(FILL.indexOf(i) + 1, sl.x + 4, sl.y + 16); });
     g.strokeStyle = 'rgba(0,160,255,.8)'; g.beginPath(); g.moveTo(0, COUNTER_Y); g.lineTo(1920, COUNTER_Y); g.stroke();
-    g.fillStyle = 'rgba(0,160,255,.9)'; g.font = '16px sans-serif'; g.fillText('카운터 레이어 y=428', 10, COUNTER_Y - 6);
+    g.fillStyle = 'rgba(0,160,255,.9)'; g.font = '16px sans-serif'; g.fillText('카운터 레이어 y=372', 10, COUNTER_Y - 6);
     for (const [k, x] of Object.entries(root.Lina.WIN)) { g.fillText(k, x - 20, 630); g.beginPath(); g.arc(x, 650, 6, 0, 7); g.fill(); }
     for (const st of root.Director.seats) { g.strokeStyle = st.by ? 'rgba(255,120,0,.9)' : 'rgba(0,200,120,.9)'; g.strokeRect(st.x - 20, st.y - 20, 40, 20); }
     g.restore();

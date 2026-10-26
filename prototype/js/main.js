@@ -37,6 +37,7 @@
   }
 
   UI.init(stage, s, { setSpeed, save, load, newGame, changed: () => UI.hud(), promoted: a => Director.celebrate(a.id) });
+  LinaMenu.init(stage, () => s, UI); // 리나 클릭 메뉴 (좌3·우3)
   const q = sel => stage.ui.querySelector(sel);
   q('#dWeek').onclick = () => { step(); UI.hud(); };
   q('#dMonth').onclick = () => { for (let i = 0; i < 4; i++) step(); UI.hud(); };
