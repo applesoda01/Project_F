@@ -1,0 +1,48 @@
+{
+  "character": "archer_m",
+  "view": "side",
+  "cell": [
+    256,
+    288
+  ],
+  "facing": "left (mirror for right)",
+  "rows": {
+    "sit_down": {
+      "row": 0,
+      "frames": 13,
+      "fps": 12,
+      "note": "stand_up = sit_down played in reverse"
+    },
+    "idle": {
+      "row": 1,
+      "frames": 4,
+      "fps": 4,
+      "loop": "bob 0,1,2,1 px"
+    }
+  },
+  "chair_layer": "chair_side_layer.png (same cell size and origin; draw behind the character)",
+  "timing": {
+    "lift_start_video_frame": 12,
+    "lift_end_video_frame": 22,
+    "lift_px_576space": -108.0,
+    "lift_px_cell": -72.36,
+    "sheet_frame_to_video_frame": "sheet k>=1 -> video frame 2k",
+    "x_fix_px_576space": 16.98,
+    "seat_bottom_y_576space": 421.0,
+    "scale_start": 0.67,
+    "scale_end": 0.67,
+    "extra_dx_cell": -9
+  },
+  "feet_baseline_y": 274,
+  "source": {
+    "video": "/mnt/user-data/uploads/output/video/LTX-2.5_i2v_00109_.mp4",
+    "key": "magenta",
+    "crop_box_576": [
+      114,
+      192,
+      468,
+      546
+    ]
+  },
+  "notes": "frame 0 = walk-sheet frame 0 shifted down 32 px; others Real-ESRGAN x2 keyed frames scaled 0.67; character has no chair; lift/timing/chair offset are defaults to be tuned in the timing tool"
+}

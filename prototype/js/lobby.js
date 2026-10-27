@@ -120,15 +120,18 @@
     // 떼어 낸 쪽지는 리나 손으로 날아가므로 카운터보다 앞에 그림
     for (const n of Board.notes.values()) if (n.st === 'taken') drawNote(g, n, t);
     // 8 앞뒤 정렬 묶음
-    const list = root.Director.drawables(g, t), nt = tableCount(s);
+    const list = root.Director.drawables(g, t), nt = tableCount(s), cellChairs = root.Director.cellChairs();
+    if (cellChairs) list.push(...root.Director.chairDrawables(g)); // 앉기 시트와 같은 셀 좌표의 의자 (모든 자리)
     for (let i = 0; i < 4; i++) {
       const T = TABLES[i];
       if (i >= nt) { list.push({ z: T.y, f: () => emptyTable(g, T) }); continue; }
       const lv = i === 1 && s.grade >= 1 ? 2 : 1;
       // 탁자 하나에 4석: 위쪽 2석(정면 의자, 탁자 뒤) + 왼쪽·오른쪽 1석씩(옆모습 의자). 좌표는 actors.js 의 D.layout 과 같이 바꿀 것
-      for (const dx of [-50, 50]) list.push({ z: T.y + 30, f: () => A.draw(g, `chair_lv${lv}_front`, T.x + dx, T.y - 2) });
-      list.push({ z: T.y + 106, f: () => A.draw(g, `chair_lv${lv}_side_l`, T.x - 100, T.y + 62) });
-      list.push({ z: T.y + 106, f: () => A.draw(g, `chair_lv${lv}_side_r`, T.x + 100, T.y + 62) });
+      if (!cellChairs) { // 앉기 시트용 의자 그림이 없을 때의 기존 의자
+        for (const dx of [-root.Director.TOP_DX, root.Director.TOP_DX]) list.push({ z: T.y + 30, f: () => A.draw(g, `chair_lv${lv}_front`, T.x + dx, T.y - 2) });
+        list.push({ z: T.y + 93, f: () => A.draw(g, `chair_lv${lv}_side_l`, T.x - 100, T.y + 62) });
+        list.push({ z: T.y + 93, f: () => A.draw(g, `chair_lv${lv}_side_r`, T.x + 100, T.y + 62) });
+      }
       list.push({ z: T.y + 96, f: () => { g.fillStyle = 'rgba(60,30,10,.18)'; g.beginPath(); g.ellipse(T.x, T.y + 92, 70, 13, 0, 0, 7); g.fill(); A.draw(g, `table_lv${lv}`, T.x, T.y + 96); } });
     }
     list.sort((a, b) => a.z - b.z).forEach(o => o.f());

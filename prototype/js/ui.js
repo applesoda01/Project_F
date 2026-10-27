@@ -19,16 +19,17 @@
     q('#ppBtn').onclick = () => hooks.setSpeed(curSp > 0 ? 0 : lastSp);
     // 기능 버튼 → 팝업
     stage.ui.querySelectorAll('[data-pop]').forEach(b => b.onclick = () => UI.open(b.dataset.pop));
+    lbInit();
     q('#popClose').onclick = UI.close;
     q('#popBack').onclick = e => { if (e.target.id === 'popBack') UI.close(); };
     // 메뉴
-    q('#menuBtn').onclick = e => { e.stopPropagation(); q('#menu').classList.toggle('open'); };
-    stage.ui.addEventListener('click', e => { if (!e.target.closest('#menu, #menuBtn')) q('#menu').classList.remove('open'); });
+    // 하단 HUD 묶음(경영·옵션)은 마우스를 올리면 열림. 준비 중인 항목은 안내만
+    stage.ui.querySelectorAll('[data-act]').forEach(b => b.onclick = () => toast(b.dataset.act === 'town' ? '마을 화면은 준비 중입니다.' : '요리하기는 준비 중입니다.', 'info'));
     const shut = () => q('#menu').classList.remove('open');
     q('#mSave').onclick = () => { shut(); hooks.save(); toast('게임을 저장했습니다.', 'info'); };
     q('#mLoad').onclick = () => { shut(); hooks.load(); };
     q('#mNew').onclick = () => { shut(); hooks.newGame(); };
-    q('#mReport').onclick = e => { UI.autoReport = !UI.autoReport; e.currentTarget.querySelector('i').textContent = UI.autoReport ? '켬' : '끔'; };
+    q('#mReport').onclick = e => { UI.autoReport = !UI.autoReport; e.currentTarget.querySelector('i').textContent = UI.autoReport ? '켬' : '끔'; e.currentTarget.classList.toggle('off', !UI.autoReport); }; // 끔이면 아이콘에 붉은 X
     // 개발
     q('#bPromo').onclick = () => UI.open('promo');
     q('#devToggle').onclick = () => q('#dev').classList.toggle('open');
@@ -64,7 +65,61 @@
   };
   UI.weekBar = p => { q('#hWeekBar').style.width = (p * 100).toFixed(1) + '%'; };
 
-  // ---------- 알림 (중요한 기록만 짧게) ----------
+
+  // ---------- 로그박스 (채팅처럼 흐르는 기록 + 캐릭터 대화) ----------
+  const LOGMAX = 200, FADE_MS = 8000, POS_KEY = 'guildLogBoxPos';
+  let lb = null;
+  function lbInit() {
+    const box = q('#logBox'), ll = box.querySelector('.ll'), grip = box.querySelector('.lg');
+    lb = { box, ll, grip, hov: 0, off: null };
+    let tm = 0;
+    const on = () => { clearTimeout(tm); box.classList.add('show'); };
+    const offS = () => { clearTimeout(tm); tm = setTimeout(() => { if (!box.classList.contains('drag')) { box.classList.remove('show'); ll.scrollTop = ll.scrollHeight; } }, 350); };
+    box.addEventListener('mouseover', e => { if (e.target.closest('.ln, .lg, .ll')) on(); });
+    box.addEventListener('mouseout', e => { if (!e.relatedTarget || !box.contains(e.relatedTarget) || !e.relatedTarget.closest('.ln, .lg, .ll')) offS(); });
+    // 위치: 왼쪽 아래 기본, 끌어서 이동 (왼쪽·아래 여백을 저장)
+    const clampPos = (x, b) => ({ x: Math.max(0, Math.min(1920 - 440, x)), b: Math.max(0, Math.min(1080 - 60, b)) });
+    const apply = p => { const c = clampPos(p.x, p.b); box.style.left = c.x + 'px'; box.style.bottom = c.b + 'px'; return c; };
+    try { const sv = JSON.parse(localStorage.getItem(POS_KEY) || 'null'); if (sv && isFinite(sv.x) && isFinite(sv.b)) apply(sv); } catch (e) {}
+    let drag = null;
+    grip.addEventListener('pointerdown', e => {
+      e.preventDefault(); grip.setPointerCapture(e.pointerId); box.classList.add('drag');
+      drag = { px: e.clientX, py: e.clientY, x: parseFloat(box.style.left) || 18, b: parseFloat(box.style.bottom) || 96 };
+    });
+    grip.addEventListener('pointermove', e => {
+      if (!drag) return; const k = stage.scale || 1;
+      apply({ x: drag.x + (e.clientX - drag.px) / k, b: drag.b - (e.clientY - drag.py) / k });
+    });
+    const end = e => {
+      if (!drag) return; drag = null; box.classList.remove('drag');
+      try { localStorage.setItem(POS_KEY, JSON.stringify({ x: parseFloat(box.style.left), b: parseFloat(box.style.bottom) })); } catch (er) {}
+      if (!box.matches(':hover')) offS();
+    };
+    grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+    grip.addEventListener('dblclick', () => { box.style.left = '18px'; box.style.bottom = '96px'; try { localStorage.removeItem(POS_KEY); } catch (e) {} });
+    setInterval(() => { // 오래된 줄은 서서히 사라짐
+      const now = performance.now();
+      for (const el of ll.children) if (!el.classList.contains('dim') && now - el._t > FADE_MS) el.classList.add('dim');
+    }, 500);
+  }
+  function lbAdd(el) {
+    if (!lb) return;
+    el._t = performance.now(); lb.ll.appendChild(el);
+    while (lb.ll.children.length > LOGMAX) lb.ll.firstChild.remove();
+    if (!lb.box.classList.contains('show')) lb.ll.scrollTop = lb.ll.scrollHeight;
+  }
+  UI.logLine = function (text, kind) { // 시스템 기록
+    const el = document.createElement('div'); el.className = 'ln k-' + (kind || 'info'); el.textContent = text; lbAdd(el);
+  };
+  UI.chat = function (name, text, who) { // 캐릭터 대화 (말풍선·리나 대사)
+    if (!text) return;
+    const el = document.createElement('div'); el.className = 'ln chat' + (who === 'lina' ? ' lina' : '');
+    const b = document.createElement('b'); b.textContent = name || '손님';
+    el.append(b, document.createTextNode('“' + text + '”')); lbAdd(el);
+  };
+  UI.logClear = function () { if (lb) lb.ll.innerHTML = ''; };
+
+  // ---------- 알림 (전직 제안 등 꼭 알려야 할 것만) ----------
   const TOAST_KIND = { promo: 1, depart: 1, success: 1, fail: 1, unlock: 1, build: 1, warn: 1, arrive: 1 };
   function toast(text, kind) {
     const box = q('#toasts'), el = document.createElement('div');
@@ -75,18 +130,19 @@
   UI.toast = toast;
   UI.onLogs = function (logs) { // 새 기록들 (오래된 것부터)
     for (const L of logs) {
-      if (TOAST_KIND[L.kind] || (L.kind === 'grow' && L.text.includes('급 모험가'))) toast(L.text, L.kind);
+      UI.logLine(L.text, L.kind); // 로그박스로 흘려보냄 (알림은 전직 제안만 따로 띄움)
+      if (L.kind === 'promo' && L.text.includes('제안합니다')) toast(L.text, L.kind);
       if (L.kind === 'ledger' && UI.autoReport) UI.monthlyReport();
       if (L.kind === 'promo' && L.text.includes('제안합니다')) { const nm = L.text.split(/[이가] \d차/)[0]; UI.say(UI.lines('promo_ready', { name: nm })); }
     }
   };
 
   // ---------- 팝업 틀 ----------
-  const TITLES = { promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '시설', meals: '식당 메뉴', log: '길드 기록', verify: '관문 1 검증' };
+  const TITLES = { promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '시설', meals: '음식 설정', log: '길드 기록', codex: '도감', verify: '관문 1 검증' };
   UI.open = function (name) {
     popup = name; q('#popTitle').textContent = TITLES[name];
     q('#popBack').classList.add('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.toggle('on', b.dataset.pop === name));
-    q('#popBody').innerHTML = ''; q('#popBody').dataset.g = ''; renderPopup(); q('#popBody').scrollTop = 0;
+    q('#popBody').innerHTML = ''; q('#popBody').dataset.g = ''; q('#popBody').dataset.p = name; renderPopup(); q('#popBody').scrollTop = 0;
     if (name === 'verify') verify();
   };
   UI.close = function () { popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
@@ -99,6 +155,15 @@
     else if (popup === 'fac') b.innerHTML = facHtml();
     else if (popup === 'meals') b.innerHTML = mealsHtml();
     else if (popup === 'log') b.innerHTML = logHtml();
+    else if (popup === 'codex') b.innerHTML = codexHtml();
+  }
+
+  // 도감: 탭만 먼저 만든 빈 틀 (내용은 이후에 채움)
+  const CODEX_TABS = ['몬스터', '소재·아이템', '모험가', '요리', '장비'];
+  let codexTab = 0;
+  function codexHtml() {
+    return '<div class="cdx-tabs">' + CODEX_TABS.map((t, i) => '<button data-ctab="' + i + '"' + (i === codexTab ? ' class="on"' : '') + '>' + t + '</button>').join('') + '</div>'
+      + '<h3>' + CODEX_TABS[codexTab] + ' 도감 <small>0 / 0</small></h3><div class="cdx-empty">아직 등록된 항목이 없습니다.</div>';
   }
 
   // 게시판: 칸 배분(슬라이더)은 등급이 바뀔 때만 다시 그려 드래그가 끊기지 않게 한다
@@ -264,7 +329,8 @@
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
-      const t = e.target.closest('[data-build], [data-adv], [data-promo], [data-hold]'); if (!t) return;
+      const t = e.target.closest('[data-build], [data-adv], [data-promo], [data-hold], [data-ctab]'); if (!t) return;
+      if (t.dataset.ctab) { codexTab = +t.dataset.ctab; renderPopup(); return; }
       if (t.dataset.build) { Gm.build(s, t.dataset.build); hooks.changed(); }
       else if (t.dataset.promo) decide(+t.dataset.promo, t.dataset.cls);
       else if (t.dataset.hold) decide(+t.dataset.hold, null);
@@ -291,7 +357,8 @@
   }
 
   // ---------- 리나 대화 (M2-11) ----------
-  const Dlg = { open: false, lines: [], cur: null, shown: 0, t: 0, hold: 0 };
+  const DLG_WAIT = 1.0; // 하단 HUD가 다 내려간 뒤(초) 대사창이 나타난다
+  const Dlg = { open: false, lines: [], cur: null, shown: 0, t: 0, hold: 0, wait: 0 };
   // 대화 장면 (data/dialog.csv): 장면 이름과 {변수} 값으로 [{face, text}] 를 만든다
   UI.lines = function (id, vars) {
     const D = (root.GAME_DATA && root.GAME_DATA.dialog) || {};
@@ -301,21 +368,53 @@
     Dlg.lines.push(...lines);
     if (!Dlg.open) next();
   };
+  // 리나 초상: 눈 뜬 상반신 + 얼굴 조각(뜸·반쯤·감김)을 캔버스에 겹쳐 그린다. 그림이 없으면 예전 lina_face_* 한 장으로 대신한다.
+  const BLINK = { rows: ['smile', 'serious', 'laugh', 'worried', 'awkward', 'surprised'], x: 117, y: 116, w: 97, h: 93 };
+  const BLINK_SEQ = [[1, 0.05], [2, 0.07], [1, 0.05]]; // [칸, 지속초] : 뜸 → 반쯤 → 감김 → 반쯤 → 뜸
+  Dlg.expr = 'smile'; Dlg.bs = 0; Dlg.bt = 0; Dlg.bi = -1; Dlg.bnext = 2.5;
+  const standOK = () => { const a = root.Assets.items; return a.lina_stand && a.lina_stand.ok && a.lina_blink && a.lina_blink.ok; };
+  function drawStand() {
+    const a = root.Assets.items, c = q('#dlgStand'), g = c.getContext('2d'), r = Math.max(0, BLINK.rows.indexOf(Dlg.expr));
+    g.clearRect(0, 0, c.width, c.height); g.drawImage(a.lina_stand.img, 0, 0);
+    g.drawImage(a.lina_blink.img, Dlg.bs * BLINK.w, r * BLINK.h, BLINK.w, BLINK.h, BLINK.x, BLINK.y, BLINK.w, BLINK.h);
+  }
+  function setFace(face) {
+    const a = root.Assets.items, old = a['lina_face_' + face];
+    if (standOK()) {
+      Dlg.expr = face; Dlg.bs = 0; Dlg.bi = -1; Dlg.bnext = 2 + Math.random() * 2;
+      q('#dlgStand').hidden = false; q('#dlgFace').hidden = true; drawStand(); return;
+    }
+    q('#dlgStand').hidden = true; q('#dlgFace').hidden = false;
+    old && (q('#dlgFace').src = old.img.src || old.img.toDataURL());
+  }
+  function blinkTick(dt) { // 2.5~5.5초마다 한 번, 가끔(15%) 연달아 두 번. 웃는 눈(laugh)은 깜빡이지 않는다
+    if (!standOK() || Dlg.expr === 'laugh') return;
+    if (Dlg.bi < 0) { if ((Dlg.bnext -= dt) > 0) return; Dlg.bi = 0; Dlg.bt = 0; }
+    Dlg.bt += dt; const st = BLINK_SEQ[Dlg.bi];
+    if (Dlg.bt >= st[1]) { Dlg.bt -= st[1]; Dlg.bi++; }
+    const bs = Dlg.bi >= BLINK_SEQ.length ? 0 : BLINK_SEQ[Dlg.bi][0];
+    if (Dlg.bi >= BLINK_SEQ.length) { Dlg.bi = -1; Dlg.bnext = Math.random() < 0.15 ? 0.15 : 2.5 + Math.random() * 3; }
+    if (bs !== Dlg.bs) { Dlg.bs = bs; drawStand(); }
+  }
   function next() {
     const L = Dlg.lines.shift();
-    if (!L) { Dlg.open = false; Dlg.cur = null; q('#dlg').classList.remove('open'); root.Lina.chatting = false; return; }
+    if (!L) { Dlg.open = false; Dlg.cur = null; Dlg.wait = 0; q('#dlg').classList.remove('open'); q('#logBox').classList.remove('hide'); stage.ui.classList.remove('dlgOn'); root.Lina.chatting = false; return; }
     Dlg.open = true; Dlg.cur = L; Dlg.shown = 0; Dlg.t = 0; Dlg.hold = 0;
-    q('#dlg').classList.add('open');
-    root.Assets.items['lina_face_' + L.face] && (q('#dlgFace').src = root.Assets.items['lina_face_' + L.face].img.src || root.Assets.items['lina_face_' + L.face].img.toDataURL());
+    const first = !stage.ui.classList.contains('dlgOn');
+    if (first) { Dlg.wait = DLG_WAIT; Dlg.t = 0; } else q('#dlg').classList.add('open');
+    q('#logBox').classList.add('hide'); stage.ui.classList.add('dlgOn'); UI.chat('리나', L.text, 'lina');
+    setFace(L.face);
     q('#dlgText').textContent = ''; q('#dlgNext').hidden = true;
   }
   UI.advance = function () {
-    if (!Dlg.cur) return;
+    if (!Dlg.cur || Dlg.wait > 0) return;
     if (Dlg.shown < Dlg.cur.text.length) { Dlg.shown = Dlg.cur.text.length; q('#dlgText').textContent = Dlg.cur.text; q('#dlgNext').hidden = false; }
     else next();
   };
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
     if (!Dlg.cur) return;
+    blinkTick(dt);
+    if (Dlg.wait > 0) { Dlg.wait -= dt; if (Dlg.wait <= 0) q('#dlg').classList.add('open'); root.Lina.chatting = true; return; }
     root.Lina.chatting = Dlg.shown < Dlg.cur.text.length;
     if (Dlg.shown < Dlg.cur.text.length) {
       Dlg.t += dt; const n = Math.min(Dlg.cur.text.length, Math.floor(Dlg.t * 28));

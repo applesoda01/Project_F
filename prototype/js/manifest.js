@@ -20,6 +20,11 @@
   // 리나 대화 초상 (표정 6종, 상반신)
   for (const f of ['smile', 'serious', 'laugh', 'worried', 'awkward', 'surprised']) add('lina_face_' + f, `npc/lina_face_${f}.png`, 340, 640, { color: '#efe2cf' });
 
+  // 리나 대화 초상 + 눈 깜빡임 (2026.10): 눈 뜬 상반신 한 장 + 얼굴 조각 시트(열: 뜸·반쯤·감김, 행: smile serious laugh worried awkward surprised)
+  // 둘 다 읽히면 깜빡임 초상을 쓰고, 하나라도 없으면 위의 lina_face_* 그림으로 대신한다.
+  add('lina_stand', 'npc/lina_stand.png', 341, 640, { optional: true });
+  add('lina_blink', 'npc/lina_blink.png', 291, 558, { optional: true });
+
   // 의뢰서 (시안 확정 2026.10)
   for (let i = 0; i < 3; i++) add('quest_paper_' + i, `quest/quest_paper_${i}.png`, 84, 110, { color: '#f3e6c4' });
   for (let i = 0; i < 5; i++) add('quest_stamp_' + i, `quest/quest_stamp_${i}.png`, 44, 44, { color: '#7a5a3a' });
@@ -47,5 +52,13 @@
   const WALK = { cell: 128, cols: 24, rows: ['down', 'left', 'right', 'up'], fps: 30, pivotY: 122, charH: 108, stepPx: 29 };
   CLS.forEach(c => { for (const sex of ['f', 'm']) add(`chr_${c}_${sex}_walk`, `chr/chr_${c}_${sex}_walk.png`, 3072, 512, { optional: true, sheet: WALK }); });
 
-  root.ASSET_MANIFEST = { base: 'assets/', items: M, CLS, WALK };
+  // 앉기 시트 (2026.10): chr_<직업>_<성별>_sit_front / sit_side.png — 3328×576, 셀 256×288, 13칸 × 2행.
+  //   0행: 앉기 13프레임(12fps, 일어서기는 역재생) / 1행: 대기 4프레임(4fps). 옆모습은 왼쪽을 봄(오른쪽 자리는 좌우반전).
+  //   발밑 기준선 y=274 (걷기 셀의 발밑 244 + 30). 의자 층(chair_cell_*)은 같은 셀 좌표로 캐릭터 뒤에 그린다.
+  const SIT = { cellW: 256, cellH: 288, cols: 13, fps: 12, idleFps: 4, baseY: 274 };
+  CLS.forEach(c => { for (const sex of ['f', 'm']) for (const v of ['front', 'side']) add(`chr_${c}_${sex}_sit_${v}`, `chr/chr_${c}_${sex}_sit_${v}.png`, 3328, 576, { optional: true, sheet: SIT }); });
+  add('chair_cell_front', 'furniture/chair_cell_front.png', 256, 288, { optional: true });
+  add('chair_cell_side', 'furniture/chair_cell_side.png', 256, 288, { optional: true });
+
+  root.ASSET_MANIFEST = { base: 'assets/', items: M, CLS, WALK, SIT };
 })(this);

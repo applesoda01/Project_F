@@ -31,47 +31,112 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 #hudTL .stat .lb{font-size:17px;line-height:1;display:block;margin-bottom:3px}
 #hudTL .stat b{font-variant-numeric:tabular-nums;font-size:28px;line-height:1;color:var(--ink);display:inline-block;text-align:right}
 #hudTL .stat b.neg{color:#c0392b}#hudTL .stat small{font-size:18px}
-/* HUD 글자 위치 보정 (조절기 값, 2026-10-26) */
-#hudTL #hDate{display:inline-block;transform:translateY(-10px)}
-#hudTL .weekbar{transform:translateY(-13px)}
+/* 상단 HUD 글꼴: 마루부리(네이버, 임시 사용 · 상업 이용 전 라이선스 확인 필요). 한글 2350자+영문·숫자만 담은 가벼운 파일 */
+@font-face{font-family:"MaruBuri";src:url(assets/fonts/MaruBuri-Regular.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"MaruBuri";src:url(assets/fonts/MaruBuri-SemiBold.woff2) format("woff2");font-weight:600;font-display:swap}
+@font-face{font-family:"MaruBuri";src:url(assets/fonts/MaruBuri-Bold.woff2) format("woff2");font-weight:700;font-display:swap}
+#hudTL{--hf:"MaruBuri","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;font-family:var(--hf)}
+#hudTL .date{font-weight:700}#hudTL .stat .lb{font-weight:600}
+/* HUD 글자 위치 보정 (조절기 값, 2026-10-26·10-27, 마루부리 기준 재조정) */
+#hudTL #hDate{display:inline-block;transform:translateY(-9px)}
+#hudTL .weekbar{transform:translateY(-11px)}
 #hudTL #hGrade{transform:translateY(-4px)}
-#hudTL .stat b{transform:translateY(-3px)}
-#hudTL .stat small{display:inline-block;transform:translateY(-4px)}
-#hGold{min-width:9ch}#hTrust,#hFame{min-width:3ch}#hAdv{min-width:2ch}
+#hudTL .stat b{transform:translateY(1px)}
+#hudTL .stat small{display:inline-block}
+#hudTL #hGold{transform:translate(-7px,1px)}#hudTL .stat:has(#hGold) small{transform:translateX(-4px)}
+#hudTL .stat .lb{transform:translateY(-2px)}#hudTL .stat:has(#hGold) .lb{transform:translate(60px,-2px)}#hudTL .stat:has(#hFame) .lb{transform:translate(11px,-2px)}
+/* 숫자는 정한 자리(가운데)를 기준으로 좌우로 늘어난다. 단위(G·명)는 폭을 차지하지 않고 숫자 오른쪽에 붙는다 */
+#hudTL .stat .val{display:block;text-align:center;font-size:28px;line-height:1;white-space:nowrap}
+#hudTL .stat .val b{min-width:0;text-align:center;font-weight:600} /* 숫자 굵기: 마루부리 SemiBold(600). 400=보통, 700=굵게 */
+#hudTL .stat .val small{width:0;overflow:visible;display:inline-block;vertical-align:baseline}
+#hudTL .stat:has(#hGold) .val{min-width:9ch}#hudTL .stat:has(#hTrust) .val,#hudTL .stat:has(#hFame) .val{min-width:3ch}#hudTL .stat:has(#hAdv) .val{min-width:2ch}
 .weekbar{position:absolute;left:0;right:0;bottom:-16px;height:9px;border-radius:5px;background:#6b4a2e;box-shadow:inset 0 2px 2px rgba(0,0,0,.5);overflow:hidden}
 .weekbar i{display:block;height:100%;width:0;background:var(--gold)}
 /* 오른쪽 위: 배속·메뉴 */
 /* 배속 바: 상단 HUD와 같은 명패 ③ 디자인. 평소에는 일시정지·재생만 보이고, 마우스를 올리면 배속이 펼쳐진다 */
 #hudTR{position:absolute;left:18px;bottom:14px;--h:64;height:calc(var(--h)*1px);display:flex;align-items:center;color:var(--ink);z-index:7}
-#hudTR .pm{position:absolute;top:0;bottom:0;left:round(calc(var(--h)*.506px),1px);right:round(calc(var(--h)*.506px),1px);background:url(assets/ui/hud/plaque_mid_s.png) 0 0/100% 100% no-repeat} /* 양 끝 이미지 폭을 정수 px로 맞춰 겹침 없이 이어붙임(이중 그림자 방지) */
-#hudTR .pl,#hudTR .pr{z-index:1;position:absolute;top:0;height:100%;width:round(calc(var(--h)*.506px),1px);background:url(assets/ui/lina_menu/btn_selected.png) no-repeat;background-size:auto 100%}
+#hudTR .pm{position:absolute;top:0;bottom:0;left:round(calc(var(--h)*0.5626px),1px);right:round(calc(var(--h)*0.5626px),1px);background:url(assets/ui/hud/plaque_box_mid.png) 0 0/100% 100% no-repeat} /* 양 끝 이미지 폭을 정수px로 맞춰 겹침 없이 이어붙임(이중 그림자 방지) */
+#hudTR .pl,#hudTR .pr{z-index:1;position:absolute;top:0;height:100%;width:round(calc(var(--h)*0.5626px),1px);background:url(assets/ui/hud/plaque_box.png) no-repeat;background-size:auto 100%}
 #hudTR .pl{left:0;background-position:left top}#hudTR .pr{right:0;background-position:right top}
-#hudTR .in{z-index:2;position:relative;display:flex;align-items:center;min-width:calc(var(--h)*1.012px);height:calc(100% - 6px);padding:0 calc(var(--h)*.31px)}
-#hudTR .btn{padding:4px 10px;border-radius:10px;font-size:20px;line-height:1;min-width:23px;height:36px;display:grid;place-items:center}
+#hudTR .in{z-index:2;position:relative;display:flex;align-items:center;justify-content:center;min-width:var(--mw);height:calc(100% - 6px);padding:0 calc(var(--h)*.31px)}
+#hudTR .btn{padding:0;border-radius:10px;font-size:20px;line-height:1;min-width:23px;height:36px;display:grid;place-items:center}
 #hudTR #ppBtn{width:23px;min-width:0;padding:0;transform:translateY(-2px)}
-#hudTR [data-speed="1"]{transform:translate(12px,-2px)}#hudTR [data-speed="2"]{transform:translate(10px,-2px)}#hudTR [data-speed="4"]{transform:translate(4px,-2px)} /* 일시정지 버튼 가로를 글자 여백이 아닌 값 그대로(36px)로 */
 #hudTR #ppBtn svg{width:20px;height:20px;display:block}
 #hudTR #ppBtn.paused{background:var(--wood2);color:#fff3d6}
-#hudTR .more{display:flex;gap:4px;overflow:hidden;padding:8px 0;margin-top:-8px;margin-bottom:-8px;max-width:0;opacity:0;margin-left:0;transition:max-width .25s ease,opacity .2s ease,margin-left .25s ease}
-#hudTR:hover .more,#hudTR:focus-within .more{max-width:200px;opacity:1;margin-left:4px;margin-right:calc(var(--ew,0)*1px)} /* --ew: 펼친 상태에서 오른쪽 추가 폭(px, 음수 가능) */
+/* 배속 단추: 둥근 단추 그림(speed_btn.png / speed_btn_on.png). 박스는 그대로 두고, 마우스를 올리면 오른쪽에 차례로 나타난다.
+   --cd 단추 지름 · --cg 단추 사이 간격 · --cx 박스와 첫 단추 사이 거리(투명한 연결 영역) · --cfs 글자 크기 · --cy 세로 위치 */
+#hudTR{--mw:76px;--cd:48px;--cg:6px;--cx:6px;--cfs:20px;--cy:-2px}
+#hudTR .more{position:absolute;left:100%;top:50%;display:flex;gap:var(--cg);padding-left:var(--cx);transform:translateY(calc(-50% + var(--cy)));pointer-events:none}
+#hudTR .chip{position:relative;display:block;width:var(--cd);height:var(--cd);padding:0;border:0;background:none;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;opacity:0;transform:translateX(-16px) scale(.5);transition:opacity .15s ease,transform .18s cubic-bezier(.2,.9,.3,1.2),filter .1s}
+#hudTR .chip:nth-child(2){transition-delay:.04s}#hudTR .chip:nth-child(3){transition-delay:.08s}
+#hudTR .chip:hover{filter:brightness(1.08)}
+#hudTR .chip::before{content:"";position:absolute;inset:-11%;background:url(assets/ui/hud/speed_btn.png) center/100% 100% no-repeat}
+#hudTR .chip.on::before{background-image:url(assets/ui/hud/speed_btn_on.png)}
+#hudTR .chip b{position:absolute;inset:0;z-index:2;display:grid;place-items:center;font-size:var(--cfs);line-height:1}
+#hudTR .chip.on b{color:#fff3d6;text-shadow:0 1px 0 rgba(0,0,0,.35)}
+#hudTR:hover .more,#hudTR:focus-within .more{pointer-events:auto}
+#hudTR:hover .more .chip,#hudTR:focus-within .more .chip{opacity:1;transform:none}
 .btn{font:inherit;font-weight:700;border:0;border-radius:12px;padding:8px 16px;background:transparent;color:var(--ink);cursor:pointer}
 .btn:hover{background:rgba(90,58,34,.12)}
 .btn.on{background:var(--wood2);color:#fff3d6}
-#menu{position:absolute;right:22px;bottom:118px;z-index:7;display:none;flex-direction:column;padding:8px;min-width:280px}
-#menu.open{display:flex}
-#menu .btn{text-align:left;font-weight:600}
-#menu i{font-style:normal;float:right;color:var(--muted)}
 /* 알림 */
+/* ---- 로그박스: 온라인 게임 채팅처럼 흐르는 기록·대화 (왼쪽 아래 기본, 끌어서 이동) ---- */
+#logBox{position:absolute;left:18px;bottom:96px;width:440px;z-index:3;pointer-events:none;transition:opacity .2s;--lh:35px}
+#logBox.hide{opacity:0}#logBox.hide *{pointer-events:none!important}
+#logBox .ll{display:flex;flex-direction:column;justify-content:flex-end;max-height:calc(var(--lh)*6);overflow:hidden;pointer-events:none;scrollbar-width:thin;scrollbar-color:rgba(255,240,210,.5) transparent}
+#logBox.show .ll{overflow-y:auto;pointer-events:auto;justify-content:flex-start}
+#logBox .ll::before{content:"";flex:1 1 auto}
+#logBox .ln{align-self:flex-start;max-width:100%;margin-top:3px;padding:3px 11px 4px;border-radius:9px;background:rgba(34,22,13,.66);color:#fbf1dc;font-size:19px;line-height:1.28;text-shadow:0 1px 1px rgba(0,0,0,.5);border-left:4px solid #c9b48a;word-break:keep-all;overflow-wrap:anywhere;opacity:1;transition:opacity .9s ease;animation:lnin .22s ease-out}
+@keyframes lnin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#logBox .ln.dim{opacity:0;pointer-events:none}
+#logBox.show .ln{opacity:1;pointer-events:auto;transition:opacity .15s}
+#logBox .ln b{font-weight:700;margin-right:6px}
+#logBox .ln.chat{border-left-color:transparent;background:rgba(34,22,13,.58)}
+#logBox .ln.chat b{color:#ffe2a8}#logBox .ln.lina b{color:#ffb9cb}
+#logBox .ln.k-success{border-left-color:#6fc47a}#logBox .ln.k-fail,#logBox .ln.k-warn{border-left-color:#ee7466}
+#logBox .ln.k-grow,#logBox .ln.k-unlock,#logBox .ln.k-promo{border-left-color:#e8b44a;color:#ffe9b0}
+#logBox .ln.k-depart,#logBox .ln.k-arrive,#logBox .ln.k-build{border-left-color:#7fb4e8}
+#logBox .ln.k-ledger{border-left-color:#d9a05b}#logBox .ln.k-debug{opacity:.7}
+#logBox .lg{height:22px;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;width:150px;border-radius:11px;background:rgba(34,22,13,.5);color:#e9d9b8;font-size:13px;line-height:1;letter-spacing:.5px;cursor:grab;pointer-events:auto;user-select:none;touch-action:none;opacity:.45;transition:opacity .2s,width .2s,background .2s}
+#logBox.show .lg,#logBox .lg:hover{opacity:1;width:230px;background:rgba(34,22,13,.82)}
+#logBox .lg::before{content:"⋮⋮";letter-spacing:-2px;font-size:15px}
+#logBox.drag .lg{cursor:grabbing}
 #toasts{position:absolute;left:50%;top:22px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
 .toast{background:rgba(255,250,238,.96);border:3px solid var(--wood2);border-radius:16px;padding:8px 20px;font-size:21px;max-width:900px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:tin .3s ease-out;transition:opacity .4s,transform .4s}
 .toast.out{opacity:0;transform:translateY(-10px)}
 .toast.k-success{border-color:#3f8f4a}.toast.k-fail,.toast.k-warn{border-color:#c0392b}.toast.k-grow,.toast.k-unlock{border-color:#c8961e}
 @keyframes tin{from{opacity:0;transform:translateY(-12px)}}
 /* 오른쪽 아래: 기능 버튼 */
-#hudBR{right:22px;bottom:18px;display:flex;gap:6px;padding:8px}
-.mb{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:88px;padding:8px 4px 6px;border:0;border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-size:17px;font-weight:700;cursor:pointer}
+/* ---- 하단 HUD: 상단·배속 바와 같은 명패 + 마우스를 올리면 위로 열리는 묶음 ---- */
+#hudBR{position:absolute;right:22px;bottom:14px;--h:100;--ic:52px;--icy:-4px;--mbw:88px;--mfs:17px;--bgap:6px;--py:8px;height:calc(var(--h)*1px);display:flex;align-items:center;color:var(--ink);z-index:5;padding:0;gap:0;background:none;border:0;box-shadow:none}
+#hudBR .pm{position:absolute;top:0;bottom:0;left:round(calc(var(--h)*0.5626px),1px);right:round(calc(var(--h)*0.5626px),1px);background:url(assets/ui/hud/plaque_box_mid.png) 0 0/100% 100% no-repeat}
+#hudBR .pl,#hudBR .pr{z-index:1;position:absolute;top:0;height:100%;width:round(calc(var(--h)*0.5626px),1px);background:url(assets/ui/hud/plaque_box.png) no-repeat;background-size:auto 100%}
+#hudBR .pl{left:0;background-position:left top}#hudBR .pr{right:0;background-position:right top}
+#hudBR .in{z-index:2;position:relative;display:flex;align-items:center;gap:var(--bgap);height:calc(100% - 6px);padding:0 calc(var(--h)*.31px) var(--py)}
+#hudBR .sep{width:3px;height:56px;border-radius:2px;background:rgba(90,58,34,.28);margin:0 4px}
+#hudBR .grp{position:relative;display:block}
+#hudBR{--cd:56px;--cgap:8px;--cmi:36px}
+#hudBR .up{display:flex;flex-direction:column;align-items:center;gap:var(--cgap);position:absolute;left:50%;bottom:calc(100% + 12px);transform:translateX(-50%);z-index:8;pointer-events:none}
+#hudBR .up::after{content:"";position:absolute;left:-10px;right:-10px;top:100%;height:30px} /* 마우스가 틈을 지나도 닫히지 않게 이어줌 */
+#hudBR .grp:hover .up,#hudBR .grp:focus-within .up{pointer-events:auto}
+#hudBR .up .btn{position:relative;display:block;width:var(--cd);height:var(--cd);padding:0;border:0;border-radius:50%;background:none;color:var(--ink);font:inherit;cursor:pointer;opacity:0;pointer-events:none;transform:translateY(14px) scale(.5);transition:opacity .15s ease .25s,transform .15s ease .25s,filter .1s}
+#hudBR .up .btn:nth-last-child(2){transition-delay:.28s}#hudBR .up .btn:nth-last-child(3){transition-delay:.31s}#hudBR .up .btn:nth-last-child(4){transition-delay:.34s}#hudBR .up .btn:nth-last-child(5){transition-delay:.37s}
+#hudBR .grp:hover .up .btn,#hudBR .grp:focus-within .up .btn{opacity:1;pointer-events:auto;transform:none;transition:opacity .15s ease,transform .18s cubic-bezier(.2,.9,.3,1.2),filter .1s}
+#hudBR .grp:hover .up .btn:nth-last-child(2){transition-delay:.04s}#hudBR .grp:hover .up .btn:nth-last-child(3){transition-delay:.08s}#hudBR .grp:hover .up .btn:nth-last-child(4){transition-delay:.12s}
+#hudBR .up .btn:hover{filter:brightness(1.08);background:none}#hudBR .up .btn.on{background:none;color:inherit}
+#hudBR .up .cb{position:absolute;inset:0;display:grid;place-items:center}
+#hudBR .up .cb::before{content:"";position:absolute;inset:-11%;background:url(assets/ui/hud/speed_btn.png) center/100% 100% no-repeat}
+#hudBR .up .btn.on .cb::before{background-image:url(assets/ui/hud/speed_btn_on.png)}
+#hudBR .up .mi{position:relative;width:var(--cmi);height:var(--cmi);pointer-events:none}
+#hudBR .up #mReport.off .cb::after{content:"";position:absolute;width:calc(var(--cmi)*.9);height:calc(var(--cmi)*.9);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M9 9L31 31M31 9L9 31' stroke='%23421008' stroke-width='9' stroke-linecap='round'/%3E%3Cpath d='M9 9L31 31M31 9L9 31' stroke='%23e0342a' stroke-width='5.6' stroke-linecap='round'/%3E%3C/svg%3E") center/100% 100% no-repeat;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4));pointer-events:none}
+#hudBR .up #mReport.off .mi{filter:grayscale(.55) brightness(.9)}
+#hudBR .up .nm{position:absolute;top:50%;left:calc(100% + 10px);transform:translateY(-50%);white-space:nowrap;padding:5px 14px 6px;border-radius:10px;background:linear-gradient(#6b4527,#4a2f1b);border:2px solid #2f1d10;color:#fff3d6;font-size:17px;font-weight:700;line-height:1.1;box-shadow:0 3px 0 rgba(0,0,0,.28)}
+#hudBR .grp:last-child .up .nm{left:auto;right:calc(100% + 10px)}
+#hudBR .up .nm i{font-style:normal;margin-left:8px;color:#ffd877}
+.mb{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:var(--mbw);padding:8px 4px 6px;border:0;border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-size:var(--mfs);font-weight:700;cursor:pointer}
 .mb:hover{background:rgba(90,58,34,.12)}.mb.on{background:var(--wood2);color:#fff3d6}
 .mb svg{width:38px;height:38px}
+.mb .ic{width:var(--ic);height:var(--ic);display:block;margin:var(--icy) 0 -2px;pointer-events:none}
 .mb .cnt[hidden]{display:none}
 .mb .cnt{position:absolute;right:10px;top:2px;min-width:26px;height:26px;border-radius:13px;background:#c0392b;color:#fff;font-size:15px;display:grid;place-items:center;padding:0 6px}
 /* 왼쪽 아래: 개발 */
@@ -81,7 +146,6 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 #dev .tag{color:var(--muted);font-size:15px;align-self:center}
 /* 팝업 */
 #popBack{position:absolute;inset:0;background:rgba(20,12,6,.45);display:none;z-index:4}
-#hudBR{z-index:5}
 #popBack.open{display:block}
 #pop{left:50%;top:46%;transform:translate(-50%,-50%);width:1180px;height:780px;display:flex;flex-direction:column;padding:0;overflow:hidden}
 #popHead{display:flex;align-items:center;justify-content:space-between;padding:16px 26px;background:var(--wood2);color:#fff3d6}
@@ -120,10 +184,11 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 .log .k-success{color:#2f7d3e}.log .k-fail,.log .k-warn{color:#b03a2e}.log .k-grow,.log .k-unlock{color:#a0761a}
 .pill2{padding:3px 12px;border-radius:10px;font-weight:700}.pill2.ok{background:#e3f1df;color:#2f7d3e}.pill2.bad{background:#fbe2df;color:#b03a2e}
 /* 리나 대화창 */
-#dlg{position:absolute;left:150px;bottom:24px;transform:translateY(20px);width:1080px;height:220px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;cursor:pointer}
+#dlg{position:absolute;left:150px;bottom:24px;transform:translateY(20px);width:1655px;height:220px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;cursor:pointer}
 #dlg.open{opacity:1;transform:none;pointer-events:auto}
 .stage-ui #dlg:not(.open),.stage-ui #dlg:not(.open) *,.stage-ui .toast{pointer-events:none}
-#dlgFace{position:absolute;left:-10px;bottom:0;height:470px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.25))}
+#dlgFace,#dlgStand{position:absolute;left:2px;bottom:31px;height:654px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.25))}
+#dlgStand{width:auto}
 #dlgBox{position:absolute;left:210px;right:0;bottom:0;height:200px;padding:42px 36px 20px 40px;font-size:27px;line-height:1.55}
 #dlgName{position:absolute;left:24px;top:-22px;background:var(--wood2);color:#fff3d6;font-weight:700;padding:6px 22px;border-radius:12px;font-size:22px}
 #dlgNext{position:absolute;right:26px;bottom:16px;color:var(--wood2);animation:bob 1s infinite}
@@ -159,30 +224,77 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 .ot{display:flex;align-items:center;gap:8px;font-size:21px}.tagx{font-size:14px;background:#efe3c8;border-radius:8px;padding:2px 8px;color:var(--muted)}
 .sbtn.big{font-size:18px;padding:8px 14px;margin-top:6px;background:var(--wood2);color:#fff3d6}
 #loading{position:fixed;inset:0;display:grid;place-items:center;color:#fbefd6;font-size:18px}
+
+/* ---- 팝업 창·대사창: 의뢰서 종이 패널 + 제목 판 + 섹션 머리 띠 (Gemini 제작) ---- */
+#pop{--pb:46px;width:1240px;height:820px;top:47%;overflow:visible;background:none;border:var(--pb) solid transparent;border-image:url(assets/ui/pop/panel_paper.png) 60 fill/var(--pb) stretch;border-radius:0;box-shadow:none;filter:drop-shadow(0 10px 18px rgba(40,22,10,0.38))}
+#popHead{position:absolute;left:calc(50% + 0px);top:calc(var(--pb)*-1 + -26px);transform:translateX(-50%);display:flex;align-items:center;justify-content:center;min-width:420px;height:76px;padding:0 64px;background:none;border:solid transparent;border-width:0 52px;border-image:url(assets/ui/pop/title.png) 0 150 fill/0 52px stretch;color:var(--ink);z-index:2}
+#popTitle{font-size:30px;font-weight:700;margin:0;letter-spacing:0.5px}
+#popClose{position:absolute;right:calc(var(--pb)*-1 + -427px);top:calc(var(--pb)*-1 + 61px);width:54px;height:54px;padding:0;border-radius:50%;background:url(assets/ui/hud/speed_btn.png) center/118% 118% no-repeat;color:var(--ink);font-size:24px;line-height:1;display:grid;place-items:center;z-index:3}
+#popClose:hover{filter:brightness(1.08)}
+#popBody{padding:100px 22px 18px 22px;color:var(--ink);font-size:20px}
+/* 팝업별 위 여백 (조절 페이지에서 정한 값) */
+#popBody[data-p="board"]{padding-top:100px}
+#popBody[data-p="ledger"]{padding-top:100px}
+#popBody[data-p="advs"]{padding-top:100px}
+#popBody[data-p="fac"]{padding-top:100px}
+#popBody[data-p="meals"]{padding-top:100px}
+#popBody[data-p="log"]{padding-top:100px}
+#popBody[data-p="codex"]{padding-top:100px}
+#popBody[data-p="promo"]{padding-top:100px}
+#popBody[data-p="verify"]{padding-top:100px}
+#popBody h3{display:inline-block;min-width:260px;margin:18px 0 12px;padding:5px 26px 8px;border:solid transparent;border-width:0 14px;border-image:url(assets/ui/pop/band.png) 0 70 fill/0 14px stretch;color:#fff7e6;text-shadow:0 1px 1px rgba(60,40,28,.55);font-size:21px}
+#popBody h3 small{color:#efe0c6}
+#popBody th{border-bottom:0;background:none;color:var(--muted)}
+#popBody td{border-bottom:2px dotted rgba(139,110,80,.32)}
+/* 스크롤바 (팝업 공통, Gemini 제작 이미지) */
+#pop ::-webkit-scrollbar{width:24px;height:24px}
+#pop ::-webkit-scrollbar-track{border:solid transparent;border-width:12px 0;border-image:url(assets/ui/pop/sb/track.png) 48 0 fill/12px 0 stretch;background:none;margin:0}
+#pop ::-webkit-scrollbar-thumb{border:solid transparent;border-width:12px 0;border-image:url(assets/ui/pop/sb/thumb.png) 48 0/12px 0 stretch;background:url(assets/ui/pop/sb/thumb_stud.png) center/16px 16px no-repeat,url(assets/ui/pop/sb/thumb_mid.png) 0 0/100% 100% no-repeat;background-clip:padding-box;min-height:48px}
+#pop ::-webkit-scrollbar-thumb:hover{filter:brightness(1.12)}
+#pop ::-webkit-scrollbar-button:single-button{display:block;width:24px;height:24px;background-size:24px 24px;background-repeat:no-repeat}
+#pop ::-webkit-scrollbar-button:single-button:vertical:decrement{background-image:url(assets/ui/pop/sb/arrow_up.png)}
+#pop ::-webkit-scrollbar-button:single-button:vertical:increment{background-image:url(assets/ui/pop/sb/arrow_down.png)}
+#pop ::-webkit-scrollbar-button:single-button:horizontal{display:none}
+#pop ::-webkit-scrollbar-corner{background:none}
+#dlgBox{background:none;border:36px solid transparent;border-image:url(assets/ui/pop/panel_paper.png) 60 fill/36px stretch;border-radius:0;box-shadow:none;filter:drop-shadow(0 8px 14px rgba(40,22,10,.38));height:216px;left:-40px;font-size:27px}
+#dlgBox{padding:13px 69px 0}
+#dlgName{left:30px;top:-62px;height:56px;display:flex;align-items:center;padding:0 46px;background:none;border:solid transparent;border-width:0 38px;border-image:url(assets/ui/pop/title.png) 0 150 fill/0 38px stretch;border-radius:0;color:var(--ink);font-size:23px}
+#dlgNext{right:6px;bottom:2px}
+
+.cdx-tabs{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+.cdx-tabs button{font:inherit;font-size:19px;font-weight:700;border:2px solid var(--wood2);background:#fff3d6;color:var(--ink);border-radius:12px;padding:6px 18px;cursor:pointer}
+.cdx-tabs button.on{background:var(--wood2);color:#fff3d6}
+.cdx-empty{padding:70px 0;text-align:center;color:var(--muted);font-size:21px}
+/* 대사창이 열리면 하단 HUD·배속이 아래로 숨음 */
+#hudBR,#hudTR{transition:transform .9s cubic-bezier(.4,0,.2,1) .3s,opacity .7s ease .3s}
+.dlgOn #hudBR,.dlgOn #hudTR{transform:translateY(200px);opacity:0;pointer-events:none;transition-delay:0s}
+.dlgOn #hudBR *,.dlgOn #hudTR *{pointer-events:none}
 </style></head><body>
 <div id="game"></div>
 <div id="loading"><span id="loadMsg"></span></div>
 <template id="uiTpl">
-  <div id="hudTL"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><span id="hGrade"></span><span class="dt"><span class="date" id="hDate"></span><div class="weekbar"><i id="hWeekBar"></i></div></span><span class="sep"></span><span class="stat"><img src="assets/ui/hud/icon_coin.png" alt=""><span><span class="lb">금고</span><b id="hGold"></b><small> G</small></span></span><span class="sep"></span><span class="stat" title="의뢰인이 길드를 믿는 정도 (0~100). 매달 들어오는 의뢰 수와 새 모험가 방문 수에 영향"><img src="assets/ui/hud/icon_shield.png" alt=""><span><span class="lb">신뢰도</span><b id="hTrust"></b></span></span><span class="sep"></span><span class="stat" title="길드가 이름난 정도 (0~1,000). 높을수록 새 모험가가 많이 찾아옴 (500에서 최대 1.6배)"><img src="assets/ui/hud/icon_star.png" alt=""><span><span class="lb">명성</span><b id="hFame"></b></span></span><span class="sep"></span><span class="stat"><img src="assets/ui/hud/icon_adventurer.png" alt=""><span><span class="lb">모험가</span><b id="hAdv"></b><small> 명</small></span></span></div></div>
-  <div id="hudTR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><button class="btn" id="ppBtn" title="일시정지·재생 (스페이스)"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg></button><span class="more"><button class="btn on" data-speed="1">1×</button><button class="btn" data-speed="2">2×</button><button class="btn" data-speed="4">4×</button></span></div></div>
-  <div class="plate" id="menu"><button class="btn" id="mSave">저장하기</button><button class="btn" id="mLoad">불러오기</button><button class="btn" id="mNew">새 게임</button><button class="btn" id="mReport">월간 보고 자동 표시 <i>켬</i></button></div>
+  <div id="hudTL"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><span id="hGrade"></span><span class="dt"><span class="date" id="hDate"></span><div class="weekbar"><i id="hWeekBar"></i></div></span><span class="sep"></span><span class="stat"><img src="assets/ui/hud/icon_coin.png" alt=""><span><span class="lb">금고</span><span class="val"><b id="hGold"></b><small> G</small></span></span></span><span class="sep"></span><span class="stat" title="의뢰인이 길드를 믿는 정도 (0~100). 매달 들어오는 의뢰 수와 새 모험가 방문 수에 영향"><img src="assets/ui/hud/icon_shield.png" alt=""><span><span class="lb">신뢰도</span><span class="val"><b id="hTrust"></b></span></span></span><span class="sep"></span><span class="stat" title="길드가 이름난 정도 (0~1,000). 높을수록 새 모험가가 많이 찾아옴 (500에서 최대 1.6배)"><img src="assets/ui/hud/icon_star.png" alt=""><span><span class="lb">명성</span><span class="val"><b id="hFame"></b></span></span></span><span class="sep"></span><span class="stat"><img src="assets/ui/hud/icon_adventurer.png" alt=""><span><span class="lb">모험가</span><span class="val"><b id="hAdv"></b><small> 명</small></span></span></span></div></div>
+  <div id="hudTR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><button class="btn" id="ppBtn" title="일시정지·재생 (스페이스)"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg></button><span class="more"><button class="chip on" data-speed="1"><b>1×</b></button><button class="chip" data-speed="2"><b>2×</b></button><button class="chip" data-speed="4"><b>4×</b></button></span></div></div>
   <div id="toasts"></div>
+  <div id="logBox"><div class="ll"></div><div class="lg" title="끌어서 이동 · 더블클릭: 원위치">기록 · 끌어서 이동</div></div>
   <button class="plate btn" id="bPromo" hidden>전직 제안</button>
-  <div class="plate" id="hudBR">
-    <button class="mb" data-pop="board"><svg viewBox="0 0 40 40"><rect x="4" y="6" width="32" height="26" rx="3" fill="#c8995f" stroke="#5a3a22" stroke-width="2.5"/><rect x="9" y="11" width="9" height="12" fill="#fbf4e2"/><rect x="22" y="13" width="9" height="11" fill="#fbf4e2"/><circle cx="13.5" cy="11" r="1.8" fill="#c0392b"/><circle cx="26.5" cy="13" r="1.8" fill="#c0392b"/></svg>게시판<span class="cnt" id="bBoard"></span></button>
-    <button class="mb" data-pop="advs"><svg viewBox="0 0 40 40"><circle cx="20" cy="13" r="7" fill="#f6dcc4" stroke="#5a3a22" stroke-width="2.5"/><path d="M7 35c1-9 7-13 13-13s12 4 13 13z" fill="#4a78b8" stroke="#5a3a22" stroke-width="2.5"/></svg>모험가<span class="cnt" id="bParty"></span></button>
-    <button class="mb" data-pop="ledger"><svg viewBox="0 0 40 40"><rect x="8" y="5" width="25" height="31" rx="3" fill="#8b3a2a" stroke="#5a3a22" stroke-width="2.5"/><rect x="12" y="9" width="17" height="23" fill="#fbf4e2"/><path d="M15 15h11M15 20h11M15 25h7" stroke="#8a7258" stroke-width="2"/></svg>장부</button>
-    <button class="mb" data-pop="fac"><svg viewBox="0 0 40 40"><path d="M5 18L20 6l15 12v17H5z" fill="#d9b27a" stroke="#5a3a22" stroke-width="2.5"/><rect x="16" y="24" width="8" height="11" fill="#7a4b2b"/></svg>시설</button>
-    <button class="mb" data-pop="meals"><svg viewBox="0 0 40 40"><path d="M6 20h28a14 12 0 0 1-28 0z" fill="#e8d2a8" stroke="#5a3a22" stroke-width="2.5"/><path d="M14 15c0-3 3-3 3-6M21 15c0-3 3-3 3-6" stroke="#8a7258" stroke-width="2" fill="none"/></svg>식당</button>
-    <button class="mb" data-pop="log"><svg viewBox="0 0 40 40"><rect x="9" y="5" width="22" height="30" rx="2" fill="#fbf4e2" stroke="#5a3a22" stroke-width="2.5"/><path d="M13 12h14M13 17h14M13 22h14M13 27h9" stroke="#8a7258" stroke-width="2"/></svg>기록</button>
-    <button class="mb" id="menuBtn" title="저장·불러오기·새 게임"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="11" fill="#d9b27a" stroke="#5a3a22" stroke-width="2.5"/><g stroke="#5a3a22" stroke-width="5" stroke-linecap="round"><path d="M20 4v5M20 31v5M4 20h5M31 20h5M8.7 8.7l3.5 3.5M27.8 27.8l3.5 3.5M31.3 8.7l-3.5 3.5M12.2 27.8l-3.5 3.5"/></g><circle cx="20" cy="20" r="5" fill="#fbf4e2" stroke="#5a3a22" stroke-width="2.5"/></svg>옵션</button>
-  </div>
+  <div id="hudBR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in">
+    <button class="mb" data-pop="board"><img class="ic" src="assets/ui/hud/bt/board.png" alt="" draggable="false">의뢰<span class="cnt" id="bBoard"></span></button>
+    <button class="mb" data-pop="advs"><img class="ic" src="assets/ui/hud/bt/advs.png" alt="" draggable="false">모험가<span class="cnt" id="bParty"></span></button>
+    <button class="mb" data-pop="fac"><img class="ic" src="assets/ui/hud/bt/fac.png" alt="" draggable="false">시설</button>
+    <span class="grp"><button class="mb" id="mgBtn"><img class="ic" src="assets/ui/hud/bt/mgmt.png" alt="" draggable="false">경영</button>
+      <div class="up" id="mgUp"><button class="btn" data-pop="ledger"><span class="cb"><img class="mi" src="assets/ui/hud/mi/ledger.png" alt="" draggable="false"></span><b class="nm">장부</b></button><button class="btn" data-act="cook"><span class="cb"><img class="mi" src="assets/ui/hud/mi/cook.png" alt="" draggable="false"></span><b class="nm">요리하기</b></button><button class="btn" data-pop="meals"><span class="cb"><img class="mi" src="assets/ui/hud/mi/meals.png" alt="" draggable="false"></span><b class="nm">음식 설정</b></button><button class="btn" data-pop="codex"><span class="cb"><img class="mi" src="assets/ui/hud/mi/codex.png" alt="" draggable="false"></span><b class="nm">도감</b></button><button class="btn" data-pop="log"><span class="cb"><img class="mi" src="assets/ui/hud/mi/log.png" alt="" draggable="false"></span><b class="nm">기록</b></button></div></span>
+    <button class="mb" data-act="town" title="마을 화면으로 이동"><img class="ic" src="assets/ui/hud/bt/town.png" alt="" draggable="false">마을</button>
+    <i class="sep"></i>
+    <span class="grp"><button class="mb" id="menuBtn"><img class="ic" src="assets/ui/hud/bt/opt.png" alt="" draggable="false">옵션</button>
+      <div class="up" id="menu"><button class="btn" id="mSave"><span class="cb"><img class="mi" src="assets/ui/hud/mi/save.png" alt="" draggable="false"></span><b class="nm">저장하기</b></button><button class="btn" id="mLoad"><span class="cb"><img class="mi" src="assets/ui/hud/mi/load.png" alt="" draggable="false"></span><b class="nm">불러오기</b></button><button class="btn" id="mNew"><span class="cb"><img class="mi" src="assets/ui/hud/mi/new.png" alt="" draggable="false"></span><b class="nm">새 게임</b></button><button class="btn" id="mReport"><span class="cb"><img class="mi" src="assets/ui/hud/mi/report.png" alt="" draggable="false"></span><b class="nm">월간 보고 자동 표시 <i>켬</i></b></button></div></span>
+  </div></div>
   <button class="plate btn" id="devToggle">개발</button>
   <div class="plate" id="dev"><span class="tag">개발</span>
     <button class="btn" id="dWeek">다음 주</button><button class="btn" id="dMonth">다음 달</button><button class="btn" id="dGrade">등급 올리기</button><button class="btn" id="dGold">+5,000G</button><button class="btn" id="dPromo">전직 시험</button><button class="btn" id="dWalk">걷기 시연</button>
     <button class="btn" id="dLayer">레이어 경계</button><button class="btn" id="dStill">쪽지 흔들림 끄기</button><button class="btn" id="dTemp"></button><button class="btn" id="dVerify">관문 1 검증</button>
     <span class="tag" id="dAssets"></span></div>
-  <div id="dlg"><img id="dlgFace" alt="리나"><div class="plate" id="dlgBox"><span id="dlgName">리나</span><span id="dlgText"></span><span id="dlgNext" hidden>▼</span></div></div>
+  <div id="dlg"><img id="dlgFace" alt="리나"><canvas id="dlgStand" width="341" height="640" hidden></canvas><div class="plate" id="dlgBox"><span id="dlgName">리나</span><span id="dlgText"></span><span id="dlgNext" hidden>▼</span></div></div>
   <div id="popBack"><div class="plate" id="pop" role="dialog" aria-modal="true" aria-labelledby="popTitle"><div id="popHead"><h2 id="popTitle"></h2><button class="btn" id="popClose" aria-label="닫기">✕</button></div><div id="popBody"></div></div></div>
 </template>
 <script src="js/data_gen.js"></script>

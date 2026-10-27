@@ -23,7 +23,7 @@
     anim: null, lastGroup: null, idleT: 0, nextIdle: rnd(4, 8), blink: null, blinkAt: rnd(2.5, 5.5), wasChat: false };
 
   Lina.request = function (job) { Lina.queue.push(job); };
-  Lina.say = function (text, dur) { Lina.bubble = { text, until: Lina.t + (dur || 2.2) }; };
+  Lina.say = function (text, dur) { Lina.bubble = { text, until: Lina.t + (dur || 2.2), t0: Lina.t }; };
   Lina.play = function (group, force) {
     if (!force && Lina.anim) return;
     const v = GROUPS[group][Math.floor(Math.random() * GROUPS[group].length)];

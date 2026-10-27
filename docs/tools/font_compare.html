@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><title>HUD 글꼴 비교</title><meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Do+Hyeon&family=Black+Han+Sans&family=Gowun+Dodum&family=Noto+Sans+KR:wght@500;700&family=Gothic+A1:wght@500;700&family=IBM+Plex+Sans+KR:wght@500;700&family=Nanum+Gothic:wght@700&family=Gaegu:wght@700&family=Sunflower:wght@500;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#2a1d14;font-family:sans-serif}
+.r{display:flex;align-items:center;gap:24px;margin:6px;padding:10px 18px;background:linear-gradient(#fbf1dc,#f1e0bd);border-radius:12px;color:#3b2a1e;width:1080px}
+.n{width:210px;font:14px sans-serif;color:#7a5a3a}
+.t{font-size:24px}.v{font-size:28px;display:inline-block;min-width:60px;text-align:center}.l{font-size:17px;color:#8a7258;display:block}
+.c{text-align:center}
+</style>
+<body><div style="color:#f3e3c2;font:15px/1.6 sans-serif;padding:14px 22px">상단 HUD 글꼴 후보 비교 — 인터넷에 연결된 상태에서 열어 주십시오(Google Fonts 사용). 마음에 드는 이름을 알려 주시면 게임에 적용합니다.</div>
+<script>
+const F=[['Jua','"Jua"',400],['Do Hyeon','"Do Hyeon"',400],['Black Han Sans','"Black Han Sans"',400],['Gowun Dodum','"Gowun Dodum"',400],['Noto Sans KR 500','"Noto Sans KR"',500],['Noto Sans KR 700','"Noto Sans KR"',700],['Gothic A1 500','"Gothic A1"',500],['IBM Plex Sans KR 500','"IBM Plex Sans KR"',500],['Sunflower 500','"Sunflower"',500],['맑은 고딕 (현재)','"Malgun Gothic","Noto Sans CJK KR"',700]];
+F.forEach(([n,f,w])=>{document.body.insertAdjacentHTML('beforeend',`<div class="r" style="font-family:${f};font-weight:${w}"><span class="n">${n}</span><span class="t">1년차 1월 2주</span><span class="c"><span class="l">금고</span><span class="v">3,000<small style="font-size:18px"> G</small></span></span><span class="c"><span class="l">신뢰도</span><span class="v">50</span></span><span class="c"><span class="l">명성</span><span class="v">1,000</span></span><span class="c"><span class="l">모험가</span><span class="v">12<small style="font-size:18px">명</small></span></span></div>`)});
+</script>

@@ -24,7 +24,7 @@
   }
   function setSpeed(v) { speed = v; UI.setSpeed(v); }
   function save(quiet) { try { localStorage.setItem(SAVE_KEY, Gm.serialize(s)); } catch (e) { if (!quiet) UI.toast('이 환경에서는 저장할 수 없습니다.', 'warn'); } }
-  function swap(ns, msg) { s = ns; UI.setState(s); Lobby.Board.reset(); Director.reset(s); UI.hud(); UI.close(); if (msg) UI.say(msg); }
+  function swap(ns, msg) { s = ns; UI.setState(s); Lobby.Board.reset(); Director.reset(s); UI.hud(); UI.close(); UI.logClear(); if (msg) UI.say(msg); }
   function load() {
     let t = null; try { t = localStorage.getItem(SAVE_KEY); } catch (e) { /* 저장소 없음 */ }
     if (!t) { UI.toast('저장된 게임이 없습니다.', 'warn'); return; }

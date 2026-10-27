@@ -20,7 +20,17 @@
   const WK = root.ASSET_MANIFEST.WALK, STEP_SCREEN = WK.stepPx * (250 / WK.charH);      // 한 걸음이 화면에서 움직이는 거리
   const WALK_SPEED = STEP_SCREEN * 2 / (WK.cols / WK.fps);                                // 30fps로 24프레임(두 걸음)을 재생하는 속도
   const walkSheet = ac => { const it = A.items[ac.key + '_walk']; return it && it.ok ? it : null; };
+  // ---------- 앉기 모션 (2026.10) ----------
+  // 앉기 시트가 있으면: 자리에 서서 앉기(13프레임) → 대기(4프레임) → 일어서기(앉기 역재생). 의자 층도 같은 셀 좌표로 그림.
+  // 시트가 없으면 기존처럼 걷기 시트 0번 프레임으로 즉시 앉은 것처럼 그림.
+  const SIT = root.ASSET_MANIFEST.SIT, SIT_SC = 250 / (WK.charH * 2), SIT_N = SIT.cols;  // 걷기 셀(256)에서 키 216 → 화면 250
+  const sitView = seat => seat.side === 'top' ? 'front' : 'side';
+  const sitMirror = seat => seat.side === 'left'; // 시트의 옆모습은 왼쪽을 봄 → 왼쪽 자리(오른쪽을 봄)는 좌우반전
+  const sitSheet = (ac, seat) => { const it = A.items[`${ac.key}_sit_${sitView(seat)}`]; return it && it.ok ? it : null; };
   const D = { actors: new Map(), seats: [], winUse: { meal: [], quest: [], sale: [] }, speed: 1, t: 0 };
+  D.TOP_DX = 64; // 위쪽 두 자리의 좌우 간격
+  D.USE_CELL_CHAIR = false; // true: 앉기 시트와 한 쌍인 큰 의자 그림(chair_cell_*)을 씀. 현재 탁자(200px)보다 커서 기본은 기존 의자
+  D.SIT_DY = 45;           // 서 있는 발밑을 의자 앞쪽 바닥(자리 y + 이 값)에 두면 앉았을 때 엉덩이가 기존 의자 좌판에 닿음
   const sexOf = a => (a.id % 2 ? 'm' : 'f');
 
   // ---------- 좌석 ----------
@@ -28,17 +38,34 @@
     const old = D.seats; D.seats = [];
     tables.forEach(T => { // 탁자 하나에 4석 (2026-10 확정). 의자 그림 위치는 lobby.js 와 같은 숫자
       const S = [
-        { x: T.x - 50, y: T.y - 22, z: T.y + 34, dir: 'front', side: 'top', ap: { x: T.x - 135, y: T.y + 6 } },
-        { x: T.x + 50, y: T.y - 22, z: T.y + 34, dir: 'front', side: 'top', ap: { x: T.x + 135, y: T.y + 6 } },
+        { x: T.x - D.TOP_DX, y: T.y - 22, z: T.y + 34, dir: 'front', side: 'top', ap: { x: T.x - 135, y: T.y + 6 } },
+        { x: T.x + D.TOP_DX, y: T.y - 22, z: T.y + 34, dir: 'front', side: 'top', ap: { x: T.x + 135, y: T.y + 6 } },
         // 옆자리: 앉는 그림(옆모습)이 나오기 전까지 임시로 정면을 보고 앉음. side 값으로 나중에 방향을 나눈다
-        { x: T.x - 100, y: T.y + 44, z: T.y + 108, dir: 'front', side: 'left', ap: { x: T.x - 170, y: T.y + 74 } },
-        { x: T.x + 100, y: T.y + 44, z: T.y + 108, dir: 'front', side: 'right', ap: { x: T.x + 170, y: T.y + 74 } }
+        { x: T.x - 100, y: T.y + 44, z: T.y + 94, dir: 'front', side: 'left', ap: { x: T.x - 170, y: T.y + 74 } },
+        { x: T.x + 100, y: T.y + 44, z: T.y + 94, dir: 'front', side: 'right', ap: { x: T.x + 170, y: T.y + 74 } }
       ];
       for (const seat of S) { const prev = old.find(o => o.x === seat.x && o.y === seat.y); seat.by = prev ? prev.by : null; D.seats.push(seat); }
     });
   };
   function freeSeat(ac) { const fr = D.seats.filter(s => !s.by); if (!fr.length) return null; const s = fr[(ac.id * 7) % fr.length]; s.by = ac.id; return s; }
   function release(ac) { if (ac.seat) { ac.seat.by = null; ac.seat = null; } if (ac.loiter != null) { LOITER[ac.loiter].by = null; ac.loiter = null; } }
+  // 앉기 상태: sp = { x, y, z, view, mirror, mode: 'down'|'idle'|'up', t }
+  function startSit(ac, seat, mode) {
+    if (!sitSheet(ac, seat)) { ac.sp = null; return false; }
+    const v = sitView(seat), m = sitMirror(seat);
+    ac.sp = { x: seat.x, y: seat.y + D.SIT_DY, z: seat.z, view: v, mirror: m, mode, t: 0 };
+    ac.dir4 = v === 'front' ? 'down' : (m ? 'right' : 'left');
+    return true;
+  }
+  D.standUp = standUp;
+  D.cellChairs = () => D.USE_CELL_CHAIR && A.has('chair_cell_front') && A.has('chair_cell_side');
+  D.chairDrawables = function (g) { // 빈 자리 포함 모든 의자 (캐릭터보다 살짝 뒤에 그림)
+    return D.seats.map(st => ({ z: st.z - 0.5, f: () => {
+      const v = sitView(st), it = A.items['chair_cell_' + v]; if (!it || !it.img) return;
+      g.save(); g.translate(st.x, st.y); if (sitMirror(st)) g.scale(-1, 1);
+      g.drawImage(it.img, -SIT.cellW / 2 * SIT_SC, -SIT.baseY * SIT_SC, SIT.cellW * SIT_SC, SIT.cellH * SIT_SC); g.restore();
+    } }));
+  };
   function claimWin(win, ac) { const u = D.winUse.quest; /* 리나가 가운데 고정 → 용건과 상관없이 한 줄 */ let i = u.indexOf(null); if (i < 0) { i = u.length; u.push(null); } u[i] = ac.id; const q = QSPOT[Math.min(i, QSPOT.length - 1)]; return { x: Lina.WIN[win] + q[0] + (i >= QSPOT.length ? -(i - QSPOT.length + 1) * 60 : 0), y: q[1], i }; }
   function freeWin(win, ac) { const u = D.winUse.quest; const i = u.indexOf(ac.id); if (i >= 0) u[i] = null; while (u.length && u[u.length - 1] === null) u.pop(); }
 
@@ -50,11 +77,19 @@
     return ac;
   }
   const T = (ac, k, o) => ac.tasks.push(Object.assign({ k }, o || {}));
-  function standUp(ac) { if (ac.pose === 'sit' || ac.loiter != null) { const ap = ac.seat ? ac.seat.ap : null; release(ac); ac.pose = 'stand'; if (ap) T(ac, 'walk', { to: ap }); } }
+  function standUp(ac) {
+    if (ac.pose === 'sit' || ac.loiter != null) {
+      const ap = ac.seat ? ac.seat.ap : null, sp = ac.sp; release(ac); ac.pose = 'stand'; ac.sp = null;
+      if (sp) { // 일어서는 모션을 먼저 하고, 접근 지점으로 걸어 나온 뒤 다음 행동
+        const u = { k: 'unsit', sp: Object.assign({}, sp, { mode: 'up', t: 0 }) };
+        ac.tasks.unshift(...(ap ? [u, { k: 'walk', to: ap }] : [u]));
+      } else if (ap) T(ac, 'walk', { to: ap });
+    }
+  }
   function settle(ac) { // 앉을 자리 → 서성일 자리 → 없으면 나감
     T(ac, 'do', { fn: () => {
       const s = freeSeat(ac);
-      if (s) { ac.tasks.unshift({ k: 'walk', to: s.ap }, { k: 'sit', seat: s }); return; }
+      if (s) { ac.tasks.unshift({ k: 'walk', to: s.ap }, ...(sitSheet(ac, s) ? [{ k: 'walk', to: { x: s.x, y: s.y + D.SIT_DY } }] : []), { k: 'sit', seat: s }); return; }
       const li = LOITER.findIndex(l => !l.by);
       if (li >= 0) { LOITER[li].by = ac.id; ac.loiter = li; ac.tasks.unshift({ k: 'walk', to: LOITER[li] }, { k: 'face', dir: 'front' }); return; }
       ac.tasks.unshift({ k: 'walk', to: EXIT }, { k: 'remove' });
@@ -84,7 +119,8 @@
       while (ac.tasks.length && guard++ < 500) {
         const k = ac.tasks.shift();
         if (k.k === 'walk') { ac.x = k.to.x; ac.y = k.to.y; ac.pose = 'stand'; }
-        else if (k.k === 'sit') { ac.seat = k.seat; ac.x = k.seat.x; ac.y = k.seat.y; ac.dir = k.seat.dir; ac.pose = 'sit'; }
+        else if (k.k === 'sit') { ac.seat = k.seat; ac.x = k.seat.x; ac.y = k.seat.y; ac.dir = k.seat.dir; ac.pose = 'sit'; startSit(ac, k.seat, 'idle'); }
+        else if (k.k === 'unsit') { ac.sp = null; ac.pose = 'stand'; ac.x = k.sp.x; ac.y = k.sp.y; }
         else if (k.k === 'face') ac.dir = k.dir;
         else if (k.k === 'do') k.fn();
         else if (k.k === 'lina' && !k.sent && k.job.onStart) k.job.onStart();
@@ -157,7 +193,7 @@
   D.init = function (s) {
     for (const a of s.advs) if (a.alive && a.state === 'town') {
       const ac = actor(a, INSIDE); const st = freeSeat(ac);
-      if (st) { ac.seat = st; ac.x = st.x; ac.y = st.y; ac.pose = 'sit'; ac.dir = st.dir; } else settle(ac);
+      if (st) { ac.seat = st; ac.x = st.x; ac.y = st.y; ac.pose = 'sit'; ac.dir = st.dir; startSit(ac, st, 'idle'); } else settle(ac);
     }
   };
 
@@ -174,7 +210,7 @@
   };
   D.celebrate = function (id) { const ac = D.actors.get(id); if (ac) { ac.fx = D.t + 2.4; say(ac, '힘이 넘친다…!', 2.4); } };
   D.reset = function (s) { D.actors.clear(); for (const st of D.seats) st.by = null; for (const l of LOITER) l.by = null; for (const w in D.winUse) D.winUse[w] = []; D.init(s); };
-  function say(ac, text, dur) { if (text) ac.bubble = { text, until: D.t + (dur || 1.8) }; }
+  function say(ac, text, dur) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text); } }
 
   // ---------- 매 프레임 ----------
   D.update = function (dt) {
@@ -203,7 +239,16 @@
         } else if (k.k === 'wait') { if (k.t <= budget) { budget -= k.t; ac.tasks.shift(); } else { k.t -= budget; budget = 0; } }
         else if (k.k === 'say') { say(ac, k.text, 1.8); ac.tasks.shift(); }
         else if (k.k === 'face') { ac.dir = k.dir; ac.tasks.shift(); }
-        else if (k.k === 'sit') { ac.seat = k.seat; ac.x = k.seat.x; ac.y = k.seat.y; ac.dir = k.seat.dir; ac.pose = 'sit'; ac.tasks.shift(); }
+        else if (k.k === 'sit') {
+          if (!k.began) { k.began = true; ac.seat = k.seat; ac.x = k.seat.x; ac.y = k.seat.y; ac.dir = k.seat.dir; ac.pose = 'sit'; if (!startSit(ac, k.seat, 'down')) { ac.tasks.shift(); continue; } ac.x = ac.sp.x; ac.y = ac.sp.y; }
+          const sp = ac.sp, need = SIT_N / SIT.fps - sp.t;
+          if (budget >= need) { budget -= need; sp.mode = 'idle'; sp.t = 0; ac.tasks.shift(); } else { sp.t += budget; budget = 0; }
+        }
+        else if (k.k === 'unsit') {
+          const sp = k.sp; if (!k.began) { k.began = true; ac.sp = sp; ac.pose = 'sit'; ac.x = sp.x; ac.y = sp.y; }
+          const need = SIT_N / SIT.fps - sp.t;
+          if (budget >= need) { budget -= need; ac.sp = null; ac.pose = 'stand'; ac.dir4 = sp.view === 'front' ? 'down' : (sp.mirror ? 'right' : 'left'); ac.tasks.shift(); } else { sp.t += budget; budget = 0; }
+        }
         else if (k.k === 'do') { ac.tasks.shift(); k.fn(); }
         else if (k.k === 'lina') {
           if (!k.sent) { k.sent = true; say(ac, k.line, 1.6); Lina.request(Object.assign({}, k.job, { done: () => { k.ok = true; } })); }
@@ -225,7 +270,7 @@
   D.drawables = function (g, t) {
     const out = [];
     for (const ac of D.actors.values()) {
-      const z = ac.pose === 'sit' && ac.seat ? ac.seat.z : ac.y;
+      const z = ac.sp ? ac.sp.z : (ac.pose === 'sit' && ac.seat ? ac.seat.z : ac.y);
       out.push({ z, f: () => {
         const walk = ac.pose === 'walk', hasSheet = !!walkSheet(ac), hop = walk && !hasSheet ? -Math.abs(Math.sin(ac.ph)) * 10 : 0, tilt = walk && !hasSheet ? Math.sin(ac.ph) * 3 : 0;
         if (ac.pose !== 'sit') { g.fillStyle = 'rgba(60,30,10,.2)'; g.beginPath(); g.ellipse(ac.x, ac.y - 3, 40 - (walk ? Math.abs(hop) : 0), 9, 0, 0, 7); g.fill(); }
@@ -233,8 +278,9 @@
         // 전직한 모험가: 직업 그림이 있으면 그것을, 없으면 1차 그림 + 직업 표식 (외형 리소스가 들어오면 자동으로 바뀜)
         let key = `${ac.key}_${ac.dir}`, emblem = false;
         if (a && a.stage >= 2) { const k2 = `chr_${CLASS_KEY[a.cls] || 'x'}_${sexOf(a)}_${ac.dir}`; if (A.has(k2)) key = k2; else emblem = true; }
-        const sh = walkSheet(ac);
-        if (sh && !(a && a.stage >= 2 && A.has(key) && key !== `${ac.key}_${ac.dir}`)) {
+        const sh = walkSheet(ac), spS = ac.sp ? A.items[`${ac.key}_sit_${ac.sp.view}`] : null;
+        if (spS && spS.ok) drawSit(g, ac, spS, t);
+        else if (sh && !(a && a.stage >= 2 && A.has(key) && key !== `${ac.key}_${ac.dir}`)) {
           // 걷기 시트: 방향 행 + 이동 거리로 정한 프레임. 서 있거나 앉으면 0번(접지) 프레임. 그림자는 코드가 그림
           // 셀 크기는 그림 높이로 정함(행 4개): 128px 원본이든 256px 업스케일본이든 같은 코드로 그림
           const cs = sh.img.height / sh.sheet.rows.length, f = cs / sh.sheet.cell, W = Object.assign({}, sh.sheet, { cell: cs, pivotY: sh.sheet.pivotY * f, charH: sh.sheet.charH * f });
@@ -251,19 +297,40 @@
     }
     return out;
   };
+  function drawSit(g, ac, it, t) { // 앉기·대기·일어서기 한 칸을 그림 (발밑 기준선을 ac.y 에 맞춤)
+    const sp = ac.sp; let row = 0, k;
+    if (sp.mode === 'down') k = Math.min(SIT_N - 1, Math.floor(sp.t * SIT.fps));
+    else if (sp.mode === 'up') k = Math.max(0, SIT_N - 1 - Math.floor(sp.t * SIT.fps));
+    else { row = 1; k = Math.floor(D.t * SIT.idleFps + ac.id) % 4; }
+    g.save(); g.translate(sp.x, sp.y); if (sp.mirror) g.scale(-1, 1);
+    g.drawImage(it.img, k * SIT.cellW, row * SIT.cellH, SIT.cellW, SIT.cellH, -SIT.cellW / 2 * SIT_SC, -SIT.baseY * SIT_SC, SIT.cellW * SIT_SC, SIT.cellH * SIT_SC);
+    g.restore();
+  }
   D.bubbles = function (g) {
-    for (const ac of D.actors.values()) if (ac.bubble) bubble(g, ac.x, ac.y - (ac.pose === 'sit' ? 240 : 262), ac.bubble.text);
-    if (Lina.bubble) bubble(g, Lina.x + 120, 144, Lina.bubble.text, true);
+    for (const ac of D.actors.values()) if (ac.bubble) bubble(g, ac.x, ac.y - (ac.pose === 'sit' ? 240 : 262), ac.bubble.text, false, D.t - (ac.bubble.t0 == null ? D.t - 1 : ac.bubble.t0), ac.bubble.until - D.t);
+    if (Lina.bubble) bubble(g, Lina.x + 120, 144, Lina.bubble.text, true, Lina.t - (Lina.bubble.t0 == null ? Lina.t - 1 : Lina.bubble.t0), Lina.bubble.until - Lina.t);
   };
-  function bubble(g, x, y, text, left) {
-    g.save(); g.font = '600 24px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
-    const w = g.measureText(text).width + 32, h = 44; let bx = Math.max(10, Math.min(1910 - w, x - w / 2)); const by = y - h;
-    g.fillStyle = 'rgba(255,253,246,.96)'; g.strokeStyle = '#5a3a22'; g.lineWidth = 2.5;
-    g.beginPath(); g.roundRect(bx, by, w, h, 18); g.fill(); g.stroke();
-    const tx = left ? bx + 18 : Math.max(bx + 16, Math.min(bx + w - 16, x));
-    g.beginPath(); g.moveTo(tx - 9, by + h - 1); g.lineTo(left ? tx - 22 : tx, by + h + 12); g.lineTo(tx + 9, by + h - 1); g.closePath(); g.fill();
-    g.beginPath(); g.moveTo(tx - 9, by + h); g.lineTo(left ? tx - 22 : tx, by + h + 12); g.lineTo(tx + 9, by + h); g.stroke();
-    g.fillStyle = '#3b2a1e'; g.textBaseline = 'middle'; g.fillText(text, bx + 16, by + h / 2 + 1);
+  // 말풍선 (2026.10 개편): 대화창·게시판과 같은 종이 질감 + 가는 금색 안쪽 선. 꼬리 없는 둥근 상자.
+  // age: 뜬 지 몇 초(커지며 등장), left: 사용 안 함(예전 꼬리 방향), remain: 사라질 때까지 남은 초(끝 0.25초는 투명해짐)
+  function bubble(g, x, y, text, left, age, remain) {
+    g.save();
+    g.font = '600 24px "MaruBuri", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+    const padX = 22, w = Math.max(64, Math.ceil(g.measureText(text).width) + padX * 2), h = 50, r = 20;
+    const bx = Math.max(12, Math.min(1908 - w, x - w / 2)), by = y - h - 6;
+    const tipx = bx + w / 2, tipy = by + h; // 등장할 때 크기 변화의 기준점(상자 아래 가운데)
+    // 등장: 꼬리 끝을 기준으로 0.6→1배 (살짝 튕김), 퇴장: 투명
+    const a = Math.min(1, Math.max(0, age) / 0.18), k = a >= 1 ? 1 : 1 + 1.7 * Math.pow(a - 1, 3) + 0.7 * Math.pow(a - 1, 2), sc = 0.6 + 0.4 * Math.max(0, Math.min(1.08, k));
+    g.globalAlpha *= Math.min(1, a * 1.4, Math.max(0, remain) / 0.25);
+    g.translate(tipx, tipy); g.scale(sc, sc); g.translate(-tipx, -tipy);
+    const body = (ins) => { const p = new Path2D(); p.roundRect(bx + ins, by + ins, w - ins * 2, h - ins * 2, Math.max(2, r - ins)); return p; };
+    const outer = body(0);
+    g.shadowColor = 'rgba(58,38,24,.30)'; g.shadowBlur = 10; g.shadowOffsetY = 4;
+    const gr = g.createLinearGradient(0, by, 0, by + h); gr.addColorStop(0, '#fffaf0'); gr.addColorStop(1, '#f3e2bf');
+    g.fillStyle = gr; g.fill(outer);
+    g.shadowColor = 'transparent'; g.shadowBlur = 0; g.shadowOffsetY = 0;
+    g.lineJoin = 'round'; g.lineWidth = 3; g.strokeStyle = '#7a5434'; g.stroke(outer);
+    g.save(); g.clip(outer); g.lineWidth = 1.5; g.strokeStyle = 'rgba(224,168,66,.9)'; g.stroke(body(5)); g.restore(); // 안쪽 금색 선
+    g.fillStyle = '#3b2a1e'; g.textBaseline = 'middle'; g.textAlign = 'center'; g.fillText(text, bx + w / 2, by + h / 2 + 1);
     g.restore();
   }
   root.Director = D;
