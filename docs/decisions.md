@@ -79,6 +79,18 @@
 | "시스템 메뉴"는 "옵션"으로 부르고 하단 HUD로 이동 | 사용자 결정 | |
 | 배속 바 조절기(박스 크기·펼침 폭·글자 위치)를 별도 도구로 유지 | 값을 숫자로 받아 그대로 적용 | docs/tools/speedbar_tuner_v2.html |
 
+## 2026-10-27
+
+| 결정 | 이유 | 관련 |
+| --- | --- | --- |
+| 앉기 모션(13프레임 앉기/일어서기 + 4프레임 대기)을 게임에 연결, 시트 20종 저장 | 서 있는 그림으로 앉던 문제 해결 | prototype/js/actors.js |
+| 의자는 항상 테이블보다 뒤(z 93~94 < 테이블 96), 의자 레이어 그림은 기본 끔 | 의자 그림이 테이블보다 커서 어색함 | prototype/js/lobby.js |
+| 말풍선은 종이 질감, 뾰족한 꼬리 없음 (모험가·리나 공통) | 기존 디자인이 촌스러움 | actors.js `bubble()` |
+| 대화창 위치·크기는 조절기 값으로 확정 | 숫자로 받아 그대로 적용 | docs/tools/dialog_tuner.html |
+| 여성 궁수 걷기 시트 좌우 행 교정 | 거꾸로 걷던 문제 | assets/chr/chr_archer_f_walk.png |
+| **마을 화면은 2:1 쿼터뷰 한 장 배경 + 건물 스프라이트 레이어** (정면 원경 폐기) | 레퍼런스·설계서 10.1 탑뷰와 일치, 단계별 해금 연출이 단순 | art/town_spec.md, tools/town_layout_mockup.html |
+| 마을 그리드 16×16, 타일 100×50px, 건물은 점유 타일+앞 꼭짓점 앵커 | 슬롯 배치·깊이 정렬 단순화 | art/town_spec.md |
+
 ## 그 이전
 
 1차 프로토타입과 기획 정리의 결정은 [design/design_v0.1.md](design/design_v0.1.md)와 [history/handoff_2026-10-21.md](history/handoff_2026-10-21.md)를 보세요.
