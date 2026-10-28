@@ -36,7 +36,8 @@
     swap(ns, UI.lines('newgame'));
   }
 
-  UI.init(stage, s, { setSpeed, save, load, newGame, changed: () => UI.hud(), promoted: a => Director.celebrate(a.id) });
+  UI.init(stage, s, { setSpeed, save, load, newGame, changed: () => UI.hud(), promoted: a => Director.celebrate(a.id), town: () => Town.open() });
+  Town.init(stage, () => s, {});
   LinaMenu.init(stage, () => s, UI); // 리나 클릭 메뉴 (좌3·우3)
   const q = sel => stage.ui.querySelector(sel);
   q('#dWeek').onclick = () => { step(); UI.hud(); };
@@ -65,9 +66,9 @@
     UI.weekBar(acc / WEEK_MS);
     // 화면 속 동작 빠르기: 배속이 오르면 함께 빨라지되 최대 3배 (일시정지면 멈춤)
     const as = speed === 0 ? 0 : Math.min(3, Math.max(1, speed * 0.6)), adt = dt * as;
-    Lobby.update(s, dt); Lina.update(adt); Director.update(adt); UI.update(dt);
+    Lobby.update(s, dt); Lina.update(adt); Director.update(adt); UI.update(dt); Town.update(s, dt);
     const g = stage.begin();
-    Lobby.draw(g, s, T, { debug, still: still || reduce });
+    if (Town.active) Town.draw(g, s, T); else Lobby.draw(g, s, T, { debug, still: still || reduce });
     requestAnimationFrame(frame);
   }
 

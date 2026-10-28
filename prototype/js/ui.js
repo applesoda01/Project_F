@@ -24,7 +24,7 @@
     q('#popBack').onclick = e => { if (e.target.id === 'popBack') UI.close(); };
     // 메뉴
     // 하단 HUD 묶음(경영·옵션)은 마우스를 올리면 열림. 준비 중인 항목은 안내만
-    stage.ui.querySelectorAll('[data-act]').forEach(b => b.onclick = () => toast(b.dataset.act === 'town' ? '마을 화면은 준비 중입니다.' : '요리하기는 준비 중입니다.', 'info'));
+    stage.ui.querySelectorAll('[data-act]').forEach(b => b.onclick = () => b.dataset.act === 'town' && hooks.town ? hooks.town() : toast(b.dataset.act === 'town' ? '마을 화면은 준비 중입니다.' : '요리하기는 준비 중입니다.', 'info'));
     const shut = () => q('#menu').classList.remove('open');
     q('#mSave').onclick = () => { shut(); hooks.save(); toast('게임을 저장했습니다.', 'info'); };
     q('#mLoad').onclick = () => { shut(); hooks.load(); };
