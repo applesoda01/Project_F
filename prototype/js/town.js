@@ -54,6 +54,9 @@
   for (const b of B) if (b.id !== 'castle') M['town_' + b.id] = { src: `town/${b.id}.png`, w: b.sw, h: b.sh, ax: 0.5, ay: 1, color: '#c9b48a', optional: true };
   for (let i = 1; i <= 3; i++) M['town_bridge' + i] = { src: `town/bridge${i}.png`, w: 600, h: 415, ax: 0.5, ay: 0.5, color: '#8a6a45', optional: true };
   CASTLE_H.forEach((c, i) => { M['town_castle' + (i + 1)] = { src: `town/castle${i + 1}.png`, w: c[0], h: c[1], ax: 0.5, ay: 1, color: '#c9b48a', optional: true }; });
+  // 하늘 연출 그림 (없으면 코드로 그린 임시 그림 사용)
+  for (let i = 1; i <= 4; i++) M['town_cloud' + i] = { src: `town/sky/cloud${i}.png`, w: 640, h: 340, ax: 0, ay: 0, optional: true }; // 2배 저장, 0.5배로 그림
+  M.town_bird = { src: 'town/sky/bird.png', w: 256, h: 64, ax: 0.5, ay: 0.5, optional: true };
 
   const Town = { active: false };
   let stage, getS, hooks, ui = null, cv, hover = null, sel = null, T = 0, override = -1, res = new Map(), bub = null, nextBub = 3, mouse = { x: -1, y: -1 };
@@ -140,6 +143,113 @@
     quad(0, 0, N, N, '#d3b27f', '#5a3a22', 5);
     for (const a of [2, 8, 14]) for (const b of [2, 8, 14]) quad(a, b, 4, 4, '#93ad68', 'rgba(60,40,20,.5)', 2);
   }
+  // ---------- 하늘: 반투명 구름·그림자, 비둘기 무리 (2026-10-28) ----------
+  // 그림 파일(town/sky/cloud1~4.png, town/sky/bird.png 가로 4칸 날갯짓 시트)이 있으면 그것을, 없으면 코드로 그린 임시 그림을 씀
+  const SKY = {
+    CLOUD_ALPHA: 0.6,        // 기본 투명도
+    CLOUD_NEAR_ALPHA: 0.15,   // 커서가 구름 한가운데 있을 때
+    CLOUD_SPEED: [28, 40],    // px/초 → 화면 가로지르기 약 60~90초
+    CLOUD_COUNT: [1, 3],      // 화면에 동시에 떠 있는 수
+    WIND: [1, 0.18],          // 바람 방향 (오른쪽, 살짝 아래)
+    SHADOW_OFF: [150, 280],   // 그림자 위치 (해가 왼쪽 위)
+    SHADOW_ALPHA: 0.16,
+    BIRD_EVERY: [20, 40],     // 초
+    BIRD_COUNT: [3, 6],
+    BIRD_SPEED: [190, 250],
+  };
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  let clouds = [], birds = [], nextBird = rnd(4, 10), cloudArt = null;
+  // 임시 구름 그림: 부드러운 원 여러 개를 겹친 모양 3종 (몸체·그림자 한 쌍)
+  function makeCloudArt() {
+    const arts = [];
+    const puff = (c, x, y, r, col, core) => { const gr = c.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, col + '1)'); gr.addColorStop(core, col + '.9)'); gr.addColorStop(1, col + '0)'); c.fillStyle = gr; c.beginPath(); c.arc(x, y, r, 0, 6.283); c.fill(); };
+    for (let v = 0; v < 3; v++) {
+      const W = 620 + v * 90, H = 340, P = 120, body = document.createElement('canvas'), sh = document.createElement('canvas');
+      body.width = sh.width = W; body.height = sh.height = H;
+      const b = body.getContext('2d'), s = sh.getContext('2d'), n = 7 + v * 2, blobs = [];
+      for (let i = 0; i < n; i++) { const t = i / (n - 1), hump = Math.sin(t * Math.PI); blobs.push([P + (W - 2 * P) * t + rnd(-20, 20), H * 0.62 - hump * rnd(40, 80), rnd(48, 62) + hump * rnd(30, 48)]); }
+      for (let i = 0; i < 4 + v; i++) blobs.push([P + rnd(0.15, 0.85) * (W - 2 * P), H * 0.42 + rnd(-20, 25), rnd(45, 75)]); // 위쪽 덩이
+      for (const [x, y, r] of blobs) puff(s, x, y, r * 1.05, 'rgba(20,30,45,', 0.55);
+      for (const [x, y, r] of blobs) puff(b, x, y + r * 0.22, r, 'rgba(178,190,210,', 0.55);      // 그늘진 아랫면
+      for (const [x, y, r] of blobs) puff(b, x - r * 0.12, y - r * 0.12, r * 0.86, 'rgba(255,255,255,', 0.6); // 햇빛 받는 윗면
+      arts.push({ body, sh, w: W, h: H });
+    }
+    return arts;
+  }
+  const fileArt = {};
+  function cloudFiles(getImg) { const r = []; for (let k = 1; k <= 4; k++) if (getImg && getImg('town_cloud' + k)) r.push(k - 1); return r; }
+  function cloudImg(i, getImg) {
+    const im = getImg && getImg('town_cloud' + (i + 1));
+    if (im) { // 파일 그림: 그림자용 실루엣은 한 번만 만들어 둠
+      if (!fileArt[i] || fileArt[i].body !== im) { const nw = im.naturalWidth || im.width, nh = im.naturalHeight || im.height, sh = document.createElement('canvas'); sh.width = nw; sh.height = nh;
+        const c = sh.getContext('2d'); c.drawImage(im, 0, 0); c.globalCompositeOperation = 'source-in'; c.fillStyle = 'rgb(20,30,45)'; c.fillRect(0, 0, nw, nh);
+        fileArt[i] = { body: im, sh, w: nw * 0.5, h: nh * 0.5 }; }
+      return fileArt[i];
+    }
+    return (cloudArt = cloudArt || makeCloudArt())[i % 3];
+  }
+  function spawnCloud(x) {
+    const fs = cloudFiles(skyUpdate.getImg), i = fs.length ? fs[Math.floor(Math.random() * fs.length)] : Math.floor(Math.random() * 3), sc = rnd(0.8, 1.25);
+    const y = rnd(-120, 760) - (x === undefined ? 0 : 0);
+    clouds.push({ i, sc, x: x === undefined ? -720 : x, y, sp: rnd(SKY.CLOUD_SPEED[0], SKY.CLOUD_SPEED[1]), a: SKY.CLOUD_ALPHA, flip: Math.random() < 0.5 });
+  }
+  let cloudTarget = 2;
+  function skyReset() { clouds = []; birds = []; nextBird = rnd(4, 10); cloudTarget = Math.round(rnd(SKY.CLOUD_COUNT[0], SKY.CLOUD_COUNT[1])); for (let k = 0; k < cloudTarget; k++) spawnCloud(rnd(-300, 1700)); }
+  function spawnFlock() {
+    const fromLeft = Math.random() < 0.5, n = Math.round(rnd(SKY.BIRD_COUNT[0], SKY.BIRD_COUNT[1])), sp = rnd(SKY.BIRD_SPEED[0], SKY.BIRD_SPEED[1]);
+    const y0 = rnd(150, 850), ang = rnd(-0.35, 0.35), vx = Math.cos(ang) * sp * (fromLeft ? 1 : -1), vy = Math.sin(ang) * sp;
+    const x0 = fromLeft ? -60 : 1980;
+    for (let k = 0; k < n; k++) { const row = Math.ceil(k / 2), side = k % 2 ? 1 : -1; // 느슨한 V자
+      birds.push({ x: x0 - Math.sign(vx) * row * rnd(30, 45), y: y0 + side * row * rnd(18, 30), vx: vx * rnd(0.95, 1.05), vy, ph: rnd(0, 6.28), fr: rnd(9, 12), sz: rnd(1.25, 1.5) }); }
+  }
+  function skyUpdate(dt, mouse) {
+    for (const c of clouds) {
+      c.x += SKY.WIND[0] * c.sp * dt; c.y += SKY.WIND[1] * c.sp * dt;
+      const art = cloudImg(c.i, skyUpdate.getImg), w = art.w * c.sc, h = art.h * c.sc, cx = c.x + w / 2, cy = c.y + h / 2;
+      let target = SKY.CLOUD_ALPHA;
+      if (mouse && mouse.x >= 0) { const d = Math.hypot((mouse.x - cx) / (w * 0.5), (mouse.y - cy) / (h * 0.5)), f = Math.min(1, Math.max(0, (d - 0.35) / 0.9)); target = SKY.CLOUD_NEAR_ALPHA + (SKY.CLOUD_ALPHA - SKY.CLOUD_NEAR_ALPHA) * f; }
+      c.a += (target - c.a) * Math.min(1, dt * 5); c.done = c.x > 1960 || c.y > 1120;
+    }
+    clouds = clouds.filter(c => !c.done);
+    if (clouds.length < cloudTarget) { spawnCloud(); cloudTarget = Math.round(rnd(SKY.CLOUD_COUNT[0], SKY.CLOUD_COUNT[1])); }
+    nextBird -= dt; if (nextBird <= 0) { spawnFlock(); nextBird = rnd(SKY.BIRD_EVERY[0], SKY.BIRD_EVERY[1]); }
+    for (const b of birds) { b.x += b.vx * dt; b.y += b.vy * dt; b.ph += b.fr * dt; }
+    birds = birds.filter(b => b.x > -200 && b.x < 2120 && b.y > -200 && b.y < 1280);
+  }
+  function drawBird(g, b, shadow, getImg) {
+    const im = getImg && getImg('town_bird');
+    if (im) { // 시트: 오른쪽을 향한 위에서 본 모습, 가로 4칸
+      const fw = (im.naturalWidth || im.width) / 4, fh = im.naturalHeight || im.height, f = Math.floor(b.ph / 1.57) & 3, k = 40 * b.sz / fw;
+      g.save(); g.translate(b.x, b.y); g.rotate(Math.atan2(b.vy, b.vx)); g.scale(k, k); if (shadow) g.filter = 'brightness(0)'; g.drawImage(im, f * fw, 0, fw, fh, -fw / 2, -fh / 2, fw, fh); g.restore(); return; }
+    // 위에서 내려다본 비둘기: 진행 방향으로 회전, 날갯짓은 날개 길이·폭 변화로 표현
+    const s = b.sz, open = 0.45 + 0.55 * Math.abs(Math.cos(b.ph)), span = 17 * s * open, chord = 6 * s * (1.25 - open * 0.5);
+    const dark = shadow ? 'rgba(20,30,45,1)' : '#4a4f58', mid = shadow ? 'rgba(20,30,45,1)' : '#8d939d', light = shadow ? 'rgba(20,30,45,1)' : '#b9bec6';
+    g.save(); g.translate(b.x, b.y); g.rotate(Math.atan2(b.vy, b.vx));
+    for (const side of [-1, 1]) { // 날개
+      g.fillStyle = mid; g.beginPath(); g.moveTo(2 * s, 0); g.quadraticCurveTo(1 * s, side * span * 0.6, -chord * 0.4, side * span); g.lineTo(-chord * 1.1, side * span * 0.92); g.quadraticCurveTo(-4 * s, side * span * 0.4, -3 * s, 0); g.closePath(); g.fill();
+      if (!shadow) { g.fillStyle = dark; g.beginPath(); g.moveTo(-chord * 0.4, side * span); g.lineTo(-chord * 1.1, side * span * 0.92); g.lineTo(-chord * 0.6, side * span * 0.72); g.closePath(); g.fill(); }
+    }
+    g.fillStyle = light; g.beginPath(); g.ellipse(0, 0, 8 * s, 3.2 * s, 0, 0, 6.283); g.fill();              // 몸통
+    g.fillStyle = mid; g.beginPath(); g.moveTo(-6 * s, 0); g.lineTo(-12 * s, -3.2 * s); g.lineTo(-12 * s, 3.2 * s); g.closePath(); g.fill(); // 꼬리
+    g.fillStyle = shadow ? dark : '#6f7680'; g.beginPath(); g.arc(8 * s, 0, 2.6 * s, 0, 6.283); g.fill();     // 머리
+    if (!shadow) { g.strokeStyle = 'rgba(40,44,52,.55)'; g.lineWidth = 0.8; g.beginPath(); g.ellipse(0, 0, 8 * s, 3.2 * s, 0, 0, 6.283); g.stroke(); }
+    g.restore();
+  }
+  // 그리는 순서: (세계) → 구름 그림자 → 새 그림자·새 → 구름 → (이름표·말풍선)
+  function skyDraw(g, getImg) {
+    g.save();
+    for (const c of clouds) { const art = cloudImg(c.i, getImg); g.globalAlpha = SKY.SHADOW_ALPHA; drawCloud(g, art.sh, c, art, SKY.SHADOW_OFF); }
+    g.globalAlpha = 0.16; for (const b of birds) drawBird(g, { ...b, x: b.x + 45, y: b.y + 95 }, true, getImg);
+    g.globalAlpha = 1; for (const b of birds) drawBird(g, b, false, getImg);
+    for (const c of clouds) { const art = cloudImg(c.i, getImg); g.globalAlpha = c.a; drawCloud(g, art.body, c, art, [0, 0]); }
+    g.restore();
+  }
+  function drawCloud(g, im, c, art, off) {
+    const w = art.w * c.sc, h = art.h * c.sc, x = c.x + off[0], y = c.y + off[1];
+    if (c.flip) { g.save(); g.translate(x + w, y); g.scale(-1, 1); g.drawImage(im, 0, 0, w, h); g.restore(); } else g.drawImage(im, x, y, w, h);
+  }
+  const skyImg = k => { const it = root.Assets && root.Assets.items[k]; return it && it.img && (it.img.naturalWidth || it.img.width) ? it.img : null; };
+  skyUpdate.getImg = skyImg;
   Town.update = function (s, dt) {
     if (!Town.active) return;
     T += dt; syncRes(s); if ((T | 0) !== (Town._t | 0) && ui) { const e = ui.querySelector('#tPop'); if (e) e.textContent = `인구 ${Math.round(s.pop)} · 현재 ${STAGE_NAMES[curStage(s)]} · 거주 모험가 ${res.size}명`; } Town._t = T;
@@ -147,6 +257,7 @@
     nextBub -= dt;
     if (nextBub <= 0) { const p = RUMOR[Math.floor(Math.random() * RUMOR.length)]; bub = { x: px(p[0], p[1]), y: py(p[0], p[1]) - 70, t: 4, text: LINES[Math.floor(Math.random() * LINES.length)] }; nextBub = 6 + Math.random() * 5; }
     if (bub) { bub.t -= dt; if (bub.t <= 0) bub = null; }
+    skyUpdate(dt, mouse);
   };
   function diamond(g, b, fill, stroke) {
     const f = foot(b); g.beginPath(); f.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath();
@@ -175,6 +286,7 @@
         else { diamond(g, b, 'rgba(180,150,100,.7)', '#5a3a22'); g.fillStyle = '#3b2a1e'; g.font = '700 18px "Malgun Gothic",sans-serif'; g.textAlign = 'center'; g.fillText(b.name, ax, ay - 20); }
       } else drawRes(g, it.r, T);
     }
+    skyDraw(g, skyImg); // 구름 그림자·새·구름 (클릭 판정과 무관)
     // 이름표
     const tag = hover || sel;
     if (tag) {
@@ -221,7 +333,7 @@
     ui.querySelector('#tAll').onclick = () => { const u = unl(getS()); B.forEach(b => { if (b.special) u[b.id] = true; }); refreshUi(); };
     ui.querySelector('#tNone').onclick = () => { const u = unl(getS()); B.forEach(b => { if (b.special) u[b.id] = false; }); refreshUi(); };
     cv.addEventListener('mousemove', e => { if (!Town.active) return; mouse = stage.toGame(e.clientX, e.clientY); hover = pick(getS(), mouse.x, mouse.y); cv.style.cursor = hover ? 'pointer' : ''; });
-    cv.addEventListener('mouseleave', () => { hover = null; });
+    cv.addEventListener('mouseleave', () => { hover = null; mouse = { x: -1, y: -1 }; });
     cv.addEventListener('click', e => { if (!Town.active) return; const p = stage.toGame(e.clientX, e.clientY); sel = pick(getS(), p.x, p.y); refreshUi(); });
   }
   function refreshUi() {
@@ -246,7 +358,7 @@
     root.addEventListener('keydown', e => { if (e.key === 'Escape' && Town.active) Town.close(); });
   };
   Town.open = function () {
-    if (!ui) return; Town.active = true; ui.classList.add('on'); const dg = document.getElementById('dlg'); if (dg) dg.style.visibility = 'hidden'; sel = null; hover = null; res.clear(); refreshUi();
+    if (!ui) return; Town.active = true; ui.classList.add('on'); const dg = document.getElementById('dlg'); if (dg) dg.style.visibility = 'hidden'; sel = null; hover = null; res.clear(); skyReset(); refreshUi();
     if (hooks.onOpen) hooks.onOpen();
   };
   Town.close = function () { Town.active = false; if (ui) ui.classList.remove('on'); const dg = document.getElementById('dlg'); if (dg) dg.style.visibility = ''; hover = null; cv.style.cursor = ''; if (hooks.onClose) hooks.onClose(); };

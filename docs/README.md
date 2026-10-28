@@ -10,7 +10,10 @@
 | [art/asset_rules.md](art/asset_rules.md) | 그림을 넣을 때 이름·크기·기준점 |
 | [balance/](balance) | 시뮬레이터·관문 검증 기록 |
 | [decisions.md](decisions.md) | 무엇을 왜 정했는지 |
-| [history/](history) | 인수인계 메모 |
+| [history/](history) | 인수인계 메모 (최신: [handoff_2026-10-28_town_houses.md](history/handoff_2026-10-28_town_houses.md) — 마을 민가 에셋) |
+| [working_rules.md](working_rules.md) | 협업·보고 규칙 |
+| [../tools/art/house_stretch/](../tools/art/house_stretch) | 민가 1×2 스프라이트 제작 스크립트 |
+| [art/town_ref/houses/](art/town_ref/houses) | 민가 스프라이트 (`base_1x1` 원본, `long` 1×2 확정본) |
 
 문서는 Markdown(.md)으로 씁니다. 표·목록 위주로 짧게, 수치는 [가안] 표시.
 

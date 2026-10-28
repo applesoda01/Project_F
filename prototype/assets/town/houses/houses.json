@@ -1,0 +1,148 @@
+{
+ "looks": {
+  "s1": "1단계 초가 (1×1만)",
+  "s2": "2단계 목조",
+  "s3": "3·4단계 회반죽",
+  "s5": "5단계 석조"
+ },
+ "naming": "{크기}_{외관}_f{층수}_c{지붕색 0빨강 1파랑 2초록 3주황}",
+ "display_1x1_width_px": 110,
+ "flip": "2×1(gx 방향으로 긴 집)은 좌우 반전, ax → w-ax",
+ "scale_store": 2,
+ "draw_scale": 0.5,
+ "note": "ax,ay = 앞 모서리 바닥점(파일 픽셀). 그리기: drawImage(img, X-ax*0.5, Y-ay*0.5, w*0.5, h*0.5)",
+ "sets": {
+  "1x1_s1_f1": {
+   "w": 225,
+   "h": 226,
+   "ax": 112,
+   "ay": 223,
+   "files": [
+    "town/houses/1x1_s1_f1_c0.png",
+    "town/houses/1x1_s1_f1_c1.png",
+    "town/houses/1x1_s1_f1_c2.png",
+    "town/houses/1x1_s1_f1_c3.png"
+   ]
+  },
+  "1x1_s2_f1": {
+   "w": 226,
+   "h": 220,
+   "ax": 112,
+   "ay": 218,
+   "files": [
+    "town/houses/1x1_s2_f1_c0.png",
+    "town/houses/1x1_s2_f1_c1.png",
+    "town/houses/1x1_s2_f1_c2.png",
+    "town/houses/1x1_s2_f1_c3.png"
+   ]
+  },
+  "1x1_s3_f1": {
+   "w": 226,
+   "h": 221,
+   "ax": 112,
+   "ay": 218,
+   "files": [
+    "town/houses/1x1_s3_f1_c0.png",
+    "town/houses/1x1_s3_f1_c1.png",
+    "town/houses/1x1_s3_f1_c2.png",
+    "town/houses/1x1_s3_f1_c3.png"
+   ]
+  },
+  "1x1_s3_f2": {
+   "w": 225,
+   "h": 288,
+   "ax": 114,
+   "ay": 285,
+   "files": [
+    "town/houses/1x1_s3_f2_c0.png",
+    "town/houses/1x1_s3_f2_c1.png",
+    "town/houses/1x1_s3_f2_c2.png",
+    "town/houses/1x1_s3_f2_c3.png"
+   ]
+  },
+  "1x1_s5_f1": {
+   "w": 225,
+   "h": 249,
+   "ax": 112,
+   "ay": 246,
+   "files": [
+    "town/houses/1x1_s5_f1_c0.png",
+    "town/houses/1x1_s5_f1_c1.png",
+    "town/houses/1x1_s5_f1_c2.png",
+    "town/houses/1x1_s5_f1_c3.png"
+   ]
+  },
+  "1x1_s5_f2": {
+   "w": 226,
+   "h": 312,
+   "ax": 111,
+   "ay": 310,
+   "files": [
+    "town/houses/1x1_s5_f2_c0.png",
+    "town/houses/1x1_s5_f2_c1.png",
+    "town/houses/1x1_s5_f2_c2.png",
+    "town/houses/1x1_s5_f2_c3.png"
+   ]
+  },
+  "1x2_s2_f1": {
+   "w": 343,
+   "h": 283,
+   "ax": 112,
+   "ay": 282,
+   "files": [
+    "town/houses/1x2_s2_f1_c0.png",
+    "town/houses/1x2_s2_f1_c1.png",
+    "town/houses/1x2_s2_f1_c2.png",
+    "town/houses/1x2_s2_f1_c3.png"
+   ]
+  },
+  "1x2_s3_f1": {
+   "w": 343,
+   "h": 284,
+   "ax": 111,
+   "ay": 282,
+   "files": [
+    "town/houses/1x2_s3_f1_c0.png",
+    "town/houses/1x2_s3_f1_c1.png",
+    "town/houses/1x2_s3_f1_c2.png",
+    "town/houses/1x2_s3_f1_c3.png"
+   ]
+  },
+  "1x2_s3_f2": {
+   "w": 343,
+   "h": 348,
+   "ax": 113,
+   "ay": 347,
+   "files": [
+    "town/houses/1x2_s3_f2_c0.png",
+    "town/houses/1x2_s3_f2_c1.png",
+    "town/houses/1x2_s3_f2_c2.png",
+    "town/houses/1x2_s3_f2_c3.png"
+   ]
+  },
+  "1x2_s5_f1": {
+   "w": 342,
+   "h": 308,
+   "ax": 112,
+   "ay": 307,
+   "files": [
+    "town/houses/1x2_s5_f1_c0.png",
+    "town/houses/1x2_s5_f1_c1.png",
+    "town/houses/1x2_s5_f1_c2.png",
+    "town/houses/1x2_s5_f1_c3.png"
+   ]
+  },
+  "1x2_s5_f2": {
+   "w": 343,
+   "h": 373,
+   "ax": 110,
+   "ay": 371,
+   "files": [
+    "town/houses/1x2_s5_f2_c0.png",
+    "town/houses/1x2_s5_f2_c1.png",
+    "town/houses/1x2_s5_f2_c2.png",
+    "town/houses/1x2_s5_f2_c3.png"
+   ]
+  }
+ }
+}
