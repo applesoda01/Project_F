@@ -1,0 +1,29 @@
+{
+  "id": "visit_warrior_01",
+  "kind": "dialogue",
+  "title": "전사 첫 방문 샘플",
+  "steps": [
+    {
+      "id": "s001",
+      "type": "background",
+      "file": "lobby/lobby_counter.png",
+      "transition": "fade"
+    },
+    {
+      "id": "s002",
+      "type": "say",
+      "speaker": "adv_warrior_m",
+      "expr": "default",
+      "text": "의뢰를 받으러 왔소. 가장 위험한 걸로 부탁하오.",
+      "effect": ["slow_type"]
+    },
+    {
+      "id": "s003",
+      "type": "say",
+      "speaker": "lina",
+      "expr": "worried",
+      "text": "위험한 건 안 돼요…!",
+      "effect": ["tremble", "flash"]
+    }
+  ]
+}

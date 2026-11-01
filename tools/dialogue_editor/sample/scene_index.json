@@ -1,0 +1,10 @@
+{
+  "prologue_01": {
+    "when": "new_game"
+  },
+  "visit_warrior_01": {
+    "when": "visit",
+    "npc": "adv_warrior_m",
+    "count": 1
+  }
+}

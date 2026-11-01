@@ -1,0 +1,35 @@
+{
+  "id": "prologue_01",
+  "kind": "prologue",
+  "title": "새 게임 시작 샘플",
+  "steps": [
+    {
+      "id": "s001",
+      "type": "background",
+      "file": "lobby/lobby_wall.png",
+      "transition": "cut"
+    },
+    {
+      "id": "s002",
+      "type": "say",
+      "speaker": "narrator",
+      "expr": "default",
+      "text": "오래된 길드 건물 앞에 낯선 그림자가 멈춰 섰다."
+    },
+    {
+      "id": "s003",
+      "type": "say",
+      "speaker": "lina",
+      "expr": "surprised",
+      "text": "어, 어서 오세요! 새 마스터님이시죠?",
+      "effect": ["shake"]
+    },
+    {
+      "id": "s004",
+      "type": "say",
+      "speaker": "lina",
+      "expr": "smile",
+      "text": "잘 부탁드려요. 오늘부터 이곳이 마스터님의 길드예요."
+    }
+  ]
+}

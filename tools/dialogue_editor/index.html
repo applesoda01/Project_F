@@ -1,0 +1,1226 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>대화씬 편집기</title>
+<style>
+/* 레이아웃: 상단 도구줄 + 좌측 씬 목록 + 가운데 미리보기·점검 + 우측 단계 로그·속성.
+   미리보기의 대화창은 게임(prototype/index.html)의 리나 대화창 CSS를 그대로 옮겼습니다. */
+@font-face{font-family:"MaruBuri";src:url(../../prototype/assets/fonts/MaruBuri-Regular.woff2) format("woff2");font-weight:400}
+@font-face{font-family:"MaruBuri";src:url(../../prototype/assets/fonts/MaruBuri-SemiBold.woff2) format("woff2");font-weight:600}
+@font-face{font-family:"MaruBuri";src:url(../../prototype/assets/fonts/MaruBuri-Bold.woff2) format("woff2");font-weight:700}
+:root{
+  --bg:#eceff3; --panel:#ffffff; --ink:#1c2430; --muted:#667085; --line:#d6dbe3; --soft:#f5f7fa;
+  --accent:#b4581c; --accent-ink:#ffffff; --focus:#2563eb; --warn:#a15c00; --bad:#b42318; --ok:#1d7a46;
+  --sel:#fff3e4; --font:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161c; --panel:#1b212a; --ink:#e7ebf1; --muted:#98a2b3; --line:#2f3743; --soft:#222a35;
+    --accent:#e0873f; --accent-ink:#1a1209; --focus:#6aa0ff; --warn:#e5a23a; --bad:#f08a80; --ok:#5cc58a; --sel:#3a2a1c; color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--font);display:flex;flex-direction:column;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:5px 11px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:default}
+button.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+button.sm{padding:2px 8px;font-size:12.5px}
+button.danger:hover:not(:disabled){border-color:var(--bad);color:var(--bad)}
+input,select,textarea{border:1px solid var(--line);background:var(--panel);border-radius:7px;padding:5px 8px;min-width:0}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+textarea{width:100%;resize:vertical;line-height:1.5}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--muted)}
+label.f>input,label.f>select,label.f>textarea{color:var(--ink);font-size:14px}
+h3{margin:0;font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.02em}
+
+/* 상단 도구줄 */
+#top{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+#top .ttl{font-weight:700;font-size:16px;margin-right:6px}
+#top .sp{flex:1}
+#top .grp{display:flex;gap:4px;padding-right:8px;margin-right:2px;border-right:1px solid var(--line)}
+#status{font-size:12.5px;color:var(--muted)}
+#status.dirty{color:var(--warn);font-weight:700}
+#badge{font-size:12.5px;border-radius:99px;padding:2px 10px;background:var(--soft);border:1px solid var(--line);cursor:default}
+#badge.err{background:var(--bad);color:#fff;border-color:var(--bad)}
+#badge.warn{color:var(--warn);border-color:var(--warn)}
+
+/* 본문 3열 */
+#main{flex:1;min-height:0;display:grid;grid-template-columns:270px minmax(420px,1fr) 440px;gap:10px;padding:10px}
+.col{min-height:0;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-height:0}
+.card>.hd{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line)}
+.card>.hd .sp{flex:1}
+
+/* 씬 목록 */
+#sceneCard{flex:1;display:flex;flex-direction:column}
+#scnTools{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--line)}
+#scnTools input{flex:1}
+#scnList{flex:1;overflow:auto;padding:6px}
+.scn{display:flex;flex-direction:column;gap:1px;padding:6px 9px;border-radius:8px;cursor:pointer;border:1px solid transparent}
+.scn:hover{background:var(--soft)}
+.scn.on{background:var(--sel);border-color:var(--accent)}
+.scn .r1{display:flex;align-items:center;gap:6px}
+.scn .id{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scn .m{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip{font-size:11px;border-radius:99px;padding:0 7px;background:var(--soft);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.prologue{color:#7a4fb0}.chip.dialogue{color:#2f6fb5}.chip.mainquest{color:#b4581c}
+.ib{font-size:12px;font-weight:700}.ib.err{color:var(--bad)}.ib.warn{color:var(--warn)}
+.empty{color:var(--muted);padding:14px;text-align:center;font-size:13px}
+
+/* 가운데: 씬 정보 + 미리보기 */
+#metaCard{display:grid;grid-template-columns:200px 150px 1fr;gap:8px;padding:8px 10px}
+#stageCard{padding:10px;display:flex;flex-direction:column;gap:8px}
+#stageWrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:8px;background:#1b1410}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;font-family:"MaruBuri","Malgun Gothic",sans-serif;color:#3b2a1e;--wood2:#5a3a22;--ink:#3b2a1e;user-select:none}
+#bgImg,#bgPrev{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#bgPrev{opacity:0}
+#bgMiss{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:44px;color:#fbefd6;background:repeating-linear-gradient(45deg,#2a201a,#2a201a 24px,#32261e 24px,#32261e 48px)}
+#portrait{position:absolute;left:150px;bottom:55px;height:654px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.25))}
+#portMiss{position:absolute;left:170px;bottom:55px;width:300px;height:560px;display:none;align-items:center;justify-content:center;text-align:center;font-size:30px;border:4px dashed rgba(251,239,214,.6);color:#fbefd6;background:rgba(0,0,0,.25);border-radius:16px}
+#dlg{position:absolute;left:150px;bottom:24px;width:1655px;height:220px}
+#dlgBox{position:absolute;left:-40px;right:0;bottom:0;height:216px;padding:13px 69px 0;font-size:27px;line-height:1.55;background:none;border:36px solid transparent;border-image:url(../../prototype/assets/ui/pop/panel_paper.png) 60 fill/36px stretch;filter:drop-shadow(0 8px 14px rgba(40,22,10,.38))}
+#dlgName{position:absolute;left:30px;top:-62px;height:56px;display:flex;align-items:center;padding:0 46px;border:solid transparent;border-width:0 38px;border-image:url(../../prototype/assets/ui/pop/title.png) 0 150 fill/0 38px stretch;color:var(--ink);font-size:23px;font-weight:700}
+#dlgNext{position:absolute;right:6px;bottom:2px;color:var(--wood2);animation:bob 1s infinite}
+@keyframes bob{50%{transform:translateY(5px)}}
+#dlgText{display:block;white-space:pre-wrap;outline:none;min-height:1.55em}
+#dlgText:focus{outline:2px solid #2563eb;outline-offset:4px;border-radius:4px}
+#stage.editable #dlgName,#stage.editable #portrait,#stage.editable #portMiss{cursor:pointer}
+#stage.editable #dlgName:hover,#stage.editable #portrait:hover,#stage.editable #portMiss:hover{outline:3px dashed rgba(180,88,28,.85);outline-offset:6px}
+#stage.editable #dlgText{cursor:text}
+#stage.editable #dlgText:hover{outline:2px dashed rgba(180,88,28,.6);outline-offset:4px}
+#dlgText .h{opacity:0}
+#dlgText .tr{display:inline-block;animation:trem .12s infinite alternate}
+@keyframes trem{from{transform:translate(-1px,-1px)}to{transform:translate(1px,1px)}}
+#dlgBox.shk{animation:shk .4s}
+@keyframes shk{20%{transform:translate(-12px,4px)}40%{transform:translate(10px,-5px)}60%{transform:translate(-7px,3px)}80%{transform:translate(5px,-2px)}}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+#flash.on{animation:fl .4s}
+@keyframes fl{0%{opacity:.9}100%{opacity:0}}
+#bgmTag{position:absolute;right:20px;top:16px;background:rgba(0,0,0,.5);color:#fbefd6;border-radius:12px;padding:4px 16px;font-size:26px;display:none}
+#seTag{position:absolute;right:20px;top:76px;background:rgba(0,0,0,.5);color:#fbefd6;border-radius:12px;padding:4px 16px;font-size:26px;display:none}
+#ctrl{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#ctrl .hint{font-size:12.5px;color:var(--muted)}
+#issueCard{flex:1;display:flex;flex-direction:column}
+#issues{overflow:auto;padding:6px}
+.iss{display:flex;gap:8px;padding:5px 8px;border-radius:7px;cursor:pointer;font-size:13px}
+.iss:hover{background:var(--soft)}
+.iss b{min-width:46px}.iss.err b{color:var(--bad)}.iss.warn b{color:var(--warn)}
+
+/* 우측: 단계 로그 + 속성 */
+#logCard{flex:1.15;display:flex;flex-direction:column}
+#log{flex:1;overflow:auto;padding:6px;display:flex;flex-direction:column;gap:5px}
+.step{display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:start;border:2px solid var(--line);border-radius:10px;padding:6px 8px;background:var(--panel);cursor:pointer}
+.step:hover{border-color:#c9a98c}
+.step.on{border-color:var(--accent);background:var(--sel)}
+.step.over{box-shadow:0 -3px 0 var(--focus)}
+.step.say{border-left:6px solid #b4581c}.step.background{border-left:6px solid #2f6fb5}.step.bgm{border-left:6px solid #7a4fb0}
+.step .no{font-size:12px;color:var(--muted);text-align:right;padding-top:2px}
+.step .t1{font-weight:700;font-size:13px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.step .t2{font-size:13.5px;color:var(--ink);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all}
+.step .t2.mute{color:var(--muted)}
+.fx{font-size:11px;background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:0 5px;color:var(--muted);font-weight:400}
+.step .cm{font-size:12px;color:var(--muted)}
+#propCard{flex:1;display:flex;flex-direction:column}
+#props{overflow:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fxs{display:flex;flex-wrap:wrap;gap:6px 12px}
+.fxs label{display:flex;gap:4px;align-items:center;font-size:13px;color:var(--ink)}
+.cnt{font-size:12px;color:var(--muted);text-align:right}.cnt.over{color:var(--warn);font-weight:700}
+.thumb{width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:#222}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.cb{padding:3px 10px;border-radius:99px;font-size:12.5px}
+.cb.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.cb.bad{border-color:var(--bad);color:var(--bad)}
+.cb kbd{font:inherit;font-size:10.5px;opacity:.65;margin-right:4px}
+.frow{display:flex;gap:6px}.frow input{flex:1}
+.menu{position:fixed;z-index:25;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.28);display:flex;flex-direction:column;gap:2px;max-height:60vh;overflow:auto;min-width:150px}
+.menu button{text-align:left;border:0;border-radius:6px;background:transparent}
+.menu button:hover{background:var(--soft)}.menu button.on{background:var(--sel);font-weight:700}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.pcard{border:2px solid var(--line);border-radius:8px;padding:4px;cursor:pointer;display:flex;flex-direction:column;gap:3px;background:var(--panel);text-align:left}
+.pcard:hover,.pcard.on{border-color:var(--accent)}
+.pcard img{width:100%;height:90px;object-fit:contain;background:#2a2118;border-radius:4px}
+.pcard span{font-size:11px;word-break:break-all;color:var(--muted)}
+.prow{display:flex;gap:8px;align-items:center;padding:4px 6px;border-radius:6px;cursor:pointer;font-size:13px}
+.prow:hover{background:var(--soft)}.prow.on{background:var(--sel)}
+.scr{width:100%;height:260px;font-family:ui-monospace,Consolas,"Malgun Gothic",monospace;font-size:13px}
+.pw{font-size:12.5px;color:var(--warn);margin:6px 0 0;padding-left:18px}
+kbd.k{border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 6px;background:var(--soft);font:inherit;font-size:12px}
+/* 모달·알림 */
+#modalBg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:20;padding:20px}
+#modalBg.open{display:flex}
+#modal{background:var(--panel);border-radius:12px;border:1px solid var(--line);max-width:min(980px,96vw);max-height:90vh;display:flex;flex-direction:column;width:100%}
+#modal .mh{padding:12px 16px;border-bottom:1px solid var(--line);font-weight:700;display:flex;align-items:center;gap:8px}
+#modal .mb{padding:12px 16px;overflow:auto}
+#modal .mf{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+table.t{border-collapse:collapse;width:100%;font-size:13px}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:middle}
+table.t th{font-size:12px;color:var(--muted);position:sticky;top:0;background:var(--panel)}
+table.t input,table.t select{width:100%;padding:3px 6px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#222;color:#fff;padding:8px 18px;border-radius:10px;font-size:13.5px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30;max-width:80vw}
+#toast.on{opacity:1}
+@media (max-width:1250px){#main{grid-template-columns:230px 1fr 380px}}
+</style>
+</head>
+<body>
+<div id="top">
+  <span class="ttl">대화씬 편집기</span>
+  <div class="grp"><button id="bOpen" title="Project_F 폴더를 골라 data/dialogue 의 파일을 읽고 씁니다">폴더 열기</button><button id="bSave" class="pri" title="Ctrl+S">저장</button></div>
+  <div class="grp"><button id="bUndo" title="Ctrl+Z">실행 취소</button><button id="bRedo" title="Ctrl+Y">다시 실행</button></div>
+  <div class="grp"><button id="bScript" title="대본 형식 텍스트를 붙여넣어 여러 단계를 한 번에 만듭니다">대본 붙여넣기</button><button id="bCsv" title="data/dialog.csv 의 리나 대화 장면을 씬으로 가져옵니다">dialog.csv 가져오기</button><button id="bChars">화자 목록</button><button id="bIndex">씬 호출 조건표</button></div>
+  <div class="grp"><button id="bKeys">단축키</button><button id="bExport" title="씬·화자·조건표를 JSON 한 파일로 내려받기">내보내기</button><button id="bImport">가져오기</button></div>
+  <span class="sp"></span>
+  <span id="badge">점검 없음</span>
+  <span id="status">저장 전</span>
+</div>
+<div id="main">
+  <div class="col">
+    <div class="card" id="sceneCard">
+      <div class="hd"><h3>씬 목록</h3><span class="sp"></span><button class="sm" id="bNew">+ 새 씬</button><button class="sm" id="bDup">복제</button><button class="sm danger" id="bDel">삭제</button></div>
+      <div id="scnTools"><input id="scnQ" placeholder="씬 ID·대사 검색"><select id="scnK"><option value="">전체</option><option value="prologue">프롤로그</option><option value="dialogue">대화씬</option><option value="mainquest">메인 퀘스트</option></select></div>
+      <div id="scnList"></div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card" id="metaCard">
+      <label class="f">씬 ID<input id="mId" spellcheck="false"></label>
+      <label class="f">종류<select id="mKind"><option value="prologue">프롤로그</option><option value="dialogue">대화씬</option><option value="mainquest">메인 퀘스트</option></select></label>
+      <label class="f">메모(제목)<input id="mTitle"></label>
+    </div>
+    <div class="card" id="stageCard">
+      <div id="stageWrap"><div id="stage">
+        <img id="bgImg" alt=""><img id="bgPrev" alt=""><div id="bgMiss"></div>
+        <img id="portrait" alt=""><div id="portMiss"></div>
+        <div id="dlg"><div id="dlgBox"><span id="dlgName"></span><span id="dlgText" spellcheck="false"></span><span id="dlgNext">▼</span></div></div>
+        <div id="bgmTag"></div><div id="seTag"></div><div id="flash"></div>
+      </div></div>
+      <div id="ctrl">
+        <button id="bPlay" class="pri">▶ 선택 단계부터 재생</button><button id="bStop">■ 정지</button><button id="bFx">효과 미리보기</button>
+        <span class="hint">무대의 이름·초상화·대사를 클릭하면 바로 고칠 수 있습니다 · 재생 중: 클릭/Space/Enter 다음, Esc 정지</span>
+      </div>
+    </div>
+    <div class="card" id="issueCard"><div class="hd"><h3>점검 결과 (이 씬)</h3></div><div id="issues"></div></div>
+  </div>
+  <div class="col">
+    <div class="card" id="logCard">
+      <div class="hd"><h3>대화 로그 (단계)</h3><span class="sp"></span><button class="sm" data-add="say">+ 대사</button><button class="sm" data-add="background">+ 배경</button><button class="sm" data-add="bgm">+ BGM</button></div>
+      <div id="log"></div>
+    </div>
+    <div class="card" id="propCard"><div class="hd"><h3>선택한 단계 속성</h3></div><div id="props"></div></div>
+  </div>
+</div>
+<div id="modalBg"><div id="modal"></div></div>
+<div id="toast"></div>
+<input type="file" id="fCsv" accept=".csv,text/csv" hidden><input type="file" id="fJson" accept=".json,application/json" hidden>
+<datalist id="dlBg"></datalist>
+<script>
+"use strict";
+/* ===== 1. 기본값·유틸 ===== */
+const ASSET='../../prototype/assets/';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const J=JSON.stringify;
+const EFFECTS={shake:'흔들림',tremble:'글자 떨림',slow_type:'느린 타이핑',se:'효과음 재생',flash:'화면 번쩍임'};
+const KINDS={prologue:'프롤로그',dialogue:'대화씬',mainquest:'메인 퀘스트'};
+const WHENS={manual:'직접 호출',new_game:'새 게임 시작',visit:'NPC 방문',mainquest_start:'메인 퀘스트 시작'};
+const EXPR_KO={smile:'미소',serious:'진지',laugh:'웃음',worried:'걱정',awkward:'당황',surprised:'놀람',default:'기본'};
+const FX_ALIAS={'흔들림':'shake','글자떨림':'tremble','떨림':'tremble','느린타이핑':'slow_type','느린':'slow_type','번쩍임':'flash','화면번쩍임':'flash','효과음':'se','효과음재생':'se'};
+const FILES={list:[],ok:false};
+const LS_KEY='dlgEditor.v1';
+const MAX_CHARS=90, MAX_LINES=3;
+
+function defaultChars(){
+  const c={
+    lina:{type:'npc',name:'리나',portrait:'npc/lina_face_{expr}.png',expressions:['smile','serious','laugh','worried','awkward','surprised']}
+  };
+  c.player={type:'player',name:'주인공',portrait:'',expressions:['default']};
+  c.narrator={type:'narration',name:'해설',portrait:'',expressions:['default']};
+  c.demon_lord={type:'npc',name:'마왕',portrait:'npc/demon_lord.png',expressions:['default']};
+  c.hero={type:'npc',name:'용사',portrait:'npc/hero.png',expressions:['default']};
+  const jobs={warrior:'전사',archer:'궁수',mage:'마법사',cleric:'성직자',rogue:'도적'};
+  for(const j in jobs)for(const g of ['m','f']){
+    c['adv_'+j+'_'+g]={type:'adventurer',name:'모험가('+jobs[j]+(g==='m'?' 남':' 여')+')',portrait:'chr/chr_'+j+'_'+g+'_front.png',expressions:['default']};
+  }
+  return c;
+}
+
+/* ===== 2. 상태·되돌리기·자동 저장 ===== */
+const S={chars:defaultChars(),scenes:{},index:{},sel:null,step:null,deleted:[],dirty:false,folder:null,lastSave:null};
+const H={undo:[],redo:[],lastKey:null,lastAt:0};
+const snap=()=>J({chars:S.chars,scenes:S.scenes,index:S.index,deleted:S.deleted});
+function restore(str){
+  const o=JSON.parse(str);
+  S.chars=o.chars;S.scenes=o.scenes;S.index=o.index;S.deleted=o.deleted||[];
+  if(!S.scenes[S.sel])S.sel=Object.keys(S.scenes)[0]||null;
+  const sc=cur();if(!sc||S.step>=sc.steps.length)S.step=null;
+}
+function commit(fn,key,keepProps){
+  const now=Date.now(),before=snap();
+  if(!(key&&key===H.lastKey&&now-H.lastAt<1200)){H.undo.push(before);if(H.undo.length>150)H.undo.shift();H.redo=[];}
+  H.lastKey=key||null;H.lastAt=now;
+  fn();S.dirty=true;autosave();renderAll(!keepProps);
+}
+function undo(){if(!H.undo.length)return;H.redo.push(snap());restore(H.undo.pop());H.lastKey=null;S.dirty=true;autosave();renderAll(true);}
+function redo(){if(!H.redo.length)return;H.undo.push(snap());restore(H.redo.pop());H.lastKey=null;S.dirty=true;autosave();renderAll(true);}
+function autosave(){try{localStorage.setItem(LS_KEY,J({snap:snap(),sel:S.sel,at:Date.now()}));}catch(e){}}
+function loadAuto(){
+  try{const r=localStorage.getItem(LS_KEY);if(!r)return false;const o=JSON.parse(r);
+    if(!o.snap)return false;const t=JSON.parse(o.snap);
+    if(!Object.keys(t.scenes||{}).length)return false;
+    restore(o.snap);S.sel=t.scenes[o.sel]?o.sel:Object.keys(t.scenes)[0];S.dirty=true;return true;}catch(e){return false;}
+}
+const cur=()=>S.scenes[S.sel]||null;
+function nextStepId(sc){let m=0;for(const s of sc.steps){const n=parseInt(String(s.id||'').replace(/\D/g,''),10);if(n>m)m=n;}return 's'+String(m+1).padStart(3,'0');}
+function newStep(sc,type,at){
+  const id=nextStepId(sc);
+  if(type==='background')return {id,type,file:'',transition:'fade'};
+  if(type==='bgm')return {id,type,action:'play',file:''};
+  const prev=sc.steps.slice(0,at==null?sc.steps.length:at).reverse().find(s=>s.type==='say');
+  const sp=prev?prev.speaker:'lina';
+  return {id,type:'say',speaker:sp,expr:(prev&&prev.speaker===sp)?prev.expr:defExpr(sp),text:'',effect:[]};
+}
+function defExpr(sp){const c=S.chars[sp];if(!c)return 'default';return c.expressions.includes('default')?'default':(c.expressions[0]||'default');}
+
+/* ===== 3. 파일 확인 캐시 (이미지·음원) ===== */
+const fileState=new Map();let softT=null;
+function assetUrl(f){return /^(https?:|data:|blob:)/.test(f)?f:ASSET+f;}
+function fileOK(f,kind){
+  if(!f)return undefined;
+  const url=assetUrl(f);
+  if(fileState.has(url))return fileState.get(url);
+  fileState.set(url,undefined);
+  const el=kind==='audio'?new Audio():new Image();
+  const done=v=>()=>{fileState.set(url,v);clearTimeout(softT);softT=setTimeout(()=>{if(typeof renderLight==='function')renderLight();},60);};
+  if(kind==='audio'){el.onloadedmetadata=done(true);el.oncanplaythrough=done(true);el.onerror=done(false);el.preload='metadata';}
+  else{el.onload=done(true);el.onerror=done(false);}
+  el.src=url;
+  return undefined;
+}
+function portraitFile(sp,expr){
+  const c=S.chars[sp];if(!c||!c.portrait)return null;
+  const ex=c.expressions.includes(expr)?expr:defExpr(sp);
+  return c.portrait.replace('{expr}',ex);
+}
+
+/* ===== 4. 점검 ===== */
+function validateScene(id){
+  const sc=S.scenes[id],out=[];if(!sc)return out;
+  const add=(lvl,i,msg)=>out.push({lvl,i,msg});
+  if(!/^[A-Za-z0-9_]+$/.test(id))add('err',-1,'씬 ID는 영문·숫자·밑줄만 쓸 수 있습니다.');
+  if(!sc.steps.length)add('warn',-1,'단계가 없습니다.');
+  else if(!sc.steps.some(s=>s.type==='say'))add('warn',-1,'대사 단계가 없습니다.');
+  const ids=new Set();
+  sc.steps.forEach((s,i)=>{
+    if(ids.has(s.id))add('err',i,'단계 ID가 중복됩니다: '+s.id);ids.add(s.id);
+    if(s.type==='say'){
+      const c=S.chars[s.speaker];
+      if(!c)add('err',i,'알 수 없는 화자: '+(s.speaker||'(비어 있음)'));
+      else{
+        if(!c.expressions.includes(s.expr))add('warn',i,'표정 "'+s.expr+'" 이 없어 기본 표정으로 대체됩니다.');
+        const pf=portraitFile(s.speaker,s.expr);
+        if(pf&&fileOK(pf)===false)add('warn',i,'초상화 파일이 없습니다: '+pf);
+      }
+      const t=s.text||'';
+      if(!t.trim())add('warn',i,'대사가 비어 있습니다.');
+      const lines=t.split('\n').length;
+      if(t.length>MAX_CHARS||lines>MAX_LINES)add('warn',i,'대사가 너무 깁니다 ('+t.length+'자 / '+lines+'줄, 권장 '+MAX_CHARS+'자·'+MAX_LINES+'줄).');
+      const fx=s.effect||[];
+      fx.forEach(e=>{if(!EFFECTS[e])add('warn',i,'알 수 없는 박스 효과: '+e);});
+      if(fx.includes('se')){
+        if(!s.se)add('err',i,'효과음 재생을 골랐지만 파일이 없습니다.');
+        else if(fileOK(s.se,'audio')===false)add('warn',i,'효과음 파일이 없습니다: '+s.se);
+      }
+    }else if(s.type==='background'){
+      if(!s.file)add('err',i,'배경 파일이 비어 있습니다.');
+      else if(fileOK(s.file)===false)add('warn',i,'배경 파일이 없습니다: '+s.file);
+    }else if(s.type==='bgm'){
+      if(s.action==='play'){
+        if(!s.file)add('err',i,'BGM 파일이 비어 있습니다.');
+        else if(fileOK(s.file,'audio')===false)add('warn',i,'BGM 파일이 없습니다: '+s.file);
+      }
+    }else add('err',i,'알 수 없는 단계 종류: '+s.type);
+  });
+  return out;
+}
+function validateAll(){
+  let err=0,warn=0;const per={};
+  for(const id in S.scenes){const v=validateScene(id);per[id]={err:v.filter(x=>x.lvl==='err').length,warn:v.filter(x=>x.lvl==='warn').length};err+=per[id].err;warn+=per[id].warn;}
+  for(const k in S.index)if(!S.scenes[k]){err++;}
+  return {err,warn,per};
+}
+
+/* ===== 5. 안정적인 JSON 직렬화 (Git diff 최소화) ===== */
+const KO={step:['id','type','speaker','expr','text','effect','se','file','transition','action','note'],
+  char:['type','name','portrait','expressions'],idx:['when','npc','count','quest']};
+function stab(v,ord,ind){
+  ind=ind||0;const pad='  '.repeat(ind+1),pe='  '.repeat(ind);
+  if(Array.isArray(v)){
+    if(!v.length)return '[]';
+    if(v.every(x=>x===null||typeof x!=='object'))return '['+v.map(x=>J(x)).join(', ')+']';
+    return '[\n'+v.map(x=>pad+stab(x,ord,ind+1)).join(',\n')+'\n'+pe+']';
+  }
+  if(v&&typeof v==='object'){
+    const o=ord||[];
+    const ks=Object.keys(v).filter(k=>v[k]!==undefined).sort((a,b)=>{
+      const ia=o.indexOf(a),ib=o.indexOf(b);return (ia<0?99:ia)-(ib<0?99:ib)||(a<b?-1:a>b?1:0);});
+    if(!ks.length)return '{}';
+    return '{\n'+ks.map(k=>pad+J(k)+': '+stab(v[k],ord,ind+1)).join(',\n')+'\n'+pe+'}';
+  }
+  return J(v);
+}
+function cleanStep(s){
+  const o={id:s.id,type:s.type};
+  if(s.type==='say'){o.speaker=s.speaker;o.expr=s.expr;o.text=s.text||'';if(s.effect&&s.effect.length)o.effect=s.effect.slice();if(s.effect&&s.effect.includes('se')&&s.se)o.se=s.se;}
+  else if(s.type==='background'){o.file=s.file||'';o.transition=s.transition||'fade';}
+  else if(s.type==='bgm'){o.action=s.action||'play';if(o.action==='play')o.file=s.file||'';}
+  if(s.note)o.note=s.note;
+  return o;
+}
+function serScene(sc){
+  return '{\n  "id": '+J(sc.id)+',\n  "kind": '+J(sc.kind)+',\n  "title": '+J(sc.title||'')+',\n  "steps": ['+
+    (sc.steps.length?'\n'+sc.steps.map(s=>'    '+stab(cleanStep(s),KO.step,2)).join(',\n')+'\n  ':'')+']\n}\n';
+}
+function serMap(map,ord,sortKeys){
+  const ks=Object.keys(map);if(sortKeys)ks.sort();
+  if(!ks.length)return '{}\n';
+  return '{\n'+ks.map(k=>'  '+J(k)+': '+stab(map[k],ord,1)).join(',\n')+'\n}\n';
+}
+const serChars=()=>serMap(S.chars,KO.char,false);
+const serIndex=()=>serMap(S.index,KO.idx,true);
+
+/* ===== 6. 가져오기 보조: 형식 점검 ===== */
+function normScene(o,fallbackId){
+  if(!o||typeof o!=='object')throw new Error('씬 형식이 아닙니다.');
+  const sc={id:String(o.id||fallbackId||''),kind:KINDS[o.kind]?o.kind:'dialogue',title:String(o.title||''),steps:[]};
+  if(!sc.id)throw new Error('id 가 없습니다.');
+  (Array.isArray(o.steps)?o.steps:[]).forEach((s,i)=>{
+    const st=Object.assign({},s);if(!st.id)st.id='s'+String(i+1).padStart(3,'0');
+    if(st.type==='say'){st.effect=Array.isArray(st.effect)?st.effect:[];st.text=st.text==null?'':String(st.text);}
+    sc.steps.push(st);
+  });
+  return sc;
+}
+function parseCsv(text){
+  const rows=[];let row=[],f='',q=false;
+  text=text.replace(/^﻿/,'');
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++;}else q=false;}else f+=c;}
+    else if(c==='"')q=true;
+    else if(c===','){row.push(f);f='';}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(f);f='';if(row.some(x=>x!==''))rows.push(row);row=[];}
+    else f+=c;
+  }
+  if(f!==''||row.length){row.push(f);if(row.some(x=>x!==''))rows.push(row);}
+  return rows;
+}
+function csvToScenes(text){
+  const rows=parseCsv(text);if(rows.length<2)throw new Error('행이 없습니다.');
+  const h=rows[0].map(x=>x.trim());const ix=n=>h.indexOf(n);
+  const a=ix('장면'),b=ix('순서'),c=ix('표정'),d=ix('대사'),m=ix('메모');
+  if(a<0||d<0)throw new Error('"장면", "대사" 열이 필요합니다.');
+  const g={};
+  rows.slice(1).forEach((r,k)=>{const key=(r[a]||'').trim();if(!key)return;(g[key]=g[key]||[]).push({o:b>=0?parseFloat(r[b])||k:k,expr:c>=0?(r[c]||'').trim():'',text:r[d]||'',note:m>=0?(r[m]||'').trim():''});});
+  const out=[];
+  for(const key in g){
+    const id='lina_'+key.replace(/[^A-Za-z0-9_]/g,'_');
+    const sc={id,kind:key==='start'?'prologue':'dialogue',title:'dialog.csv · '+key,steps:[]};
+    g[key].sort((x,y)=>x.o-y.o).forEach((l,i)=>{
+      const st={id:'s'+String(i+1).padStart(3,'0'),type:'say',speaker:'lina',expr:S.chars.lina.expressions.includes(l.expr)?l.expr:'smile',text:l.text,effect:[]};
+      if(l.note)st.note=l.note;sc.steps.push(st);
+    });
+    out.push(sc);
+  }
+  return out;
+}
+</script>
+<script>
+/* ===== 7. 화면 그리기 ===== */
+function toast(msg,ms){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),ms||2400);}
+function spName(id){const c=S.chars[id];return c?c.name:(id||'(없음)');}
+function fxChips(s){return (s.effect||[]).map(e=>'<span class="fx">'+esc(EFFECTS[e]||e)+'</span>').join('');}
+
+function renderAll(withProps){
+  renderScenes();renderMeta();renderLog();
+  if(withProps)renderProps();
+  renderIssues();renderBadge();renderStatus();showStatic();
+  $('#bUndo').disabled=!H.undo.length;$('#bRedo').disabled=!H.redo.length;
+}
+function renderLight(){renderScenes();renderLog();renderIssues();renderBadge();}
+
+function renderScenes(){
+  const q=$('#scnQ').value.trim().toLowerCase(),k=$('#scnK').value,v=validateAll().per;
+  const ids=Object.keys(S.scenes).sort().filter(id=>{
+    const sc=S.scenes[id];if(k&&sc.kind!==k)return false;if(!q)return true;
+    return id.toLowerCase().includes(q)||(sc.title||'').toLowerCase().includes(q)||sc.steps.some(s=>(s.text||'').toLowerCase().includes(q));});
+  $('#scnList').innerHTML=ids.length?ids.map(id=>{
+    const sc=S.scenes[id],p=v[id]||{err:0,warn:0};
+    const first=(sc.steps.find(s=>s.type==='say')||{}).text||'';
+    return '<div class="scn'+(id===S.sel?' on':'')+'" data-id="'+esc(id)+'"><div class="r1"><span class="id">'+esc(id)+'</span><span class="chip '+sc.kind+'">'+KINDS[sc.kind]+'</span><span style="flex:1"></span>'+
+      (p.err?'<span class="ib err" title="오류">⚠'+p.err+'</span>':'')+(p.warn?'<span class="ib warn" title="경고">!'+p.warn+'</span>':'')+
+      '</div><div class="m">'+sc.steps.length+'단계 · '+esc(sc.title||first)+'</div></div>';}).join(''):'<div class="empty">씬이 없습니다.<br>"+ 새 씬" 또는 "dialog.csv 가져오기"로 시작하세요.</div>';
+}
+function renderMeta(){
+  const sc=cur(),on=!!sc;
+  for(const id of ['mId','mKind','mTitle']){const el=$('#'+id);el.disabled=!on;}
+  $('#bDup').disabled=!on;$('#bDel').disabled=!on;
+  if(!on){$('#mId').value='';$('#mTitle').value='';return;}
+  if(document.activeElement!==$('#mId'))$('#mId').value=sc.id;
+  $('#mKind').value=sc.kind;
+  if(document.activeElement!==$('#mTitle'))$('#mTitle').value=sc.title||'';
+}
+function stepIssues(){const m={};if(!S.sel)return m;validateScene(S.sel).forEach(x=>{if(x.i>=0){(m[x.i]=m[x.i]||[]).push(x);}});return m;}
+function renderLog(){
+  const el=$('#log'),sc=cur(),top=el.scrollTop;
+  if(!sc){el.innerHTML='<div class="empty">왼쪽에서 씬을 고르세요.</div>';return;}
+  const iss=stepIssues();
+  el.innerHTML=sc.steps.length?sc.steps.map((s,i)=>{
+    let t1,t2,mute='';
+    if(s.type==='say'){t1='<span>'+esc(spName(s.speaker))+'</span><span class="cm">'+esc(s.expr||'')+'</span>'+fxChips(s);t2=s.text||'';if(!t2){t2='(대사 없음)';mute=' mute';}}
+    else if(s.type==='background'){t1='<span>배경</span><span class="cm">'+(s.transition==='cut'?'즉시 전환':'페이드')+'</span>';t2=s.file||'(파일 없음)';if(!s.file)mute=' mute';}
+    else{t1='<span>BGM</span><span class="cm">'+(s.action==='stop'?'정지':'재생')+'</span>';t2=s.action==='stop'?'(음악 끄기)':(s.file||'(파일 없음)');if(s.action==='stop'||!s.file)mute=' mute';}
+    const is=iss[i]||[],bad=is.some(x=>x.lvl==='err');
+    return '<div class="step '+s.type+(i===S.step?' on':'')+'" draggable="true" data-i="'+i+'"><div class="no">'+(i+1)+'</div><div><div class="t1">'+t1+(is.length?'<span class="ib '+(bad?'err':'warn')+'" title="'+esc(is.map(x=>x.msg).join('\n'))+'">'+(bad?'⚠':'!')+is.length+'</span>':'')+'</div><div class="t2'+mute+'">'+esc(t2)+'</div></div>'+
+      '<div class="acts" style="flex-direction:column;gap:2px"><button class="sm" data-act="dup" title="복제">⧉</button><button class="sm" data-act="up" title="위로">↑</button><button class="sm" data-act="down" title="아래로">↓</button><button class="sm danger" data-act="del" title="삭제">✕</button></div></div>';
+  }).join(''):'<div class="empty">단계가 없습니다.<br>위의 "+ 대사"로 추가하세요.</div>';
+  el.scrollTop=top;
+}
+function fillSel(sel,opts,val){sel.innerHTML=opts.map(o=>'<option value="'+esc(o[0])+'">'+esc(o[1])+'</option>').join('');sel.value=val;}
+function renderProps(){
+  const box=$('#props'),sc=cur(),s=sc&&S.step!=null?sc.steps[S.step]:null;
+  if(!s){box.innerHTML='<div class="empty">로그에서 단계를 고르면 여기서 고칠 수 있습니다.</div>';return;}
+  const note='<label class="f">메모 (게임에는 쓰이지 않음)<input data-k="note" value="'+esc(s.note||'')+'"></label>';
+  if(s.type==='say'){
+    const c=S.chars[s.speaker],exs=c?c.expressions.slice():[];if(!exs.includes(s.expr))exs.push(s.expr);
+    const keys=Object.keys(S.chars);
+    const spChips=keys.slice(0,9).map((k,n)=>'<button class="cb'+(k===s.speaker?' on':'')+'" data-sp="'+esc(k)+'"><kbd>'+(n+1)+'</kbd>'+esc(S.chars[k].name)+'</button>').join('');
+    const exChips=exs.map((e,n)=>'<button class="cb'+(e===s.expr?' on':'')+((c&&c.expressions.includes(e))?'':' bad')+'" data-ex="'+esc(e)+'">'+(n<9?'<kbd>⇧'+(n+1)+'</kbd>':'')+esc(EXPR_KO[e]?EXPR_KO[e]+' · '+e:e)+'</button>').join('');
+    box.innerHTML='<div><h3>화자 <span style="font-weight:400">(Alt+숫자)</span></h3><div class="chips">'+spChips+'</div></div>'+
+      '<label class="f">그 밖의 화자<select data-k="speaker"></select></label>'+
+      '<div><h3>표정 <span style="font-weight:400">(Alt+Shift+숫자)</span></h3><div class="chips">'+exChips+'</div></div>'+
+      '<label class="f">대사 (Enter: 다음 대사 추가 · Shift+Enter: 줄바꿈 · 빈 칸에서 Backspace: 이 단계 삭제)<textarea data-k="text" rows="4"></textarea></label><div class="cnt" id="cnt"></div>'+
+      '<div><h3>박스 효과</h3><div class="fxs">'+Object.keys(EFFECTS).map(k=>'<label><input type="checkbox" data-fx="'+k+'"'+((s.effect||[]).includes(k)?' checked':'')+'>'+EFFECTS[k]+'</label>').join('')+'</div></div>'+
+      ((s.effect||[]).includes('se')?'<label class="f">효과음 파일 (prototype/assets 기준 경로)<div class="frow"><input data-k="se" list="dlSe" placeholder="예: sfx/door.ogg"><button class="sm" data-pick="audio" data-field="se">찾아보기</button></div></label>':'')+note;
+    const spOpts=keys.map(k=>[k,S.chars[k].name+' ('+k+')']);if(!S.chars[s.speaker])spOpts.unshift([s.speaker||'',(s.speaker||'(비어 있음)')+' — 없는 화자']);
+    fillSel(box.querySelector('[data-k=speaker]'),spOpts,s.speaker||'');
+    box.querySelector('[data-k=text]').value=s.text||'';
+    const se=box.querySelector('[data-k=se]');if(se)se.value=s.se||'';
+    cntUpdate(s.text||'');
+  }else if(s.type==='background'){
+    box.innerHTML='<label class="f">배경 파일 (prototype/assets 기준 경로)<div class="frow"><input data-k="file" list="dlBg" placeholder="예: lobby/lobby_wall.png"><button class="sm" data-pick="image" data-field="file">찾아보기</button></div></label>'+
+      '<label class="f">전환<select data-k="transition"></select></label><img class="thumb" id="thumb" alt="">'+note;
+    box.querySelector('[data-k=file]').value=s.file||'';
+    fillSel(box.querySelector('[data-k=transition]'),[['fade','페이드'],['cut','즉시 전환']],s.transition||'fade');
+    thumb(s.file);
+  }else{
+    box.innerHTML='<label class="f">동작<select data-k="action"></select></label>'+(s.action==='stop'?'':'<label class="f">BGM 파일 (prototype/assets 기준 경로)<div class="frow"><input data-k="file" list="dlSe" placeholder="예: bgm/lobby.ogg"><button class="sm" data-pick="audio" data-field="file">찾아보기</button></div></label>')+note;
+    fillSel(box.querySelector('[data-k=action]'),[['play','재생'],['stop','정지']],s.action||'play');
+    const f=box.querySelector('[data-k=file]');if(f)f.value=s.file||'';
+  }
+}
+function thumb(f){const t=$('#thumb');if(!t)return;if(f){t.src=assetUrl(f);t.style.display='';t.onerror=()=>{t.style.display='none';};}else t.style.display='none';}
+function cntUpdate(t){const el=$('#cnt');if(!el)return;const l=t.split('\n').length,over=t.length>MAX_CHARS||l>MAX_LINES;el.textContent=t.length+'자 · '+l+'줄 (권장 '+MAX_CHARS+'자·'+MAX_LINES+'줄 이내)';el.classList.toggle('over',over);}
+function renderIssues(){
+  const el=$('#issues');if(!S.sel){el.innerHTML='<div class="empty">씬을 고르세요.</div>';return;}
+  const v=validateScene(S.sel);
+  el.innerHTML=v.length?v.map(x=>'<div class="iss '+x.lvl+'" data-i="'+x.i+'"><b>'+(x.lvl==='err'?'오류':'경고')+'</b><span>'+(x.i>=0?(x.i+1)+'번 · ':'씬 · ')+esc(x.msg)+'</span></div>').join(''):'<div class="empty">이 씬에는 문제가 없습니다.</div>';
+}
+function renderBadge(){
+  const v=validateAll(),b=$('#badge');
+  let warnTotal=v.warn,n=Object.keys(S.scenes).length;
+  b.className='';b.id='badge';
+  if(v.err){b.classList.add('err');b.textContent='오류 '+v.err+' · 경고 '+v.warn;}
+  else if(warnTotal){b.classList.add('warn');b.textContent='경고 '+warnTotal;}
+  else b.textContent=n?'점검 이상 없음':'씬 없음';
+  b.title='전체 '+n+'개 씬 기준';
+}
+function renderStatus(){
+  const el=$('#status');
+  el.className=S.dirty?'dirty':'';
+  el.textContent=(S.dirty?'● 저장 안 됨':'저장됨'+(S.lastSave?' '+S.lastSave.replace(' 저장',''):''))+(S.folder?' · 폴더 연결':' · 폴더 미연결');
+  el.title=S.dirty?'작업 내용은 이 브라우저에 자동 보관되고 있습니다. 저장(Ctrl+S)하면 파일로 기록됩니다.':'';
+}
+function renderDatalists(){
+  const set=new Set(['lobby/lobby_wall.png','lobby/lobby_counter.png']);
+  for(const id in S.scenes)S.scenes[id].steps.forEach(s=>{if(s.type==='background'&&s.file)set.add(s.file);});
+  FILES.list.filter(f=>/\.(png|jpe?g|webp|gif)$/i.test(f)).forEach(f=>set.add(f));
+  $('#dlBg').innerHTML=[...set].sort().map(f=>'<option value="'+esc(f)+'">').join('');
+  let sl=$('#dlSe');if(!sl){sl=document.createElement('datalist');sl.id='dlSe';document.body.appendChild(sl);}
+  sl.innerHTML=FILES.list.filter(f=>/\.(ogg|mp3|wav|m4a)$/i.test(f)).map(f=>'<option value="'+esc(f)+'">').join('');
+}
+
+/* ===== 8. 미리보기 무대 ===== */
+function fitStage(){const w=$('#stageWrap').clientWidth;$('#stage').style.transform='scale('+(w/1920)+')';}
+new ResizeObserver(fitStage).observe($('#stageWrap'));
+function setBgNow(file){
+  const img=$('#bgImg'),miss=$('#bgMiss');
+  if(setBgNow.last===file&&setBgNow.on)return;setBgNow.last=file;setBgNow.on=true;
+  if(!file){img.removeAttribute('src');img.style.visibility='hidden';miss.style.display='none';return;}
+  img.style.visibility='visible';img.src=assetUrl(file);
+  img.onerror=()=>{img.style.visibility='hidden';miss.style.display='flex';miss.textContent='배경 파일 없음: '+file;};
+  img.onload=()=>{miss.style.display='none';};
+  miss.style.display='none';
+}
+function setBgFade(file,mode){
+  const img=$('#bgImg'),pv=$('#bgPrev');
+  if(mode==='cut'||!img.getAttribute('src')){setBgNow(file);pv.style.opacity=0;return;}
+  pv.style.transition='none';pv.src=img.src;pv.style.opacity=1;
+  setBgNow(file);void pv.offsetWidth;pv.style.transition='opacity .6s';pv.style.opacity=0;
+}
+function setPortrait(sp,expr){
+  const im=$('#portrait'),pm=$('#portMiss'),f=sp?portraitFile(sp,expr):null;
+  if(setPortrait.on&&setPortrait.last===f)return;setPortrait.on=true;setPortrait.last=f;
+  im.style.display='none';pm.style.display='none';
+  if(!f)return;
+  im.onload=()=>{im.style.display='';pm.style.display='none';};
+  im.onerror=()=>{im.style.display='none';pm.style.display='flex';pm.textContent='초상화 없음\n'+f;pm.style.whiteSpace='pre-wrap';};
+  im.src=assetUrl(f);
+}
+function setDlg(s,showText){
+  const dlg=$('#dlg');
+  if(!s){dlg.style.display='none';return;}
+  dlg.style.display='';
+  const c=S.chars[s.speaker],nm=$('#dlgName');
+  nm.style.display=(c&&c.type==='narration')?'none':'flex';nm.textContent=spName(s.speaker);
+  if(showText){if(document.activeElement!==$('#dlgText'))$('#dlgText').textContent=s.text||'';$('#dlgNext').style.visibility='visible';}
+}
+function stateAt(sc,idx){
+  let bg=null,bgm=null;
+  for(let i=0;i<=idx&&i<sc.steps.length;i++){const s=sc.steps[i];
+    if(s.type==='background')bg=s.file||null;
+    if(s.type==='bgm')bgm=s.action==='play'?(s.file||null):null;}
+  return {bg,bgm};
+}
+function setEditable(on){
+  const t=$('#dlgText');t.contentEditable=on?'plaintext-only':'false';
+  if(on&&t.contentEditable!=='plaintext-only')t.contentEditable='true';
+  $('#stage').classList.toggle('editable',!!on);
+}
+function showStatic(){
+  if(PL.on){setEditable(false);return;}
+  { const sc0=cur(),st0=sc0&&S.step!=null?sc0.steps[S.step]:null;setEditable(!!st0&&st0.type==='say'); }
+  clearTimeout(PL.timer);clearInterval(PL.timer);
+  const sc=cur(),st=sc&&S.step!=null?sc.steps[S.step]:null;
+  $('#flash').classList.remove('on');$('#seTag').style.display='none';
+  if(!sc||!st){setBgNow(null);setPortrait(null);setDlg(null);$('#bgmTag').style.display='none';return;}
+  const state=stateAt(sc,S.step);
+  setBgNow(state.bg);$('#bgPrev').style.opacity=0;
+  const t=$('#bgmTag');t.style.display=state.bgm?'block':'none';t.textContent='♪ '+(state.bgm||'');
+  if(st.type==='say'){setPortrait(st.speaker,st.expr);setDlg(st,true);}else{setPortrait(null);setDlg(null);}
+}
+
+/* ===== 9. 재생 엔진 ===== */
+const PL={on:false,i:0,typing:false,timer:null,full:'',audio:null};
+function playSe(file){
+  const tag=$('#seTag');tag.textContent='♪ 효과음 '+(file||'');tag.style.display='block';
+  clearTimeout(playSe.t);playSe.t=setTimeout(()=>{tag.style.display='none';},1300);
+  if(file){try{const a=new Audio(assetUrl(file));const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}}
+}
+function typeText(s,done){
+  const box=$('#dlgBox'),flash=$('#flash'),fx=s.effect||[];
+  clearInterval(PL.timer);
+  if(fx.includes('shake')){box.classList.remove('shk');void box.offsetWidth;box.classList.add('shk');}
+  if(fx.includes('flash')){flash.classList.remove('on');void flash.offsetWidth;flash.classList.add('on');}
+  if(fx.includes('se'))playSe(s.se);
+  const el=$('#dlgText');el.textContent='';
+  const chars=[...(s.text||'')];
+  const spans=chars.map(ch=>{const sp=document.createElement('span');sp.className='h'+(fx.includes('tremble')&&ch.trim()?' tr':'');
+    if(fx.includes('tremble'))sp.style.animationDelay=(-Math.random()*0.12)+'s';sp.textContent=ch;el.appendChild(sp);return sp;});
+  $('#dlgNext').style.visibility='hidden';
+  let n=0;PL.typing=true;PL.full=()=>{spans.forEach(x=>x.classList.remove('h'));};
+  const iv=fx.includes('slow_type')?95:34;
+  PL.timer=setInterval(()=>{
+    if(n<spans.length){spans[n++].classList.remove('h');}
+    if(n>=spans.length){clearInterval(PL.timer);PL.typing=false;$('#dlgNext').style.visibility='visible';if(done)done();}
+  },iv);
+  if(!spans.length){clearInterval(PL.timer);PL.typing=false;$('#dlgNext').style.visibility='visible';}
+}
+function setSelSilently(i){S.step=i;renderLog();renderProps();const el=$('#log .step.on');if(el)el.scrollIntoView({block:'nearest'});}
+function play(from){
+  const sc=cur();if(!sc||!sc.steps.length){toast('재생할 단계가 없습니다.');return;}
+  stopPlay(true);
+  PL.on=true;setEditable(false);PL.i=from||0;
+  const st=stateAt(sc,PL.i-1);
+  setBgNow(st.bg);$('#bgPrev').style.opacity=0;
+  startBgm(st.bgm);
+  $('#bPlay').disabled=true;
+  runFrom();
+}
+function startBgm(f){
+  try{if(PL.audio){PL.audio.pause();PL.audio=null;}}catch(e){}
+  const t=$('#bgmTag');t.style.display=f?'block':'none';t.textContent='♪ '+(f||'');
+  if(f){try{PL.audio=new Audio(assetUrl(f));PL.audio.loop=true;PL.audio.volume=.5;const p=PL.audio.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}}
+}
+function runFrom(){
+  const sc=cur();
+  while(PL.i<sc.steps.length){
+    const s=sc.steps[PL.i];
+    if(s.type==='background'){setBgFade(s.file,s.transition);PL.i++;continue;}
+    if(s.type==='bgm'){startBgm(s.action==='play'?s.file:null);PL.i++;continue;}
+    if(s.type==='say'){
+      setSelSilently(PL.i);setPortrait(s.speaker,s.expr);setDlg(s,false);typeText(s);return;
+    }
+    PL.i++;
+  }
+  stopPlay(false);toast('마지막 단계입니다. 재생을 마쳤습니다.');
+}
+function advance(){
+  if(!PL.on)return;
+  if(PL.typing){clearInterval(PL.timer);PL.typing=false;if(PL.full)PL.full();$('#dlgNext').style.visibility='visible';return;}
+  PL.i++;runFrom();
+}
+function stopPlay(quiet){
+  clearInterval(PL.timer);PL.typing=false;PL.on=false;
+  try{if(PL.audio){PL.audio.pause();PL.audio=null;}}catch(e){}
+  $('#bPlay').disabled=false;
+  if(!quiet)showStatic();else setEditable(false);
+}
+function previewFx(){
+  const sc=cur(),s=sc&&S.step!=null?sc.steps[S.step]:null;
+  if(!s||s.type!=='say'){toast('대사 단계를 먼저 고르세요.');return;}
+  showStatic();setDlg(s,false);typeText(s);
+}
+
+/* ===== 10. 단계 편집 (추가·복제·이동·삭제·드래그) ===== */
+function addStep(type){
+  const sc=cur();if(!sc){toast('먼저 씬을 만드세요.');return;}
+  commit(()=>{
+    const at=S.step==null?sc.steps.length:S.step+1,st=newStep(sc,type,at);
+    sc.steps.splice(at,0,st);S.step=at;
+  });
+  const el=$('#log .step.on');if(el)el.scrollIntoView({block:'nearest'});
+  const t=$('#props textarea,#props input');if(t&&!t.disabled)t.focus();
+}
+function stepAct(i,act){
+  const sc=cur();if(!sc)return;
+  if(act==='dup')commit(()=>{const c=JSON.parse(J(sc.steps[i]));c.id=nextStepId(sc);sc.steps.splice(i+1,0,c);S.step=i+1;});
+  else if(act==='del')commit(()=>{sc.steps.splice(i,1);S.step=sc.steps.length?Math.min(i,sc.steps.length-1):null;});
+  else if(act==='up'&&i>0)commit(()=>{const t=sc.steps[i];sc.steps[i]=sc.steps[i-1];sc.steps[i-1]=t;S.step=i-1;});
+  else if(act==='down'&&i<sc.steps.length-1)commit(()=>{const t=sc.steps[i];sc.steps[i]=sc.steps[i+1];sc.steps[i+1]=t;S.step=i+1;});
+}
+function moveStep(from,to){
+  const sc=cur();if(!sc||from===to||from+1===to)return;
+  commit(()=>{const [s]=sc.steps.splice(from,1);const at=to>from?to-1:to;sc.steps.splice(at,0,s);S.step=at;});
+}
+function selectStep(i){S.step=i;renderLog();renderProps();showStatic();}
+function editStep(fn,key,keepProps){
+  const sc=cur();if(!sc||S.step==null)return;const st=sc.steps[S.step];
+  commit(()=>fn(st),key+':'+st.id,keepProps);
+}
+</script>
+<script>
+/* ===== 11. 모달 ===== */
+function openModal(title,html,buttons){
+  $('#modal').innerHTML='<div class="mh">'+esc(title)+'<span style="flex:1"></span><button class="sm" data-m="x">닫기</button></div><div class="mb">'+html+'</div><div class="mf"></div>';
+  const mf=$('#modal .mf');
+  (buttons||[]).forEach(b=>{const el=document.createElement('button');el.textContent=b.label;if(b.pri)el.className='pri';el.onclick=()=>{if(b.fn()!==false)closeModal();};mf.appendChild(el);});
+  $('#modal [data-m=x]').onclick=closeModal;
+  $('#modalBg').classList.add('open');
+}
+function closeModal(){$('#modalBg').classList.remove('open');$('#modal').innerHTML='';}
+$('#modalBg').addEventListener('mousedown',e=>{if(e.target.id==='modalBg')closeModal();});
+const validId=id=>/^[A-Za-z0-9_]+$/.test(id);
+
+/* ===== 12. 씬 만들기·복제·삭제·이름 바꾸기 ===== */
+function selectScene(id){stopPlay(true);S.sel=id;const sc=cur();S.step=sc&&sc.steps.length?0:null;renderAll(true);}
+function newScene(){
+  openModal('새 씬','<div class="row2"><label class="f">씬 ID (영문·숫자·밑줄)<input id="nsId" placeholder="예: prologue_01" spellcheck="false"></label><label class="f">종류<select id="nsKind">'+Object.keys(KINDS).map(k=>'<option value="'+k+'">'+KINDS[k]+'</option>').join('')+'</select></label></div>',
+    [{label:'만들기',pri:true,fn:()=>{
+      const id=$('#nsId').value.trim(),kind=$('#nsKind').value;
+      if(!validId(id)){toast('씬 ID는 영문·숫자·밑줄만 쓸 수 있습니다.');return false;}
+      if(S.scenes[id]){toast('이미 있는 씬 ID입니다.');return false;}
+      stopPlay(true);
+      commit(()=>{S.scenes[id]={id,kind,title:'',steps:[]};S.sel=id;S.step=null;S.deleted=S.deleted.filter(x=>x!==id);});
+      setTimeout(()=>addStep('say'),0);
+    }}]);
+  setTimeout(()=>$('#nsId').focus(),30);
+}
+function dupScene(){
+  const sc=cur();if(!sc)return;let id=sc.id+'_copy',n=2;while(S.scenes[id])id=sc.id+'_copy'+(n++);
+  commit(()=>{const c=JSON.parse(J(sc));c.id=id;S.scenes[id]=c;S.sel=id;S.step=null;S.deleted=S.deleted.filter(x=>x!==id);});
+}
+function delScene(){
+  const sc=cur();if(!sc)return;
+  if(!confirm('씬 "'+sc.id+'" 을(를) 삭제할까요?\n(저장하면 폴더의 파일도 지워집니다. 저장 전에는 실행 취소로 되돌릴 수 있습니다.)'))return;
+  stopPlay(true);
+  commit(()=>{delete S.scenes[sc.id];S.deleted.push(sc.id);const ids=Object.keys(S.scenes).sort();S.sel=ids[0]||null;S.step=null;});
+}
+function renameScene(nid){
+  const sc=cur();if(!sc)return;nid=nid.trim();if(nid===sc.id)return;
+  if(!validId(nid)){toast('씬 ID는 영문·숫자·밑줄만 쓸 수 있습니다.');$('#mId').value=sc.id;return;}
+  if(S.scenes[nid]){toast('이미 있는 씬 ID입니다.');$('#mId').value=sc.id;return;}
+  const old=sc.id;
+  commit(()=>{delete S.scenes[old];sc.id=nid;S.scenes[nid]=sc;S.sel=nid;S.deleted.push(old);S.deleted=S.deleted.filter(x=>x!==nid);
+    if(S.index[old]){S.index[nid]=S.index[old];delete S.index[old];}});
+}
+
+/* ===== 13. 화자 목록 ===== */
+function charsModal(){
+  const draw=()=>{
+    const rows=Object.keys(S.chars).map(k=>{const c=S.chars[k];
+      return '<tr data-k="'+esc(k)+'"><td>'+esc(k)+'</td><td><input data-f="name" value="'+esc(c.name)+'"></td><td><select data-f="type">'+['npc','adventurer','player','narration'].map(t=>'<option'+(c.type===t?' selected':'')+'>'+t+'</option>').join('')+'</select></td>'+
+        '<td><input data-f="portrait" value="'+esc(c.portrait||'')+'" placeholder="비우면 초상화 없음 · {expr} 사용 가능"></td><td><input data-f="expressions" value="'+esc((c.expressions||[]).join(', '))+'"></td><td><button class="sm danger" data-rm="1">삭제</button></td></tr>';}).join('');
+    $('#modal .mb').innerHTML='<p style="margin:0 0 8px;color:var(--muted);font-size:13px">초상화 경로는 prototype/assets 기준이며, <code>{expr}</code> 자리에 표정 이름이 들어갑니다. 없는 표정은 "default"(없으면 첫 표정)로 대체됩니다.</p>'+
+      '<table class="t"><thead><tr><th>ID</th><th>이름</th><th>종류</th><th>초상화 경로</th><th>표정 (쉼표로 구분)</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'+
+      '<div class="acts" style="margin-top:10px"><input id="ncId" placeholder="새 화자 ID (예: adv_knight_m)" spellcheck="false" style="width:240px"><button id="ncAdd">+ 화자 추가</button></div>';
+  };
+  openModal('화자 목록',' ',[{label:'닫기',fn:()=>true}]);draw();
+  const mb=$('#modal .mb');
+  mb.addEventListener('change',e=>{
+    const tr=e.target.closest('tr[data-k]');if(!tr||!e.target.dataset.f)return;const k=tr.dataset.k,f=e.target.dataset.f;
+    commit(()=>{const c=S.chars[k];if(f==='expressions'){const a=e.target.value.split(',').map(x=>x.trim()).filter(Boolean);c.expressions=a.length?a:['default'];}else c[f]=e.target.value;},'ch:'+k+f,true);
+    draw();
+  });
+  mb.addEventListener('click',e=>{
+    if(e.target.dataset.rm){const k=e.target.closest('tr').dataset.k;
+      const used=Object.values(S.scenes).some(sc=>sc.steps.some(s=>s.speaker===k));
+      if(used&&!confirm('"'+k+'" 은(는) 씬에서 쓰이고 있습니다. 그래도 삭제할까요?'))return;
+      commit(()=>{delete S.chars[k];},null,true);draw();}
+    if(e.target.id==='ncAdd'){const id=$('#ncId').value.trim();
+      if(!validId(id)||S.chars[id]){toast('ID가 올바르지 않거나 이미 있습니다.');return;}
+      commit(()=>{S.chars[id]={type:'npc',name:id,portrait:'',expressions:['default']};},null,true);draw();}
+  });
+}
+
+/* ===== 14. 씬 호출 조건표 ===== */
+function indexModal(){
+  const draw=()=>{
+    const sceneIds=Object.keys(S.scenes).sort();
+    const rows=Object.keys(S.index).sort().map(k=>{const r=S.index[k];
+      return '<tr data-k="'+esc(k)+'"><td><select data-f="_id">'+(sceneIds.includes(k)?'':'<option selected value="'+esc(k)+'">'+esc(k)+' (없는 씬)</option>')+sceneIds.map(i=>'<option value="'+esc(i)+'"'+(i===k?' selected':'')+'>'+esc(i)+'</option>').join('')+'</select></td>'+
+        '<td><select data-f="when">'+Object.keys(WHENS).map(w=>'<option value="'+w+'"'+(r.when===w?' selected':'')+'>'+WHENS[w]+'</option>').join('')+'</select></td>'+
+        '<td><input data-f="npc" value="'+esc(r.npc||'')+'" placeholder="예: lina"></td><td><input data-f="count" type="number" min="1" value="'+esc(r.count==null?'':r.count)+'" placeholder="몇 번째"></td>'+
+        '<td><input data-f="quest" value="'+esc(r.quest||'')+'" placeholder="퀘스트 ID"></td><td><button class="sm danger" data-rm="1">삭제</button></td></tr>';}).join('');
+    $('#modal .mb').innerHTML='<p style="margin:0 0 8px;color:var(--muted);font-size:13px">어떤 상황에서 어떤 씬을 부를지 정하는 표입니다 (<code>scene_index.json</code>). 게임 쪽 연결은 이 표를 읽어 씬 ID를 찾는 방식으로 붙입니다.</p>'+
+      '<table class="t"><thead><tr><th>씬</th><th>호출 시점</th><th>NPC</th><th>횟수</th><th>퀘스트</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'+
+      '<div class="acts" style="margin-top:10px"><button id="niAdd">+ 행 추가</button></div>';
+  };
+  openModal('씬 호출 조건표',' ',[{label:'닫기',fn:()=>true}]);draw();
+  const mb=$('#modal .mb');
+  mb.addEventListener('change',e=>{
+    const tr=e.target.closest('tr[data-k]');if(!tr||!e.target.dataset.f)return;const k=tr.dataset.k,f=e.target.dataset.f,v=e.target.value;
+    commit(()=>{
+      if(f==='_id'){if(v!==k&&!S.index[v]){S.index[v]=S.index[k];delete S.index[k];}}
+      else if(f==='count'){const n=parseInt(v,10);if(n>0)S.index[k].count=n;else delete S.index[k].count;}
+      else if(v==='')delete S.index[k][f];else S.index[k][f]=v;
+    },null,true);draw();
+  });
+  mb.addEventListener('click',e=>{
+    if(e.target.dataset.rm){const k=e.target.closest('tr').dataset.k;commit(()=>{delete S.index[k];},null,true);draw();}
+    if(e.target.id==='niAdd'){const free=Object.keys(S.scenes).sort().find(i=>!S.index[i]);
+      if(!free){toast('추가할 수 있는 씬이 없습니다 (모든 씬이 이미 표에 있습니다).');return;}
+      commit(()=>{S.index[free]={when:'manual'};},null,true);draw();}
+  });
+}
+
+/* ===== 15. 파일 입출력 ===== */
+const hasFS=typeof window.showDirectoryPicker==='function';
+async function readJsonIn(dir,name){try{const fh=await dir.getFileHandle(name);return JSON.parse(await (await fh.getFile()).text());}catch(e){if(e.name==='NotFoundError')return null;throw e;}}
+async function writeIn(dir,name,text){const fh=await dir.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(text);await w.close();}
+async function openFolder(){
+  if(!hasFS){toast('이 브라우저는 폴더 열기를 지원하지 않습니다. Chrome/Edge에서 열거나 가져오기·내보내기를 쓰세요.',4000);return;}
+  if(S.dirty&&!confirm('저장하지 않은 변경이 있습니다. 폴더 내용으로 바꿀까요?'))return;
+  let root;try{root=await window.showDirectoryPicker({mode:'readwrite'});}catch(e){return;}
+  try{
+    let dd=null;
+    try{dd=await (await root.getDirectoryHandle('data')).getDirectoryHandle('dialogue');}catch(e){}
+    stopPlay(true);
+    if(!dd){S.folder=root;S.lastSave=null;renderStatus();scanAssets(root);toast('data/dialogue 폴더가 아직 없습니다. 저장하면 새로 만들어집니다 (현재 화면의 내용 유지).',4500);return;}
+    const chars=await readJsonIn(dd,'characters.json'),idx=await readJsonIn(dd,'scene_index.json'),scenes={};
+    let sd=null;try{sd=await dd.getDirectoryHandle('scenes');}catch(e){}
+    const bad=[];
+    if(sd)for await(const [name,h] of sd.entries()){
+      if(h.kind!=='file'||!name.endsWith('.json'))continue;
+      try{const o=JSON.parse(await (await h.getFile()).text());const sc=normScene(o,name.replace(/\.json$/,''));scenes[sc.id]=sc;}catch(e){bad.push(name+': '+e.message);}
+    }
+    S.chars=chars&&Object.keys(chars).length?chars:defaultChars();S.index=idx||{};S.scenes=scenes;S.deleted=[];
+    S.folder=root;H.undo=[];H.redo=[];S.dirty=false;S.lastSave=null;
+    const ids=Object.keys(scenes).sort();S.sel=ids[0]||null;S.step=ids.length&&scenes[ids[0]].steps.length?0:null;
+    renderDatalists();renderAll(true);autosave();scanAssets(root);
+    toast('씬 '+ids.length+'개를 읽었습니다.'+(bad.length?' 읽지 못한 파일 '+bad.length+'개: '+bad[0]:''),bad.length?6000:2600);
+  }catch(e){toast('폴더를 읽지 못했습니다: '+e.message,5000);}
+}
+async function saveAll(){
+  const v=validateAll();
+  if(v.err&&!confirm('오류 '+v.err+'건이 있습니다. 그래도 저장할까요?'))return;
+  if(!S.folder){
+    if(hasFS){
+      try{S.folder=await window.showDirectoryPicker({mode:'readwrite'});scanAssets(S.folder);}catch(e){return;}
+    }else{exportBundle();return;}
+  }
+  try{
+    const data=await S.folder.getDirectoryHandle('data',{create:true});
+    const dd=await data.getDirectoryHandle('dialogue',{create:true});
+    const sd=await dd.getDirectoryHandle('scenes',{create:true});
+    await writeIn(dd,'characters.json',serChars());
+    await writeIn(dd,'scene_index.json',serIndex());
+    for(const id in S.scenes)await writeIn(sd,id+'.json',serScene(S.scenes[id]));
+    for(const id of S.deleted){if(S.scenes[id])continue;try{await sd.removeEntry(id+'.json');}catch(e){}}
+    S.deleted=[];S.dirty=false;
+    const d=new Date();S.lastSave=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+' 저장';
+    autosave();renderStatus();toast('data/dialogue 에 저장했습니다 (씬 '+Object.keys(S.scenes).length+'개).');
+  }catch(e){toast('저장하지 못했습니다: '+e.message,5000);}
+}
+function download(name,text){
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+function exportBundle(){
+  const sc={};Object.keys(S.scenes).sort().forEach(k=>{sc[k]=JSON.parse(serScene(S.scenes[k]));});
+  download('dialogue_bundle.json',J({format:'dialogue-bundle',version:1,characters:S.chars,scene_index:S.index,scenes:sc},null,2)+'\n');
+  toast('dialogue_bundle.json 을 내려받았습니다.');
+}
+function importBundleText(text){
+  let o;try{o=JSON.parse(text);}catch(e){toast('JSON을 읽지 못했습니다.');return;}
+  let scenes=[];
+  if(o&&o.format==='dialogue-bundle')scenes=Object.keys(o.scenes||{}).map(k=>normScene(o.scenes[k],k));
+  else if(o&&Array.isArray(o.steps))scenes=[normScene(o)];
+  else{toast('편집기가 아는 형식이 아닙니다.');return;}
+  const dupe=scenes.filter(s=>S.scenes[s.id]).length;
+  if(dupe&&!confirm('같은 ID의 씬 '+dupe+'개를 덮어씁니다. 계속할까요?'))return;
+  stopPlay(true);
+  commit(()=>{
+    scenes.forEach(s=>{S.scenes[s.id]=s;S.deleted=S.deleted.filter(x=>x!==s.id);});
+    if(o.format==='dialogue-bundle'){if(o.characters)Object.assign(S.chars,o.characters);if(o.scene_index)Object.assign(S.index,o.scene_index);}
+    S.sel=scenes[0].id;S.step=null;
+  });
+  renderDatalists();toast('씬 '+scenes.length+'개를 가져왔습니다.');
+}
+function importCsvText(text){
+  let list;try{list=csvToScenes(text);}catch(e){toast('CSV를 읽지 못했습니다: '+e.message,4000);return;}
+  const fresh=list.filter(s=>!S.scenes[s.id]),skip=list.length-fresh.length;
+  if(!fresh.length){toast('새로 가져올 장면이 없습니다 (이미 모두 있음).');return;}
+  stopPlay(true);
+  commit(()=>{fresh.forEach(s=>{S.scenes[s.id]=s;S.deleted=S.deleted.filter(x=>x!==s.id);});S.sel=fresh[0].id;S.step=0;});
+  toast('장면 '+fresh.length+'개를 가져왔습니다.'+(skip?' (이미 있는 '+skip+'개는 건너뜀)':''),3500);
+}
+function readFileInput(inp,fn){inp.onchange=()=>{const f=inp.files[0];inp.value='';if(!f)return;const r=new FileReader();r.onload=()=>fn(String(r.result));r.readAsText(f,'utf-8');};}
+readFileInput($('#fCsv'),importCsvText);readFileInput($('#fJson'),importBundleText);
+
+/* ===== 16. 이벤트 연결 ===== */
+$('#bOpen').onclick=openFolder;$('#bSave').onclick=saveAll;
+$('#bUndo').onclick=()=>{stopPlay(true);undo();};$('#bRedo').onclick=()=>{stopPlay(true);redo();};
+$('#bCsv').onclick=()=>$('#fCsv').click();$('#bChars').onclick=charsModal;$('#bIndex').onclick=indexModal;
+$('#bExport').onclick=exportBundle;$('#bImport').onclick=()=>$('#fJson').click();
+$('#bNew').onclick=newScene;$('#bDup').onclick=dupScene;$('#bDel').onclick=delScene;
+$('#scnList').addEventListener('click',e=>{const el=e.target.closest('.scn');if(el)selectScene(el.dataset.id);});
+$('#scnQ').addEventListener('input',renderScenes);$('#scnK').addEventListener('change',renderScenes);
+$('#mId').addEventListener('change',e=>renameScene(e.target.value));
+$('#mKind').addEventListener('change',e=>{const sc=cur();if(sc)commit(()=>{sc.kind=e.target.value;},null,true);});
+$('#mTitle').addEventListener('input',e=>{const sc=cur();if(sc)commit(()=>{sc.title=e.target.value;},'title:'+S.sel,true);});
+document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addStep(b.dataset.add));
+$('#bPlay').onclick=()=>play(S.step==null?0:S.step);$('#bStop').onclick=()=>stopPlay(false);$('#bFx').onclick=previewFx;
+$('#stageWrap').addEventListener('click',advance);
+$('#issues').addEventListener('click',e=>{const el=e.target.closest('.iss');if(!el)return;const i=+el.dataset.i;if(i>=0)selectStep(i);});
+
+const log=$('#log');let dragFrom=null;
+log.addEventListener('click',e=>{
+  const row=e.target.closest('.step');if(!row)return;const i=+row.dataset.i,b=e.target.closest('[data-act]');
+  if(b){stepAct(i,b.dataset.act);return;}
+  stopPlay(true);selectStep(i);
+});
+log.addEventListener('dragstart',e=>{const row=e.target.closest('.step');if(!row)return;dragFrom=+row.dataset.i;e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',String(dragFrom));}catch(x){}});
+log.addEventListener('dragover',e=>{if(dragFrom==null)return;e.preventDefault();const row=e.target.closest('.step');log.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));if(row)row.classList.add('over');});
+log.addEventListener('drop',e=>{
+  if(dragFrom==null)return;e.preventDefault();const row=e.target.closest('.step');log.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));
+  const to=row?+row.dataset.i:cur().steps.length;const f=dragFrom;dragFrom=null;moveStep(f,to);
+});
+log.addEventListener('dragend',()=>{dragFrom=null;log.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));});
+
+const props=$('#props');
+function onProp(e){
+  const t=e.target,k=t.dataset.k,fx=t.dataset.fx;
+  if(!k&&!fx)return;
+  const isInput=e.type==='input',fileLike=(k==='file'||k==='se');
+  if(fx){if(isInput)return;
+    editStep(st=>{const set=new Set(st.effect||[]);t.checked?set.add(fx):set.delete(fx);st.effect=Object.keys(EFFECTS).filter(x=>set.has(x));},'fx',false);return;}
+  if(t.tagName==='SELECT'&&isInput)return;
+  if(fileLike&&isInput)return;
+  if(!fileLike&&t.tagName!=='SELECT'&&!isInput)return;
+  const v=t.value;
+  if(k==='speaker')editStep(st=>{st.speaker=v;const c=S.chars[v];if(!c||!c.expressions.includes(st.expr))st.expr=defExpr(v);},'sp',false);
+  else if(k==='action')editStep(st=>{st.action=v;},'act',false);
+  else if(k==='text'){editStep(st=>{st.text=v;},'text',true);cntUpdate(v);}
+  else if(k==='file'){editStep(st=>{st.file=v.trim();},'file',true);thumb(v.trim());renderDatalists();}
+  else editStep(st=>{if(k==='note'&&v==='')delete st.note;else st[k]=v;},k,true);
+}
+props.addEventListener('input',onProp);props.addEventListener('change',onProp);
+
+document.addEventListener('keydown',e=>{
+  const inField=/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName);
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();saveAll();return;}
+  if((e.ctrlKey||e.metaKey)&&!inField&&e.key.toLowerCase()==='z'){e.preventDefault();stopPlay(true);e.shiftKey?redo():undo();return;}
+  if((e.ctrlKey||e.metaKey)&&!inField&&e.key.toLowerCase()==='y'){e.preventDefault();stopPlay(true);redo();return;}
+  if(e.key==='Escape'){if($('#modalBg').classList.contains('open'))closeModal();else if(PL.on)stopPlay(false);return;}
+  if(PL.on&&!inField&&(e.key===' '||e.key==='Enter')){e.preventDefault();advance();}
+});
+window.addEventListener('beforeunload',e=>{if(S.dirty&&!S.folder){e.preventDefault();e.returnValue='';}});
+
+</script>
+<script>
+/* ===== 18. 작은 메뉴 (무대에서 화자·표정 바꾸기) ===== */
+function closeMenu(){document.querySelectorAll('.menu').forEach(m=>m.remove());}
+function menu(x,y,items){
+  closeMenu();
+  const m=document.createElement('div');m.className='menu';
+  items.forEach(it=>{const b=document.createElement('button');b.textContent=it.label;if(it.on)b.className='on';b.onclick=e=>{e.stopPropagation();closeMenu();it.fn();};m.appendChild(b);});
+  document.body.appendChild(m);
+  const r=m.getBoundingClientRect();
+  m.style.left=Math.max(6,Math.min(x,innerWidth-r.width-6))+'px';m.style.top=Math.max(6,Math.min(y,innerHeight-r.height-6))+'px';
+}
+document.addEventListener('mousedown',e=>{if(!e.target.closest('.menu'))closeMenu();});
+window.addEventListener('blur',closeMenu);
+
+function curStep(){const sc=cur();return sc&&S.step!=null?sc.steps[S.step]:null;}
+function setSpeaker(k){
+  editStep(st=>{if(st.type!=='say')return;st.speaker=k;const c=S.chars[k];if(!c||!c.expressions.includes(st.expr))st.expr=defExpr(k);},'sp',false);
+}
+function setExpr(e){editStep(st=>{if(st.type==='say')st.expr=e;},'ex',false);}
+function focusText(end){
+  const t=$('#props [data-k=text]');if(!t)return;t.focus();
+  if(end!==false)t.setSelectionRange(t.value.length,t.value.length);
+}
+
+/* 무대 클릭: 이름 → 화자, 초상화 → 표정, 배경 단계에서 빈 곳 → 파일 고르기 */
+$('#stageWrap').addEventListener('click',e=>{
+  if(PL.on)return;
+  const st=curStep();if(!st)return;
+  if(st.type==='say'){
+    if(e.target.closest('#dlgName')){
+      menu(e.clientX,e.clientY,Object.keys(S.chars).map(k=>({label:S.chars[k].name,on:k===st.speaker,fn:()=>setSpeaker(k)})));
+    }else if(e.target.closest('#portrait,#portMiss')){
+      const c=S.chars[st.speaker];if(!c)return;
+      menu(e.clientX,e.clientY,c.expressions.map(x=>({label:EXPR_KO[x]?EXPR_KO[x]+' · '+x:x,on:x===st.expr,fn:()=>setExpr(x)})));
+    }
+  }else if(st.type==='background'&&!e.target.closest('#dlgText')){
+    pickFile('image',st.file,f=>editStep(s=>{s.file=f;},'pick',false));
+  }
+});
+$('#dlgText').addEventListener('focus',()=>{
+  if(PL.on||PL.typing){$('#dlgText').blur();return;}
+  const st=curStep();if(st&&st.type==='say')$('#dlgText').textContent=st.text||'';
+});
+$('#dlgText').addEventListener('input',()=>{
+  if(PL.on)return;
+  const v=$('#dlgText').innerText.replace(/​/g,'').replace(/\n$/,'');
+  editStep(st=>{st.text=v;},'text',true);
+  const ta=$('#props [data-k=text]');if(ta&&document.activeElement!==ta)ta.value=v;cntUpdate(v);
+});
+
+/* ===== 19. 키보드 입력 흐름 ===== */
+function newLineAfter(){
+  const sc=cur();if(!sc||S.step==null)return;
+  commit(()=>{const at=S.step+1,st=newStep(sc,'say',at);sc.steps.splice(at,0,st);S.step=at;});
+  focusText();
+}
+function backspaceDelete(){
+  const sc=cur();if(!sc||S.step==null)return;const i=S.step;
+  commit(()=>{sc.steps.splice(i,1);S.step=sc.steps.length?Math.max(0,i-1):null;});
+  focusText();
+}
+function onTextKey(e,val){
+  if(e.isComposing||e.keyCode===229)return;
+  if(e.key==='Enter'&&!e.shiftKey&&!e.ctrlKey&&!e.altKey&&!e.metaKey){
+    e.preventDefault();
+    if(!val.trim()){toast('빈 대사입니다. 내용을 입력한 뒤 Enter를 누르세요.');return;}
+    newLineAfter();
+  }else if(e.key==='Backspace'&&val===''&&!e.ctrlKey&&!e.altKey){
+    e.preventDefault();backspaceDelete();
+  }
+}
+$('#props').addEventListener('keydown',e=>{if(e.target.dataset&&e.target.dataset.k==='text')onTextKey(e,e.target.value);});
+$('#dlgText').addEventListener('keydown',e=>{
+  const v=$('#dlgText').innerText.replace(/​/g,'').replace(/\n$/,'');
+  if(e.key==='Enter'&&!e.shiftKey&&!e.ctrlKey&&!e.altKey&&!e.isComposing){e.preventDefault();if(!v.trim()){toast('빈 대사입니다.');return;}newLineAfter();return;}
+  if(e.key==='Backspace'&&v===''&&!e.isComposing){e.preventDefault();backspaceDelete();}
+});
+document.addEventListener('keydown',e=>{
+  if($('#modalBg').classList.contains('open'))return;
+  const ctrl=e.ctrlKey||e.metaKey;
+  if(ctrl&&e.key==='Enter'){e.preventDefault();play(S.step==null?0:S.step);return;}
+  const sc=cur();if(!sc)return;
+  if(ctrl&&!e.altKey&&(e.key==='ArrowUp'||e.key==='ArrowDown')){
+    e.preventDefault();stopPlay(true);
+    const n=S.step==null?0:S.step+(e.key==='ArrowUp'?-1:1);
+    if(n>=0&&n<sc.steps.length){selectStep(n);if(sc.steps[n].type==='say')focusText();}return;
+  }
+  if(e.altKey&&!ctrl&&!e.shiftKey&&(e.key==='ArrowUp'||e.key==='ArrowDown')&&S.step!=null){
+    e.preventDefault();stepAct(S.step,e.key==='ArrowUp'?'up':'down');focusText();return;
+  }
+  const m=/^Digit([1-9])$/.exec(e.code||'');
+  if(e.altKey&&!ctrl&&m){
+    const st=curStep();if(!st||st.type!=='say')return;
+    e.preventDefault();const n=+m[1]-1;
+    if(e.shiftKey){const c=S.chars[st.speaker];if(c&&c.expressions[n]){setExpr(c.expressions[n]);focusText();}}
+    else{const k=Object.keys(S.chars)[n];if(k){setSpeaker(k);focusText();}}
+  }
+});
+
+/* ===== 20. 파일 고르기 (폴더 연결 시 prototype/assets 목록) ===== */
+const IMG_RE=/\.(png|jpe?g|webp|gif)$/i,AUD_RE=/\.(ogg|mp3|wav|m4a)$/i;
+async function scanAssets(root){
+  FILES.list=[];FILES.ok=false;
+  try{
+    const a=await (await root.getDirectoryHandle('prototype')).getDirectoryHandle('assets');
+    const walk=async(dir,pre,d)=>{
+      for await(const [name,h] of dir.entries()){
+        if(name[0]==='.')continue;
+        if(h.kind==='directory'){if(d<6)await walk(h,pre+name+'/',d+1);}
+        else if((IMG_RE.test(name)||AUD_RE.test(name))&&FILES.list.length<8000)FILES.list.push(pre+name);
+      }
+    };
+    await walk(a,'',0);FILES.list.sort();FILES.ok=true;
+  }catch(e){}
+  renderDatalists();
+}
+function pickFile(kind,current,onPick){
+  if(!FILES.ok){toast(S.folder?'prototype/assets 폴더를 찾지 못했습니다. Project_F 루트를 연결했는지 확인하세요.':'상단 "폴더 열기"로 Project_F 를 연결하면 파일 목록에서 고를 수 있습니다.',4200);return;}
+  const re=kind==='image'?IMG_RE:AUD_RE;let audio=null;
+  openModal(kind==='image'?'배경 이미지 고르기':'소리 파일 고르기','<div class="acts" style="margin-bottom:8px"><input id="pkQ" placeholder="경로 검색 (예: lobby, town)" style="flex:1"><button id="pkRe">목록 새로고침</button></div><div id="pkInfo" class="cnt" style="text-align:left;margin-bottom:6px"></div><div id="pkBody"></div>',[{label:'닫기',fn:()=>{if(audio)audio.pause();return true;}}]);
+  const draw=()=>{
+    const q=$('#pkQ').value.trim().toLowerCase();
+    const all=FILES.list.filter(f=>re.test(f)&&(!q||f.toLowerCase().includes(q)));
+    const shown=all.slice(0,kind==='image'?240:400);
+    $('#pkInfo').textContent=all.length+'개 중 '+shown.length+'개 표시'+(all.length>shown.length?' — 검색어로 좁혀 보세요':'');
+    $('#pkBody').className=kind==='image'?'pgrid':'';
+    $('#pkBody').innerHTML=kind==='image'
+      ?shown.map(f=>'<button class="pcard'+(f===current?' on':'')+'" data-f="'+esc(f)+'"><img loading="lazy" src="'+esc(assetUrl(f))+'" alt=""><span>'+esc(f)+'</span></button>').join('')
+      :shown.map(f=>'<div class="prow'+(f===current?' on':'')+'" data-f="'+esc(f)+'"><button class="sm" data-play="1">▶</button><span>'+esc(f)+'</span></div>').join('');
+  };
+  draw();
+  $('#pkQ').addEventListener('input',draw);
+  $('#pkRe').onclick=async()=>{await scanAssets(S.folder);draw();toast('목록을 새로 읽었습니다 ('+FILES.list.length+'개).');};
+  $('#pkBody').addEventListener('click',e=>{
+    const row=e.target.closest('[data-f]');if(!row)return;
+    if(e.target.dataset.play){if(audio)audio.pause();try{audio=new Audio(assetUrl(row.dataset.f));audio.play().catch(()=>{});}catch(x){}return;}
+    if(audio)audio.pause();closeModal();onPick(row.dataset.f);
+  });
+  setTimeout(()=>$('#pkQ').focus(),30);
+}
+$('#props').addEventListener('click',e=>{
+  const sp=e.target.closest('[data-sp]');if(sp){setSpeaker(sp.dataset.sp);focusText();return;}
+  const ex=e.target.closest('[data-ex]');if(ex){setExpr(ex.dataset.ex);focusText();return;}
+  const b=e.target.closest('[data-pick]');if(!b)return;
+  const st=curStep();if(!st)return;
+  pickFile(b.dataset.pick,st[b.dataset.field],f=>editStep(s=>{s[b.dataset.field]=f;},'pick',false));
+});
+
+/* ===== 21. 대본 붙여넣기 ===== */
+function findSpeaker(name){
+  name=name.trim();if(!name)return null;
+  if(S.chars[name])return name;
+  const ks=Object.keys(S.chars);
+  let r=ks.filter(k=>S.chars[k].name===name);if(r.length===1)return r[0];
+  r=ks.filter(k=>S.chars[k].name.replace(/\(.*\)/,'').trim()===name);if(r.length===1)return r[0];
+  r=ks.filter(k=>S.chars[k].name.includes(name));if(r.length===1)return r[0];
+  return null;
+}
+function findExpr(sp,raw){
+  raw=(raw||'').trim();const c=S.chars[sp];if(!raw)return c?defExpr(sp):'default';
+  if(c&&c.expressions.includes(raw))return raw;
+  for(const k in EXPR_KO)if(EXPR_KO[k]===raw&&(!c||c.expressions.includes(k)))return k;
+  return raw;
+}
+function parseScript(text,baseSc){
+  const warns=[],steps=[],tmp={steps:baseSc.steps.slice()};
+  let lastSp=null,lastEx=null;
+  const push=st=>{st.id=nextStepId(tmp);tmp.steps.push(st);steps.push(st);};
+  const before=baseSc.steps.slice(0,S.step==null?baseSc.steps.length:S.step+1).reverse().find(s=>s.type==='say');
+  if(before){lastSp=before.speaker;lastEx=before.expr;}
+  text.split(/\r?\n/).forEach((raw,n)=>{
+    const line=raw.trim();if(!line||line.startsWith('//')||line.startsWith('#'))return;
+    let m;
+    if((m=/^@\s*배경\s+(\S+)(?:\s+(컷|cut|페이드|fade))?$/i.exec(line))){push({type:'background',file:m[1],transition:/컷|cut/i.test(m[2]||'')?'cut':'fade'});return;}
+    if(/^@\s*(?:bgm|BGM)\s*(?:정지|stop)$/i.test(line)){push({type:'bgm',action:'stop'});return;}
+    if((m=/^@\s*(?:bgm|BGM)\s+(\S+)$/i.exec(line))){push({type:'bgm',action:'play',file:m[1]});return;}
+    if(line[0]==='@'){warns.push((n+1)+'번째 줄: 알 수 없는 명령 "'+line+'"');return;}
+    let sp=null,ex=null,body=line,explicit=false;
+    m=/^([^:：]{1,30}?)\s*[:：]\s*(.*)$/.exec(line);
+    if(m){
+      let head=m[1],e2=null;const pm=/^(.*?)\s*[（(]([^)）]*)[)）]\s*$/.exec(head);
+      if(pm){head=pm[1];e2=pm[2];}
+      const k=findSpeaker(head);
+      if(k||!/\s/.test(head)){sp=k||head.trim();ex=e2;body=m[2];explicit=true;if(!k)warns.push((n+1)+'번째 줄: 화자 "'+head.trim()+'" 를 찾지 못했습니다 (가져온 뒤 오류로 표시됩니다).');}
+    }
+    if(!explicit){sp=lastSp||'lina';ex=null;}
+    const exprId=explicit?findExpr(sp,ex):(sp===lastSp&&lastEx?lastEx:findExpr(sp,null));
+    const eff=[];let se=null;
+    for(let guard=0,prevBody=null;guard<8&&prevBody!==body;guard++){prevBody=body;
+    body=body.replace(/\s*\[([^\]]+)\]\s*$/,(all,tag)=>{
+      const t=tag.replace(/\s+/g,'');
+      const sm=/^(?:효과음|se)[:：]?(.*)$/i.exec(t);
+      if(sm){if(!eff.includes('se'))eff.push('se');if(sm[1])se=sm[1];return '';}
+      const key=FX_ALIAS[t]||(EFFECTS[t]?t:null);
+      if(key){if(!eff.includes(key))eff.push(key);return '';}
+      return all;
+    });}
+    body=body.replace(/\\n/g,'\n').trim();
+    const st={type:'say',speaker:sp,expr:exprId,text:body,effect:Object.keys(EFFECTS).filter(k=>eff.includes(k))};
+    if(se)st.se=se;
+    const c=S.chars[sp];if(c&&!c.expressions.includes(exprId))warns.push((n+1)+'번째 줄: 표정 "'+exprId+'" 은(는) '+c.name+' 에게 없습니다.');
+    push(st);lastSp=sp;lastEx=exprId;
+  });
+  return {steps,warns};
+}
+function genScript(sc){
+  const used={};Object.keys(S.chars).forEach(k=>{used[S.chars[k].name]=(used[S.chars[k].name]||0)+1;});
+  return sc.steps.map(s=>{
+    if(s.type==='background')return '@배경 '+s.file+(s.transition==='cut'?' 컷':'');
+    if(s.type==='bgm')return s.action==='stop'?'@BGM 정지':'@BGM '+s.file;
+    const c=S.chars[s.speaker],nm=c&&used[c.name]===1?c.name:s.speaker;
+    const exp=s.expr&&!(c&&c.expressions.length===1&&c.expressions[0]==='default')?'('+(EXPR_KO[s.expr]||s.expr)+')':'';
+    const fx=(s.effect||[]).map(e=>e==='se'?'[효과음'+(s.se?':'+s.se:'')+']':'['+EFFECTS[e]+']').join(' ');
+    return nm+exp+': '+(s.text||'').replace(/\n/g,'\\n')+(fx?' '+fx:'');
+  }).join('\n');
+}
+function scriptModal(){
+  const sc=cur();if(!sc){toast('먼저 씬을 만들거나 고르세요.');return;}
+  openModal('대본 붙여넣기','<p style="margin:0 0 6px;font-size:13px;color:var(--muted)">한 줄이 한 단계입니다. 선택한 단계 뒤(선택이 없으면 맨 끝)에 들어갑니다.</p>'+
+    '<pre style="margin:0 0 8px;padding:8px 10px;background:var(--soft);border-radius:8px;font-size:12.5px;line-height:1.6;white-space:pre-wrap">리나(웃음): 어서 오세요, 마스터! [흔들림] [번쩍임]\n주인공: 안녕하세요.        ← 표정 생략 가능\n그리고 잘 부탁드려요.     ← 화자 없는 줄은 앞 화자가 이어서 말함\n해설: 첫 줄\\n둘째 줄       ← \\n 은 줄바꿈\n@배경 lobby/lobby_wall.png 컷      @BGM lobby/theme.ogg      @BGM 정지\n리나: 쿵! [효과음:sfx/door.ogg]</pre>'+
+    '<textarea class="scr" id="scrTa" spellcheck="false" placeholder="여기에 대본을 붙여넣으세요"></textarea><div id="scrInfo" style="margin-top:6px;font-size:13px"></div><ul class="pw" id="scrWarn"></ul>',
+    [{label:'현재 씬을 대본으로 채우기',fn:()=>{$('#scrTa').value=genScript(cur());$('#scrTa').dispatchEvent(new Event('input'));return false;}},
+     {label:'단계로 넣기',pri:true,fn:()=>{
+       const r=parseScript($('#scrTa').value,cur());if(!r.steps.length){toast('넣을 줄이 없습니다.');return false;}
+       stopPlay(true);const s2=cur();
+       commit(()=>{const at=S.step==null?s2.steps.length:S.step+1;s2.steps.splice(at,0,...r.steps);S.step=at+r.steps.length-1;});
+       toast('단계 '+r.steps.length+'개를 넣었습니다.'+(r.warns.length?' (확인할 줄 '+r.warns.length+'개)':''),3500);
+     }}]);
+  const ta=$('#scrTa');
+  ta.addEventListener('input',()=>{
+    const r=parseScript(ta.value,cur()),c={say:0,background:0,bgm:0};r.steps.forEach(s=>c[s.type]++);
+    $('#scrInfo').textContent=r.steps.length?('만들어질 단계 '+r.steps.length+'개 (대사 '+c.say+' · 배경 '+c.background+' · BGM '+c.bgm+')'):'';
+    $('#scrWarn').innerHTML=r.warns.slice(0,8).map(w=>'<li>'+esc(w)+'</li>').join('')+(r.warns.length>8?'<li>… 외 '+(r.warns.length-8)+'건</li>':'');
+  });
+  setTimeout(()=>ta.focus(),30);
+}
+$('#bScript').onclick=scriptModal;
+
+/* ===== 22. 단축키 안내 ===== */
+$('#bKeys').onclick=()=>openModal('단축키',
+  '<table class="t"><tbody>'+[
+    ['Enter','대사 칸에서 다음 대사 추가 (같은 화자·표정으로 이어짐)'],['Shift+Enter','대사 안에서 줄바꿈'],['Backspace','빈 대사 칸에서 이 단계 삭제하고 앞 단계로'],
+    ['Alt+1 ~ 9','화자 바꾸기 (칩에 적힌 번호)'],['Alt+Shift+1 ~ 9','표정 바꾸기 (칩에 적힌 번호)'],
+    ['Ctrl+↑ / Ctrl+↓','앞·뒤 단계 선택'],['Alt+↑ / Alt+↓','선택한 단계를 위·아래로 이동'],
+    ['Ctrl+Enter','선택한 단계부터 재생'],['Space / Enter / 클릭','재생 중 다음 대사 (타이핑 중이면 한 번에 표시)'],['Esc','재생 정지 · 창 닫기'],
+    ['Ctrl+Z / Ctrl+Y','실행 취소 / 다시 실행 (입력 칸 밖에서)'],['Ctrl+S','저장']
+  ].map(r=>'<tr><td style="white-space:nowrap"><kbd class="k">'+esc(r[0])+'</kbd></td><td>'+esc(r[1])+'</td></tr>').join('')+'</tbody></table>'+
+  '<p style="margin:10px 0 0;font-size:13px;color:var(--muted)">무대에서는 이름을 클릭하면 화자, 초상화를 클릭하면 표정, 대사를 클릭하면 글자를 바로 고칠 수 있습니다. 배경 단계를 고른 뒤 무대를 클릭하면 파일 고르기가 열립니다.</p>',
+  [{label:'닫기',fn:()=>true}]);
+</script>
+<script>
+/* ===== 17. 시작 ===== */
+(function init(){
+  const restored=loadAuto();
+  renderDatalists();renderAll(true);fitStage();
+  if(restored)toast('이전에 작업하던 내용을 복원했습니다.',3000);
+})();
+</script>
+</body>
+</html>

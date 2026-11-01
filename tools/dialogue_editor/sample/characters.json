@@ -1,0 +1,26 @@
+{
+  "lina": {
+    "type": "npc",
+    "name": "리나",
+    "portrait": "npc/lina_face_{expr}.png",
+    "expressions": ["smile", "serious", "laugh", "worried", "awkward", "surprised"]
+  },
+  "narrator": {
+    "type": "narration",
+    "name": "해설",
+    "portrait": "",
+    "expressions": ["default"]
+  },
+  "player": {
+    "type": "player",
+    "name": "주인공",
+    "portrait": "",
+    "expressions": ["default"]
+  },
+  "adv_warrior_m": {
+    "type": "adventurer",
+    "name": "모험가(전사 남)",
+    "portrait": "chr/chr_warrior_m_front.png",
+    "expressions": ["default"]
+  }
+}
