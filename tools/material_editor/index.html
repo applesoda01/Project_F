@@ -113,6 +113,47 @@ textarea{resize:vertical;min-height:64px}
 .usedby button{border:1px solid var(--line);background:var(--soft);border-radius:6px;padding:1px 8px;font-size:12px}
 .confirm{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .msg{font-size:12.5px;margin-top:8px}
+.qsub{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:3px;margin:2px 0 14px}
+.qsub button{flex:1;border:0;background:transparent;padding:6px 4px;border-radius:6px;font:inherit;font-size:12.5px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.qsub button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.qsub button .soon{font-size:10.5px;opacity:.75;margin-left:4px;font-weight:400}
+.fixed{padding:6px 0}
+.cnt{font-size:11.5px;color:var(--muted);text-align:right}
+.rules{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:10px 12px;margin-bottom:14px}
+.rules summary{cursor:pointer;font-weight:600;font-size:13.5px}
+.rules .rg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 12px;margin:10px 0}
+.rules .rg label{font-size:12px;color:var(--muted);display:grid;gap:3px}
+.rules .rg input[type=number]{padding:5px 7px}
+.simt{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:6px}
+.simt th,.simt td{border:1px solid var(--line);padding:4px 6px;text-align:right;white-space:nowrap}
+.simt th{background:var(--panel);font-weight:600;color:var(--muted)}
+.simt td.base{background:color-mix(in srgb,var(--accent) 12%,transparent);font-weight:700}
+.simt td.capd{color:var(--warn)}
+.simt td.na{color:var(--muted);text-align:center}
+.calc{border:1px solid var(--line);border-radius:8px;background:var(--soft);padding:8px 10px;margin:10px 0;font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:3px 12px}
+.calc b{font-weight:600;color:var(--muted)}
+.en{display:grid;grid-template-columns:minmax(0,1fr) 64px auto auto;grid-template-areas:"nm ct bs dl" "im im im im" "ms ms ms ms";gap:6px;align-items:center;margin-bottom:6px;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:8px}
+.en [data-ek=name]{grid-area:nm}.en [data-ek=count]{grid-area:ct}.en label.bx{grid-area:bs}.en [data-ek=img]{grid-area:im}.en [data-endel]{grid-area:dl;white-space:nowrap;padding:6px 10px}
+.en .cnt2{font-size:11.5px;color:var(--muted);grid-area:ms}
+.en label.bx{display:flex;gap:3px;align-items:center;font-size:12px;white-space:nowrap}
+.jt{display:grid;grid-template-columns:minmax(0,1fr) auto 84px 30px;gap:5px 8px;align-items:center;margin:6px 0 12px;font-size:13px}
+.jt .h{font-size:11.5px;color:var(--muted)}
+.jt .av{color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.jt input{padding:5px 7px}
+.jt .on{color:var(--accent);font-weight:700}
+.jt .btn{padding:4px 0;font-size:13px;width:30px}
+.jt>span:nth-child(4n+1){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0 4px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 11px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip:disabled{opacity:.9;cursor:default}
+.sec{font-size:12.5px;font-weight:700;margin:12px 0 4px}
+.rulebox{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--soft);margin-bottom:10px}
+.rulebox b{color:var(--muted);font-weight:600}
+.pre{display:flex;gap:6px;align-items:center;margin-bottom:5px;font-size:13px}.pre>span:not(.gl){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tk{border:1px solid var(--line);border-radius:8px;padding:8px;margin-bottom:6px;background:var(--soft)}
+.tk .row{gap:6px}.tk select{width:auto}.tk .btn{white-space:nowrap}.tk textarea{margin-top:6px;min-height:52px}
+.soonbox{border:1px dashed var(--line);border-radius:8px;padding:14px;color:var(--muted);font-size:13px;line-height:1.6}
 .msg.bad{color:var(--bad)}.msg.ok{color:var(--ok)}
 
 footer.status{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--muted)}
@@ -229,6 +270,68 @@ function seed(){
 /* ========== 상태·저장(IndexedDB) ========== */
 let xsort={key:'added',dir:1}; try{const v=JSON.parse(localStorage.getItem('mat_xsort')||'null');if(v&&v.key)xsort=v;}catch(e){}
 let qview='text'; try{qview=localStorage.getItem('mat_qview')||'text';}catch(e){}
+// 퀘스트 상세 하위 탭: 하나씩 만들어 가는 중 (1 기본 정보 → 2 미니 뷰 → 3 판정·보상 → 4 등장 조건·대사)
+const QSUBS=[{k:'basic',n:'기본 정보'},{k:'view',n:'미니 뷰 연출'},{k:'judge',n:'판정·보상'},{k:'cond',n:'등장 조건·대사'}];
+let qsub='basic'; try{qsub=localStorage.getItem('mat_qsub')||'basic';}catch(e){} if(!QSUBS.some(x=>x.k===qsub))qsub='basic';
+// 기간 규칙: 등급 기본값은 data/balance.csv 의 quest 항목을 옮겨 적은 것 (바뀌면 여기도 맞춰야 함)
+const BAL={reward:[100,200,400,800,1500,3000,6000],weeks:[1,1,1,2,2,2,3],ref:[15,25,35,45,60,75,90],death:[0.01,0.01,0.03,0.03,0.05,0.05,0.08],
+  reqCount:[1,1,2,2,3,3,4],bossMult:1.15,fameS:[0.4,0.8,1.2,1.6,2,2.4,3],fameF:[0.6,1.2,1.8,2.4,3,3.6,4.5],trustS:0.3,trustF:0.6};
+const STATS=['힘','민첩','지력','정신','기교']; // 유형 순서(토벌·사냥채집·조사·호위구호·탐사)의 대표 능력치
+// 4. 등장 조건·대사
+const CDEF=()=>({route:'office',minGrade:'',prereq:[],fame:null,trust:null,hidden:false,rumor:'',near:'',reappear:8});
+const TDEF=()=>({mode:'none',face:'smile',text:'',scene:''});
+const FACES=[{k:'smile',n:'미소'},{k:'serious',n:'진지'},{k:'laugh',n:'웃음'},{k:'worried',n:'걱정'},{k:'awkward',n:'곤란'},{k:'surprised',n:'놀람'}];
+const TALKS=[{k:'appear',n:'등장 (의뢰 제안)'},{k:'accept',n:'수락'},{k:'hold',n:'보류·거절'},{k:'success',n:'성공'},{k:'fail',n:'실패'}];
+// 분류별 고정 규칙 (기획서 6.0)
+const CATRULE={
+  main:{route:'집무실 방문',refuse:'불가 (보류만)',repeat:'1회',fail:'재도전 가능',talks:['appear','accept','hold','success','fail']},
+  sub:{route:null,refuse:'가능 (일정 기간 뒤 재등장)',repeat:'1회',fail:'재도전 가능',talks:['appear','accept','hold','success','fail']},
+  promo:{route:'접수원 보고',refuse:'불가 (보류만)',repeat:'1회',fail:'재도전 가능',talks:['appear','accept','hold','success','fail']},
+  res:{route:'게시판 자동 등록',refuse:'게시판 철회 규칙',repeat:'반복',fail:'소멸',talks:['accept','success','fail']},
+  req:{route:'게시판 자동 등록',refuse:'게시판 철회 규칙',repeat:'반복',fail:'소멸',talks:['accept','success','fail']}};
+const SUBROUTES=[{k:'office',n:'집무실 방문'},{k:'town',n:'마을 말풍선'}];
+const routeName=q=>{const r=(CATRULE[q.cat]||CATRULE.res).route;return r||(SUBROUTES.find(x=>x.k===(q.cond||{}).route)||SUBROUTES[0]).n;};
+// 선행 퀘스트가 돌고 돌아 자기 자신으로 오는지
+function prereqLoop(q){const seen=new Set();const walk=id=>{if(id===q.id)return true;if(seen.has(id))return false;seen.add(id);const x=quest(id);return x&&x.cond?x.cond.prereq.some(walk):false;};return (q.cond.prereq||[]).some(walk);}
+const JDEF=()=>({smode:'auto',stats:[],boss:false,ref:null,death:null,reward:null,fameS:null,fameF:null,trustS:null,trustF:null});
+const RULE_DEF={rMul:2,mMul:1.5,refPct:5,dMin:-1,dMax:2,cap:true};
+const REGIONS=[{k:'forest',n:'숲'},{k:'grass',n:'풀밭'},{k:'desert',n:'사막'},{k:'town',n:'마을 길'}];
+const REGION_BY_TYPE={slay:'forest',hunt:'grass',study:'forest',guard:'town',mine:'desert'}; // [가안] 유형별 기본 배경
+const regionName=k=>(REGIONS.find(r=>r.k===k)||{n:'?'}).n;
+const defRegion=q=>REGION_BY_TYPE[q.line]||'forest';
+let simMetric='reward'; try{simMetric=localStorage.getItem('mat_sim')||'reward';}catch(e){}
+// 기간 변화 d(기본 기간 대비 주)에 따른 계산. 몬스터 수는 기본 수 n 기준
+function durCalc(grade,d,n){
+  const R=S.qrule,gi=GRADES.indexOf(grade),bw=BAL.weeks[gi],w=bw+d;
+  if(w<1) return null;
+  let reward=BAL.reward[gi]*Math.pow(R.rMul,d),capped=false;
+  if(R.cap&&d>0&&gi<GRADES.length-1){const lim=BAL.reward[gi+1]/BAL.weeks[gi+1]*w;if(reward>lim){reward=lim;capped=true;}}
+  return {w,reward:Math.round(reward),perWeek:Math.round(reward/w),capped,
+    mon:n==null?null:Math.max(1,Math.round(n*Math.pow(R.mMul,d))),
+    ref:Math.round(BAL.ref[gi]*(1+R.refPct/100*d)*10)/10,
+    death:1-Math.pow(1-BAL.death[gi],w/bw)};
+}
+// 최종 판정·보상 값: 자동 계산(기간 규칙) 위에 퀘스트별 직접 입력을 덮어씀
+function questFinal(q){
+  const gi=GRADES.indexOf(q.grade),j=q.judge||JDEF(),c=durCalc(q.grade,(q.view||{}).delta||0,null)||durCalc(q.grade,0,null);
+  const autoRef=Math.round(c.ref*(j.boss?BAL.bossMult:1)*10)/10, ti=LINES.filter(l=>l.core).findIndex(l=>l.k===q.line);
+  const autoStats=ti>=0?[ti]:[], n=BAL.reqCount[gi];
+  const auto={ref:autoRef,death:c.death,reward:c.reward,fameS:BAL.fameS[gi],fameF:BAL.fameF[gi],trustS:BAL.trustS,trustF:BAL.trustF};
+  const fin={},over=[];for(const k in auto){if(j[k]!=null&&j[k]!==''){fin[k]=+j[k];over.push(k);}else fin[k]=auto[k];}
+  let stats,statNote;
+  if(j.smode==='manual'&&j.stats.length){stats=j.stats.slice();statNote='직접 지정';over.push('stats');}
+  else{stats=autoStats;statNote=`등급 기본 ${n}개: ${ti>=0?STATS[ti]+' + ':''}무작위 ${n-autoStats.length}개`;}
+  return {auto,fin,over,stats,statNote,n,weeks:c.w,capped:c.capped,ti};
+}
+const JLABEL={ref:'판정 기준치',death:'사망률',reward:'보상 금액',fameS:'명성 성공 +',fameF:'명성 실패 −',trustS:'신뢰도 성공 +',trustF:'신뢰도 실패 −',stats:'요구 능력치'};
+const dRange=grade=>{const R=S.qrule,bw=BAL.weeks[GRADES.indexOf(grade)],o=[];for(let d=R.dMin;d<=R.dMax;d++)if(bw+d>=1)o.push(d);return o;};
+// 예전 저장본에 없는 퀘스트 항목 채우기
+function migrateQuests(){
+  S.qrule=Object.assign({},RULE_DEF,S.qrule||{});
+  (S.quests||[]).forEach(q=>{ if(q.client==null)q.client=''; if(q.notice==null)q.notice=''; if(q.line==null)q.line=''; if(!q.rewards)q.rewards=[];
+    if(!q.view)q.view={region:'',delta:0,enemies:[]}; if(!q.judge)q.judge=JDEF(); else q.judge=Object.assign(JDEF(),q.judge);
+    q.cond=Object.assign(CDEF(),q.cond||{}); q.talk=q.talk||{}; TALKS.forEach(t=>q.talk[t.k]=Object.assign(TDEF(),q.talk[t.k]||{})); });
+}
 let S=null, tab='mat', sel={mat:null,food:null,gear:null,potion:null,quest:null}, confirming=null, flash=null;
 const DB='mat_editor', STORE='kv';
 const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
@@ -359,7 +462,7 @@ function rwBlock(q){
 function qCell(q){return `<button class="cell qcell" data-pick="${q.id}" aria-pressed="${sel.quest===q.id}"><span class="nm">${esc(q.name)}</span>${rwBlock(q)}</button>`;}
 function renderQuestLeft(){
   const core=LINES.filter(l=>l.core);
-  let h=`<div class="extra-head" style="margin-top:0"><h2 style="margin:0">의뢰 유형 × 등급 35칸 <span class="hint">· 칸에 보상 소재가 바로 보입니다. 칸을 누르면 편집</span></h2><div class="row"><span class="hint">보상 표시</span><button class="btn" id="qvIcon" aria-pressed="${qview==='icon'}">아이콘</button><button class="btn" id="qvText" aria-pressed="${qview==='text'}">이름</button></div></div><div class="matrix-scroll"><table class="matrix"><thead><tr><th></th>${core.map(l=>`<th>${l.n}</th>`).join('')}</tr></thead><tbody>`;
+  let h=renderRules()+`<div class="extra-head" style="margin-top:0"><h2 style="margin:0">의뢰 유형 × 등급 35칸 <span class="hint">· 칸에 보상 소재가 바로 보입니다. 칸을 누르면 편집</span></h2><div class="row"><span class="hint">보상 표시</span><button class="btn" id="qvIcon" aria-pressed="${qview==='icon'}">아이콘</button><button class="btn" id="qvText" aria-pressed="${qview==='text'}">이름</button></div></div><div class="matrix-scroll"><table class="matrix"><thead><tr><th></th>${core.map(l=>`<th>${l.n}</th>`).join('')}</tr></thead><tbody>`;
   for(const g of GRADES) h+=`<tr><th class="g"><span class="gl" data-g="${g}">${g}</span></th>${core.map(l=>{const q=S.quests.find(x=>x.core&&x.line===l.k&&x.grade===g);return `<td>${q?qCell(q):''}</td>`;}).join('')}</tr>`;
   h+=`</tbody></table></div><div class="extra-head"><h2 style="margin:0">추가 퀘스트 <span class="hint">· 메인·서브·승급·리소스 등 개별 퀘스트</span></h2><button class="btn primary" id="addQuest">+ 퀘스트 추가</button></div>`;
   const ex=S.quests.filter(q=>!q.core);
@@ -368,15 +471,133 @@ function renderQuestLeft(){
 }
 function renderQuestRight(){
   const q=quest(sel.quest);
-  if(!q) return `<h2>퀘스트 상세</h2><p class="hint">칸이나 목록에서 퀘스트를 고르면 보상 소재를 연결할 수 있습니다.</p>`;
-  const opts=cur_=>`<option value="">소재 선택…</option>`+LINES.map(l=>{const ms=S.mats.filter(m=>m.line===l.k);return ms.length?`<optgroup label="${l.n}">${ms.map(m=>`<option value="${m.id}" ${m.id===cur_?'selected':''}>${m.grade} · ${esc(m.name)}</option>`).join('')}</optgroup>`:'';}).join('');
+  if(!q) return `<h2>퀘스트 상세</h2><p class="hint">칸이나 목록에서 퀘스트를 고르면 편집할 수 있습니다.</p>`;
   let h=`<h2>${q.core?'기본 의뢰':'추가 퀘스트'} <span class="badge ${q.core?'core':''}">${q.core?'삭제 불가':'삭제 가능'}</span></h2>
-  <div class="field"><label for="fName">이름</label><input type="text" id="fName" value="${esc(q.name)}"></div>`;
-  if(q.core) h+=`<div class="field"><span class="lbl">유형 · 등급</span><div><span class="gl" data-g="${q.grade}">${q.grade}</span> ${lineName(q.line)}</div></div>`;
-  else h+=`<div class="row"><div class="field" style="flex:2"><label for="fCat">분류</label><select id="fCat">${QCATS.map(c=>`<option value="${c.k}" ${c.k===q.cat?'selected':''}>${c.n}</option>`).join('')}</select></div>
+  <div class="qsub" role="tablist" aria-label="퀘스트 상세 항목">${QSUBS.map(x=>`<button role="tab" data-qsub="${x.k}" aria-selected="${qsub===x.k}">${`${QSUBS.indexOf(x)+1}. `+x.n}${x.soon?'<span class="soon">준비 중</span>':''}</button>`).join('')}</div>`;
+  if(qsub==='basic') h+=questBasic(q);
+  else if(qsub==='judge') h+=questJudge(q);
+  else if(qsub==='view') h+=questView(q);
+  else if(qsub==='cond') h+=questCond(q);
+  else h+=`<div class="soonbox"><b>${QSUBS.find(x=>x.k===qsub).n}</b> 탭은 다음 단계에서 만듭니다.<br>${'길드 등급·선행 퀘스트 등 등장 조건, 수락·성공·실패 때 리나 대사'}</div>`;
+  h+=`<div class="field" style="margin-top:14px"><span class="lbl">ID <code>${q.id}</code></span></div>`;
+  if(!q.core){ if(confirming===q.id) h+=`<div class="confirm"><span>삭제할까요?</span><button class="btn danger" id="delYes">삭제</button><button class="btn" id="delNo">취소</button></div>`;
+    else h+=`<button class="btn danger" id="delQuest">퀘스트 삭제</button>`; }
+  return h;
+}
+// 기간 규칙 계수 + 등급×기간 시뮬레이션 표
+let rulesOpen=true; try{rulesOpen=localStorage.getItem('mat_rules')!=='0';}catch(e){}
+function renderRules(){
+  const R=S.qrule,ds=[];for(let d=R.dMin;d<=R.dMax;d++)ds.push(d);
+  const M={reward:'보상',perWeek:'주당 보상',mon:'몬스터 수 (기본 2마리)',ref:'판정 기준치',death:'사망률'};
+  let h=`<details class="rules" id="rulesBox" ${rulesOpen?'open':''}><summary>기간 규칙 계수 <span class="hint">· 기본 기간보다 1주 늘 때마다 적용. 시뮬레이션 보며 조절</span></summary>
+  <div class="rg">
+   <label>보상 배수 (주마다 ×)<input type="number" step="0.05" min="1" max="5" id="rMul" value="${R.rMul}"></label>
+   <label>몬스터 수 배수 (주마다 ×)<input type="number" step="0.05" min="1" max="5" id="mMul" value="${R.mMul}"></label>
+   <label>판정 기준치 (주마다 +%)<input type="number" step="0.5" min="0" max="50" id="refPct" value="${R.refPct}"></label>
+   <label>기간 줄이기 한도 (주)<input type="number" step="1" min="-5" max="0" id="dMin" value="${R.dMin}"></label>
+   <label>기간 늘리기 한도 (주)<input type="number" step="1" min="0" max="8" id="dMax" value="${R.dMax}"></label>
+   <label style="align-self:end;display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--ink)"><input type="checkbox" id="capOn" ${R.cap?'checked':''}> 주당 보상 상한 (한 등급 위 기본 주당 보상)</label>
+  </div>
+  <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><span class="hint">사망률은 기간에만 비례: 1 − (1 − 등급 사망률)^(기간 ÷ 기본 기간). 등급 기본값은 balance.csv</span>
+   <span class="row" style="gap:6px"><label class="hint" for="simMetric">표에 보일 값</label><select id="simMetric" style="width:auto">${Object.entries(M).map(([k,n])=>`<option value="${k}" ${k===simMetric?'selected':''}>${n}</option>`).join('')}</select><button class="btn" id="ruleReset">계수 기본값</button></span></div>
+  <div style="overflow-x:auto"><table class="simt"><thead><tr><th>등급 · 기본 기간</th>${ds.map(d=>`<th>${d===0?'기본':(d>0?'+':'')+d+'주'}</th>`).join('')}</tr></thead><tbody>`;
+  for(const g of GRADES){const gi=GRADES.indexOf(g);
+    h+=`<tr><th style="text-align:left"><span class="gl" data-g="${g}">${g}</span> ${BAL.weeks[gi]}주</th>`+ds.map(d=>{const c=durCalc(g,d,2);if(!c)return `<td class="na">—</td>`;
+      const v=simMetric==='reward'?c.reward.toLocaleString():simMetric==='perWeek'?c.perWeek.toLocaleString():simMetric==='mon'?c.mon:simMetric==='ref'?c.ref:(c.death*100).toFixed(1)+'%';
+      return `<td class="${d===0?'base':''} ${c.capped&&(simMetric==='reward'||simMetric==='perWeek')?'capd':''}" title="${c.w}주 · 보상 ${c.reward.toLocaleString()} (주당 ${c.perWeek.toLocaleString()})${c.capped?' · 상한 적용':''} · 몬스터 ${c.mon} · 기준치 ${c.ref} · 사망 ${(c.death*100).toFixed(1)}%">${v}</td>`;}).join('')+`</tr>`;}
+  h+=`</tbody></table></div><p class="hint" style="margin:6px 0 0">주황 글자 = 상한에 걸린 값. 칸에 마우스를 올리면 전체 값이 보입니다.</p></details>`;
+  return h;
+}
+// 2. 미니 뷰 연출: 배경 지역, 기간 변화, 적 목록(최대 3줄) + 자동 계산
+function questView(q){
+  const v=q.view,ds=dRange(q.grade);if(!ds.includes(v.delta))v.delta=ds.includes(0)?0:ds[0];
+  const c=durCalc(q.grade,v.delta,null),gi=GRADES.indexOf(q.grade),F=questFinal(q),ov=k=>F.over.includes(k)?' <span style="color:var(--accent)" title="판정·보상 탭에서 직접 입력한 값">✎ 직접 입력</span>':'';
+  let h=`<div class="row"><div class="field" style="flex:1"><label for="vRegion">배경 지역</label><select id="vRegion"><option value="" ${!v.region?'selected':''}>기본 (${regionName(defRegion(q))})</option>${REGIONS.map(r=>`<option value="${r.k}" ${r.k===v.region?'selected':''}>${r.n}</option>`).join('')}</select></div>
+   <div class="field" style="flex:1"><label for="vDelta">소요 기간</label><select id="vDelta">${ds.map(d=>`<option value="${d}" ${d===v.delta?'selected':''}>${BAL.weeks[gi]+d}주 ${d===0?'(기본)':'('+(d>0?'+':'')+d+'주)'}</option>`).join('')}</select></div></div>
+  <p class="hint" style="margin:-4px 0 6px">지금 미니 뷰는 숲만 그립니다. 다른 지역은 블록 연결 후 표시됩니다.</p>
+  <div class="calc"><b>보상</b><span>${Math.round(F.fin.reward).toLocaleString()} G (주당 ${Math.round(F.fin.reward/c.w).toLocaleString()})${c.capped&&!F.over.includes('reward')?' <span style="color:var(--warn)">· 상한 적용</span>':''}${ov('reward')}</span>
+   <b>판정 기준치</b><span>${F.fin.ref} <span class="hint">(등급 ${BAL.ref[gi]}${q.judge.boss?' · 보스급':''})</span>${ov('ref')}</span>
+   <b>사망률</b><span>${(F.fin.death*100).toFixed(1)}% <span class="hint">(등급 ${(BAL.death[gi]*100).toFixed(1)}%)</span>${ov('death')}</span></div>
+  <div class="lbl" style="margin:4px 0 6px">적 목록 <span class="hint">· 최대 3줄. 수는 기본 기간 기준, 기간에 따라 자동으로 늘어남. 그림을 비우면 네모 상자</span></div>`;
+  v.enemies.forEach((e,i)=>{const n=e.boss?e.count:durCalc(q.grade,v.delta,e.count).mon;
+    h+=`<div class="en"><input type="text" data-en="${i}" data-ek="name" value="${esc(e.name)}" placeholder="이름" aria-label="적 ${i+1} 이름">
+     <input type="number" min="1" max="99" data-en="${i}" data-ek="count" value="${e.count}" aria-label="기본 수">
+     <label class="bx"><input type="checkbox" data-en="${i}" data-ek="boss" ${e.boss?'checked':''}>보스</label>
+     <input type="text" data-en="${i}" data-ek="img" value="${esc(e.img)}" placeholder="그림 파일 (비우면 상자)" aria-label="그림 파일">
+     <button class="btn" data-endel="${i}" aria-label="적 삭제">삭제</button>
+     <div class="cnt2" data-encnt="${i}">이 기간에는 ${n}마리${e.boss?' · 보스는 수 늘지 않음':''}</div></div>`;});
+  if(v.enemies.length<3) h+=`<button class="btn" id="addEn">+ 적 추가</button>`;
+  if(!v.enemies.length) h+=`<div class="msg hint">적이 없으면 미니 뷰에서 이동·결과 장면만 나옵니다 (조사·호위처럼 싸우지 않는 의뢰).</div>`;
+  return h;
+}
+function questCond(q){
+  const c=q.cond,R=CATRULE[q.cat]||CATRULE.res,board=q.core||q.cat==='res'||q.cat==='req';
+  let h=`<div class="sec" style="margin-top:0">분류 규칙 <span class="hint" style="font-weight:400">· ${catName(q.cat)} (기획서 6.0, 분류를 바꾸면 바뀜)</span></div>
+  <div class="rulebox"><b>등장 경로</b><span>${q.cat==='sub'?`<select id="cRoute" style="width:auto;padding:3px 6px">${SUBROUTES.map(r=>`<option value="${r.k}" ${r.k===c.route?'selected':''}>${r.n}</option>`).join('')}</select>`:R.route}</span>
+   <b>거절</b><span>${R.refuse}</span><b>반복</b><span>${R.repeat}</span><b>실패 시</b><span>${R.fail}</span></div>`;
+  if(board) h+=`<p class="hint" style="margin:0 0 10px">게시판 의뢰는 유입·필터 규칙으로 등장하므로 등장 조건을 따로 두지 않습니다.</p>`;
+  else{
+    const others=S.quests.filter(x=>!x.core&&x.id!==q.id&&!c.prereq.includes(x.id));
+    h+=`<div class="sec">등장 조건 <span class="hint" style="font-weight:400">· 모두 만족하면 등장</span></div>
+    <div class="row"><div class="field" style="flex:1"><label for="cGrade">길드 등급 이상</label><select id="cGrade"><option value="" ${!c.minGrade?'selected':''}>기본 (${q.grade})</option>${GRADES.map(g=>`<option ${g===c.minGrade?'selected':''}>${g}</option>`).join('')}</select></div>
+     <div class="field" style="flex:1"><label for="cFame">명성 이상</label><input type="number" id="cFame" min="0" step="10" value="${c.fame??''}" placeholder="조건 없음"></div>
+     <div class="field" style="flex:1"><label for="cTrust">신뢰도 이상</label><input type="number" id="cTrust" min="0" max="100" step="5" value="${c.trust??''}" placeholder="조건 없음"></div></div>
+    <div class="lbl" style="margin-bottom:4px">선행 퀘스트 <span class="hint">· 이 퀘스트들을 성공해야 등장</span></div>`;
+    c.prereq.forEach((id,i)=>{const x=quest(id);h+=`<div class="pre">${x?`<span class="gl" data-g="${x.grade}">${x.grade}</span><span>${esc(x.name)} <span class="hint">${catName(x.cat)}</span></span>`:`<span style="color:var(--bad)">없는 퀘스트 (${esc(id)})</span>`}<button class="btn" data-prejump="${esc(id)}" ${x?'':'disabled'}>열기</button><button class="btn" data-predel="${i}">삭제</button></div>`;});
+    h+=others.length?`<select id="cPreAdd"><option value="">+ 선행 퀘스트 추가…</option>${others.map(x=>`<option value="${x.id}">${x.grade} · ${esc(x.name)} (${catName(x.cat)})</option>`).join('')}</select>`:`<p class="hint" style="margin:0">고를 수 있는 다른 추가 퀘스트가 없습니다.</p>`;
+    if(prereqLoop(q)) h+=`<div class="msg bad">선행 퀘스트가 돌고 돌아 이 퀘스트로 돌아옵니다. 영원히 등장하지 않습니다.</div>`;
+    if(q.cat==='sub'){
+      h+=`<div class="row" style="margin-top:10px"><div class="field" style="flex:1"><label for="cReappear">거절 후 재등장 (주)</label><input type="number" id="cReappear" min="1" max="96" value="${c.reappear}"></div><div style="flex:1.3"></div></div>
+      <label class="row" style="gap:6px;font-size:13px"><input type="checkbox" id="cHidden" ${c.hidden?'checked':''}> 히든 서브 <span class="hint">(소문 → 근접 → 발견 순서로 드러남)</span></label>`;
+      if(c.hidden) h+=`<div class="field" style="margin-top:8px"><label for="cRumor">소문 문구 <span class="hint">· 조건을 하나도 안 채웠을 때 들리는 말</span></label><textarea id="cRumor" rows="2">${esc(c.rumor)}</textarea></div>
+        <div class="field"><label for="cNear">근접 문구 <span class="hint">· 조건 일부를 채웠을 때 (조건 일부 공개)</span></label><textarea id="cNear" rows="2">${esc(c.near)}</textarea></div>`;
+    }
+  }
+  h+=`<div class="sec">리나 대사 <span class="hint" style="font-weight:400">· 기본 = ${board?'speech.csv 말풍선':'대사 없음'}. 긴 대화는 대화씬 편집기의 씬 ID를 연결</span></div>`;
+  for(const k of R.talks){const t=q.talk[k],tn=TALKS.find(x=>x.k===k).n;
+    h+=`<div class="tk"><div class="row"><b style="flex:1;font-size:13px">${tn}</b><select data-tmode="${k}" aria-label="${tn} 방식"><option value="none" ${t.mode==='none'?'selected':''}>기본</option><option value="line" ${t.mode==='line'?'selected':''}>한 줄 대사</option><option value="scene" ${t.mode==='scene'?'selected':''}>대화씬 연결</option></select></div>`;
+    if(t.mode==='line') h+=`<div class="row" style="margin-top:6px"><span class="hint">표정</span><select data-tface="${k}" aria-label="${tn} 표정">${FACES.map(x=>`<option value="${x.k}" ${x.k===t.face?'selected':''}>${x.n}</option>`).join('')}</select></div><textarea data-ttext="${k}" aria-label="${tn} 대사" placeholder="리나: …">${esc(t.text)}</textarea>${[...t.text].length>90?'<div class="msg" style="color:var(--warn)">90자를 넘습니다 (대화창 3줄 기준)</div>':''}`;
+    if(t.mode==='scene') h+=`<div class="row" style="margin-top:6px"><input type="text" data-tscene="${k}" value="${esc(t.scene)}" placeholder="씬 ID" aria-label="${tn} 씬 ID"><button class="btn" data-tsauto="${k}" title="quest_<퀘스트ID>_<상황> 형식으로 채움">ID 자동</button></div>`;
+    h+=`</div>`;}
+  return h;
+}
+// 1. 기본 정보: 이름, 분류·유형·등급, 의뢰인, 의뢰서 문구, 기획 메모
+function questBasic(q){
+  const types=LINES.filter(l=>l.core), clients=[...new Set(S.quests.map(x=>x.client).filter(Boolean))].sort();
+  let h=`<div class="field"><label for="fName">이름</label><input type="text" id="fName" value="${esc(q.name)}"></div>`;
+  if(q.core) h+=`<div class="row"><div class="field" style="flex:1"><span class="lbl">분류</span><div class="fixed">${catName(q.cat)}</div></div>
+    <div class="field" style="flex:1"><span class="lbl">유형</span><div class="fixed">${lineName(q.line)}</div></div>
+    <div class="field" style="flex:1"><span class="lbl">등급</span><div class="fixed"><span class="gl" data-g="${q.grade}">${q.grade}</span></div></div></div>
+    <p class="hint" style="margin:-4px 0 10px">기본 의뢰 35칸은 분류·유형·등급을 바꿀 수 없습니다.</p>`;
+  else h+=`<div class="row"><div class="field" style="flex:1.2"><label for="fCat">분류</label><select id="fCat">${QCATS.map(c=>`<option value="${c.k}" ${c.k===q.cat?'selected':''}>${c.n}</option>`).join('')}</select></div>
+    <div class="field" style="flex:1.4"><label for="fType">유형</label><select id="fType"><option value="" ${!q.line?'selected':''}>없음</option>${types.map(l=>`<option value="${l.k}" ${l.k===q.line?'selected':''}>${l.n}</option>`).join('')}</select></div>
     <div class="field" style="flex:1"><label for="fGrade">등급</label><select id="fGrade">${GRADES.map(g=>`<option ${g===q.grade?'selected':''}>${g}</option>`).join('')}</select></div></div>`;
-  h+=`<div class="field"><label for="fDesc">설명</label><textarea id="fDesc">${esc(q.desc)}</textarea></div>
-  <div class="lbl" style="margin-bottom:6px">보상 소재 (구분 · 확률%)</div>`;
+  h+=`<div class="field"><label for="fClient">의뢰인</label><input type="text" id="fClient" list="clientList" value="${esc(q.client)}" placeholder="예: 마을 촌장, 떠돌이 상인 (비우면 '길드 게시판')">
+    <datalist id="clientList">${clients.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
+  <div class="field"><label for="fNotice">의뢰서 문구 <span class="hint">· 게시판 의뢰서·집무실 의뢰에 그대로 보이는 글</span></label><textarea id="fNotice" rows="4">${esc(q.notice)}</textarea><div class="cnt" id="noticeCnt">${[...q.notice].length}자</div></div>
+  <div class="field"><label for="fDesc">기획 메모 <span class="hint">· 게임에는 나오지 않음</span></label><textarea id="fDesc">${esc(q.desc)}</textarea></div>`;
+  return h;
+}
+// 3. 판정·보상: 자동 계산값 + 퀘스트별 직접 입력, 보상 소재
+function questJudge(q){
+  const F=questFinal(q),j=q.judge;
+  const opts=cur_=>`<option value="">소재 선택…</option>`+LINES.map(l=>{const ms=S.mats.filter(m=>m.line===l.k);return ms.length?`<optgroup label="${l.n}">${ms.map(m=>`<option value="${m.id}" ${m.id===cur_?'selected':''}>${m.grade} · ${esc(m.name)}</option>`).join('')}</optgroup>`:'';}).join('');
+  const fmt=(k,v)=>k==='death'?(v*100).toFixed(1)+'%':k==='reward'?Math.round(v).toLocaleString()+' G':String(Math.round(v*100)/100);
+  const inV=k=>j[k]==null||j[k]===''?'':(k==='death'?Math.round(j[k]*1000)/10:j[k]);
+  let h=`<div class="sec">요구 능력치</div>
+  <div class="row" style="gap:6px"><select id="jSmode" style="width:auto"><option value="auto" ${j.smode!=='manual'?'selected':''}>자동 (게임 규칙)</option><option value="manual" ${j.smode==='manual'?'selected':''}>직접 지정</option></select><span class="hint">${F.statNote}</span></div>`;
+  if(j.smode==='manual') h+=`<div class="chips">${STATS.map((n,k)=>`<button class="chip" data-jstat="${k}" aria-pressed="${j.stats.includes(k)}">${n}${k===F.ti?' (대표)':''}</button>`).join('')}</div>
+    <p class="hint" style="margin:0">고른 ${j.stats.length}개 · 등급 기본 ${F.n}개${j.stats.length&&F.ti>=0&&!j.stats.includes(F.ti)?' · <span style="color:var(--warn)">유형 대표 능력치가 빠져 있습니다</span>':''}${!j.stats.length?' · <span style="color:var(--warn)">하나 이상 고르세요 (지금은 자동으로 처리)</span>':''}</p>`;
+  h+=`<label class="row" style="gap:6px;margin:10px 0 0;font-size:13px"><input type="checkbox" id="jBoss" ${j.boss?'checked':''}> 보스급 의뢰 <span class="hint">(판정 기준치 ×${BAL.bossMult})</span></label>
+  <div class="sec">판정·보상 수치 <span class="hint" style="font-weight:400">· 비워 두면 자동값. 기간 ${F.weeks}주 기준</span></div>
+  <div class="jt"><span class="h">항목</span><span class="h" style="text-align:right">자동</span><span class="h">직접 입력</span><span></span>`;
+  for(const k of ['ref','death','reward','fameS','fameF','trustS','trustF']){const on=F.over.includes(k);
+    h+=`<span class="${on?'on':''}" title="${JLABEL[k]}">${on?'✎ ':''}${JLABEL[k]}</span><span class="av">${fmt(k,F.auto[k])}${k==='reward'&&F.capped?' <span style="color:var(--warn)" title="주당 보상 상한 적용">·상한</span>':''}</span>
+     <input type="number" id="j_${k}" data-jk="${k}" step="${k==='reward'?50:k==='death'?0.1:0.1}" min="0" value="${inV(k)}" placeholder="자동" aria-label="${JLABEL[k]} 직접 입력${k==='death'?' (%)':''}">
+     ${on?`<button class="btn" data-jauto="${k}" title="자동값으로 되돌리기" aria-label="${JLABEL[k]} 자동값으로">↺</button>`:'<span></span>'}`;}
+  h+=`</div>`;
+  if(F.over.length) h+=`<p class="hint" style="margin:-6px 0 8px">✎ 직접 입력한 항목 ${F.over.length}개: ${F.over.map(k=>JLABEL[k]).join(', ')}</p>`;
+  h+=`<div class="sec">보상 소재 <span class="hint" style="font-weight:400">(구분 · 확률%)</span></div>`;
   q.rewards.forEach((r,i)=>{
     h+=`<div class="rw"><div class="row">${mat(r.m)?iconHtml(mat(r.m)):'<span class="ico" data-g="F">?</span>'}<select data-rwm="${i}" aria-label="보상 소재 ${i+1}">${opts(r.m)}</select></div>
     <div class="row"><select data-rwr="${i}" aria-label="구분">${ROLES.map(x=>`<option ${x===r.role?'selected':''}>${x}</option>`).join('')}</select><input type="number" min="0" max="100" step="0.5" data-rwp="${i}" value="${r.p}" aria-label="확률"><span class="hint">%</span><button class="btn" data-rwdel="${i}" aria-label="보상 삭제">삭제</button></div></div>`;
@@ -385,9 +606,6 @@ function renderQuestRight(){
   if(!q.rewards.length) h+=`<div class="msg" style="color:var(--warn)">보상 소재가 없습니다.</div>`;
   const miss=q.rewards.filter(r=>!mat(r.m)).length; if(miss) h+=`<div class="msg" style="color:var(--warn)">소재를 고르지 않은 보상 ${miss}개</div>`;
   const dup=q.rewards.map(r=>r.m).filter((m,ix,a)=>m&&a.indexOf(m)!==ix); if(dup.length) h+=`<div class="msg bad">같은 소재가 두 줄 이상 있습니다.</div>`;
-  h+=`<div class="field" style="margin-top:10px"><span class="lbl">ID <code>${q.id}</code></span></div>`;
-  if(!q.core){ if(confirming===q.id) h+=`<div class="confirm"><span>삭제할까요?</span><button class="btn danger" id="delYes">삭제</button><button class="btn" id="delNo">취소</button></div>`;
-    else h+=`<button class="btn danger" id="delQuest">퀘스트 삭제</button>`; }
   return h;
 }
 
@@ -440,11 +658,16 @@ function buildFiles(){
   const irows=[['id','종류','이름','등급','설명','재료1','수량1','재료2','수량2','재료3','수량3','아이콘']];
   S.items.forEach(i=>{const r=[];for(let s=0;s<3;s++){const x=i.recipe[s];r.push(x?x.m:'',x?x.n:'');}
     irows.push([i.id,KINDS.find(k=>k.k===i.kind).n,i.name,i.grade,i.desc,...r,iconFile(i)]);});
-  const qrows=[['id','이름','분류','등급','계열','설명','소재id','소재이름','구분','확률(%)']];
-  S.quests.forEach(q=>{const base=[q.id,q.name,catName(q.cat),q.grade,q.core?lineName(q.line):'',q.desc];
+  const qrows=[['id','이름','분류','등급','유형','의뢰인','의뢰서 문구','기획 메모','배경','소요 주','기간 변화','요구 능력치','보스급','판정 기준치','사망률(%)','보상 금액','명성 성공','명성 실패','신뢰도 성공','신뢰도 실패','직접 입력 항목','등장 경로','길드 등급 이상','선행 퀘스트','명성 이상','신뢰도 이상','히든','소문 문구','근접 문구','재등장(주)','소재id','소재이름','구분','확률(%)']];
+  S.quests.forEach(q=>{const v=q.view||{region:'',delta:0},w=BAL.weeks[GRADES.indexOf(q.grade)]+v.delta;const F=questFinal(q),jd=q.judge||JDEF();const base=[q.id,q.name,catName(q.cat),q.grade,q.line?lineName(q.line):'',q.client||'',q.notice||'',q.desc,regionName(v.region||defRegion(q)),w,v.delta,jd.smode==='manual'&&jd.stats.length?jd.stats.map(k=>STATS[k]).join('|'):'자동',jd.boss?'예':'',F.fin.ref,Math.round(F.fin.death*1000)/10,Math.round(F.fin.reward),F.fin.fameS,F.fin.fameF,F.fin.trustS,F.fin.trustF,F.over.map(k=>JLABEL[k]).join('|'),...(()=>{const c=q.cond||CDEF(),b=q.core||q.cat==='res'||q.cat==='req';return [routeName(q),b?'':(c.minGrade||q.grade),b?'':c.prereq.join('|'),b?'':(c.fame??''),b?'':(c.trust??''),q.cat==='sub'&&c.hidden?'예':'',q.cat==='sub'&&c.hidden?c.rumor:'',q.cat==='sub'&&c.hidden?c.near:'',q.cat==='sub'?c.reappear:''];})()];
     if(!q.rewards.length) qrows.push([...base,'','','','']);
     q.rewards.forEach(r=>qrows.push([...base,r.m,(mat(r.m)||{}).name||'',r.role,r.p]));});
-  const files=[{path:'quests.csv',data:new TextEncoder().encode(csv(qrows))},{path:'materials.csv',data:new TextEncoder().encode(csv(mrows))},
+  const erows=[['퀘스트id','순서','이름','기본 수','보스','그림']];
+  S.quests.forEach(q=>(q.view?q.view.enemies:[]).forEach((e,i)=>erows.push([q.id,i+1,e.name,e.count,e.boss?'예':'',e.img||''])));
+  const trows=[['퀘스트id','상황','방식','표정','대사','씬ID']];
+  S.quests.forEach(q=>{const R2=CATRULE[q.cat]||CATRULE.res;R2.talks.forEach(k=>{const t=(q.talk||{})[k];if(!t||t.mode==='none')return;trows.push([q.id,TALKS.find(x=>x.k===k).n,t.mode==='line'?'한 줄':'대화씬',t.mode==='line'?t.face:'',t.mode==='line'?t.text:'',t.mode==='scene'?t.scene:'']);});});
+  const R=S.qrule,rrows=[['항목','값','설명'],['rewardMul',R.rMul,'기본 기간보다 1주 늘 때 보상 배수'],['monsterMul',R.mMul,'1주 늘 때 몬스터 수 배수(보스 제외)'],['refPctPerWeek',R.refPct,'1주 늘 때 판정 기준치 +%'],['deltaMin',R.dMin,'기간 줄이기 한도(주)'],['deltaMax',R.dMax,'기간 늘리기 한도(주)'],['capNextGrade',R.cap?1:0,'주당 보상 상한: 한 등급 위 기본 주당 보상'],['death','기간 비례','1-(1-등급 사망률)^(기간/기본 기간)']];
+  const files=[{path:'quests.csv',data:new TextEncoder().encode(csv(qrows))},{path:'quest_enemies.csv',data:new TextEncoder().encode(csv(erows))},{path:'quest_rules.csv',data:new TextEncoder().encode(csv(rrows))},{path:'quest_talk.csv',data:new TextEncoder().encode(csv(trows))},{path:'materials.csv',data:new TextEncoder().encode(csv(mrows))},
                {path:'items.csv',data:new TextEncoder().encode(csv(irows))},
                {path:'backup.json',data:new TextEncoder().encode(JSON.stringify(S))}];
   [...S.mats,...S.items].forEach(o=>{if(o.icon)files.push({path:iconFile(o),data:dataUrlBytes(o.icon)});});
@@ -486,6 +709,15 @@ async function saveToFolder(){
 document.addEventListener('click',e=>{
   const t=e.target.closest('button,[data-pick]');if(!t)return;
   if(t.dataset.tab){tab=t.dataset.tab;confirming=null;render();return;}
+  if(t.dataset.endel!==undefined){const q=cur();if(q){q.view.enemies.splice(+t.dataset.endel,1);save();render();}return;}
+  if(t.id==='addEn'){const q=cur();if(q&&q.view.enemies.length<3){q.view.enemies.push({name:'',count:1,boss:false,img:''});save();render();const el=document.querySelector(`[data-en="${q.view.enemies.length-1}"][data-ek="name"]`);if(el)el.focus();}return;}
+  if(t.dataset.predel!==undefined){const q=cur();if(q){q.cond.prereq.splice(+t.dataset.predel,1);save();render();}return;}
+  if(t.dataset.prejump){sel.quest=t.dataset.prejump;confirming=null;render();return;}
+  if(t.dataset.tsauto){const q=cur();if(q){q.talk[t.dataset.tsauto].scene=`quest_${q.id}_${t.dataset.tsauto}`;save();render();}return;}
+  if(t.dataset.jauto){const q=cur();if(q){q.judge[t.dataset.jauto]=null;save();render();}return;}
+  if(t.dataset.jstat!==undefined){const q=cur();if(q){const k=+t.dataset.jstat,a=q.judge.stats,ix=a.indexOf(k);if(ix>=0)a.splice(ix,1);else a.push(k);a.sort();save();render();}return;}
+  if(t.id==='ruleReset'){S.qrule=Object.assign({},RULE_DEF);save();render();toast('계수를 기본값으로 되돌렸습니다');return;}
+  if(t.dataset.qsub){qsub=t.dataset.qsub;try{localStorage.setItem('mat_qsub',qsub);}catch(e){}render();return;}
   if(t.dataset.pick){sel[tab]=t.dataset.pick;confirming=null;render();return;}
   if(t.dataset.rwdel!==undefined){const q=cur();if(q){q.rewards.splice(+t.dataset.rwdel,1);save();render();}return;}
   if(t.dataset.jumpq){tab='quest';sel.quest=t.dataset.jumpq;confirming=null;render();return;}
@@ -495,7 +727,7 @@ document.addEventListener('click',e=>{
     case 'sortDir':setSort(xsort.key,-xsort.dir);break;
     case 'addMat':{const n=nextId('mat'),m={id:'mat_x'+String(n).padStart(3,'0'),name:'새 소재',grade:'F',line:'etc',core:false,desc:'',icon:null};S.mats.push(m);sel.mat=m.id;save();render();$('fName').select();break;}
     case 'addItem':{const p=KIND_PREFIX[tab],n=nextId(tab),i={id:`${p}_${String(n).padStart(2,'0')}`,kind:tab,name:'새 '+KINDS.find(k=>k.k===tab).n,grade:'F',desc:'',recipe:[],icon:null};S.items.push(i);sel[tab]=i.id;save();render();$('fName').select();break;}
-    case 'addQuest':{const n=nextId('quest'),q={id:'q_x'+String(n).padStart(3,'0'),name:'새 퀘스트',cat:'sub',grade:'F',line:'',core:false,desc:'',rewards:[]};S.quests.push(q);sel.quest=q.id;save();render();$('fName').select();break;}
+    case 'addQuest':{const n=nextId('quest'),q={id:'q_x'+String(n).padStart(3,'0'),name:'새 퀘스트',cat:'sub',grade:'F',line:'',core:false,client:'',notice:'',desc:'',rewards:[],view:{region:'',delta:0,enemies:[]},judge:JDEF(),cond:CDEF(),talk:Object.fromEntries(TALKS.map(t=>[t.k,TDEF()]))};S.quests.push(q);sel.quest=q.id;qsub='basic';save();render();$('fName').select();break;}
     case 'addRw':{const q=cur();if(q){q.rewards.push({m:'',role:q.rewards.length?'부':'주',p:q.rewards.length?10:100});save();render();}break;}
     case 'delQuest':confirming=(cur()||{}).id;render();break;
     case 'upIcon':$('fIcon').click();break;
@@ -507,27 +739,56 @@ document.addEventListener('click',e=>{
     case 'bZip':download(makeZip(buildFiles()),'materials_export.zip');toast('zip을 내려받았습니다');break;
     case 'bLoad':$('fLoad').click();break;
     case 'bReset':
-      if(t.dataset.arm){S=seed();sel={mat:null,food:null,gear:null,potion:null,quest:null};t.dataset.arm='';t.textContent='처음 상태로';save();render();toast('처음 상태로 되돌렸습니다');}
+      if(t.dataset.arm){S=seed();migrateQuests();sel={mat:null,food:null,gear:null,potion:null,quest:null};t.dataset.arm='';t.textContent='처음 상태로';save();render();toast('처음 상태로 되돌렸습니다');}
       else{t.dataset.arm='1';t.textContent='정말 되돌리기 (한 번 더)';setTimeout(()=>{t.dataset.arm='';t.textContent='처음 상태로';},3500);}
       break;
   }
 });
 document.addEventListener('input',e=>{
+  const t0=e.target;
+  if(['rMul','mMul','refPct','dMin','dMax'].includes(t0.id)){const v=parseFloat(t0.value);if(!isFinite(v))return;const lim={rMul:[1,5],mMul:[1,5],refPct:[0,50],dMin:[-5,0],dMax:[0,8]}[t0.id];
+    S.qrule[t0.id]=Math.max(lim[0],Math.min(lim[1],t0.id[0]==='d'?Math.round(v):v));save();rerenderKeepFocus();return;}
   const o=cur();if(!o)return;const t=e.target;
+  if(t.dataset.en!==undefined){const en=o.view.enemies[+t.dataset.en];if(!en)return;const k=t.dataset.ek;
+    if(k==='count'){en.count=Math.max(1,Math.min(99,parseInt(t.value)||1));}else if(k==='name'||k==='img')en[k]=t.value;
+    save();if(k==='count'){const c=document.querySelector(`[data-encnt="${t.dataset.en}"]`);if(c){const n=en.boss?en.count:durCalc(o.grade,o.view.delta,en.count).mon;c.textContent=`이 기간에는 ${n}마리${en.boss?' · 보스는 수 늘지 않음':''}`;}}return;}
   if(t.id==='fName'){o.name=t.value;save();renderTabs();renderStatus();const el=document.querySelector(`[data-pick="${o.id}"]`);if(el){const nm=el.querySelector('.nm,b');if(nm)nm.textContent=o.name;}}
   else if(t.id==='fDesc'){o.desc=t.value;save();}
+  else if(t.id==='fClient'){o.client=t.value;save();}
+  else if(t.id==='cRumor'){o.cond.rumor=t.value;save();}
+  else if(t.id==='cNear'){o.cond.near=t.value;save();}
+  else if(t.dataset.ttext){o.talk[t.dataset.ttext].text=t.value;save();}
+  else if(t.dataset.tscene){o.talk[t.dataset.tscene].scene=t.value;save();}
+  else if(t.id==='fNotice'){o.notice=t.value;save();const c=$('noticeCnt');if(c)c.textContent=[...t.value].length+'자';}
   else if(t.dataset.rwp!==undefined){const r=o.rewards[+t.dataset.rwp];if(r){r.p=Math.max(0,Math.min(100,parseFloat(t.value)||0));save();}}
   else if(t.dataset.qty!==undefined){const r=o.recipe[+t.dataset.qty];if(r){r.n=Math.max(1,Math.min(99,parseInt(t.value)||1));save();renderStatus();}}
 });
 document.addEventListener('change',e=>{
   const t=e.target;
   if(t.id==='sortKey'){setSort(t.value,xsort.dir);return;}
+  if(t.id==='capOn'){S.qrule.cap=t.checked;save();render();return;}
+  if(t.id==='simMetric'){simMetric=t.value;try{localStorage.setItem('mat_sim',simMetric);}catch(x){}render();return;}
   if(t.id==='fIcon'){loadIcon(t.files[0]);t.value='';return;}
-  if(t.id==='fLoad'){const f=t.files[0];t.value='';if(!f)return;f.text().then(s=>{try{const d=JSON.parse(s);if(!d.mats||!d.items)throw 0;S=d;if(!S.quests)S.quests=seedQuests(S.mats);S.seq=S.seq||{};sel={mat:null,food:null,gear:null,potion:null,quest:null};save();render();toast('백업을 불러왔습니다');}catch(x){toast('백업 파일 형식이 맞지 않습니다');}});return;}
+  if(t.id==='fLoad'){const f=t.files[0];t.value='';if(!f)return;f.text().then(s=>{try{const d=JSON.parse(s);if(!d.mats||!d.items)throw 0;S=d;if(!S.quests)S.quests=seedQuests(S.mats);S.seq=S.seq||{};migrateQuests();sel={mat:null,food:null,gear:null,potion:null,quest:null};save();render();toast('백업을 불러왔습니다');}catch(x){toast('백업 파일 형식이 맞지 않습니다');}});return;}
   const o=cur();if(!o)return;
   if(t.id==='fGrade'){o.grade=t.value;save();render();}
   else if(t.id==='fLine'){o.line=t.value;save();render();}
   else if(t.id==='fCat'){o.cat=t.value;save();render();}
+  else if(t.id==='fType'){o.line=t.value;save();render();}
+  else if(t.id==='cRoute'){o.cond.route=t.value;save();}
+  else if(t.id==='cGrade'){o.cond.minGrade=t.value;save();}
+  else if(t.id==='cFame'||t.id==='cTrust'){const v=t.value.trim();o.cond[t.id==='cFame'?'fame':'trust']=v===''||!isFinite(+v)?null:Math.max(0,+v);save();render();}
+  else if(t.id==='cReappear'){o.cond.reappear=Math.max(1,Math.min(96,parseInt(t.value)||8));save();}
+  else if(t.id==='cHidden'){o.cond.hidden=t.checked;save();render();}
+  else if(t.id==='cPreAdd'){if(t.value&&!o.cond.prereq.includes(t.value))o.cond.prereq.push(t.value);save();render();}
+  else if(t.dataset.tmode){o.talk[t.dataset.tmode].mode=t.value;save();render();}
+  else if(t.dataset.tface){o.talk[t.dataset.tface].face=t.value;save();}
+  else if(t.id==='jSmode'){o.judge.smode=t.value;if(t.value==='manual'&&!o.judge.stats.length){const F=questFinal(o);o.judge.stats=F.ti>=0?[F.ti]:[];}save();render();}
+  else if(t.id==='jBoss'){o.judge.boss=t.checked;save();render();}
+  else if(t.dataset.jk){const k=t.dataset.jk,v=t.value.trim();if(v===''||!isFinite(+v))o.judge[k]=null;else{let x=Math.max(0,+v);if(k==='death')x=Math.min(100,x)/100;o.judge[k]=x;}save();render();}
+  else if(t.id==='vRegion'){o.view.region=t.value;save();render();}
+  else if(t.id==='vDelta'){o.view.delta=parseInt(t.value)||0;save();render();}
+  else if(t.dataset.en!==undefined&&t.dataset.ek==='boss'){const en=o.view.enemies[+t.dataset.en];if(en){en.boss=t.checked;save();render();}}
   else if(t.dataset.rwm!==undefined){o.rewards[+t.dataset.rwm].m=t.value;save();render();}
   else if(t.dataset.rwr!==undefined){o.rewards[+t.dataset.rwr].role=t.value;save();}
   else if(t.dataset.slot!==undefined){
@@ -537,6 +798,7 @@ document.addEventListener('change',e=>{
     save();render();
   }
 });
+document.addEventListener('toggle',e=>{if(e.target.id==='rulesBox'){rulesOpen=e.target.open;try{localStorage.setItem('mat_rules',rulesOpen?'1':'0');}catch(x){}}},true);
 document.addEventListener('dragover',e=>{const d=e.target.closest('#drop');if(d){e.preventDefault();d.classList.add('over');}});
 document.addEventListener('dragleave',e=>{const d=e.target.closest('#drop');if(d)d.classList.remove('over');});
 document.addEventListener('drop',e=>{const d=e.target.closest('#drop');if(d){e.preventDefault();d.classList.remove('over');loadIcon(e.dataTransfer.files[0]);}});
@@ -550,6 +812,7 @@ document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.tar
   const have=new Set(S.mats.map(m=>m.id));
   seed().mats.filter(m=>m.core&&!have.has(m.id)).forEach(m=>S.mats.push(m));
   if(!S.quests){S.quests=seedQuests(S.mats);S.seq.q=S.seq.q||0;}
+  migrateQuests();
   sel.mat='mat_slay_F';
   render();
 })();

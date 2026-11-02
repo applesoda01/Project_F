@@ -149,8 +149,10 @@
     CLOUD_ALPHA: 0.6,        // 기본 투명도
     CLOUD_NEAR_ALPHA: 0.15,   // 커서가 구름 한가운데 있을 때
     CLOUD_SPEED: [28, 40],    // px/초 → 화면 가로지르기 약 60~90초
-    CLOUD_COUNT: [1, 3],      // 화면에 동시에 떠 있는 수
-    WIND: [1, 0.18],          // 바람 방향 (오른쪽, 살짝 아래)
+    CLOUD_COUNT: [2, 4],      // 화면에 동시에 떠 있는 수 (2026-11-02 1~3 → 2~4)
+    CLOUD_SCALE: 1.2,         // 구름 전체 크기 배율 (1 = 파일 크기의 절반으로 표시, 2026-11-02 1.2로 확정)
+    CLOUD_SCALE_VAR: [0.8, 1.25], // 구름마다 크기 차이
+    WIND: [1, -0.23],         // 바람 방향: 왼쪽 아래 → 오른쪽 위, 구름 기울기와 같은 약 13° (2026-11-02)
     SHADOW_OFF: [150, 280],   // 그림자 위치 (해가 왼쪽 위)
     SHADOW_ALPHA: 0.16,
     BIRD_EVERY: [20, 40],     // 초
@@ -189,9 +191,9 @@
     return (cloudArt = cloudArt || makeCloudArt())[i % 3];
   }
   function spawnCloud(x) {
-    const fs = cloudFiles(skyUpdate.getImg), i = fs.length ? fs[Math.floor(Math.random() * fs.length)] : Math.floor(Math.random() * 3), sc = rnd(0.8, 1.25);
-    const y = rnd(-120, 760) - (x === undefined ? 0 : 0);
-    clouds.push({ i, sc, x: x === undefined ? -720 : x, y, sp: rnd(SKY.CLOUD_SPEED[0], SKY.CLOUD_SPEED[1]), a: SKY.CLOUD_ALPHA, flip: Math.random() < 0.5 });
+    const fs = cloudFiles(skyUpdate.getImg), i = fs.length ? fs[Math.floor(Math.random() * fs.length)] : Math.floor(Math.random() * 3), sc = rnd(SKY.CLOUD_SCALE_VAR[0], SKY.CLOUD_SCALE_VAR[1]) * SKY.CLOUD_SCALE;
+    const y = x === undefined ? rnd(200, 1150) : rnd(-100, 900); // 새 구름은 왼쪽 아래쪽에서 들어와 오른쪽 위로 빠짐
+    clouds.push({ i, sc, x: x === undefined ? -cloudImg(i, skyUpdate.getImg).w * sc - 20 : x, y, sp: rnd(SKY.CLOUD_SPEED[0], SKY.CLOUD_SPEED[1]), a: SKY.CLOUD_ALPHA, flip: false }); // 좌우 반전 안 함: 구름 4종 모두 오른쪽이 약 13° 올라간 기울기로 맞춤(2026-11-02)
   }
   let cloudTarget = 2;
   function skyReset() { clouds = []; birds = []; nextBird = rnd(4, 10); cloudTarget = Math.round(rnd(SKY.CLOUD_COUNT[0], SKY.CLOUD_COUNT[1])); for (let k = 0; k < cloudTarget; k++) spawnCloud(rnd(-300, 1700)); }
@@ -208,7 +210,7 @@
       const art = cloudImg(c.i, skyUpdate.getImg), w = art.w * c.sc, h = art.h * c.sc, cx = c.x + w / 2, cy = c.y + h / 2;
       let target = SKY.CLOUD_ALPHA;
       if (mouse && mouse.x >= 0) { const d = Math.hypot((mouse.x - cx) / (w * 0.5), (mouse.y - cy) / (h * 0.5)), f = Math.min(1, Math.max(0, (d - 0.35) / 0.9)); target = SKY.CLOUD_NEAR_ALPHA + (SKY.CLOUD_ALPHA - SKY.CLOUD_NEAR_ALPHA) * f; }
-      c.a += (target - c.a) * Math.min(1, dt * 5); c.done = c.x > 1960 || c.y > 1120;
+      c.a += (target - c.a) * Math.min(1, dt * 5); c.done = c.x > 1960 || c.y + h < -40;
     }
     clouds = clouds.filter(c => !c.done);
     if (clouds.length < cloudTarget) { spawnCloud(); cloudTarget = Math.round(rnd(SKY.CLOUD_COUNT[0], SKY.CLOUD_COUNT[1])); }

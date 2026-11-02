@@ -1,9 +1,10 @@
-# 사용: python cloud_matte.py <검은배경.png> <흰배경.png> <출력폴더>  (이후 imagequant 품질 70~98로 양자화)
+# 사용: python cloud_matte.py <검은배경.png> <흰배경.png> <출력폴더> [배율]  (이후 imagequant 품질 60~98로 양자화)
 # 구름 시트 차이 매팅: 검은 배경(B)·흰 배경(W) 두 장 → 투명 PNG 4장
 from PIL import Image; import numpy as np; from scipy import ndimage as nd; import sys,os
 B=np.array(Image.open(sys.argv[1]).convert('RGB')).astype(float); W=np.array(Image.open(sys.argv[2]).convert('RGB')).astype(float); OUT=sys.argv[3]
 a=1-(W-B).mean(2)/255; a=np.clip((a-0.03)/0.92,0,1)             # 바탕 잡티 제거, 속은 불투명
 a=nd.median_filter(a,3)
+a[-170:,-170:]=0   # WATERMARK: 오른쪽 아래 Gemini 표식 제거
 F=np.where(a[...,None]>0.004,B/np.maximum(a[...,None],1e-3),0); F=np.clip(F,0,255)
 H,Wd=a.shape
 lab,n=nd.label(nd.binary_dilation(a>0.05,iterations=25))
@@ -15,7 +16,7 @@ for i,sl in enumerate(nd.find_objects(lab)):
 objs.sort(key=lambda o:(round(o[0][0].start/(H/2)),o[0][1].start))   # 위→아래, 왼→오
 print('found',len(objs))
 TARGET_W={0:1280,1:1100,2:840,3:1240}  # 2배 저장 기준 가로폭
-K=1280/ (objs[0][0][1].stop-objs[0][0][1].start)                 # 1번 기준 단일 배율
+K=float(sys.argv[4]) if len(sys.argv)>4 else 1280/(objs[0][0][1].stop-objs[0][0][1].start)  # 단일 배율(시트 간 통일 시 지정)
 os.makedirs(OUT,exist_ok=True)
 for k,(sl,lid) in enumerate(objs):
     m=(lab==lid); aa=np.where(m,a,0)

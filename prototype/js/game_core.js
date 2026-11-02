@@ -27,7 +27,8 @@
       advs: [], board: [], active: [], nextId: 1, log: [],
       month: blankLedger(), lastMonth: null, history: [],
       stats: { done: 0, fail: 0 },
-      proposals: [], discovered: {} // 전직 제안 대기열, 발견한 직업 (M3-2)
+      proposals: [], discovered: {}, // 전직 제안 대기열, 발견한 직업 (M3-2)
+      ui: { expView: null } // 화면 배치 저장. expView: 원정 미니 뷰 위치 {x, y}(1920×1080 기준 왼쪽 위), null이면 기본 자리
     };
     attachRng(s);
     for (let i = 0; i < cfg.adv.startCount; i++) spawnAdv(s, { attach: 20, quiet: true });
@@ -186,6 +187,7 @@
   // 예전 저장 데이터 보정
   function migrate(s) {
     s.proposals = s.proposals || []; s.discovered = s.discovered || {}; if (s.fame == null) s.fame = 0;
+    s.ui = s.ui || {}; if (s.ui.expView === undefined) s.ui.expView = null; // 예전 저장에는 화면 배치가 없음
     for (const a of s.advs) {
       if (!a.cls1) a.cls1 = CLASS1[a.core];
       if (!a.line) a.line = [a.core];
