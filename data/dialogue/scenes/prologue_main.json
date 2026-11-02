@@ -19,83 +19,89 @@
     },
     {
       "id": "s003",
-      "type": "say",
-      "speaker": "narrator",
-      "expr": "default",
-      "text": "그때. 갑자기 나타난 용사에 의해서 마왕은 봉인이 되었다."
+      "type": "background",
+      "file": "prologue/p3_composite_1920x1080.png",
+      "transition": "fade"
     },
     {
       "id": "s004",
       "type": "say",
       "speaker": "narrator",
       "expr": "default",
-      "text": "마왕은 6개로 갈라지며 각 대륙의 끝에 봉인이 되었고, 용사는 소리없이 사라졌다고 한다."
+      "text": "그때. 갑자기 나타난 용사에 의해서 마왕은 봉인이 되었다."
     },
     {
       "id": "s005",
       "type": "say",
       "speaker": "narrator",
       "expr": "default",
-      "text": "물론 그 용사는 내가 아니다. 내가 되고 싶었을 뿐."
+      "text": "마왕은 6개로 갈라지며 각 대륙의 끝에 봉인이 되었고, 용사는 소리없이 사라졌다고 한다."
     },
     {
       "id": "s006",
       "type": "say",
       "speaker": "narrator",
       "expr": "default",
-      "text": "그 후 1년 뒤."
+      "text": "물론 그 용사는 내가 아니다. 내가 되고 싶었을 뿐."
     },
     {
       "id": "s007",
+      "type": "say",
+      "speaker": "narrator",
+      "expr": "default",
+      "text": "그 후 1년 뒤."
+    },
+    {
+      "id": "s008",
       "type": "say",
       "speaker": "lina",
       "expr": "worried",
       "text": "마스터? 마스터??"
     },
     {
-      "id": "s008",
+      "id": "s009",
       "type": "say",
       "speaker": "lina",
       "expr": "surprised",
       "text": "아 마스터! 일어나셨군요? 안녕하세요. 오늘부터 여기에서 일하게 된 리나라고 합니다."
     },
     {
-      "id": "s009",
+      "id": "s010",
       "type": "say",
       "speaker": "lina",
       "expr": "smile",
       "text": "이런 변두리 마을의 평화를 위해 길드를 설립하신 점 대단하다고 생각해요."
     },
     {
-      "id": "s010",
+      "id": "s011",
       "type": "say",
       "speaker": "lina",
       "expr": "smile",
       "text": "아직 아무것도 갖추지 못한 길드지만, 점점 발전할거라 믿고 있어요!"
     },
     {
-      "id": "s011",
+      "id": "s012",
       "type": "say",
       "speaker": "lina",
       "expr": "serious",
       "text": "이미 알고 계시겠지만, 저희는 사람들에게 의뢰를 모험가님들께 중계해주는 역활을 하고 있어요."
     },
     {
-      "id": "s012",
+      "id": "s013",
       "type": "say",
       "speaker": "lina",
       "expr": "smile",
       "text": "많은 의뢰를 받을 수록 우리도 그만큼 성장할 수 있답니다."
     },
     {
-      "id": "s013",
+      "id": "s014",
       "type": "say",
       "speaker": "lina",
       "expr": "surprised",
       "text": "어머? 마침 모험가 한분이 이곳으로 걸어오고 있으시네요?"
     },
     {
-      "id": "s014",
+      "id": "s015",
       "type": "say",
       "speaker": "adv_newcomer",
       "expr": "default",
