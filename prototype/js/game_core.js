@@ -294,13 +294,15 @@
           const C = CB.C, price = C.potionPrice[Math.min(q.g, s.grade)];
           for (const m of party) { const want = C.potionCarry[m.spend] - (s.R() < 0.5 ? 1 : 0); while (m.pots < want && m.wallet >= price) { m.wallet -= price; m.pots++; } }
           const r = CB.fight(party.map(m => unitOf(s, m, mealB)), q.enemies, q.g, s.R, party[0].risk, true);
-          fight = { win: r.win, result: r.result, rounds: r.rounds, log: r.log,
+          fight = { win: r.win, result: r.result, rounds: r.rounds, log: r.log.map(e => e.hp != null ? Object.assign({}, e, { hp: Math.round(e.hp) }) : e),
             units: r.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), hp: Math.round(u.hp), down: u.down, pots: u.pots, used: u.used })),
             enemies: q.enemies.map(e => ({ name: e.name, mon: e.mon, boss: e.boss, maxHp: Math.round(e.hp), atk: Math.round(e.atk) })) };
           p = r.win ? 1 : 0;
         } else p = Math.min(0.97, successP(s, party, q) * (1 + mealB));
+        // 비전투 의뢰도 결과를 출발할 때 정해 둠 (미니 뷰가 귀환 전에 결과 장면을 보여 줌). rate = 출발 때 예상 성공률(위험도 표시용)
+        const ok = fight ? fight.win : s.R() < p, rate = Math.round(pp * 100);
         for (const m of party) { m.state = 'quest'; m.until = s.week + weeks; }
-        s.active.push({ q, party: party.map(m => m.id), p, back: s.week + weeks, ate: eaters, fight });
+        s.active.push({ q, party: party.map(m => m.id), p, ok, rate, start: s.week, weeks, back: s.week + weeks, ate: eaters, fight });
         log(s, `${J(names(party), '이', '가')} ${GR[q.g]}급 ${QTYPE[q.type]} 의뢰를 맡아 떠났습니다.${eaters ? ' (출발 전 식사 ' + eaters + '명)' : ''}`, 'depart');
         break;
       }
@@ -313,7 +315,7 @@
     for (const x of back) {
       const party = x.party.map(id => s.advs.find(a => a.id === id));
       const q = x.q, F = x.fight; s.month.quests++;
-      const ok = F ? F.win : s.R() < x.p;
+      const ok = x.ok != null ? x.ok : F ? F.win : s.R() < x.p;   // 예전 저장(출발 때 결과 없음)은 귀환 때 판정
       if (F) { s.stats.combat++; if (ok) s.stats.combatWin++; }
       if (ok) {
         s.stats.done++; s.month.success++;

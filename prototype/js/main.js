@@ -24,7 +24,7 @@
   }
   function setSpeed(v) { speed = v; UI.setSpeed(v); }
   function save(quiet) { try { localStorage.setItem(SAVE_KEY, Gm.serialize(s)); } catch (e) { if (!quiet) UI.toast('이 환경에서는 저장할 수 없습니다.', 'warn'); } }
-  function swap(ns, msg) { s = ns; UI.setState(s); Lobby.Board.reset(); Director.reset(s); UI.hud(); UI.close(); UI.logClear(); if (msg) UI.say(msg); }
+  function swap(ns, msg) { s = ns; UI.setState(s); Lobby.Board.reset(); Director.reset(s); Expedition.reset(); UI.hud(); UI.close(); UI.logClear(); if (msg) UI.say(msg); }
   function load() {
     let t = null; try { t = localStorage.getItem(SAVE_KEY); } catch (e) { /* 저장소 없음 */ }
     if (!t) { UI.toast('저장된 게임이 없습니다.', 'warn'); return; }
@@ -39,6 +39,7 @@
   UI.init(stage, s, { setSpeed, save, load, newGame, changed: () => UI.hud(), promoted: a => Director.celebrate(a.id), town: () => Town.open() });
   Town.init(stage, () => s, {});
   LinaMenu.init(stage, () => s, UI); // 리나 클릭 메뉴 (좌3·우3)
+  Expedition.init(stage, () => s); // 원정 현황 패널 + 미니 뷰 (expedition.js)
   const q = sel => stage.ui.querySelector(sel);
   q('#dWeek').onclick = () => { step(); UI.hud(); };
   q('#dMonth').onclick = () => { for (let i = 0; i < 4; i++) step(); UI.hud(); };
@@ -64,6 +65,7 @@
     const dt = Math.min(0.1, (now - last) / 1000); last = now; T += dt;
     if (speed > 0) { acc += dt * 1000 * speed; let n = 0; while (acc >= WEEK_MS) { acc -= WEEK_MS; step(); n++; } if (n) UI.hud(); }
     UI.weekBar(acc / WEEK_MS);
+    Expedition.update(dt, acc / WEEK_MS, speed);
     // 화면 속 동작 빠르기: 배속이 오르면 함께 빨라지되 최대 3배 (일시정지면 멈춤)
     const as = speed === 0 ? 0 : Math.min(3, Math.max(1, speed * 0.6)), adt = dt * as;
     Lobby.update(s, dt); Lina.update(adt); Director.update(adt); UI.update(dt); Town.update(s, dt);

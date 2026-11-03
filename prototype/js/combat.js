@@ -47,6 +47,7 @@
     }
 
     // 전투. units: unit() 배열, enemies: [{hp, atk, name}], g: 의뢰 등급, R: 0~1 난수 함수(없으면 기댓값으로 계산)
+    // 기록(log, 미니 뷰 재생용): hit{by,to(적 순번),hp,c(치명타)} · miss{to} · hurt{to,hp} · heal{by,to,hp} · potion{to,hp} · down{to}. r = 라운드
     function fight(units, enemies, g, R, leaderRisk, wantLog) {
       const P = units.map(u => Object.assign({}, u)), E = enemies.map(e => ({ name: e.name, hp: e.hp, maxHp: e.hp, atk: e.atk }));
       const exp = !R, rnd = () => (exp ? 0.5 : R());
@@ -63,11 +64,11 @@
           if (u.down) continue;
           const alive = E.filter(e => e.hp > 0); if (!alive.length) break;
           const hurt = P.filter(x => !x.down && x.hp < x.maxHp * 0.5).sort((x, y) => x.hp / x.maxHp - y.hp / y.maxHp)[0];
-          if (u.heal && hurt && u.mp >= C.healMp) { u.mp -= C.healMp; hurt.hp = Math.min(hurt.maxHp, hurt.hp + u.heal); if (log) log.push({ r: round, t: 'heal', by: u.a.id, to: hurt.a.id }); continue; }
+          if (u.heal && hurt && u.mp >= C.healMp) { u.mp -= C.healMp; hurt.hp = Math.min(hurt.maxHp, hurt.hp + u.heal); if (log) log.push({ r: round, t: 'heal', by: u.a.id, to: hurt.a.id, hp: hurt.hp }); continue; }
           const tgt = alive.sort((x, y) => x.hp - y.hp)[0];
-          let d = u.atk * vary();
-          if (exp) d *= 1 + u.crit * (C.critMult - 1); else if (R() < u.crit) d *= C.critMult;
-          tgt.hp -= d; if (log) log.push({ r: round, t: 'hit', by: u.a.id, to: E.indexOf(tgt), hp: Math.max(0, tgt.hp) });
+          let d = u.atk * vary(), crit = 0;
+          if (exp) d *= 1 + u.crit * (C.critMult - 1); else if (R() < u.crit) { d *= C.critMult; crit = 1; }
+          tgt.hp -= d; if (log) log.push({ r: round, t: 'hit', by: u.a.id, to: E.indexOf(tgt), hp: Math.max(0, tgt.hp), c: crit });
         }
         if (!E.some(e => e.hp > 0)) { result = 'win'; break; }
         for (const e of E) {
@@ -78,7 +79,7 @@
           if (exp) d *= 1 - tgt.evade; else if (R() < tgt.evade) { if (log) log.push({ r: round, t: 'miss', to: tgt.a.id }); continue; }
           tgt.hp -= d;
           if (tgt.hp <= 0) { tgt.hp = 0; tgt.down = true; if (log) log.push({ r: round, t: 'down', to: tgt.a.id }); continue; }
-          if (tgt.hp < tgt.maxHp * tgt.potLine && tgt.pots > 0) { tgt.pots--; tgt.used++; tgt.hp = Math.min(tgt.maxHp, tgt.hp + tgt.maxHp * potHeal); if (log) log.push({ r: round, t: 'potion', to: tgt.a.id }); }
+          if (tgt.hp < tgt.maxHp * tgt.potLine && tgt.pots > 0) { tgt.pots--; tgt.used++; tgt.hp = Math.min(tgt.maxHp, tgt.hp + tgt.maxHp * potHeal); if (log) log.push({ r: round, t: 'potion', to: tgt.a.id, hp: tgt.hp }); }
           if (log) log.push({ r: round, t: 'hurt', to: tgt.a.id, hp: tgt.hp });
         }
         const left = P.reduce((t, u) => t + (u.down ? 0 : u.hp), 0);

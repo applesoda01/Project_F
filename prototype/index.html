@@ -269,6 +269,32 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 #hudBR,#hudTR{transition:transform .9s cubic-bezier(.4,0,.2,1) .3s,opacity .7s ease .3s}
 .dlgOn #hudBR,.dlgOn #hudTR{transform:translateY(200px);opacity:0;pointer-events:none;transition-delay:0s}
 .dlgOn #hudBR *,.dlgOn #hudTR *{pointer-events:none}
+/* 원정 현황 패널(hudExp)·미니 뷰(expView) — expedition.js, docs/design/expedition_panel.md */
+#hudExp{position:absolute;right:16px;top:96px;width:360px;max-height:704px;display:flex;flex-direction:column;opacity:.5;transition:opacity .3s ease .3s;z-index:4;
+ background:linear-gradient(180deg,#3a2617,#2a1b10);border:2px solid #6b4a2b;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.45),inset 0 0 0 2px rgba(230,201,138,.18);font-family:"MaruBuri","Malgun Gothic",serif}
+#hudExp:hover{opacity:1;transition:opacity .15s}
+#hudExp.small{max-height:485px}
+#hudExp .head{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 8px;border-bottom:1px solid rgba(230,201,138,.25);color:#e6c98a;font-weight:700;font-size:22px}
+#hudExp .list{overflow-y:auto;padding:4px 0}
+#hudExp .row{position:relative;height:64px;padding:6px 14px 6px 62px;box-sizing:border-box;cursor:pointer;border:2px solid transparent;border-radius:6px;margin:2px 6px}
+#hudExp .row:hover{background:rgba(255,255,255,.05)}
+#hudExp .row.sel{border-color:#e6c98a;background:rgba(230,201,138,.08)}
+#hudExp .badge{position:absolute;left:12px;top:10px;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:20px;color:#2a1b10;
+ background:radial-gradient(circle at 35% 30%,#fff3c9,#d9a94e 70%,#8a5a1e);box-shadow:0 0 0 2px #5b3a17}
+#hudExp .l1{display:flex;gap:8px;align-items:baseline;white-space:nowrap;overflow:hidden}
+#hudExp .nm{font-weight:700;font-size:18px;color:#fff3dc}#hudExp .qn{font-size:15px;color:#d9c7a5;overflow:hidden;text-overflow:ellipsis}
+#hudExp .l2{display:flex;gap:8px;align-items:center;margin-top:5px}
+#hudExp .pb{flex:1;height:10px;background:#1a110a;border:1px solid #6b4a2b;border-radius:3px;position:relative;overflow:hidden}
+#hudExp .pb i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#c9963e,#f1d27c)}
+#hudExp .pb b{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,.55)}
+#hudExp .left{font-size:13px;color:#e8dcc4;width:62px;text-align:right}
+#hudExp .risk{font-size:13px;width:56px;text-align:right;font-weight:700}
+#hudExp .r-safe{color:#7bd88f}#hudExp .r-warn{color:#f2c14e}#hudExp .r-risk{color:#ff6b5a}
+.stage-ui .exTip{position:absolute;right:388px;width:260px;padding:10px 12px;background:rgba(20,13,8,.95);border:1px solid #6b4a2b;border-radius:8px;font:15px/1.6 "MaruBuri",serif;color:#f1e6cf;pointer-events:none;display:none;z-index:5}
+#expView{position:absolute;right:16px;top:597px;width:480px;height:203px;overflow:hidden;display:none;opacity:0;transition:opacity .2s;background:transparent;z-index:4;cursor:grab;touch-action:none;user-select:none}
+#expView.on{display:block}#expView.vis{opacity:1}#expView.drag{cursor:grabbing;transition:none}
+#expView canvas{position:absolute;left:0;top:0;width:480px;height:203px;image-rendering:pixelated;pointer-events:none}
+#expView .msg{position:absolute;left:0;right:0;bottom:0;padding:5px 10px;text-shadow:0 0 3px #000,0 1px 2px #000,0 0 6px rgba(0,0,0,.8);font:15px "MaruBuri",serif;color:#fff3dc;text-align:center;pointer-events:none}
 </style></head><body>
 <div id="game"></div>
 <div id="loading"><span id="loadMsg"></span></div>
@@ -310,6 +336,7 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 <script src="js/lobby.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/lina_menu.js"></script>
+<script src="js/expedition.js"></script>
 <script src="js/town_layout.js"></script>
 <script src="js/town.js"></script>
 <script src="js/main.js"></script>
