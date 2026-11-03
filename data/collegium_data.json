@@ -38,7 +38,7 @@
       "line": "slay",
       "core": true,
       "desc": "",
-      "icon": ""
+      "icon": "icons/mat_slay_F.png"
     },
     {
       "id": "mat_slay_E",
@@ -47,7 +47,7 @@
       "line": "slay",
       "core": true,
       "desc": "",
-      "icon": ""
+      "icon": "icons/mat_slay_E.png"
     },
     {
       "id": "mat_slay_D",
@@ -101,7 +101,7 @@
       "line": "hunt",
       "core": true,
       "desc": "",
-      "icon": ""
+      "icon": "icons/mat_hunt_F.png"
     },
     {
       "id": "mat_hunt_E",
@@ -110,7 +110,7 @@
       "line": "hunt",
       "core": true,
       "desc": "",
-      "icon": ""
+      "icon": "icons/mat_hunt_E.png"
     },
     {
       "id": "mat_hunt_D",
@@ -164,7 +164,7 @@
       "line": "study",
       "core": true,
       "desc": "",
-      "icon": ""
+      "icon": "icons/mat_study_F.png"
     },
     {
       "id": "mat_study_E",
@@ -173,7 +173,7 @@
       "line": "study",
       "core": true,
       "desc": "",
-      "icon": ""
+      "icon": "icons/mat_study_E.png"
     },
     {
       "id": "mat_study_D",
@@ -227,7 +227,7 @@
       "line": "guard",
       "core": true,
       "desc": "",
-      "icon": ""
+      "icon": "icons/mat_guard_F.png"
     },
     {
       "id": "mat_guard_E",
@@ -236,7 +236,7 @@
       "line": "guard",
       "core": true,
       "desc": "",
-      "icon": ""
+      "icon": "icons/mat_guard_E.png"
     },
     {
       "id": "mat_guard_D",
@@ -290,7 +290,7 @@
       "line": "mine",
       "core": true,
       "desc": "",
-      "icon": ""
+      "icon": "icons/mat_mine_F.png"
     },
     {
       "id": "mat_mine_E",
@@ -299,7 +299,7 @@
       "line": "mine",
       "core": true,
       "desc": "",
-      "icon": ""
+      "icon": "icons/mat_mine_E.png"
     },
     {
       "id": "mat_mine_D",
@@ -353,7 +353,7 @@
       "line": "restore",
       "core": false,
       "desc": "F~C급 장비·유품 복원. 모든 의뢰에서 5% 확률 획득",
-      "icon": ""
+      "icon": "icons/mat_x001.png"
     },
     {
       "id": "mat_x002",
@@ -371,7 +371,7 @@
       "line": "food",
       "core": false,
       "desc": "요리 재료 (사냥)",
-      "icon": ""
+      "icon": "icons/mat_x003.png"
     },
     {
       "id": "mat_x004",
@@ -380,7 +380,7 @@
       "line": "food",
       "core": false,
       "desc": "요리 재료 (채집)",
-      "icon": ""
+      "icon": "icons/mat_x004.png"
     },
     {
       "id": "mat_x005",
@@ -389,7 +389,7 @@
       "line": "food",
       "core": false,
       "desc": "요리 재료 (토벌)",
-      "icon": ""
+      "icon": "icons/mat_x005.png"
     },
     {
       "id": "mat_x006",
@@ -398,7 +398,7 @@
       "line": "food",
       "core": false,
       "desc": "요리 재료 (채집)",
-      "icon": ""
+      "icon": "icons/mat_x006.png"
     },
     {
       "id": "mat_x007",
@@ -479,7 +479,7 @@
       "line": "hunt",
       "core": false,
       "desc": "F급 장비 재질(가죽). F급 추가 퀘스트 2곳 부 소재 100% [가안, 이름 임시]",
-      "icon": ""
+      "icon": "icons/mat_x015.png"
     },
     {
       "id": "mat_x016",
@@ -488,7 +488,7 @@
       "line": "hunt",
       "core": false,
       "desc": "F급 물약 재료. F급 추가 퀘스트 2곳 부 소재 [가안, 이름 임시]",
-      "icon": ""
+      "icon": "icons/mat_x016.png"
     },
     {
       "id": "mat_x017",
@@ -497,7 +497,7 @@
       "line": "food",
       "core": false,
       "desc": "요리 재료 (채집) [가안, 이름 임시]",
-      "icon": ""
+      "icon": "icons/mat_x017.png"
     }
   ],
   "items": [
@@ -513,7 +513,7 @@
           "n": 1
         }
       ],
-      "icon": ""
+      "icon": "icons/food_01.png"
     },
     {
       "id": "food_02",
@@ -527,7 +527,7 @@
           "n": 1
         }
       ],
-      "icon": ""
+      "icon": "icons/food_02.png"
     },
     {
       "id": "food_03",
@@ -541,7 +541,7 @@
           "n": 1
         }
       ],
-      "icon": ""
+      "icon": "icons/food_03.png"
     },
     {
       "id": "food_04",
@@ -555,7 +555,7 @@
           "n": 1
         }
       ],
-      "icon": ""
+      "icon": "icons/food_04.png"
     },
     {
       "id": "food_05",
@@ -713,7 +713,7 @@
           "n": 1
         }
       ],
-      "icon": ""
+      "icon": "icons/food_15.png"
     },
     {
       "id": "pot_01",
@@ -727,7 +727,7 @@
           "n": 2
         }
       ],
-      "icon": ""
+      "icon": "icons/pot_01.png"
     },
     {
       "id": "pot_02",
@@ -745,7 +745,7 @@
           "n": 1
         }
       ],
-      "icon": ""
+      "icon": "icons/pot_02.png"
     },
     {
       "id": "gear_01",
@@ -776,7 +776,7 @@
       "luck": 0,
       "price": 150,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_01.png"
     },
     {
       "id": "gear_02",
@@ -807,7 +807,7 @@
       "luck": 0,
       "price": 150,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_02.png"
     },
     {
       "id": "gear_03",
@@ -838,7 +838,7 @@
       "luck": 0,
       "price": 150,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_03.png"
     },
     {
       "id": "gear_04",
@@ -873,7 +873,7 @@
       "luck": 0,
       "price": 150,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_04.png"
     },
     {
       "id": "gear_05",
@@ -904,7 +904,7 @@
       "luck": 0,
       "price": 150,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_05.png"
     },
     {
       "id": "gear_06",
@@ -936,7 +936,7 @@
       "luck": 0,
       "price": 180,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_06.png"
     },
     {
       "id": "gear_07",
@@ -968,7 +968,7 @@
       "luck": 0,
       "price": 180,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_07.png"
     },
     {
       "id": "gear_08",
@@ -1000,7 +1000,7 @@
       "luck": 0,
       "price": 180,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_08.png"
     },
     {
       "id": "gear_09",
@@ -1031,7 +1031,7 @@
       "luck": 0,
       "price": 120,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_09.png"
     },
     {
       "id": "gear_10",
@@ -1062,7 +1062,7 @@
       "luck": 0,
       "price": 120,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_10.png"
     },
     {
       "id": "gear_11",
@@ -1093,7 +1093,7 @@
       "luck": 0,
       "price": 120,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_11.png"
     },
     {
       "id": "gear_12",
@@ -1124,7 +1124,7 @@
       "luck": 0,
       "price": 120,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_12.png"
     },
     {
       "id": "gear_13",
@@ -1155,7 +1155,7 @@
       "luck": 0,
       "price": 120,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_13.png"
     },
     {
       "id": "food_16",
@@ -1173,7 +1173,7 @@
           "n": 1
         }
       ],
-      "icon": ""
+      "icon": "icons/food_16.png"
     },
     {
       "id": "pot_03",
@@ -1191,7 +1191,7 @@
           "n": 1
         }
       ],
-      "icon": ""
+      "icon": "icons/pot_03.png"
     },
     {
       "id": "pot_04",
@@ -1209,7 +1209,7 @@
           "n": 1
         }
       ],
-      "icon": ""
+      "icon": "icons/pot_04.png"
     },
     {
       "id": "gear_14",
@@ -1244,7 +1244,7 @@
       "luck": 0,
       "price": 300,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_14.png"
     },
     {
       "id": "gear_15",
@@ -1279,7 +1279,7 @@
       "luck": 0,
       "price": 300,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_15.png"
     },
     {
       "id": "gear_16",
@@ -1314,7 +1314,7 @@
       "luck": 0,
       "price": 300,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_16.png"
     },
     {
       "id": "gear_17",
@@ -1349,7 +1349,7 @@
       "luck": 0,
       "price": 300,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_17.png"
     },
     {
       "id": "gear_18",
@@ -1380,7 +1380,7 @@
       "luck": 0,
       "price": 300,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_18.png"
     },
     {
       "id": "gear_19",
@@ -1416,7 +1416,7 @@
       "luck": 0,
       "price": 360,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_19.png"
     },
     {
       "id": "gear_20",
@@ -1448,7 +1448,7 @@
       "luck": 0,
       "price": 360,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_20.png"
     },
     {
       "id": "gear_21",
@@ -1480,7 +1480,7 @@
       "luck": 0,
       "price": 360,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_21.png"
     },
     {
       "id": "gear_22",
@@ -1511,7 +1511,7 @@
       "luck": 0,
       "price": 240,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_22.png"
     },
     {
       "id": "gear_23",
@@ -1542,7 +1542,7 @@
       "luck": 0,
       "price": 240,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_23.png"
     },
     {
       "id": "gear_24",
@@ -1573,7 +1573,7 @@
       "luck": 0,
       "price": 240,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_24.png"
     },
     {
       "id": "gear_25",
@@ -1604,7 +1604,7 @@
       "luck": 0,
       "price": 240,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_25.png"
     },
     {
       "id": "gear_26",
@@ -1635,7 +1635,7 @@
       "luck": 0,
       "price": 240,
       "effect": "",
-      "icon": ""
+      "icon": "icons/gear_26.png"
     }
   ],
   "monsters": [
