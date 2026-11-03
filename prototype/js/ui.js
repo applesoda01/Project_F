@@ -180,16 +180,18 @@
       b.querySelector('#bList').onclick = e => { const t = e.target.closest('[data-wd]'); if (t) { Gm.withdrawQuest(s, +t.dataset.wd); hooks.changed(); } };
     }
     fillFilter(b);
+    // 소재 편집기에서 이름을 정한 의뢰는 그 이름 + 유형, 아니면 유형만
+    const qName = q => q.name ? `${String(q.name).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])} <span class="muted" style="font-weight:400">${Gm.QTYPE[q.type]}</span>` : Gm.QTYPE[q.type];
     const cap = Gm.boardCap(s);
     b.querySelector('#bInfo').textContent = `${s.board.length} / ${cap}칸`;
     b.querySelector('#bList').innerHTML = s.board.length ? s.board.map(x => `
-      <div class="card"><div class="t">${badge(x.g)}<b>${Gm.QTYPE[x.type]}</b><span class="n">${fmt(x.reward)}G</span></div>
+      <div class="card"><div class="t">${badge(x.g)}<b>${qName(x)}</b><span class="n">${fmt(x.reward)}G</span></div>
       <div class="req">필요 ${x.req.map(k => `${Gm.STATS[k]} ${Math.round(x.r)}`).join(' · ')}</div>
       <div class="row"><span class="muted">${s.week - x.posted}주째 게시</span><button class="sbtn" data-wd="${x.id}" title="등록비·위약금이 들고 신뢰도가 2 내려갑니다">떼기</button></div></div>`).join('')
       : '<p class="muted">게시된 의뢰가 없습니다. 의뢰는 매달 초에 들어옵니다.</p>';
     b.querySelector('#aInfo').textContent = `${s.active.length}건`;
     b.querySelector('#aList').innerHTML = s.active.length ? `<table><tr><th>의뢰</th><th>파티</th><th class="n">성공 확률</th><th class="n">귀환</th></tr>${s.active.map(x =>
-      `<tr><td>${badge(x.q.g)} ${Gm.QTYPE[x.q.type]}</td><td>${x.party.map(id => (s.advs.find(a => a.id === id) || {}).name).join('·')}</td><td class="n">${Math.round(x.p * 100)}%</td><td class="n">${Math.max(0, x.back - s.week)}주 뒤</td></tr>`).join('')}</table>` : '<p class="muted">지금 나가 있는 파티가 없습니다.</p>';
+      `<tr><td>${badge(x.q.g)} ${qName(x.q)}</td><td>${x.party.map(id => (s.advs.find(a => a.id === id) || {}).name).join('·')}</td><td class="n">${Math.round(x.p * 100)}%</td><td class="n">${Math.max(0, x.back - s.week)}주 뒤</td></tr>`).join('')}</table>` : '<p class="muted">지금 나가 있는 파티가 없습니다.</p>';
   }
   function fillFilter(b) {
     const cap = Gm.boardCap(s), tot = s.filter.slice(0, s.grade + 1).reduce((a, c) => a + c, 0) || 1;
@@ -230,7 +232,7 @@
     const hit = sk.find(x => x.line === Gm.STATS[k.line] && x.class.replace(/ \(.*\)$/, '') === k.form);
     return hit ? { name: hit.name, eff: hit.effect, form: k.form } : { name: '?', eff: '', form: k.form };
   }
-  function advStateHtml(a) { return a.state === 'quest' ? `<span class="st quest">의뢰 중 ${Math.max(0, a.until - s.week)}주</span>` : a.state === 'town' ? '<span class="st town">길드에 있음</span>' : '<span class="st away">마을 밖</span>'; }
+  function advStateHtml(a) { return a.state === 'quest' ? `<span class="st quest">의뢰 중 ${Math.max(0, a.until - s.week)}주</span>` : a.state === 'town' ? '<span class="st town">길드에 있음</span>' : a.state === 'injured' ? `<span class="st away">부상 회복 ${Math.max(0, a.until - s.week)}주</span>` : '<span class="st away">마을 밖</span>'; }
   function advsHtml() {
     const list = s.advs.filter(a => a.alive).sort((x, y) => y.stage - x.stage || y.lv - x.lv || x.id - y.id);
     if (openAdv == null || !list.some(a => a.id === openAdv)) openAdv = list[0] && list[0].id;
@@ -317,8 +319,9 @@
     return h + '</div><p class="muted">지하·2층 시설은 화면 전환(3차)에서 보이게 됩니다.</p>';
   }
   function mealsHtml() {
-    return '<div class="meals">' + root.GAME_DATA.meals.map((m, i) => {
-      const g = GR.indexOf(m.grade), open = s.meals[g] > i % 2;
+    const nth = {};   // 등급 안에서 몇 번째 요리인지 (등급마다 요리 수가 다를 수 있음)
+    return '<div class="meals">' + root.GAME_DATA.meals.map(m => {
+      const g = GR.indexOf(m.grade), k = (nth[g] = (nth[g] || 0) + 1) - 1, open = s.meals[g] > k;
       return `<div class="meal ${open ? '' : 'lock'}">${badge(g)}<b>${open ? m.name : '???'}</b><span class="muted">${open ? m.ingredient + ' → ' + m.effect : '재료를 구하면 메뉴에 오릅니다'}</span></div>`;
     }).join('') + '</div>';
   }

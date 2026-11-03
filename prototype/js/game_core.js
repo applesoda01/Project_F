@@ -7,6 +7,12 @@
   const STATS = ['힘', '민첩', '지력', '정신', '기교'];
   const CLASS1 = ['전사', '궁수', '마법사', '성직자', '도적'];
   const GD = root.GAME_DATA || {};                      // data/*.csv 에서 만든 데이터 (data_gen.js)
+  // 소재 편집기의 기본 의뢰 35칸 (data/collegium_data.json). 이름·소요 주·보상·기준치·명성·신뢰도·요구 능력치를 덮어씀. 없으면 balance 값
+  // 칸(유형_등급)마다 후보 목록. 기본 의뢰가 맨 앞, 칸에 추가한 퀘스트가 뒤. 후보가 2개 이상일 때만 무작위로 고름(난수 1회 추가)
+  const TPL = {}; if (GD.content) for (const t of GD.content.quests) if ((t.board || t.core) && t.type >= 0) { const k = t.type + '_' + GR.indexOf(t.grade); (TPL[k] = TPL[k] || [])[t.core ? 'unshift' : 'push'](t); }
+  // 전투 계산 (combat.js, docs/design/quest_combat.md). 적이 있는 의뢰는 전투로 성패를 정함. combat.js 가 없으면 예전 판정
+  const CL = root.GuildCombat || (typeof require === 'function' ? (() => { try { return require('./combat.js'); } catch (e) { return null; } })() : null);
+  const CB = CL ? CL.make(GD) : null, COMBAT = !!(CB && CB.ok);
   const QTYPE = GD.questTypes || ['토벌', '사냥·채집', '조사', '호위·구호', '탐사'];
   const RISK = ['신중', '보통', '무모'], SPEND = ['절약', '보통', '낭비'], SOCIAL = ['독불장군', '보통', '사교적'];
   const WPM = 4, WPY = 48;
@@ -26,7 +32,7 @@
       filter: [1, 0, 0, 0, 0, 0, 0], // 게시판 칸 배분 (등급별 비율)
       advs: [], board: [], active: [], nextId: 1, log: [],
       month: blankLedger(), lastMonth: null, history: [],
-      stats: { done: 0, fail: 0 },
+      stats: { done: 0, fail: 0, combat: 0, combatWin: 0, injuries: 0, deaths: 0, potions: 0 },
       proposals: [], discovered: {}, // 전직 제안 대기열, 발견한 직업 (M3-2)
       ui: { expView: null } // 화면 배치 저장. expView: 원정 미니 뷰 위치 {x, y}(1920×1080 기준 왼쪽 위), null이면 기본 자리
     };
@@ -56,7 +62,7 @@
       id: s.nextId++, name, core, cls: CLASS1[core], stage: 1, pair: null,
       stats: [0, 0, 0, 0, 0].map((_, i) => i === core ? A.startCore + s.R() * 4 : A.startOther + s.R() * 3),
       lv: 1, xp: 0, bank: 0, grade: 0, ach: 0, attach: o.attach || 0,
-      risk: ri(s, 3), spend: ri(s, 3), social: ri(s, 3), wallet: 0, gear: -1,
+      risk: ri(s, 3), spend: ri(s, 3), social: ri(s, 3), wallet: 0, gear: -1, pots: 0,
       state: 'away', until: 0, joined: s.week, alive: true, done: 0,
       cls1: CLASS1[core], line: [core], fin: false, promoCool: 0, skills: [{ line: core, form: CLASS1[core] }], career: [{ week: s.week, text: '길드에 처음 옴' }]
     };
@@ -73,8 +79,20 @@
   function makeQuest(s, g) {
     const Q = s.cfg.quest; const type = ri(s, 5); const n = Q.reqCount[g]; const req = [type];
     while (req.length < n) { const k = ri(s, 5); if (!req.includes(k)) req.push(k); }
-    const R0 = Q.ref[g] * n * (0.85 + s.R() * 0.30);
-    return { id: s.nextId++, g, type, req, r: R0 / n, reward: Q.reward[g], posted: s.week };
+    const C = TPL[type + '_' + g], T = !C ? null : C.length > 1 ? C[Math.floor(s.R() * C.length)] : C[0];   // 후보 1개면 난수를 쓰지 않아 예전과 같은 결과
+    const R0 = (T ? T.ref : Q.ref[g]) * n * (0.85 + s.R() * 0.30);
+    const q = { id: s.nextId++, g, type, req: T && T.stats && T.stats.length ? T.stats.slice() : req, r: R0 / n, reward: T ? T.reward : Q.reward[g], posted: s.week };
+    if (T) Object.assign(q, { tid: T.id, name: T.name, weeks: T.weeks, fameS: T.fameS, fameF: T.fameF, trustS: T.trustS, trustF: T.trustF, death: T.death });
+    if (COMBAT && T && T.enemies && T.enemies.length) {
+      // 개체 차이: 실제 적은 게시 정보보다 강하거나 약할 수 있음(±enemyVar). 모험가는 게시 정보(seen)로 판단, 정보실이 있으면 실제에 가까워짐
+      const f = 1 + (s.R() * 2 - 1) * (CB.C.enemyVar || 0), look = Math.min(1, 0.25 * effN(s, '정보실'));
+      q.enemies = []; q.seen = []; q.foe = f;
+      for (const e of T.enemies) for (let k = 0; k < e.count; k++) {
+        q.enemies.push({ hp: e.hp * f, atk: e.atk * f, name: e.name, mon: e.mon, boss: !!e.boss });
+        q.seen.push({ hp: e.hp * (1 + (f - 1) * look), atk: e.atk * (1 + (f - 1) * look), name: e.name });
+      }
+    }
+    return q;
   }
   function successP(s, party, q) {
     const Q = s.cfg.quest; let F = 0, bottleneck = false;
@@ -88,6 +106,10 @@
     if (bottleneck) p /= 2;
     return p;
   }
+  const isCombat = q => !!(q.enemies && q.enemies.length && COMBAT);
+  const unitOf = (s, a, mealB) => CB.unit(a, i => finalStat(s, a, i), a.gear, mealB);
+  // 예상 성공 확률: 전투 의뢰는 예측 전투(게시 정보 기준), 비전투 의뢰는 능력치 판정
+  function questP(s, party, q) { return isCombat(q) ? CB.predict(party.map(a => unitOf(s, a, 0)), q.seen, q.g, party[0].risk) : successP(s, party, q); }
   function perceived(s, a, p) { const err = Math.max(0, 0.10 - 0.02 * effN(s, '정보실')); return Math.min(1, p * [0.9, 1.0, 1.2][a.risk] + (s.R() * 2 - 1) * err); }
 
   function gainXp(s, a, xp) {
@@ -195,7 +217,9 @@
       if (!a.skills) a.skills = [{ line: a.core, form: a.cls1 }];
       if (!a.career) a.career = [{ week: a.joined || 0, text: '길드에 처음 옴' }];
       if (a.promoCool == null) a.promoCool = 0;
+      if (a.pots == null) a.pots = 0;   // 전투 도입 전 저장
     }
+    for (const k of ['combat', 'combatWin', 'injuries', 'deaths', 'potions']) if (s.stats[k] == null) s.stats[k] = 0;
     return s;
   }
 
@@ -227,29 +251,32 @@
   }
   function present(s, a) {
     if (!a.alive || a.state === 'quest') return false;
+    if (a.state === 'injured' && s.week < a.until) return false;   // 부상 회복 중
     if (a.attach >= 100) return true;
     const interval = s.cfg.adv.visitBaseWeeks * (1 + (100 - a.attach) / 50);
     return s.R() < Math.min(1, 2 / interval);
   }
+  // 등급별 요리 수 (meals.csv). 해금은 그 수까지, 식사 보너스는 2개 이상 열리면 100% (요리별 능력치 맞춤은 나중에)
+  const MEAL_N = GR.map(g => (GD.meals || []).filter(m => m.grade === g).length || 2);
   function mealFor(s, q) { for (let g = q.g; g >= 0; g--) if (s.meals[g] > 0) return g; return -1; }
 
   function departures(s) {
     const Q = s.cfg.quest, E = s.cfg.econ;
-    for (const a of s.advs) { if (!a.alive || a.state === 'quest') continue; a.state = present(s, a) ? 'town' : 'away'; }
+    for (const a of s.advs) { if (!a.alive || a.state === 'quest') continue; if (a.state === 'injured' && s.week < a.until) continue; a.state = present(s, a) ? 'town' : 'away'; }
     const idle = s.advs.filter(a => a.state === 'town');
     for (const a of idle) {
       if (a.state !== 'town') continue;
       const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
       const lo = Math.max(0, a.grade + range[0]), hi = Math.min(s.grade, a.grade + range[1]);
-      const th = [0.70, 0.55, 0.35][a.risk];
+      const th = s.cfg.adv.departTh[a.risk];
       const cands = s.board.filter(q => q.g >= lo && q.g <= hi).sort((x, y) => y.g - x.g);
       for (const q of cands) {
         let party = [a];
-        let pp = perceived(s, a, successP(s, party, q));
-        if (pp < [0.30, 0.50, 0.70][a.social]) {
+        let pp = perceived(s, a, questP(s, party, q));
+        if (pp < s.cfg.adv.seekTh[a.social]) {
           const mates = idle.filter(b => b !== a && b.state === 'town' && Math.abs(b.grade - q.g) <= 1).slice(0, 4);
-          for (const m of mates) { party.push(m); if (perceived(s, a, successP(s, party, q)) >= th) break; }
-          pp = perceived(s, a, successP(s, party, q));
+          for (const m of mates) { party.push(m); if (perceived(s, a, questP(s, party, q)) >= th) break; }
+          pp = perceived(s, a, questP(s, party, q));
         }
         if (pp < th) continue;
         s.board.splice(s.board.indexOf(q), 1);
@@ -260,10 +287,20 @@
           if (m.wallet >= price && s.R() < E.mealBuyRate[m.spend]) { m.wallet -= price; const inc = price * E.mealMargin; s.gold += inc; s.month.meal += inc; eaters++; }
         }
         const mealB = mg >= 0 ? (eaters / party.length) * E.mealBonus[mg] * (s.meals[mg] >= 2 ? 1 : 0.6) : 0;
-        const p = Math.min(0.97, successP(s, party, q) * (1 + mealB));
-        const weeks = Q.weeks[q.g];
+        const weeks = q.weeks || Q.weeks[q.g];              // 편집기에서 기간을 바꾼 의뢰는 그 값
+        let p, fight = null;
+        if (isCombat(q)) {
+          // 전투 의뢰: 출발할 때 물약을 사고 전투를 미리 계산해 둠 (귀환할 때 결과 반영, 미니 뷰가 기록을 재생)
+          const C = CB.C, price = C.potionPrice[Math.min(q.g, s.grade)];
+          for (const m of party) { const want = C.potionCarry[m.spend] - (s.R() < 0.5 ? 1 : 0); while (m.pots < want && m.wallet >= price) { m.wallet -= price; m.pots++; } }
+          const r = CB.fight(party.map(m => unitOf(s, m, mealB)), q.enemies, q.g, s.R, party[0].risk, true);
+          fight = { win: r.win, result: r.result, rounds: r.rounds, log: r.log,
+            units: r.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), hp: Math.round(u.hp), down: u.down, pots: u.pots, used: u.used })),
+            enemies: q.enemies.map(e => ({ name: e.name, mon: e.mon, boss: e.boss, maxHp: Math.round(e.hp), atk: Math.round(e.atk) })) };
+          p = r.win ? 1 : 0;
+        } else p = Math.min(0.97, successP(s, party, q) * (1 + mealB));
         for (const m of party) { m.state = 'quest'; m.until = s.week + weeks; }
-        s.active.push({ q, party: party.map(m => m.id), p, back: s.week + weeks, ate: eaters });
+        s.active.push({ q, party: party.map(m => m.id), p, back: s.week + weeks, ate: eaters, fight });
         log(s, `${J(names(party), '이', '가')} ${GR[q.g]}급 ${QTYPE[q.type]} 의뢰를 맡아 떠났습니다.${eaters ? ' (출발 전 식사 ' + eaters + '명)' : ''}`, 'depart');
         break;
       }
@@ -275,7 +312,9 @@
     const back = s.active.filter(x => x.back <= s.week); s.active = s.active.filter(x => x.back > s.week);
     for (const x of back) {
       const party = x.party.map(id => s.advs.find(a => a.id === id));
-      const ok = s.R() < x.p; const q = x.q; s.month.quests++;
+      const q = x.q, F = x.fight; s.month.quests++;
+      const ok = F ? F.win : s.R() < x.p;
+      if (F) { s.stats.combat++; if (ok) s.stats.combatWin++; }
       if (ok) {
         s.stats.done++; s.month.success++;
         const fee = q.reward * feeRate(s), resale = q.reward * E.resaleRate;
@@ -289,19 +328,30 @@
           if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
           tryGradeUp(s, a);
         }
-        s.trust = Math.min(100, s.trust + 0.3);
-        s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + s.cfg.fame.succ[q.g]);
+        s.trust = Math.min(100, s.trust + (q.trustS != null ? q.trustS : 0.3));
+        s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + (q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g]));
         // 요리 해금
-        if ((q.type === 0 || q.type === 1 || (q.type === 2 && (q.g === 2 || q.g === 6))) && s.meals[q.g] < 2 && s.R() < E.mealUnlockChance) {
+        if ((q.type === 0 || q.type === 1 || (q.type === 2 && (q.g === 2 || q.g === 6))) && s.meals[q.g] < MEAL_N[q.g] && s.R() < E.mealUnlockChance) {
           s.meals[q.g]++; log(s, `새 식재료를 얻어 ${GR[q.g]}급 요리가 식당 메뉴에 올랐습니다.`, 'unlock');
         }
         log(s, `${J(names(party), '이', '가')} ${GR[q.g]}급 ${QTYPE[q.type]} 의뢰에 성공했습니다. 길드 수입 ${Math.round(fee + resale)}G.`, 'success');
       } else {
-        s.stats.fail++; s.trust = Math.max(0, s.trust - 0.6); s.fame = Math.max(0, (s.fame || 0) - s.cfg.fame.fail[q.g]);
+        s.stats.fail++; s.trust = Math.max(0, s.trust - (q.trustF != null ? q.trustF : 0.6)); s.fame = Math.max(0, (s.fame || 0) - (q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g]));
         for (const a of party) gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate);
         log(s, `${J(names(party), '이', '가')} ${GR[q.g]}급 ${QTYPE[q.type]} 의뢰에 실패했습니다.`, 'fail');
       }
       for (const a of party) { a.state = 'town'; a.until = 0; }
+      if (F) for (const u of F.units) {   // 전투의 대가: 물약 소모, 쓰러진 사람은 사망 판정 → 살면 부상
+        const a = party.find(m => m && m.id === u.id); if (!a) continue;
+        a.pots = u.pots; s.stats.potions += u.used;
+        if (!u.down) continue;
+        s.stats.injuries++;
+        const d = (q.death != null ? q.death : Q.deathBase[q.g]) * CB.C.deathRisk[a.risk] * (1 - 0.15 * Math.min(1, effN(s, '의무실')));
+        if (s.R() < d) { a.alive = false; a.dead = true; a.state = 'dead'; s.stats.deaths++; log(s, `${J(a.name, '이', '가')} ${GR[q.g]}급 ${QTYPE[q.type]} 의뢰에서 쓰러져 돌아오지 못했습니다.`, 'fail'); continue; }
+        const wk = Math.max(1, CB.C.injuryWeeks[q.g] - (s.built['의무실'] ? CB.C.injuryClinic : 0));
+        a.state = 'injured'; a.until = s.week + wk;
+        log(s, `${J(a.name, '이', '가')} 전투에서 쓰러져 부상을 입었습니다. ${wk}주 동안 쉽니다.`, 'warn');
+      }
     }
   }
 
@@ -352,6 +402,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

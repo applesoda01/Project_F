@@ -35,7 +35,8 @@
         attachSuccess: 2, attachPerMonthInTown: 1,
         visitBaseWeeks: 2,
         leaveAfterYears: 2, leaveAttach: 20,
-        heirDelayWeeks: 24
+        heirDelayWeeks: 24,
+        departTh: [0.70, 0.55, 0.35], seekTh: [0.30, 0.50, 0.70]   // 출발 기준(신중|보통|무모), 동료 찾는 기준(독불장군|보통|사교적)
       },
       econ: {
         startGold: 3000, feeBase: 0.10, feePerInfo: 0.02,
@@ -90,6 +91,18 @@
     }
     return null;
   }
+  // 의뢰 전투 계산 (combat.js). 없으면 예전처럼 모든 의뢰를 능력치 판정으로
+  function combatLib() {
+    if (root && root.GuildCombat) return root.GuildCombat;
+    if (typeof require === 'function' && typeof __dirname !== 'undefined') { try { return require(require('path').join(__dirname, 'combat.js')); } catch (e) { /* 없음 */ } }
+    return null;
+  }
+  // 소재 편집기의 기본 의뢰 35칸(data/collegium_data.json → GAME_DATA.content). 없으면 balance 값만 씀
+  function questTemplates() {
+    const G = gameData(), m = {};
+    if (G && G.content) for (const q of G.content.quests) if ((q.board || q.core) && q.type >= 0) { const k = q.type + '_' + 'FEDCBAS'.indexOf(q.grade); (m[k] = m[k] || [])[q.core ? 'unshift' : 'push'](q); }
+    return m;
+  }
   function defaults() {
     const d = baseDefaults(), G = gameData();
     if (G && G.balance) for (const sec in G.balance) for (const k in G.balance[sec]) if (d[sec] && k in d[sec]) d[sec][k] = JSON.parse(JSON.stringify(G.balance[sec][k]));
@@ -122,6 +135,9 @@
   }
 
   function simulate(cfg, botKey, seed) {
+    const TPL = questTemplates();
+    const CL = combatLib(), CB = CL ? CL.make(gameData()) : null, COMBAT = !!(CB && CB.ok);   // 전투 의뢰 = 적이 있는 의뢰
+    const MEAL_N = 'FEDCBAS'.split('').map(g => { const G = gameData(); return ((G && G.meals) || []).filter(m => m.grade === g).length || 2; });   // 등급별 요리 수 (meals.csv)
     const R = rng(seed);
     const bot = BOTS[botKey];
     const Q = cfg.quest, G = cfg.growth, A = cfg.adv, E = cfg.econ, GE = cfg.gear, P = cfg.promo, T = cfg.town, EN = cfg.ending;
@@ -137,7 +153,7 @@
       st: { reach: [0, null, null, null, null, null, null], end: null, endRebirth: false, deaths: 0, battleDeaths: 0, heirs: 0,
         qDone: 0, qFail: 0, raidsW: 0, raidsL: 0, invW: 0, invL: 0, goldYear: [], advYear: [], fameYear: [], trustYear: [], lvYear: [], popYear: [],
         firstNetF: [], firstStage2: null, firstStage3: null, lvAt2: [], lvAt3: [], demonAwake: false, demonFallback: false,
-        negMonths: 0, mealIncome: 0, mealsUnlocked: [], officerFails: 0, demonFails: 0, rebirth: false, facWeek: {} }
+        negMonths: 0, mealIncome: 0, combatQ: 0, combatWin: 0, gearFx: [[0, 0], [0, 0], [0, 0], [0, 0]], injuries: 0, potionsUsed: 0, potionGold: 0, questDeaths: 0, mealsUnlocked: [], officerFails: 0, demonFails: 0, rebirth: false, facWeek: {} }
     };
     for (const f of ['게시판', '접수대', '주점', '판매창구']) s.built[f] = true;
 
@@ -154,7 +170,7 @@
       const a = {
         id: s.nextId++, core, stage: 1, pair: null, cls: 'base', stats, lv: 1, xp: 0, bank: 0,
         grade: 0, ach: 0, attach: opts.attach || 0, risk: opts.risk != null ? opts.risk : ri(3), spend: ri(3), social: ri(3),
-        wallet: 0, gear: -1, busy: 0, alive: true, joined: s.week, heirOf: opts.heirOf || null, heirWeek: opts.heirOf ? s.week : null,
+        wallet: 0, gear: -1, pots: 0, busy: 0, alive: true, joined: s.week, heirOf: opts.heirOf || null, heirWeek: opts.heirOf ? s.week : null,
         demonHeir: !!opts.demonHeir, demonMark: false, rebirth: !!opts.rebirth, external: g > 0
       };
       if (g > 0) { // 외부 고등급 방문자: 등급에 맞게 성장시킴
@@ -182,8 +198,19 @@
       const n = Q.reqCount[g];
       const req = [type];
       while (req.length < n) { const k = ri(5); if (!req.includes(k)) req.push(k); }
-      const R0 = Q.ref[g] * n * (0.85 + R() * 0.30) * (boss ? Q.bossMult : 1);
-      return { g, type, req, r: R0 / n, boss: !!boss };
+      const C = boss ? null : TPL[type + '_' + g], T = !C ? null : C.length > 1 ? C[Math.floor(R() * C.length)] : C[0];   // 칸 후보 중 하나 (1개면 난수 안 씀)
+      const req2 = T && T.stats && T.stats.length ? T.stats.slice() : req;
+      const R0 = (T ? T.ref : Q.ref[g]) * n * (0.85 + R() * 0.30) * (boss ? Q.bossMult : 1);
+      const enemies = [], seen = [];
+      if (COMBAT && T && T.enemies) {
+        // 개체 차이: 실제 적은 게시된 정보보다 강하거나 약할 수 있음(±enemyVar). 정보실이 있으면 예측이 실제에 가까워짐
+        const v = CB.C.enemyVar || 0, f = 1 + (R() * 2 - 1) * v, look = Math.min(1, 0.25 * effN('정보실'));
+        for (const e of T.enemies) for (let k = 0; k < e.count; k++) {
+          enemies.push({ hp: e.hp * f, atk: e.atk * f, name: e.name });
+          seen.push({ hp: e.hp * (1 + (f - 1) * look), atk: e.atk * (1 + (f - 1) * look), name: e.name });
+        }
+      }
+      return { g, type, req: req2, r: R0 / n, boss: !!boss, T, enemies, seen, combat: enemies.length > 0 };
     }
 
     function successP(party, q) {
@@ -201,6 +228,9 @@
       if (bottleneck) p /= 2;
       return p;
     }
+    const unitOf = (a, mealB) => CB.unit(a, i => finalStat(a, i), a.gear, mealB);
+    // 예상 성공 확률: 전투 의뢰는 예측 전투, 비전투 의뢰는 능력치 판정
+    function questP(party, q) { return q.combat ? CB.predict(party.map(a => unitOf(a, 0)), q.seen, q.g, party[0].risk) : successP(party, q); }
     function perceived(a, p) {
       const err = Math.max(0, 0.10 - 0.02 * effN('정보실'));
       return Math.min(1, p * [0.9, 1.0, 1.2][a.risk] + (R() * 2 - 1) * err);
@@ -310,13 +340,30 @@
         // 메뉴가 2개 열려 있으면 의뢰 유형에 맞는 요리를 고를 확률이 높음
         mealB = (eaters / party.length) * E.mealBonus[mg] * (s.meals[mg] >= 2 ? 1 : 0.6) * (1 + 0.5 * (effN('주점') >= 3 ? 1 : 0));
       }
-      const p = Math.min(0.97, successP(party, q) * (1 + mealB));
-      const ok = R() < p;
+      let ok, fightRes = null;
+      if (q.combat) {
+        const C = CB.C, price = C.potionPrice[Math.min(q.g, s.grade)];
+        for (const a of party) { const want = C.potionCarry[a.spend] - (R() < 0.5 ? 1 : 0); while (a.pots < want && a.wallet >= price) { a.wallet -= price; a.pots++; s.st.potionGold += price; } }
+        fightRes = CB.fight(party.map(a => unitOf(a, mealB)), q.enemies, q.g, R, party[0].risk);
+        ok = fightRes.win; s.st.combatQ++; if (ok) s.st.combatWin++;
+        if (q.g <= 1) { const k = q.g * 2 + (party.every(m => m.gear >= q.g) ? 1 : 0); s.st.gearFx[k][1]++; if (ok) s.st.gearFx[k][0]++; }   // F·E급: 그 등급 장비를 다 갖춘 파티인지
+      } else {
+        const p = Math.min(0.97, successP(party, q) * (1 + mealB));
+        ok = R() < p;
+      }
+      if (fightRes) for (const u of fightRes.units) {   // 전투의 대가: 물약 소모, 쓰러진 사람은 부상·사망 판정
+        const a = u.a; a.pots = u.pots; s.st.potionsUsed += u.used;
+        if (!u.down) continue;
+        s.st.injuries++;
+        const d = (q.T ? q.T.death : Q.deathBase[q.g]) * CB.C.deathRisk[a.risk] * (1 - 0.15 * Math.min(1, effN('의무실')));
+        if (R() < d) { kill(a, false); s.st.questDeaths++; continue; }
+        a.busy += Math.max(1, CB.C.injuryWeeks[q.g] - (has('의무실') ? CB.C.injuryClinic : 0));
+      }
       const fee = q.boss ? 0 : q.reward != null ? 0 : 0;
-      const reward = Q.reward[q.g] * (q.boss ? 2 : 1);
+      const reward = (q.T ? q.T.reward : Q.reward[q.g]) * (q.boss ? 2 : 1);
       if (ok) {
         s.st.qDone++;
-        if ((q.type === 0 || q.type === 1 || (q.type === 2 && (q.g === 2 || q.g === 6))) && s.meals[q.g] < 2 && R() < E.mealUnlockChance) { s.meals[q.g]++; s.st.mealsUnlocked.push(s.week); }
+        if ((q.type === 0 || q.type === 1 || (q.type === 2 && (q.g === 2 || q.g === 6))) && s.meals[q.g] < MEAL_N[q.g] && R() < E.mealUnlockChance) { s.meals[q.g]++; s.st.mealsUnlocked.push(s.week); }
         const inc = reward * feeRate() + reward * E.resaleRate * (1 + 0.1 * effN('판매창구'));
         s.gold += inc; s.op += inc;
         const each = reward * (1 - feeRate()) / party.length;
@@ -328,16 +375,17 @@
           if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
           tryGradeUp(a);
         }
-        s.trust = Math.min(100, s.trust + 0.3);
-        s.fame = Math.min(cfg.fame.cap, s.fame + cfg.fame.succ[q.g]);
+        s.trust = Math.min(100, s.trust + (q.T ? q.T.trustS : 0.3));
+        s.fame = Math.min(cfg.fame.cap, s.fame + (q.T ? q.T.fameS : cfg.fame.succ[q.g]));
       } else {
         s.st.qFail++;
-        s.trust = Math.max(0, s.trust - 0.6);
-        s.fame = Math.max(0, s.fame - cfg.fame.fail[q.g]);
+        s.trust = Math.max(0, s.trust - (q.T ? q.T.trustF : 0.6));
+        s.fame = Math.max(0, s.fame - (q.T ? q.T.fameF : cfg.fame.fail[q.g]));
         for (const a of party) {
           gainXp(a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate);
-          const d = Q.deathBase[q.g] * [0.5, 1, 1.5][a.risk] * (1 - 0.15 * Math.min(1, effN('의무실')));
-          if (R() < d) kill(a, false);
+          if (q.combat) continue;   // 전투 의뢰는 위에서 쓰러진 사람만 판정
+          const d = (q.T ? q.T.death : Q.deathBase[q.g]) * [0.5, 1, 1.5][a.risk] * (1 - 0.15 * Math.min(1, effN('의무실')));
+          if (R() < d) { kill(a, false); s.st.questDeaths++; }
         }
       }
       return ok;
@@ -349,19 +397,19 @@
         if (a.busy > 0 || !a.alive) continue;
         const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
         const lo = Math.max(0, a.grade + range[0]), hi = Math.min(s.grade, a.grade + range[1]);
-        const th = [0.70, 0.55, 0.35][a.risk];
+        const th = A.departTh[a.risk];
         const cands = s.board.map((q, i) => ({ q, i })).filter(o => o.q.g >= lo && o.q.g <= hi).sort((x, y) => y.q.g - x.q.g);
         for (const { q, i } of cands) {
           let party = [a];
-          let pp = perceived(a, successP(party, q));
-          if (pp < [0.30, 0.50, 0.70][a.social]) {
+          let pp = perceived(a, questP(party, q));
+          if (pp < A.seekTh[a.social]) {
             const mates = idle.filter(b => b !== a && b.busy === 0 && b.alive && Math.abs(b.grade - q.g) <= 1).slice(0, 4);
-            for (const m of mates) { party.push(m); if (perceived(a, successP(party, q)) >= th) break; }
-            pp = perceived(a, successP(party, q));
+            for (const m of mates) { party.push(m); if (perceived(a, questP(party, q)) >= th) break; }
+            pp = perceived(a, questP(party, q));
           }
           if (pp >= th) {
             s.board.splice(i, 1);
-            for (const m of party) m.busy = Q.weeks[q.g];
+            for (const m of party) m.busy = q.T ? q.T.weeks : Q.weeks[q.g];
             runQuest(party, q);
             break;
           }

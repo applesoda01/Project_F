@@ -1,0 +1,5854 @@
+{
+  "format": "collegium-data",
+  "version": 3,
+  "savedAt": "2026-11-03T08:03:33.378Z",
+  "rules": {
+    "rMul": 2,
+    "mMul": 1.5,
+    "refPct": 5,
+    "dMin": -1,
+    "dMax": 2,
+    "cap": true
+  },
+  "enhance": [
+    4,
+    8,
+    13,
+    20,
+    28,
+    39,
+    53,
+    70,
+    88,
+    110
+  ],
+  "seq": {
+    "x": 17,
+    "food": 16,
+    "gear": 26,
+    "pot": 4,
+    "q": 0,
+    "mon": 7
+  },
+  "materials": [
+    {
+      "id": "mat_slay_F",
+      "name": "짐승 뼛조각",
+      "grade": "F",
+      "line": "slay",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_slay_E",
+      "name": "늑대 송곳니",
+      "grade": "E",
+      "line": "slay",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_slay_D",
+      "name": "오크 엄니",
+      "grade": "D",
+      "line": "slay",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_slay_C",
+      "name": "트롤 뿔",
+      "grade": "C",
+      "line": "slay",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_slay_B",
+      "name": "와이번 비늘",
+      "grade": "B",
+      "line": "slay",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_slay_A",
+      "name": "키메라 뿔",
+      "grade": "A",
+      "line": "slay",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_slay_S",
+      "name": "용의 유해",
+      "grade": "S",
+      "line": "slay",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_hunt_F",
+      "name": "참나무 가지",
+      "grade": "F",
+      "line": "hunt",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_hunt_E",
+      "name": "사슴 가죽",
+      "grade": "E",
+      "line": "hunt",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_hunt_D",
+      "name": "흑곰 가죽",
+      "grade": "D",
+      "line": "hunt",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_hunt_C",
+      "name": "그리폰 깃털",
+      "grade": "C",
+      "line": "hunt",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_hunt_B",
+      "name": "세계수 가지",
+      "grade": "B",
+      "line": "hunt",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_hunt_A",
+      "name": "불사조 깃털",
+      "grade": "A",
+      "line": "hunt",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_hunt_S",
+      "name": "용근",
+      "grade": "S",
+      "line": "hunt",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_study_F",
+      "name": "희미한 마석",
+      "grade": "F",
+      "line": "study",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_study_E",
+      "name": "마석 조각",
+      "grade": "E",
+      "line": "study",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_study_D",
+      "name": "마정석",
+      "grade": "D",
+      "line": "study",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_study_C",
+      "name": "고급 마정석",
+      "grade": "C",
+      "line": "study",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_study_B",
+      "name": "정령석",
+      "grade": "B",
+      "line": "study",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_study_A",
+      "name": "성좌석",
+      "grade": "A",
+      "line": "study",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_study_S",
+      "name": "용안석",
+      "grade": "S",
+      "line": "study",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_guard_F",
+      "name": "무명천",
+      "grade": "F",
+      "line": "guard",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_guard_E",
+      "name": "모직 천",
+      "grade": "E",
+      "line": "guard",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_guard_D",
+      "name": "마직 천",
+      "grade": "D",
+      "line": "guard",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_guard_C",
+      "name": "축복받은 천",
+      "grade": "C",
+      "line": "guard",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_guard_B",
+      "name": "은빛 실타래",
+      "grade": "B",
+      "line": "guard",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_guard_A",
+      "name": "성은 실타래",
+      "grade": "A",
+      "line": "guard",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_guard_S",
+      "name": "용익막",
+      "grade": "S",
+      "line": "guard",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_mine_F",
+      "name": "고철 조각",
+      "grade": "F",
+      "line": "mine",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_mine_E",
+      "name": "구리 원석",
+      "grade": "E",
+      "line": "mine",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_mine_D",
+      "name": "철광석",
+      "grade": "D",
+      "line": "mine",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_mine_C",
+      "name": "흑철광",
+      "grade": "C",
+      "line": "mine",
+      "core": true,
+      "desc": "",
+      "icon": ""
+    },
+    {
+      "id": "mat_mine_B",
+      "name": "미스릴 원석",
+      "grade": "B",
+      "line": "mine",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_mine_A",
+      "name": "아다만 원석",
+      "grade": "A",
+      "line": "mine",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_mine_S",
+      "name": "운철",
+      "grade": "S",
+      "line": "mine",
+      "core": true,
+      "desc": "해체장에서 가공해야 제작에 쓸 수 있음",
+      "icon": ""
+    },
+    {
+      "id": "mat_x001",
+      "name": "수선 숫돌",
+      "grade": "F",
+      "line": "restore",
+      "core": false,
+      "desc": "F~C급 장비·유품 복원. 모든 의뢰에서 5% 확률 획득",
+      "icon": ""
+    },
+    {
+      "id": "mat_x002",
+      "name": "고대 복원석",
+      "grade": "B",
+      "line": "restore",
+      "core": false,
+      "desc": "B~S급 장비·유품 복원. 주기적인 특별 의뢰로 획득",
+      "icon": ""
+    },
+    {
+      "id": "mat_x003",
+      "name": "멧돼지 고기",
+      "grade": "F",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (사냥)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x004",
+      "name": "들버섯",
+      "grade": "F",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (채집)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x005",
+      "name": "늑대 고기",
+      "grade": "E",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (토벌)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x006",
+      "name": "산딸기",
+      "grade": "E",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (채집)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x007",
+      "name": "흑곰 고기",
+      "grade": "D",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (사냥)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x008",
+      "name": "마력 버섯",
+      "grade": "D",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (조사)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x009",
+      "name": "그리폰 알",
+      "grade": "C",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (사냥)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x010",
+      "name": "트롤 뼈",
+      "grade": "C",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (토벌)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x011",
+      "name": "와이번 고기",
+      "grade": "B",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (토벌)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x012",
+      "name": "세계수 꿀",
+      "grade": "B",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (채집)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x013",
+      "name": "키메라 고기",
+      "grade": "A",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (토벌)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x014",
+      "name": "용 꼬리",
+      "grade": "S",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (토벌)",
+      "icon": ""
+    },
+    {
+      "id": "mat_x015",
+      "name": "짐승 가죽",
+      "grade": "F",
+      "line": "hunt",
+      "core": false,
+      "desc": "F급 장비 재질(가죽). F급 추가 퀘스트 2곳 부 소재 100% [가안, 이름 임시]",
+      "icon": ""
+    },
+    {
+      "id": "mat_x016",
+      "name": "약초",
+      "grade": "F",
+      "line": "hunt",
+      "core": false,
+      "desc": "F급 물약 재료. F급 추가 퀘스트 2곳 부 소재 [가안, 이름 임시]",
+      "icon": ""
+    },
+    {
+      "id": "mat_x017",
+      "name": "민물고기",
+      "grade": "F",
+      "line": "food",
+      "core": false,
+      "desc": "요리 재료 (채집) [가안, 이름 임시]",
+      "icon": ""
+    }
+  ],
+  "items": [
+    {
+      "id": "food_01",
+      "kind": "food",
+      "name": "멧돼지 스테이크 정식",
+      "grade": "F",
+      "desc": "힘·기교 +3%",
+      "recipe": [
+        {
+          "m": "mat_x003",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_02",
+      "kind": "food",
+      "name": "들버섯 수프",
+      "grade": "F",
+      "desc": "지력·정신 +3%",
+      "recipe": [
+        {
+          "m": "mat_x004",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_03",
+      "kind": "food",
+      "name": "늑대 고기 스튜",
+      "grade": "E",
+      "desc": "힘·기교 +4%",
+      "recipe": [
+        {
+          "m": "mat_x005",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_04",
+      "kind": "food",
+      "name": "산딸기 파이",
+      "grade": "E",
+      "desc": "민첩 +4%",
+      "recipe": [
+        {
+          "m": "mat_x006",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_05",
+      "kind": "food",
+      "name": "흑곰 갈비찜",
+      "grade": "D",
+      "desc": "힘·정신 +4%",
+      "recipe": [
+        {
+          "m": "mat_x007",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_06",
+      "kind": "food",
+      "name": "마력 버섯 리소토",
+      "grade": "D",
+      "desc": "지력 +5%",
+      "recipe": [
+        {
+          "m": "mat_x008",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_07",
+      "kind": "food",
+      "name": "그리폰 알 오믈렛",
+      "grade": "C",
+      "desc": "민첩·기교 +5%",
+      "recipe": [
+        {
+          "m": "mat_x009",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_08",
+      "kind": "food",
+      "name": "트롤 뼈 곰탕",
+      "grade": "C",
+      "desc": "체력 회복 + 정신 +5%",
+      "recipe": [
+        {
+          "m": "mat_x010",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_09",
+      "kind": "food",
+      "name": "와이번 꼬치구이",
+      "grade": "B",
+      "desc": "힘·민첩 +6%",
+      "recipe": [
+        {
+          "m": "mat_x011",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_10",
+      "kind": "food",
+      "name": "세계수 꿀 케이크",
+      "grade": "B",
+      "desc": "지력·정신 +6%",
+      "recipe": [
+        {
+          "m": "mat_x012",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_11",
+      "kind": "food",
+      "name": "키메라 3종 모둠",
+      "grade": "A",
+      "desc": "모든 능력치 +5%",
+      "recipe": [
+        {
+          "m": "mat_x013",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_12",
+      "kind": "food",
+      "name": "불사조 수프",
+      "grade": "A",
+      "desc": "사망 확률 −20%",
+      "recipe": [
+        {
+          "m": "mat_hunt_A",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_13",
+      "kind": "food",
+      "name": "용 꼬리 스테이크",
+      "grade": "S",
+      "desc": "모든 능력치 +8%",
+      "recipe": [
+        {
+          "m": "mat_x014",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_14",
+      "kind": "food",
+      "name": "별빛 만찬",
+      "grade": "S",
+      "desc": "모든 능력치 +6%, 애착 +5",
+      "recipe": [
+        {
+          "m": "mat_mine_S",
+          "n": 1
+        },
+        {
+          "m": "mat_study_A",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "food_15",
+      "kind": "food",
+      "name": "민물고기 구이",
+      "grade": "F",
+      "desc": "민첩 +3%",
+      "recipe": [
+        {
+          "m": "mat_x017",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "pot_01",
+      "kind": "potion",
+      "name": "하급 회복 물약",
+      "grade": "F",
+      "desc": "체력 회복 (전투 중 체력이 낮아지면 자동 사용)",
+      "recipe": [
+        {
+          "m": "mat_x016",
+          "n": 2
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "pot_02",
+      "kind": "potion",
+      "name": "하급 마력 물약",
+      "grade": "F",
+      "desc": "마력 회복 (전투 중 마력이 낮아지면 자동 사용)",
+      "recipe": [
+        {
+          "m": "mat_x016",
+          "n": 1
+        },
+        {
+          "m": "mat_study_F",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "gear_01",
+      "kind": "gear",
+      "name": "나무 검",
+      "grade": "F",
+      "desc": "근접 기본 무기",
+      "recipe": [
+        {
+          "m": "mat_hunt_F",
+          "n": 1
+        },
+        {
+          "m": "mat_slay_F",
+          "n": 2
+        }
+      ],
+      "gtype": "sword",
+      "slot": "weapon",
+      "stats": {
+        "0": 3
+      },
+      "atk": 50,
+      "def": 0,
+      "mdef": 0,
+      "hp": 25,
+      "mp": 0,
+      "luck": 0,
+      "price": 150,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_02",
+      "kind": "gear",
+      "name": "나무 단궁",
+      "grade": "F",
+      "desc": "원거리 공격",
+      "recipe": [
+        {
+          "m": "mat_hunt_F",
+          "n": 2
+        },
+        {
+          "m": "mat_guard_F",
+          "n": 1
+        }
+      ],
+      "gtype": "bow",
+      "slot": "weapon",
+      "stats": {
+        "1": 3
+      },
+      "atk": 50,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 0,
+      "luck": 0,
+      "price": 150,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_03",
+      "kind": "gear",
+      "name": "나무 지팡이",
+      "grade": "F",
+      "desc": "마법 공격",
+      "recipe": [
+        {
+          "m": "mat_hunt_F",
+          "n": 1
+        },
+        {
+          "m": "mat_study_F",
+          "n": 2
+        }
+      ],
+      "gtype": "staff",
+      "slot": "weapon",
+      "stats": {
+        "2": 3
+      },
+      "atk": 50,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 25,
+      "luck": 0,
+      "price": 150,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_04",
+      "kind": "gear",
+      "name": "견습 메이스",
+      "grade": "F",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_mine_F",
+          "n": 1
+        },
+        {
+          "m": "mat_hunt_F",
+          "n": 1
+        },
+        {
+          "m": "mat_guard_F",
+          "n": 1
+        }
+      ],
+      "gtype": "mace",
+      "slot": "weapon",
+      "stats": {
+        "3": 3
+      },
+      "atk": 50,
+      "def": 0,
+      "mdef": 10,
+      "hp": 0,
+      "mp": 0,
+      "luck": 0,
+      "price": 150,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_05",
+      "kind": "gear",
+      "name": "견습 단검",
+      "grade": "F",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_mine_F",
+          "n": 2
+        },
+        {
+          "m": "mat_x015",
+          "n": 1
+        }
+      ],
+      "gtype": "dagger",
+      "slot": "weapon",
+      "stats": {
+        "4": 3
+      },
+      "atk": 50,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 0,
+      "luck": 0,
+      "price": 150,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_06",
+      "kind": "gear",
+      "name": "누비 갑옷",
+      "grade": "F",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_guard_F",
+          "n": 2
+        },
+        {
+          "m": "mat_slay_F",
+          "n": 1
+        }
+      ],
+      "gtype": "heavy",
+      "slot": "armor",
+      "stats": {
+        "0": 1,
+        "3": 1
+      },
+      "atk": 0,
+      "def": 40,
+      "mdef": 15,
+      "hp": 60,
+      "mp": 0,
+      "luck": 0,
+      "price": 180,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_07",
+      "kind": "gear",
+      "name": "가죽 조끼",
+      "grade": "F",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_x015",
+          "n": 2
+        },
+        {
+          "m": "mat_guard_F",
+          "n": 1
+        }
+      ],
+      "gtype": "light",
+      "slot": "armor",
+      "stats": {
+        "1": 1,
+        "4": 1
+      },
+      "atk": 0,
+      "def": 30,
+      "mdef": 25,
+      "hp": 40,
+      "mp": 0,
+      "luck": 0,
+      "price": 180,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_08",
+      "kind": "gear",
+      "name": "견습 로브",
+      "grade": "F",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_guard_F",
+          "n": 1
+        },
+        {
+          "m": "mat_study_F",
+          "n": 2
+        }
+      ],
+      "gtype": "robe",
+      "slot": "armor",
+      "stats": {
+        "2": 1,
+        "3": 1
+      },
+      "atk": 0,
+      "def": 15,
+      "mdef": 40,
+      "hp": 20,
+      "mp": 0,
+      "luck": 0,
+      "price": 180,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_09",
+      "kind": "gear",
+      "name": "나무 반지",
+      "grade": "F",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_hunt_F",
+          "n": 1
+        },
+        {
+          "m": "mat_slay_F",
+          "n": 1
+        }
+      ],
+      "gtype": "ring",
+      "slot": "acc",
+      "stats": {
+        "0": 2
+      },
+      "atk": 0,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 15,
+      "luck": 0,
+      "price": 120,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_10",
+      "kind": "gear",
+      "name": "가죽 발찌",
+      "grade": "F",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_x015",
+          "n": 1
+        },
+        {
+          "m": "mat_hunt_F",
+          "n": 1
+        }
+      ],
+      "gtype": "anklet",
+      "slot": "acc",
+      "stats": {
+        "1": 2
+      },
+      "atk": 0,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 15,
+      "luck": 0,
+      "price": 120,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_11",
+      "kind": "gear",
+      "name": "나무 구슬 목걸이",
+      "grade": "F",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_hunt_F",
+          "n": 1
+        },
+        {
+          "m": "mat_study_F",
+          "n": 1
+        }
+      ],
+      "gtype": "necklace",
+      "slot": "acc",
+      "stats": {
+        "2": 2
+      },
+      "atk": 0,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 30,
+      "luck": 0,
+      "price": 120,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_12",
+      "kind": "gear",
+      "name": "나무 묵주",
+      "grade": "F",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_hunt_F",
+          "n": 1
+        },
+        {
+          "m": "mat_guard_F",
+          "n": 1
+        }
+      ],
+      "gtype": "rosary",
+      "slot": "acc",
+      "stats": {
+        "3": 2
+      },
+      "atk": 0,
+      "def": 0,
+      "mdef": 10,
+      "hp": 0,
+      "mp": 15,
+      "luck": 0,
+      "price": 120,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_13",
+      "kind": "gear",
+      "name": "가죽 장갑",
+      "grade": "F",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_x015",
+          "n": 1
+        },
+        {
+          "m": "mat_mine_F",
+          "n": 1
+        }
+      ],
+      "gtype": "gloves",
+      "slot": "acc",
+      "stats": {
+        "4": 2
+      },
+      "atk": 0,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 15,
+      "luck": 0,
+      "price": 120,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "food_16",
+      "kind": "food",
+      "name": "숲 버섯 파이",
+      "grade": "E",
+      "desc": "지력·정신 +4%",
+      "recipe": [
+        {
+          "m": "mat_x004",
+          "n": 1
+        },
+        {
+          "m": "mat_x006",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "pot_03",
+      "kind": "potion",
+      "name": "회복 물약",
+      "grade": "E",
+      "desc": "체력 회복 (하급보다 많이, 전투 중 자동 사용)",
+      "recipe": [
+        {
+          "m": "mat_x016",
+          "n": 2
+        },
+        {
+          "m": "mat_x006",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "pot_04",
+      "kind": "potion",
+      "name": "마력 물약",
+      "grade": "E",
+      "desc": "마력 회복 (하급보다 많이, 전투 중 자동 사용)",
+      "recipe": [
+        {
+          "m": "mat_x016",
+          "n": 1
+        },
+        {
+          "m": "mat_study_E",
+          "n": 1
+        }
+      ],
+      "icon": ""
+    },
+    {
+      "id": "gear_14",
+      "kind": "gear",
+      "name": "청동 검",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_mine_E",
+          "n": 1
+        },
+        {
+          "m": "mat_slay_E",
+          "n": 1
+        },
+        {
+          "m": "mat_hunt_F",
+          "n": 1
+        }
+      ],
+      "gtype": "sword",
+      "slot": "weapon",
+      "stats": {
+        "0": 5
+      },
+      "atk": 90,
+      "def": 0,
+      "mdef": 0,
+      "hp": 45,
+      "mp": 0,
+      "luck": 0,
+      "price": 300,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_15",
+      "kind": "gear",
+      "name": "청동 각궁",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_hunt_E",
+          "n": 1
+        },
+        {
+          "m": "mat_slay_E",
+          "n": 1
+        },
+        {
+          "m": "mat_hunt_F",
+          "n": 1
+        }
+      ],
+      "gtype": "bow",
+      "slot": "weapon",
+      "stats": {
+        "1": 5
+      },
+      "atk": 90,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 0,
+      "luck": 0,
+      "price": 300,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_16",
+      "kind": "gear",
+      "name": "청동 장식 지팡이",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_study_E",
+          "n": 1
+        },
+        {
+          "m": "mat_mine_E",
+          "n": 1
+        },
+        {
+          "m": "mat_hunt_F",
+          "n": 1
+        }
+      ],
+      "gtype": "staff",
+      "slot": "weapon",
+      "stats": {
+        "2": 5
+      },
+      "atk": 90,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 45,
+      "luck": 0,
+      "price": 300,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_17",
+      "kind": "gear",
+      "name": "청동 메이스",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_mine_E",
+          "n": 1
+        },
+        {
+          "m": "mat_guard_E",
+          "n": 1
+        },
+        {
+          "m": "mat_mine_F",
+          "n": 1
+        }
+      ],
+      "gtype": "mace",
+      "slot": "weapon",
+      "stats": {
+        "3": 5
+      },
+      "atk": 90,
+      "def": 0,
+      "mdef": 20,
+      "hp": 0,
+      "mp": 0,
+      "luck": 0,
+      "price": 300,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_18",
+      "kind": "gear",
+      "name": "청동 단검",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_mine_E",
+          "n": 2
+        },
+        {
+          "m": "mat_x015",
+          "n": 1
+        }
+      ],
+      "gtype": "dagger",
+      "slot": "weapon",
+      "stats": {
+        "4": 5
+      },
+      "atk": 90,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 0,
+      "luck": 0,
+      "price": 300,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_19",
+      "kind": "gear",
+      "name": "청동 흉갑",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_mine_E",
+          "n": 1
+        },
+        {
+          "m": "mat_slay_E",
+          "n": 1
+        },
+        {
+          "m": "mat_x015",
+          "n": 1
+        }
+      ],
+      "gtype": "heavy",
+      "slot": "armor",
+      "stats": {
+        "0": 2,
+        "3": 2
+      },
+      "atk": 0,
+      "def": 70,
+      "mdef": 30,
+      "hp": 110,
+      "mp": 0,
+      "luck": 0,
+      "price": 360,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_20",
+      "kind": "gear",
+      "name": "경화 가죽 갑옷",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_hunt_E",
+          "n": 2
+        },
+        {
+          "m": "mat_slay_F",
+          "n": 1
+        }
+      ],
+      "gtype": "light",
+      "slot": "armor",
+      "stats": {
+        "1": 2,
+        "4": 2
+      },
+      "atk": 0,
+      "def": 50,
+      "mdef": 50,
+      "hp": 70,
+      "mp": 0,
+      "luck": 0,
+      "price": 360,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_21",
+      "kind": "gear",
+      "name": "모직 로브",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_guard_E",
+          "n": 2
+        },
+        {
+          "m": "mat_guard_F",
+          "n": 1
+        }
+      ],
+      "gtype": "robe",
+      "slot": "armor",
+      "stats": {
+        "2": 2,
+        "3": 2
+      },
+      "atk": 0,
+      "def": 30,
+      "mdef": 70,
+      "hp": 35,
+      "mp": 0,
+      "luck": 0,
+      "price": 360,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_22",
+      "kind": "gear",
+      "name": "청동 반지",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_slay_E",
+          "n": 1
+        },
+        {
+          "m": "mat_slay_F",
+          "n": 1
+        }
+      ],
+      "gtype": "ring",
+      "slot": "acc",
+      "stats": {
+        "0": 3
+      },
+      "atk": 0,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 25,
+      "luck": 0,
+      "price": 240,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_23",
+      "kind": "gear",
+      "name": "청동 발찌",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_hunt_E",
+          "n": 1
+        },
+        {
+          "m": "mat_x015",
+          "n": 1
+        }
+      ],
+      "gtype": "anklet",
+      "slot": "acc",
+      "stats": {
+        "1": 3
+      },
+      "atk": 0,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 25,
+      "luck": 0,
+      "price": 240,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_24",
+      "kind": "gear",
+      "name": "청동 목걸이",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_study_E",
+          "n": 1
+        },
+        {
+          "m": "mat_study_F",
+          "n": 1
+        }
+      ],
+      "gtype": "necklace",
+      "slot": "acc",
+      "stats": {
+        "2": 3
+      },
+      "atk": 0,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 55,
+      "luck": 0,
+      "price": 240,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_25",
+      "kind": "gear",
+      "name": "청동 묵주",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_guard_E",
+          "n": 1
+        },
+        {
+          "m": "mat_guard_F",
+          "n": 1
+        }
+      ],
+      "gtype": "rosary",
+      "slot": "acc",
+      "stats": {
+        "3": 3
+      },
+      "atk": 0,
+      "def": 0,
+      "mdef": 20,
+      "hp": 0,
+      "mp": 25,
+      "luck": 0,
+      "price": 240,
+      "effect": "",
+      "icon": ""
+    },
+    {
+      "id": "gear_26",
+      "kind": "gear",
+      "name": "청동 징 장갑",
+      "grade": "E",
+      "desc": "",
+      "recipe": [
+        {
+          "m": "mat_mine_E",
+          "n": 1
+        },
+        {
+          "m": "mat_mine_F",
+          "n": 1
+        }
+      ],
+      "gtype": "gloves",
+      "slot": "acc",
+      "stats": {
+        "4": 3
+      },
+      "atk": 0,
+      "def": 0,
+      "mdef": 0,
+      "hp": 0,
+      "mp": 25,
+      "luck": 0,
+      "price": 240,
+      "effect": "",
+      "icon": ""
+    }
+  ],
+  "monsters": [
+    {
+      "id": "mon_01",
+      "name": "들개",
+      "grade": "F",
+      "kind": "짐승",
+      "atk": 15,
+      "hp": 105,
+      "img": "",
+      "scale": 100,
+      "drops": [
+        "mat_slay_F",
+        "mat_x015"
+      ],
+      "desc": "떼로 다니는 들개. 빠르지만 약함"
+    },
+    {
+      "id": "mon_02",
+      "name": "도적",
+      "grade": "F",
+      "kind": "사람",
+      "atk": 25,
+      "hp": 150,
+      "img": "",
+      "scale": 100,
+      "drops": [],
+      "desc": "호위 의뢰의 방해꾼. 공격적"
+    },
+    {
+      "id": "mon_03",
+      "name": "슬라임",
+      "grade": "F",
+      "kind": "마물",
+      "atk": 10,
+      "hp": 120,
+      "img": "",
+      "scale": 100,
+      "drops": [
+        "mat_study_F"
+      ],
+      "desc": "핵이 희미한 마석. 약하지만 폐광에 무리 지어 있음"
+    },
+    {
+      "id": "mon_04",
+      "name": "늑대",
+      "grade": "E",
+      "kind": "짐승",
+      "atk": 45,
+      "hp": 270,
+      "img": "",
+      "scale": 100,
+      "drops": [
+        "mat_slay_E",
+        "mat_x005"
+      ],
+      "desc": "무리 사냥. 공격력이 높음"
+    },
+    {
+      "id": "mon_05",
+      "name": "우두머리 늑대",
+      "grade": "E",
+      "kind": "짐승",
+      "atk": 55,
+      "hp": 810,
+      "img": "",
+      "scale": 140,
+      "drops": [
+        "mat_slay_E"
+      ],
+      "desc": "늑대 그림을 키운 보스. 체력 3배"
+    },
+    {
+      "id": "mon_06",
+      "name": "고블린",
+      "grade": "E",
+      "kind": "마물",
+      "atk": 35,
+      "hp": 245,
+      "img": "",
+      "scale": 100,
+      "drops": [
+        "mat_mine_E",
+        "mat_study_E"
+      ],
+      "desc": "광산·유적을 점거한 무리"
+    },
+    {
+      "id": "mon_07",
+      "name": "멧돼지",
+      "grade": "F",
+      "kind": "짐승",
+      "atk": 20,
+      "hp": 210,
+      "img": "",
+      "scale": 100,
+      "drops": [
+        "mat_x003",
+        "mat_x015"
+      ],
+      "desc": "체력이 높은 돌진형"
+    }
+  ],
+  "quests": [
+    {
+      "id": "q_slay_F",
+      "name": "토벌 F급 의뢰",
+      "cat": "req",
+      "grade": "F",
+      "line": "slay",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": [
+          {
+            "count": 3,
+            "boss": false,
+            "mon": "mon_01"
+          }
+        ]
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_slay_F",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_x015",
+          "role": "부",
+          "p": 70
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_hunt_F",
+      "name": "사냥·채집 F급 의뢰",
+      "cat": "req",
+      "grade": "F",
+      "line": "hunt",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_hunt_F",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_x003",
+          "role": "부",
+          "p": 70
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_study_F",
+      "name": "조사 F급 의뢰",
+      "cat": "req",
+      "grade": "F",
+      "line": "study",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_study_F",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_x004",
+          "role": "부",
+          "p": 70
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_guard_F",
+      "name": "호위·구호 F급 의뢰",
+      "cat": "req",
+      "grade": "F",
+      "line": "guard",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": [
+          {
+            "count": 2,
+            "boss": false,
+            "mon": "mon_02"
+          }
+        ]
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_guard_F",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_x016",
+          "role": "부",
+          "p": 70
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_mine_F",
+      "name": "탐사 F급 의뢰",
+      "cat": "req",
+      "grade": "F",
+      "line": "mine",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": [
+          {
+            "count": 2,
+            "boss": false,
+            "mon": "mon_03"
+          }
+        ]
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_mine_F",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_x017",
+          "role": "부",
+          "p": 70
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_slay_E",
+      "name": "토벌 E급 의뢰",
+      "cat": "req",
+      "grade": "E",
+      "line": "slay",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": [
+          {
+            "count": 3,
+            "boss": false,
+            "mon": "mon_04"
+          },
+          {
+            "count": 1,
+            "boss": true,
+            "mon": "mon_05"
+          }
+        ]
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_slay_E",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_F",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_mine_F",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_hunt_E",
+      "name": "사냥·채집 E급 의뢰",
+      "cat": "req",
+      "grade": "E",
+      "line": "hunt",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": [
+          {
+            "count": 1,
+            "boss": false,
+            "mon": "mon_04"
+          }
+        ]
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_hunt_E",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_hunt_F",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_x015",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_study_E",
+      "name": "조사 E급 의뢰",
+      "cat": "req",
+      "grade": "E",
+      "line": "study",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_study_E",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_study_F",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_x004",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_guard_E",
+      "name": "호위·구호 E급 의뢰",
+      "cat": "req",
+      "grade": "E",
+      "line": "guard",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": [
+          {
+            "count": 3,
+            "boss": false,
+            "mon": "mon_02"
+          }
+        ]
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_guard_E",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_guard_F",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_x016",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_mine_E",
+      "name": "탐사 E급 의뢰",
+      "cat": "req",
+      "grade": "E",
+      "line": "mine",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": [
+          {
+            "count": 3,
+            "boss": false,
+            "mon": "mon_06"
+          }
+        ]
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_mine_E",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_mine_F",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_hunt_F",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_slay_D",
+      "name": "토벌 D급 의뢰",
+      "cat": "req",
+      "grade": "D",
+      "line": "slay",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_slay_D",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_hunt_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_hunt_D",
+      "name": "사냥·채집 D급 의뢰",
+      "cat": "req",
+      "grade": "D",
+      "line": "hunt",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_hunt_D",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_study_D",
+      "name": "조사 D급 의뢰",
+      "cat": "req",
+      "grade": "D",
+      "line": "study",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_study_D",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_guard_D",
+      "name": "호위·구호 D급 의뢰",
+      "cat": "req",
+      "grade": "D",
+      "line": "guard",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_guard_D",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_mine_D",
+      "name": "탐사 D급 의뢰",
+      "cat": "req",
+      "grade": "D",
+      "line": "mine",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_mine_D",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_E",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_slay_C",
+      "name": "토벌 C급 의뢰",
+      "cat": "req",
+      "grade": "C",
+      "line": "slay",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_slay_C",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_hunt_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_hunt_C",
+      "name": "사냥·채집 C급 의뢰",
+      "cat": "req",
+      "grade": "C",
+      "line": "hunt",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_hunt_C",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_study_C",
+      "name": "조사 C급 의뢰",
+      "cat": "req",
+      "grade": "C",
+      "line": "study",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_study_C",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_guard_C",
+      "name": "호위·구호 C급 의뢰",
+      "cat": "req",
+      "grade": "C",
+      "line": "guard",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_guard_C",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_mine_C",
+      "name": "탐사 C급 의뢰",
+      "cat": "req",
+      "grade": "C",
+      "line": "mine",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_mine_C",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_D",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_slay_B",
+      "name": "토벌 B급 의뢰",
+      "cat": "req",
+      "grade": "B",
+      "line": "slay",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_slay_B",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_hunt_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_C",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_hunt_B",
+      "name": "사냥·채집 B급 의뢰",
+      "cat": "req",
+      "grade": "B",
+      "line": "hunt",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_hunt_B",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_C",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_study_B",
+      "name": "조사 B급 의뢰",
+      "cat": "req",
+      "grade": "B",
+      "line": "study",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_study_B",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_C",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_guard_B",
+      "name": "호위·구호 B급 의뢰",
+      "cat": "req",
+      "grade": "B",
+      "line": "guard",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_guard_B",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_C",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_mine_B",
+      "name": "탐사 B급 의뢰",
+      "cat": "req",
+      "grade": "B",
+      "line": "mine",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_mine_B",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_C",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_C",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_slay_A",
+      "name": "토벌 A급 의뢰",
+      "cat": "req",
+      "grade": "A",
+      "line": "slay",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_slay_A",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_hunt_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_B",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_hunt_A",
+      "name": "사냥·채집 A급 의뢰",
+      "cat": "req",
+      "grade": "A",
+      "line": "hunt",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_hunt_A",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_B",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_study_A",
+      "name": "조사 A급 의뢰",
+      "cat": "req",
+      "grade": "A",
+      "line": "study",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_study_A",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_B",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_guard_A",
+      "name": "호위·구호 A급 의뢰",
+      "cat": "req",
+      "grade": "A",
+      "line": "guard",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_guard_A",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_B",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_mine_A",
+      "name": "탐사 A급 의뢰",
+      "cat": "req",
+      "grade": "A",
+      "line": "mine",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_mine_A",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_B",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_B",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_slay_S",
+      "name": "토벌 S급 의뢰",
+      "cat": "req",
+      "grade": "S",
+      "line": "slay",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_slay_S",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_hunt_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_A",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_hunt_S",
+      "name": "사냥·채집 S급 의뢰",
+      "cat": "req",
+      "grade": "S",
+      "line": "hunt",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_hunt_S",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_A",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_study_S",
+      "name": "조사 S급 의뢰",
+      "cat": "req",
+      "grade": "S",
+      "line": "study",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_study_S",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_A",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_guard_S",
+      "name": "호위·구호 S급 의뢰",
+      "cat": "req",
+      "grade": "S",
+      "line": "guard",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_guard_S",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_mine_A",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_mine_S",
+      "name": "탐사 S급 의뢰",
+      "cat": "req",
+      "grade": "S",
+      "line": "mine",
+      "core": true,
+      "client": "",
+      "notice": "",
+      "desc": "부 소재: 한 단계 아래 등급의 다른 계열 소재가 30% 확률로 나옴 (계열별 균등 7.5%) [가안]",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_mine_S",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_hunt_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_study_A",
+          "role": "부",
+          "p": 7.5
+        },
+        {
+          "m": "mat_guard_A",
+          "role": "부",
+          "p": 7.5
+        }
+      ]
+    },
+    {
+      "id": "q_slay_F_2",
+      "name": "토벌 F급 의뢰 2",
+      "cat": "res",
+      "grade": "F",
+      "line": "slay",
+      "core": false,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": [
+          {
+            "count": 1,
+            "boss": false,
+            "mon": "mon_01"
+          },
+          {
+            "count": 1,
+            "boss": false,
+            "mon": "mon_07"
+          }
+        ]
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_x015",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_slay_F",
+          "role": "부",
+          "p": 70
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_hunt_F_2",
+      "name": "사냥·채집 F급 의뢰 2",
+      "cat": "res",
+      "grade": "F",
+      "line": "hunt",
+      "core": false,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": [
+          {
+            "count": 2,
+            "boss": false,
+            "mon": "mon_07"
+          }
+        ]
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_x003",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_hunt_F",
+          "role": "부",
+          "p": 70
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_study_F_2",
+      "name": "조사 F급 의뢰 2",
+      "cat": "res",
+      "grade": "F",
+      "line": "study",
+      "core": false,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [
+          2
+        ],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_x004",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_study_F",
+          "role": "부",
+          "p": 70
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_guard_F_2",
+      "name": "호위·구호 F급 의뢰 2",
+      "cat": "res",
+      "grade": "F",
+      "line": "guard",
+      "core": false,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": [
+          {
+            "count": 2,
+            "boss": false,
+            "mon": "mon_01"
+          }
+        ]
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_x016",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_guard_F",
+          "role": "부",
+          "p": 70
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_mine_F_2",
+      "name": "탐사 F급 의뢰 2",
+      "cat": "res",
+      "grade": "F",
+      "line": "mine",
+      "core": false,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_x017",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_mine_F",
+          "role": "부",
+          "p": 70
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_slay_E_2",
+      "name": "토벌 E급 의뢰 2",
+      "cat": "res",
+      "grade": "E",
+      "line": "slay",
+      "core": false,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": [
+          {
+            "count": 2,
+            "boss": false,
+            "mon": "mon_04"
+          }
+        ]
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_x005",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_x015",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_slay_F",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    },
+    {
+      "id": "q_hunt_E_2",
+      "name": "사냥·채집 E급 의뢰 2",
+      "cat": "res",
+      "grade": "E",
+      "line": "hunt",
+      "core": false,
+      "client": "",
+      "notice": "",
+      "desc": "",
+      "view": {
+        "region": "",
+        "delta": 0,
+        "enemies": []
+      },
+      "judge": {
+        "smode": "auto",
+        "stats": [],
+        "boss": false,
+        "ref": null,
+        "death": null,
+        "reward": null,
+        "fameS": null,
+        "fameF": null,
+        "trustS": null,
+        "trustF": null
+      },
+      "cond": {
+        "route": "office",
+        "minGrade": "",
+        "prereq": [],
+        "fame": null,
+        "trust": null,
+        "hidden": false,
+        "rumor": "",
+        "near": "",
+        "reappear": 8
+      },
+      "talk": {
+        "appear": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "accept": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "hold": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "success": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        },
+        "fail": {
+          "mode": "none",
+          "face": "smile",
+          "text": "",
+          "scene": ""
+        }
+      },
+      "rewards": [
+        {
+          "m": "mat_x006",
+          "role": "주",
+          "p": 100
+        },
+        {
+          "m": "mat_x016",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_x004",
+          "role": "부",
+          "p": 30
+        },
+        {
+          "m": "mat_x001",
+          "role": "복원",
+          "p": 5
+        }
+      ]
+    }
+  ]
+}

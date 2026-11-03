@@ -46,7 +46,15 @@ h1 small{font-weight:400;color:var(--muted);font-size:12.5px;margin-left:8px}
 .btn:hover{border-color:var(--accent)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:500}
 .btn.danger{color:var(--bad);border-color:var(--bad)}
-.saved{font-size:12px;color:var(--muted)}
+.saved{font-size:11.5px;color:var(--muted);flex-basis:100%;text-align:right}
+.fstat{font-size:12.5px;display:flex;flex-direction:column;align-items:flex-end;line-height:1.3;margin-right:4px}
+.fstat .p{color:var(--muted);font-size:11.5px}
+.fstat .dirty{color:var(--warn);font-weight:600}.fstat .clean{color:var(--ok);font-weight:600}
+.dlg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.dlg[hidden]{display:none}
+.dlgbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;max-width:520px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.dlgbox h3{margin:0 0 10px;font-size:16px}
+.cmp{border-collapse:collapse;width:100%;font-size:13px;margin-top:8px}.cmp th,.cmp td{border:1px solid var(--line);padding:4px 8px;text-align:right}.cmp th:first-child,.cmp td:first-child{text-align:left}.cmp th{color:var(--muted);font-weight:600}
 
 .main{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:start}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
@@ -88,7 +96,9 @@ table.matrix{border-collapse:separate;border-spacing:6px;width:100%;min-width:76
 .mini .x{margin-right:4px}
 .incomplete{color:var(--warn);font-size:12px}
 .btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.qcell{align-items:stretch;text-align:left;min-height:96px}.qcell .nm{font-weight:500;text-align:center}
+.qcell{align-items:stretch;text-align:left;min-height:96px}
+.cellstack{display:flex;flex-direction:column;gap:4px}.cellstack .qcell{min-height:0}
+.addc{border:1px dashed var(--line);background:transparent;border-radius:7px;padding:3px;font:inherit;font-size:11.5px;color:var(--muted);cursor:pointer}.addc:hover{border-color:var(--accent);color:var(--accent)}.qcell .nm{font-weight:500;text-align:center}
 .rwi{justify-content:center;gap:5px 4px}.rwc{display:flex;flex-direction:column;align-items:center;gap:1px}.rwc em{font-style:normal;font-size:10.5px;color:var(--muted)}
 .rwc.main .ico{box-shadow:0 0 0 2px var(--accent)}.rwc.main em{color:var(--accent);font-weight:700}
 .rwl{display:grid;gap:1px;font-size:11.5px;line-height:1.35}.rwr{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:4px}
@@ -124,6 +134,14 @@ textarea{resize:vertical;min-height:64px}
 .rules .rg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 12px;margin:10px 0}
 .rules .rg label{font-size:12px;color:var(--muted);display:grid;gap:3px}
 .rules .rg input[type=number]{padding:5px 7px}
+.brw{border-top:1px dashed var(--line);padding-top:10px;margin:4px 0 10px}
+.brg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.brg label{display:grid;gap:3px;font-size:12px;color:var(--muted)}
+.brg label>span{display:flex;align-items:center;gap:4px}
+.brg input{padding:5px 6px;text-align:right}
+.brg label.chg input{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn)}
+.brg label.chg small{color:var(--warn)}
+@media (max-width:700px){.brg{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .simt{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:6px}
 .simt th,.simt td{border:1px solid var(--line);padding:4px 6px;text-align:right;white-space:nowrap}
 .simt th{background:var(--panel);font-weight:600;color:var(--muted)}
@@ -133,7 +151,7 @@ textarea{resize:vertical;min-height:64px}
 .calc{border:1px solid var(--line);border-radius:8px;background:var(--soft);padding:8px 10px;margin:10px 0;font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:3px 12px}
 .calc b{font-weight:600;color:var(--muted)}
 .en{display:grid;grid-template-columns:minmax(0,1fr) 64px auto auto;grid-template-areas:"nm ct bs dl" "im im im im" "ms ms ms ms";gap:6px;align-items:center;margin-bottom:6px;border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:8px}
-.en [data-ek=name]{grid-area:nm}.en [data-ek=count]{grid-area:ct}.en label.bx{grid-area:bs}.en [data-ek=img]{grid-area:im}.en [data-endel]{grid-area:dl;white-space:nowrap;padding:6px 10px}
+.en [data-ek=name],.en [data-ek=mon]{grid-area:nm;min-width:0}.en [data-ek=count]{grid-area:ct}.en label.bx{grid-area:bs}.en [data-ek=img]{grid-area:im}.en [data-endel]{grid-area:dl;white-space:nowrap;padding:6px 10px}
 .en .cnt2{font-size:11.5px;color:var(--muted);grid-area:ms}
 .en label.bx{display:flex;gap:3px;align-items:center;font-size:12px;white-space:nowrap}
 .jt{display:grid;grid-template-columns:minmax(0,1fr) auto 84px 30px;gap:5px 8px;align-items:center;margin:6px 0 12px;font-size:13px}
@@ -171,12 +189,13 @@ footer.status .w{color:var(--warn)}
     <h1>소재 편집기<small>이세계 모험가 길드 · 소재·음식·장비·물약 정의</small></h1>
     <div class="tabs" role="tablist" id="tabs"></div>
     <div class="tools">
-      <span class="saved" id="saved">자동 저장됨</span>
-      <button class="btn primary" id="bFolder" title="Project_F의 data 폴더를 고르면 CSV와 아이콘을 바로 저장합니다">폴더에 저장</button>
-      <button class="btn" id="bZip" title="CSV·아이콘·백업을 zip 하나로 내려받습니다">zip 내보내기</button>
-      <button class="btn" id="bLoad">백업 불러오기</button>
+      <span class="fstat" id="fstat"></span>
+      <button class="btn primary" id="bSave" title="data 폴더의 collegium_data.json에 저장 (Ctrl+S)">저장</button>
+      <button class="btn" id="bOpen" title="data 폴더의 collegium_data.json을 불러옴">불러오기</button>
+      <button class="btn" id="bDir" title="저장·불러오기할 data 폴더를 고르거나 바꿈">폴더</button>
       <button class="btn" id="bReset">처음 상태로</button>
       <input type="file" id="fLoad" accept=".json,application/json" hidden>
+      <span class="saved" id="saved"></span>
       <input type="file" id="fIcon" accept="image/*" hidden>
     </div>
   </header>
@@ -188,6 +207,7 @@ footer.status .w{color:var(--warn)}
   <footer class="status" id="status"></footer>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<div class="dlg" id="dlg" hidden><div class="dlgbox" role="dialog" aria-modal="true" aria-labelledby="dlgT"><h3 id="dlgT"></h3><div id="dlgB"></div><div class="row" id="dlgA" style="justify-content:flex-end;margin-top:14px"></div></div></div>
 
 <script>
 'use strict';
@@ -204,17 +224,53 @@ const LINES = [ // 코어 5계열 + 추가용 계열
   {k:'etc',   n:'기타',      core:false},
 ];
 const CORE = { // 등급 순서 F E D C B A S (docs/data/materials_v0.1.md)
-  slay:['슬라임 점액','고블린 뼈','오크 엄니','트롤 뿔','와이번 비늘','키메라 뿔','용의 유해'],
+  slay:['짐승 뼛조각','늑대 송곳니','오크 엄니','트롤 뿔','와이번 비늘','키메라 뿔','용의 유해'],
   hunt:['참나무 가지','사슴 가죽','흑곰 가죽','그리폰 깃털','세계수 가지','불사조 깃털','용근'],
   study:['희미한 마석','마석 조각','마정석','고급 마정석','정령석','성좌석','용안석'],
-  guard:['무명천','문양 천','마직 천','축복받은 천','은빛 실타래','성은 실타래','용익막'],
+  guard:['무명천','모직 천','마직 천','축복받은 천','은빛 실타래','성은 실타래','용익막'],
   mine:['고철 조각','구리 원석','철광석','흑철광','미스릴 원석','아다만 원석','운철'],
 };
-const KINDS = [{k:'mat',n:'소재'},{k:'food',n:'음식'},{k:'gear',n:'장비'},{k:'potion',n:'물약'},{k:'quest',n:'퀘스트'}];
+const KINDS = [{k:'mat',n:'소재'},{k:'food',n:'음식'},{k:'gear',n:'장비'},{k:'potion',n:'물약'},{k:'mon',n:'몬스터'},{k:'quest',n:'퀘스트'}];
 const QCATS = [{k:'req',n:'의뢰'},{k:'main',n:'메인'},{k:'sub',n:'서브'},{k:'promo',n:'승급'},{k:'res',n:'리소스'}];
 const ROLES = ['주','부','복원','기타'];
 const KIND_PREFIX = {food:'food',gear:'gear',potion:'pot'};
-const EFFECT_LABEL = {food:'효과',gear:'능력·설명',potion:'효과'};
+const EFFECT_LABEL = {food:'효과',gear:'설명',potion:'효과'};
+// 장비 종류 (docs/data/equipment_v0.1.md). lines = 착용 계열 (능력치 0힘 1민첩 2지력 3정신 4기교), 장신구는 전체
+const GTYPES=[
+  {k:'sword',n:'검',slot:'weapon',lines:[0]},{k:'bow',n:'활',slot:'weapon',lines:[1]},{k:'staff',n:'지팡이',slot:'weapon',lines:[2]},{k:'mace',n:'성구(메이스)',slot:'weapon',lines:[3]},{k:'dagger',n:'단검',slot:'weapon',lines:[4]},
+  {k:'heavy',n:'중갑',slot:'armor',lines:[0,3]},{k:'light',n:'경갑',slot:'armor',lines:[1,4]},{k:'robe',n:'로브',slot:'armor',lines:[2,3]},
+  {k:'ring',n:'반지',slot:'acc',lines:[0]},{k:'anklet',n:'발찌',slot:'acc',lines:[1]},{k:'necklace',n:'목걸이',slot:'acc',lines:[2]},{k:'rosary',n:'묵주',slot:'acc',lines:[3]},{k:'gloves',n:'장갑',slot:'acc',lines:[4]}];
+const SLOTS={weapon:'무기',armor:'방어구',acc:'장신구'};
+const gtype=k=>GTYPES.find(t=>t.k===k);
+const STAT5=['힘','민첩','지력','정신','기교'];
+const COMBAT=[{k:'atk',n:'공격력'},{k:'def',n:'방어'},{k:'mdef',n:'마법방어'},{k:'hp',n:'체력'},{k:'mp',n:'마력'},{k:'luck',n:'행운'}];
+// 몬스터: 퀘스트 미니 뷰의 적. 전투 수치는 장비와 같은 5배 단위 [가안]
+const MKINDS=['짐승','마물','사람'];
+const MON_BASE={hp:150,atk:20}; // F급 보통 몬스터. 등급 배수 = 그 등급 무기 공격력 ÷ F급 (F 1 · E 1.8 · D 2.8 …)
+const monBase=g=>{const k=[10,18,28,40,55,72,92][GRADES.indexOf(g)]/10;return {hp:r5(MON_BASE.hp*k),atk:r5(MON_BASE.atk*k)};};
+const mon=id=>(S.mons||[]).find(m=>m.id===id);
+const monUsedIn=id=>S.quests.filter(q=>(q.view&&q.view.enemies||[]).some(e=>e.mon===id));
+// 직업 (game_core.js 기준): 1차 5개, 2차 15개와 계열
+const CLS1=['전사','궁수','마법사','성직자','도적'];
+const CLS2=[['광전사',[0]],['사냥꾼',[1]],['괴도',[4]],['마도사',[2]],['신관',[3]],['레인저',[0,1]],['마검사',[0,2]],['기사',[0,3]],['쌍검사',[0,4]],['마궁사',[1,2]],['수도사',[1,3]],['추적자',[1,4]],['점성술사',[2,3]],['연금술사',[2,4]],['광대',[3,4]]];
+// 등급 기본값 (장비 초안 v0.1). 전투 수치는 초안의 5배, 가격은 balance.csv gear.weaponPrice (방어구 ×1.2, 장신구 ×0.8)
+const GD_ATK=[10,18,28,40,55,72,92], GD_WST=[3,5,8,12,16,21,27], GD_AST=[1,2,4,6,8,10,13], GD_ACC=[2,3,5,7,10,13,17], GD_DM=[8,14,22,32,44,58,74], GD_DS=[3,6,9,13,18,24,30], GD_LUCK=[0,0,0,0,2,3,5]; // 가격은 balance.csv gear.weaponPrice (BAL.wprice)
+const ENH_DEF=[4,8,13,20,28,39,53,70,88,110]; // 강화 누적 상승률(%) +1~+10. 정하는 곳: 장비 탭 위 '강화 곡선'
+const r5=x=>Math.round(x/5)*5;
+function gearDefaults(t,g){ // t 종류 키, g 등급 → 기본 능력치
+  const gi=GRADES.indexOf(g),T=gtype(t),k=GD_ATK[gi]/10,o={stats:{},atk:0,def:0,mdef:0,hp:0,mp:0,luck:0,price:0,effect:''};
+  if(T.slot==='weapon'){o.stats[T.lines[0]]=GD_WST[gi];o.atk=GD_ATK[gi]*5;o.price=BAL.wprice[gi];
+    if(t==='sword')o.hp=r5(25*k);if(t==='staff')o.mp=r5(25*k);if(t==='mace')o.mdef=r5(10*k);}
+  else if(T.slot==='armor'){T.lines.forEach(l=>o.stats[l]=GD_AST[gi]);o.price=Math.round(BAL.wprice[gi]*1.2);
+    const m=GD_DM[gi],sb=GD_DS[gi],avg=(m+sb)/2;
+    if(t==='heavy'){o.def=m*5;o.mdef=sb*5;o.hp=r5(60*k);} else if(t==='robe'){o.def=sb*5;o.mdef=m*5;o.hp=r5(20*k);} else {o.def=Math.ceil(avg)*5;o.mdef=Math.floor(avg)*5;o.hp=r5(40*k);}}
+  else {o.stats[T.lines[0]]=GD_ACC[gi];o.price=Math.round(BAL.wprice[gi]*0.8);o.mp=r5((t==='necklace'?30:15)*k);if(t==='rosary')o.mdef=r5(10*k);o.luck=GD_LUCK[gi];}
+  return o;
+}
+const enhVal=(v,n)=>n?v+Math.round(v*(S.enh||ENH_DEF)[n-1]/100):v; // 강화 결과는 반올림 정수
+function equipClasses(t){const T=gtype(t);if(!T)return '';if(T.slot==='acc')return '모든 직업';
+  const ok=ls=>ls.some(l=>T.lines.includes(l));
+  return `1차: ${T.lines.map(l=>CLS1[l]).join(' · ')}<br>2차: ${CLS2.filter(([,ls])=>ok(ls)).map(([n])=>n).join(' · ')}`;}
 
 function seedQuests(mats){
   const qs=[], by=(l,g)=>mats.find(m=>m.core&&m.line===l&&m.grade===g);
@@ -241,9 +297,9 @@ function seed(){
   add('수선 숫돌','F','restore','F~C급 장비·유품 복원. 모든 의뢰에서 5% 확률 획득');
   add('고대 복원석','B','restore','B~S급 장비·유품 복원. 주기적인 특별 의뢰로 획득');
   const foods=[ // 등급,요리,재료(새 식재료 또는 기존 소재),효과
-    ['F','멧돼지 스테이크 정식',['멧돼지 고기','F','사냥'],'힘 +3%'],
-    ['F','들버섯 수프',['들버섯','F','채집'],'정신 +3%'],
-    ['E','늑대 고기 스튜',['늑대 고기','E','토벌'],'힘 +4%'],
+    ['F','멧돼지 스테이크 정식',['멧돼지 고기','F','사냥'],'힘·기교 +3%'],
+    ['F','들버섯 수프',['들버섯','F','채집'],'지력·정신 +3%'],
+    ['E','늑대 고기 스튜',['늑대 고기','E','토벌'],'힘·기교 +4%'],
     ['E','산딸기 파이',['산딸기','E','채집'],'민첩 +4%'],
     ['D','흑곰 갈비찜',['흑곰 고기','D','사냥'],'힘·정신 +4%'],
     ['D','마력 버섯 리소토',['마력 버섯','D','조사'],'지력 +5%'],
@@ -255,6 +311,8 @@ function seed(){
     ['A','불사조 수프','불사조 깃털','사망 확률 −20%'],
     ['S','용 꼬리 스테이크',['용 꼬리','S','토벌'],'모든 능력치 +8%'],
     ['S','별빛 만찬',['운철','성좌석'],'모든 능력치 +6%, 애착 +5'],
+    ['F','민물고기 구이',['민물고기','F','채집'],'민첩 +3%'], // 2026-11-03 추가 (F급 요리 3개). id가 밀리지 않게 맨 뒤
+  ['E','숲 버섯 파이',['들버섯','산딸기'],'지력·정신 +4%'], // 2026-11-03 추가 (E급 요리 3개)
   ];
   const items=[]; let f=0;
   for(const [g,name,ing,eff] of foods){
@@ -273,9 +331,10 @@ let qview='text'; try{qview=localStorage.getItem('mat_qview')||'text';}catch(e){
 // 퀘스트 상세 하위 탭: 하나씩 만들어 가는 중 (1 기본 정보 → 2 미니 뷰 → 3 판정·보상 → 4 등장 조건·대사)
 const QSUBS=[{k:'basic',n:'기본 정보'},{k:'view',n:'미니 뷰 연출'},{k:'judge',n:'판정·보상'},{k:'cond',n:'등장 조건·대사'}];
 let qsub='basic'; try{qsub=localStorage.getItem('mat_qsub')||'basic';}catch(e){} if(!QSUBS.some(x=>x.k===qsub))qsub='basic';
-// 기간 규칙: 등급 기본값은 data/balance.csv 의 quest 항목을 옮겨 적은 것 (바뀌면 여기도 맞춰야 함)
-const BAL={reward:[100,200,400,800,1500,3000,6000],weeks:[1,1,1,2,2,2,3],ref:[15,25,35,45,60,75,90],death:[0.01,0.01,0.03,0.03,0.05,0.05,0.08],
-  reqCount:[1,1,2,2,3,3,4],bossMult:1.15,fameS:[0.4,0.8,1.2,1.6,2,2.4,3],fameF:[0.6,1.2,1.8,2.4,3,3.6,4.5],trustS:0.3,trustF:0.6};
+// 기간 규칙: 등급 기본값. 폴더를 연결하면 data/balance.csv 에서 읽어 덮어씀(readBalance). 아래는 읽기 전 기본값
+const BAL_DEF_REWARD=[100,200,400,800,1500,3000,6000];
+const BAL={reward:BAL_DEF_REWARD.slice(),weeks:[1,1,1,2,2,2,3],ref:[15,25,35,45,60,75,90],death:[0.01,0.01,0.03,0.03,0.05,0.05,0.08],
+  reqCount:[1,1,2,2,3,3,4],bossMult:1.15,wprice:[150,300,500,1500,2400,3750,7500],fameS:[0.4,0.8,1.2,1.6,2,2.4,3],fameF:[0.6,1.2,1.8,2.4,3,3.6,4.5],trustS:0.3,trustF:0.6};
 const STATS=['힘','민첩','지력','정신','기교']; // 유형 순서(토벌·사냥채집·조사·호위구호·탐사)의 대표 능력치
 // 4. 등장 조건·대사
 const CDEF=()=>({route:'office',minGrade:'',prereq:[],fame:null,trust:null,hidden:false,rumor:'',near:'',reappear:8});
@@ -328,21 +387,30 @@ const dRange=grade=>{const R=S.qrule,bw=BAL.weeks[GRADES.indexOf(grade)],o=[];fo
 // 예전 저장본에 없는 퀘스트 항목 채우기
 function migrateQuests(){
   S.qrule=Object.assign({},RULE_DEF,S.qrule||{});
+  if(!Array.isArray(S.enh)||S.enh.length!==10)S.enh=ENH_DEF.slice();
+  if(!Array.isArray(S.mons))S.mons=[];
+  S.mons.forEach(m=>{['atk','hp'].forEach(k=>{if(m[k]==null)m[k]=0;});if(m.scale==null)m.scale=100;if(!m.drops)m.drops=[];if(m.img==null)m.img='';if(m.desc==null)m.desc='';if(!m.kind)m.kind='마물';});
+  // 예전 적(이름만 적힌 것)은 같은 이름의 몬스터로 연결, 없으면 새로 만듦
+  (S.quests||[]).forEach(q=>((q.view||{}).enemies||[]).forEach(e=>{if(e.mon&&mon(e.mon))return;const nm=(e.name||'').trim()||'이름 없는 적';
+    let m=S.mons.find(x=>x.name===nm);if(!m){S.seq.mon=(S.seq.mon||0)+1;m=Object.assign({id:'mon_'+String(S.seq.mon).padStart(2,'0'),name:nm,grade:q.grade,kind:'마물',img:e.img||'',scale:100,drops:[],desc:''},monBase(q.grade));S.mons.push(m);}
+    e.mon=m.id;delete e.name;delete e.img;}));
+  (S.items||[]).forEach(i=>{if(i.kind!=='gear')return;if(!i.gtype)i.gtype='';if(!i.stats)i.stats={};COMBAT.forEach(c=>{if(i[c.k]==null)i[c.k]=0;});if(i.price==null)i.price=0;if(i.effect==null)i.effect='';});
   (S.quests||[]).forEach(q=>{ if(q.client==null)q.client=''; if(q.notice==null)q.notice=''; if(q.line==null)q.line=''; if(!q.rewards)q.rewards=[];
     if(!q.view)q.view={region:'',delta:0,enemies:[]}; if(!q.judge)q.judge=JDEF(); else q.judge=Object.assign(JDEF(),q.judge);
     q.cond=Object.assign(CDEF(),q.cond||{}); q.talk=q.talk||{}; TALKS.forEach(t=>q.talk[t.k]=Object.assign(TDEF(),q.talk[t.k]||{})); });
 }
-let S=null, tab='mat', sel={mat:null,food:null,gear:null,potion:null,quest:null}, confirming=null, flash=null;
+let S=null, tab='mat', sel={mat:null,food:null,gear:null,potion:null,mon:null,quest:null}, confirming=null, flash=null;
 const DB='mat_editor', STORE='kv';
 const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});
 async function dbGet(){try{const d=await idb();return await new Promise((res,rej)=>{const q=d.transaction(STORE).objectStore(STORE).get('state');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}catch(e){return null;}}
 let saveTimer=null, canSave=true;
-function save(){
-  $('saved').textContent='저장 중…';
+function save(quiet){
+  if(!quiet&&!meta.dirty)setMeta({dirty:true});
+  $('saved').textContent='브라우저 임시 보관 중…';
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{
-    try{const d=await idb();await new Promise((res,rej)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).put(S,'state');t.oncomplete=res;t.onerror=()=>rej(t.error);});$('saved').textContent='자동 저장됨 (이 브라우저)';}
-    catch(e){canSave=false;$('saved').textContent='자동 저장 불가 · 내보내기로 보관하세요';}
+    try{const d=await idb();await new Promise((res,rej)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).put(S,'state');t.oncomplete=res;t.onerror=()=>rej(t.error);});$('saved').textContent='브라우저에 임시 보관됨 (창을 닫아도 복원)';}
+    catch(e){canSave=false;$('saved').textContent='브라우저 임시 보관 불가 · 저장을 자주 눌러 주세요';}
   },250);
 }
 
@@ -361,7 +429,7 @@ const recipeDone=i=>i.recipe.length>0&&i.recipe.every(r=>r.m&&mat(r.m)&&r.n>=1);
 
 /* ========== 화면: 탭 ========== */
 function renderTabs(){
-  const cnt={mat:S.mats.length,food:0,gear:0,potion:0,quest:S.quests.length};S.items.forEach(i=>cnt[i.kind]++);
+  const cnt={mat:S.mats.length,food:0,gear:0,potion:0,mon:(S.mons||[]).length,quest:S.quests.length};S.items.forEach(i=>cnt[i.kind]++);
   $('tabs').innerHTML=KINDS.map(k=>`<button class="tab" role="tab" data-tab="${k.k}" aria-selected="${tab===k.k}">${k.n}<span class="n">${cnt[k.k]}</span></button>`).join('');
 }
 
@@ -416,8 +484,15 @@ function renderMatRight(){
 }
 
 /* ========== 화면: 음식·장비·물약 ========== */
+function renderEnh(){
+  const E=S.enh;return `<details class="rules" id="enhBox" ${enhOpen?'open':''}><summary>강화 곡선 <span class="hint">· +1~+10 누적 상승률(%). 강화 결과는 기본값 × 상승률을 반올림한 정수</span></summary>
+  <div class="brg" style="grid-template-columns:repeat(10,minmax(0,1fr));margin-top:8px">${E.map((v,i)=>`<label><span>+${i+1}</span><input type="number" min="0" max="500" step="1" data-enh="${i}" value="${v}" aria-label="+${i+1} 누적 %"><small>이번 +${v-(i?E[i-1]:0)}</small></label>`).join('')}</div>
+  ${E.some((v,i)=>i&&v<E[i-1])?'<div class="msg bad">누적 값이 앞 단계보다 작은 곳이 있습니다.</div>':''}
+  <div class="row" style="justify-content:flex-end;margin-top:6px"><button class="btn" id="enhReset">기본 곡선 (4 … 110%)</button></div></details>`;}
+let enhOpen=false; try{enhOpen=localStorage.getItem('mat_enh')==='1';}catch(e){}
 function renderItemsLeft(){
   const k=tab, kn=KINDS.find(x=>x.k===k).n, items=S.items.filter(i=>i.kind===k);
+  if(k==='gear') return renderGearLeft(items);
   let h=`<div class="extra-head" style="margin-top:0"><h2 style="margin:0">${kn} <span class="hint">· 조합법은 소재 최대 3종</span></h2><button class="btn primary" id="addItem">+ ${kn} 추가</button></div>`;
   if(!items.length) return h+`<p class="hint">등록된 ${kn}이 없습니다. “${kn} 추가”로 첫 항목을 만드세요.</p>`;
   h+=`<div class="list">${items.map(i=>`<button class="card" data-pick="${i.id}" aria-pressed="${sel[k]===i.id}">
@@ -444,9 +519,75 @@ function renderItemRight(){
   if(!recipeDone(i)) h+=`<div class="msg" style="color:var(--warn)">${i.recipe.length?'재료를 모두 고르세요.':'재료를 1종 이상 고르세요.'}</div>`;
   const dup=i.recipe.map(r=>r.m).filter((m,ix,a)=>m&&a.indexOf(m)!==ix);
   if(dup.length) h+=`<div class="msg bad">같은 소재가 두 칸에 있습니다. 수량으로 합치세요.</div>`;
+  if(tab==='gear') h+=gearPanel(i);
   h+=`<div class="field" style="margin-top:10px"><span class="lbl">ID <code>${i.id}</code></span></div>`;
   if(confirming===i.id) h+=`<div class="confirm"><span>삭제할까요?</span><button class="btn danger" id="delYes">삭제</button><button class="btn" id="delNo">취소</button></div>`;
   else h+=`<button class="btn danger" id="delItem">${kn} 삭제</button>`;
+  return h;
+}
+
+function gearCard(i){const T=gtype(i.gtype),main=Object.entries(i.stats||{}).filter(([,v])=>v).map(([s2,v])=>`${STAT5[s2]} +${v}`).join(' · ');
+  const cb=COMBAT.filter(c=>i[c.k]).map(c=>`${c.n} ${i[c.k]}`).join(' · ');
+  return `<button class="card" data-pick="${i.id}" aria-pressed="${sel.gear===i.id}"><span class="top"><span class="gl" data-g="${i.grade}">${i.grade}</span><b>${esc(i.name)}</b><span class="badge">${T?T.n:'종류 없음'}</span></span>
+   <span class="hint" style="font-size:12px">${main||'능력치 없음'}${cb?' · '+cb:''}</span>
+   <span style="font-size:12px">${i.recipe.length?i.recipe.map(r=>{const m=mat(r.m);return m?`${esc(m.name)} ×${r.n}`:'<span class="incomplete">미선택</span>';}).join(' · '):'<span class="incomplete">조합법 없음</span>'}</span></button>`;}
+function renderGearLeft(items){
+  let h=renderEnh()+`<div class="extra-head" style="margin-top:0"><h2 style="margin:0">장비 <span class="hint">· 슬롯별, 등급순</span></h2><button class="btn primary" id="addItem">+ 장비 추가</button></div>`;
+  if(!items.length) return h+`<p class="hint">등록된 장비가 없습니다.</p>`;
+  for(const sl of ['weapon','armor','acc','']){const xs=items.filter(i=>((gtype(i.gtype)||{}).slot||'')===sl).sort((a,b)=>GRADES.indexOf(a.grade)-GRADES.indexOf(b.grade)||GTYPES.findIndex(t=>t.k===a.gtype)-GTYPES.findIndex(t=>t.k===b.gtype));
+    if(!xs.length)continue;h+=`<div class="sec">${sl?SLOTS[sl]:'종류 미지정'} <span class="hint" style="font-weight:400">${xs.length}</span></div><div class="list">${xs.map(gearCard).join('')}</div>`;}
+  return h;
+}
+function gearPanel(i){
+  const T=gtype(i.gtype);
+  let h=`<div class="sec">장비 능력치</div><div class="row"><div class="field" style="flex:1"><label for="gType">종류</label><select id="gType"><option value="" ${!i.gtype?'selected':''}>종류 고르기…</option>${['weapon','armor','acc'].map(sl=>`<optgroup label="${SLOTS[sl]}">${GTYPES.filter(t=>t.slot===sl).map(t=>`<option value="${t.k}" ${t.k===i.gtype?'selected':''}>${t.n}</option>`).join('')}</optgroup>`).join('')}</select></div>
+   <div class="field" style="flex:1"><label for="gPrice">가격 (G)</label><input type="number" id="gPrice" min="0" step="10" value="${i.price}"></div></div>`;
+  if(!T) return h+`<p class="hint">종류를 고르면 등급 기본값이 채워집니다.</p>`;
+  h+=`<div class="row" style="justify-content:space-between;margin:-2px 0 8px"><span class="hint">${SLOTS[T.slot]} · 착용 계열 ${T.slot==='acc'?'전체':T.lines.map(l=>STAT5[l]).join('·')}</span><button class="btn" id="gDef" title="장비 초안 v0.1의 ${i.grade}급 값으로 다시 채움 (전투 수치 5배)">${i.grade}급 기본값으로</button></div>
+  <div class="lbl">판정 능력치 <span class="hint">(의뢰 판정에 더해짐)</span></div><div class="brg" style="grid-template-columns:repeat(5,minmax(0,1fr));margin:4px 0 8px">${STAT5.map((n,k)=>`<label><span>${n}</span><input type="number" min="0" step="1" data-gst="${k}" value="${(i.stats||{})[k]||0}"></label>`).join('')}</div>
+  <div class="lbl">전투 수치 <span class="hint">(전투 장면에서만)</span></div><div class="brg" style="grid-template-columns:repeat(6,minmax(0,1fr));margin:4px 0 8px">${COMBAT.map(c=>`<label><span>${c.n}</span><input type="number" min="0" step="1" data-gcb="${c.k}" value="${i[c.k]||0}"></label>`).join('')}</div>
+  <div class="field"><label for="gEffect">고유 효과 <span class="hint">· S급 등 특별 장비만</span></label><input type="text" id="gEffect" value="${esc(i.effect)}" placeholder="예: 보스 피해 +15%"></div>
+  <div class="calc" style="grid-template-columns:auto 1fr"><b>착용 가능</b><span>${equipClasses(i.gtype)}</span></div>`;
+  const rows=[...STAT5.map((n,k)=>({n,v:(i.stats||{})[k]||0})),...COMBAT.map(c=>({n:c.n,v:i[c.k]||0}))].filter(r=>r.v);
+  if(rows.length) h+=`<div class="lbl" style="margin-top:8px">강화 결과 <span class="hint">(반올림 정수)</span></div><div style="overflow-x:auto"><table class="simt"><thead><tr><th></th>${[0,1,2,3,4,5,6,7,8,9,10].map(n=>`<th>+${n}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr><th style="text-align:left">${r.n}</th>${[0,1,2,3,4,5,6,7,8,9,10].map(n=>`<td class="${n===3?'base':''}">${enhVal(r.v,n)}</td>`).join('')}</tr>`).join('')}</tbody></table></div><p class="hint" style="margin:4px 0 0">+3까지 실패 없음(강조된 칸)</p>`;
+  return h;
+}
+
+/* ========== 화면: 몬스터 ========== */
+function renderMonLeft(){
+  let h=`<div class="extra-head" style="margin-top:0"><h2 style="margin:0">몬스터 <span class="hint">· 퀘스트 미니 뷰의 적. 퀘스트 → 미니 뷰 연출 탭에서 골라 씀</span></h2><button class="btn primary" id="addMon">+ 몬스터 추가</button></div>
+  <p class="hint" style="margin:0 0 10px">전투 수치는 장비와 같은 5배 단위. 등급 기준값(보통 몬스터): ${GRADES.slice(0,3).map(g=>{const b=monBase(g);return `${g} 체력 ${b.hp}·공격력 ${b.atk}`;}).join(' / ')} …</p>`;
+  const ms=(S.mons||[]).slice().sort((a,b)=>GRADES.indexOf(a.grade)-GRADES.indexOf(b.grade));
+  if(!ms.length) return h+`<p class="hint">등록된 몬스터가 없습니다.</p>`;
+  for(const g of GRADES){const xs=ms.filter(m=>m.grade===g);if(!xs.length)continue;
+    h+=`<div class="sec">${g}급에서 처음 등장 <span class="hint" style="font-weight:400">${xs.length}</span></div><div class="list">${xs.map(m=>{const used=monUsedIn(m.id).length;
+      return `<button class="card" data-pick="${m.id}" aria-pressed="${sel.mon===m.id}"><span class="top"><span class="gl" data-g="${m.grade}">${m.grade}</span><b>${esc(m.name)}</b><span class="badge">${m.kind}</span></span>
+       <span class="hint" style="font-size:12px">체력 ${m.hp} · 공격력 ${m.atk}${m.scale!==100?` · 크기 ${m.scale}%`:''}</span>
+       <span style="font-size:12px">${m.drops.length?'소재: '+m.drops.map(id=>esc((mat(id)||{}).name||id)).join(' · '):'<span class="hint">소재 연결 없음</span>'} · 퀘스트 ${used}</span></button>`;}).join('')}</div>`;}
+  return h;
+}
+function renderMonRight(){
+  const m=mon(sel.mon);if(!m) return `<h2>몬스터 상세</h2><p class="hint">목록에서 고르거나 새로 추가하세요.</p>`;
+  const b=monBase(m.grade),used=monUsedIn(m.id);
+  const opts=cur_=>`<option value="">소재 선택…</option>`+LINES.map(l=>{const xs=S.mats.filter(x=>x.line===l.k);return xs.length?`<optgroup label="${l.n}">${xs.map(x=>`<option value="${x.id}" ${x.id===cur_?'selected':''}>${x.grade} · ${esc(x.name)}</option>`).join('')}</optgroup>`:'';}).join('');
+  let h=`<h2>몬스터 상세</h2>
+  <div class="row"><div class="field" style="flex:2"><label for="fName">이름</label><input type="text" id="fName" value="${esc(m.name)}"></div>
+   <div class="field" style="flex:1"><label for="fGrade">처음 등장</label><select id="fGrade">${GRADES.map(g=>`<option ${g===m.grade?'selected':''}>${g}</option>`).join('')}</select></div>
+   <div class="field" style="flex:1"><label for="mKind">종류</label><select id="mKind">${MKINDS.map(k=>`<option ${k===m.kind?'selected':''}>${k}</option>`).join('')}</select></div></div>
+  <div class="lbl">전투 수치 <span class="hint">(${m.grade}급 보통 몬스터 기준: 체력 ${b.hp} · 공격력 ${b.atk})</span></div>
+  <div class="brg" style="grid-template-columns:repeat(3,minmax(0,1fr));margin:4px 0 4px">
+   <label><span>체력</span><input type="number" min="1" step="5" data-mst="hp" value="${m.hp}"><small>기준의 ${Math.round(m.hp/b.hp*100)}%</small></label>
+   <label><span>공격력</span><input type="number" min="0" step="5" data-mst="atk" value="${m.atk}"><small>기준의 ${Math.round(m.atk/b.atk*100)}%</small></label>
+   <label><span>그림 크기 (%)</span><input type="number" min="50" max="300" step="10" data-mst="scale" value="${m.scale}"><small>보스는 크게</small></label></div>
+  <div class="row" style="justify-content:flex-end;margin-bottom:8px"><button class="btn" id="mBase">${m.grade}급 기준값으로</button></div>
+  <div class="field"><label for="mImg">그림 파일 <span class="hint">· 비우면 미니 뷰에서 네모 상자</span></label><input type="text" id="mImg" value="${esc(m.img)}" placeholder="예: mon/wolf.png"></div>
+  <div class="lbl" style="margin-bottom:6px">떨어뜨리는 소재 <span class="hint">(설명용, 최대 3개 · 실제 보상은 퀘스트에서)</span></div>`;
+  for(let i=0;i<3;i++) h+=`<div class="slot"><span class="no">${i+1}</span><select data-mdrop="${i}" aria-label="소재 ${i+1}">${opts(m.drops[i]||'')}</select></div>`;
+  h+=`<div class="field" style="margin-top:8px"><label for="fDesc">설명</label><textarea id="fDesc">${esc(m.desc)}</textarea></div>
+  <div class="lbl">나오는 퀘스트 (${used.length})</div>${used.length?`<div class="list" style="margin-top:4px">${used.map(q=>{const e=q.view.enemies.find(x=>x.mon===m.id);return `<button class="card" data-jumpq="${q.id}"><span class="top"><span class="gl" data-g="${q.grade}">${q.grade}</span><b>${esc(q.name)}</b></span><span class="hint" style="font-size:12px">×${e.count}${e.boss?' · 보스':''}</span></button>`;}).join('')}</div>`:'<p class="hint">아직 쓰는 퀘스트가 없습니다.</p>'}
+  <div class="field" style="margin-top:10px"><span class="lbl">ID <code>${m.id}</code></span></div>`;
+  if(confirming===m.id) h+=`<div class="confirm"><span>삭제할까요?</span><button class="btn danger" id="delYes">삭제</button><button class="btn" id="delNo">취소</button></div>`;
+  else h+=`<button class="btn danger" id="delMon" ${used.length?'disabled title="쓰는 퀘스트가 있어 삭제할 수 없습니다"':''}>몬스터 삭제</button>`;
   return h;
 }
 
@@ -459,13 +600,25 @@ function rwBlock(q){
   if(qview==='text') return `<span class="rwl" title="${esc(tip)}">${q.rewards.map(r=>{const m=mat(r.m);return `<span class="rwr r-${r.role==='주'?'m':'s'}"><i>${r.role}</i><span>${m?esc(m.name):'(미선택)'}</span><em>${r.p}%</em></span>`;}).join('')}</span>`;
   return `<span class="mini rwi" title="${esc(tip)}">${q.rewards.map(r=>{const m=mat(r.m);return `<span class="rwc ${r.role==='주'?'main':''}">${m?iconHtml(m):'<span class="ico" data-g="F">?</span>'}<em>${r.p}</em></span>`;}).join('')}</span>`;
 }
+// 게시판 후보 = 기본 의뢰 + 칸에 추가한 퀘스트(분류 리소스, 유형 있음). 게임은 같은 칸 중 하나를 무작위로 게시
+const isCellQ=q=>!q.core&&q.cat==='res'&&!!q.line&&LINES.some(l=>l.core&&l.k===q.line);
+const isBoard=q=>q.core||isCellQ(q);
+const cellQs=(line,g)=>S.quests.filter(x=>isBoard(x)&&x.line===line&&x.grade===g).sort((a,b)=>(b.core?1:0)-(a.core?1:0));
+const mainMatId=q=>(q.rewards.find(r=>r.role==='주')||{}).m||'';
+// (폐지 2026-11-03) 같은 칸 주 소재 일치 경고. 칸의 퀘스트들이 서로의 주 소재를 부 소재로 주는 구조로 바뀌어 쓰지 않음
+const mainMismatch=q=>''; // 경고를 되살리려면 같은 칸 기본 의뢰와 주 소재(mainMatId)를 비교
+// 게시판 퀘스트 중 한 곳에서만 나오는 부 소재 (주 소재로는 어디서도 안 나옴, 식재료 제외)
+function singleSourceMats(){const cnt={},main=new Set();S.quests.filter(isBoard).forEach(q=>q.rewards.forEach(r=>{if(!r.m)return;if(r.role==='주')main.add(r.m);else cnt[r.m]=(cnt[r.m]||[]).concat(q.id);}));
+  return Object.entries(cnt).filter(([m,ids])=>ids.length===1&&!main.has(m)&&(mat(m)||{}).line!=='food').map(([m,ids])=>({m,q:ids[0]}));} // 식재료는 한 번 얻으면 요리가 영구 해금되므로 제외
+function qMini(q){const mm=mainMismatch(q),ss=singleSourceMats().filter(x=>x.q===q.id).length;
+  return `<button class="cell qcell" data-pick="${q.id}" aria-pressed="${sel.quest===q.id}"><span class="nm">${esc(q.name)}${q.core?'':' <span class="badge">추가</span>'}</span>${rwBlock(q)}${mm?'<span class="incomplete">주 소재가 기본과 다름</span>':''}${ss?`<span class="incomplete">공급처 1곳 부 소재 ${ss}</span>`:''}</button>`;}
 function qCell(q){return `<button class="cell qcell" data-pick="${q.id}" aria-pressed="${sel.quest===q.id}"><span class="nm">${esc(q.name)}</span>${rwBlock(q)}</button>`;}
 function renderQuestLeft(){
   const core=LINES.filter(l=>l.core);
-  let h=renderRules()+`<div class="extra-head" style="margin-top:0"><h2 style="margin:0">의뢰 유형 × 등급 35칸 <span class="hint">· 칸에 보상 소재가 바로 보입니다. 칸을 누르면 편집</span></h2><div class="row"><span class="hint">보상 표시</span><button class="btn" id="qvIcon" aria-pressed="${qview==='icon'}">아이콘</button><button class="btn" id="qvText" aria-pressed="${qview==='text'}">이름</button></div></div><div class="matrix-scroll"><table class="matrix"><thead><tr><th></th>${core.map(l=>`<th>${l.n}</th>`).join('')}</tr></thead><tbody>`;
-  for(const g of GRADES) h+=`<tr><th class="g"><span class="gl" data-g="${g}">${g}</span></th>${core.map(l=>{const q=S.quests.find(x=>x.core&&x.line===l.k&&x.grade===g);return `<td>${q?qCell(q):''}</td>`;}).join('')}</tr>`;
-  h+=`</tbody></table></div><div class="extra-head"><h2 style="margin:0">추가 퀘스트 <span class="hint">· 메인·서브·승급·리소스 등 개별 퀘스트</span></h2><button class="btn primary" id="addQuest">+ 퀘스트 추가</button></div>`;
-  const ex=S.quests.filter(q=>!q.core);
+  let h=renderRules()+`<div class="extra-head" style="margin-top:0"><h2 style="margin:0">게시판 의뢰 (유형 × 등급) <span class="hint">· 칸마다 여러 개 가능, 게임은 그중 하나를 무작위로 게시. 칸의 퀘스트끼리 서로의 주 소재를 부 소재(70%)로</span></h2><div class="row"><span class="hint">보상 표시</span><button class="btn" id="qvIcon" aria-pressed="${qview==='icon'}">아이콘</button><button class="btn" id="qvText" aria-pressed="${qview==='text'}">이름</button></div></div><div class="matrix-scroll"><table class="matrix"><thead><tr><th></th>${core.map(l=>`<th>${l.n}</th>`).join('')}</tr></thead><tbody>`;
+  for(const g of GRADES) h+=`<tr><th class="g"><span class="gl" data-g="${g}">${g}</span><div class="hint" style="font-weight:400">${core.reduce((t,l)=>t+cellQs(l.k,g).length,0)}종</div></th>${core.map(l=>{const qs=cellQs(l.k,g);return `<td><div class="cellstack">${qs.map(qMini).join('')}<button class="addc" data-addcell="${l.k}|${g}" title="${l.n} ${g}급에 퀘스트 추가 (기본 의뢰를 복사해서 시작)">+ 추가</button></div></td>`;}).join('')}</tr>`;
+  h+=`</tbody></table></div><div class="extra-head"><h2 style="margin:0">추가 퀘스트 <span class="hint">· 메인·서브·승급 (분류를 리소스로 두고 유형을 고르면 위 칸으로 옮겨짐)</span></h2><button class="btn primary" id="addQuest">+ 퀘스트 추가</button></div>`;
+  const ex=S.quests.filter(q=>!isBoard(q));
   h+=ex.length?`<div class="list">${ex.map(q=>`<button class="card" data-pick="${q.id}" aria-pressed="${sel.quest===q.id}"><span class="top"><span class="gl" data-g="${q.grade}">${q.grade}</span><b>${esc(q.name)}</b><span class="badge">${catName(q.cat)}</span></span>${rwBlock(q)}</button>`).join('')}</div>`:`<p class="hint">추가한 퀘스트가 없습니다.</p>`;
   return h;
 }
@@ -498,8 +651,12 @@ function renderRules(){
    <label>기간 늘리기 한도 (주)<input type="number" step="1" min="0" max="8" id="dMax" value="${R.dMax}"></label>
    <label style="align-self:end;display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--ink)"><input type="checkbox" id="capOn" ${R.cap?'checked':''}> 주당 보상 상한 (한 등급 위 기본 주당 보상)</label>
   </div>
-  <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><span class="hint">사망률은 기간에만 비례: 1 − (1 − 등급 사망률)^(기간 ÷ 기본 기간). 등급 기본값은 balance.csv</span>
-   <span class="row" style="gap:6px"><label class="hint" for="simMetric">표에 보일 값</label><select id="simMetric" style="width:auto">${Object.entries(M).map(([k,n])=>`<option value="${k}" ${k===simMetric?'selected':''}>${n}</option>`).join('')}</select><button class="btn" id="ruleReset">계수 기본값</button></span></div>
+  <div class="brw"><div class="lbl" style="margin-bottom:4px">등급별 기본 보상 (G) <span class="hint">· balance.csv의 quest.reward. 바꾸면 모든 계산에 바로 반영되고, <b>저장</b>할 때 balance.csv에 씀</span></div>
+   <div class="brg">${GRADES.map((g,gi)=>{const ch=BAL.reward[gi]!==fileReward()[gi];return `<label class="${ch?'chg':''}"><span><span class="gl" data-g="${g}">${g}</span> <small>${BAL.weeks[gi]}주</small></span><input type="number" min="1" step="10" data-brw="${gi}" value="${BAL.reward[gi]}" aria-label="${g}급 기본 보상"><small>주당 ${Math.round(BAL.reward[gi]/BAL.weeks[gi]).toLocaleString()}${ch?` · 원래 ${fileReward()[gi].toLocaleString()}`:''}</small></label>`;}).join('')}</div>
+   ${meta.balEdit?`<div class="row" style="gap:8px;margin-top:6px"><span style="color:var(--warn);font-size:12.5px;font-weight:600">● 바뀐 기본 보상은 저장하면 balance.csv에 반영됩니다</span><button class="btn" id="brwUndo">원래 값으로</button></div>`:''}
+   ${BAL.reward.some((v,i)=>i&&v/BAL.weeks[i]<BAL.reward[i-1]/BAL.weeks[i-1])?'<div class="msg" style="color:var(--warn)">한 등급 위인데 주당 보상이 더 낮은 곳이 있습니다.</div>':''}</div>
+  <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:6px"><span class="hint">사망률은 기간에만 비례: 1 − (1 − 등급 사망률)^(기간 ÷ 기본 기간).<br>등급 기본값: ${meta.bal?`<b style="color:var(--ok)">${esc(meta.bal.from)}/balance.csv</b> (${hhmm(meta.bal.at)} 읽음)`:'<b style="color:var(--warn)">편집기 내장값</b> — 폴더를 연결하면 balance.csv를 읽습니다'}</span>
+   <span class="row" style="gap:6px"><label class="hint" for="simMetric">표에 보일 값</label><select id="simMetric" style="width:auto">${Object.entries(M).map(([k,n])=>`<option value="${k}" ${k===simMetric?'selected':''}>${n}</option>`).join('')}</select><button class="btn" id="balRe" title="연결한 폴더의 balance.csv를 다시 읽음">balance.csv 다시 읽기</button><button class="btn" id="ruleReset">계수 기본값</button></span></div>
   <div style="overflow-x:auto"><table class="simt"><thead><tr><th>등급 · 기본 기간</th>${ds.map(d=>`<th>${d===0?'기본':(d>0?'+':'')+d+'주'}</th>`).join('')}</tr></thead><tbody>`;
   for(const g of GRADES){const gi=GRADES.indexOf(g);
     h+=`<tr><th style="text-align:left"><span class="gl" data-g="${g}">${g}</span> ${BAL.weeks[gi]}주</th>`+ds.map(d=>{const c=durCalc(g,d,2);if(!c)return `<td class="na">—</td>`;
@@ -520,12 +677,15 @@ function questView(q){
    <b>사망률</b><span>${(F.fin.death*100).toFixed(1)}% <span class="hint">(등급 ${(BAL.death[gi]*100).toFixed(1)}%)</span>${ov('death')}</span></div>
   <div class="lbl" style="margin:4px 0 6px">적 목록 <span class="hint">· 최대 3줄. 수는 기본 기간 기준, 기간에 따라 자동으로 늘어남. 그림을 비우면 네모 상자</span></div>`;
   v.enemies.forEach((e,i)=>{const n=e.boss?e.count:durCalc(q.grade,v.delta,e.count).mon;
-    h+=`<div class="en"><input type="text" data-en="${i}" data-ek="name" value="${esc(e.name)}" placeholder="이름" aria-label="적 ${i+1} 이름">
+    const M_=mon(e.mon);
+    h+=`<div class="en"><select data-en="${i}" data-ek="mon" aria-label="적 ${i+1} 몬스터"><option value="">몬스터 고르기…</option>${GRADES.map(g=>{const xs=(S.mons||[]).filter(x=>x.grade===g);return xs.length?`<optgroup label="${g}급">${xs.map(x=>`<option value="${x.id}" ${x.id===e.mon?'selected':''}>${esc(x.name)} (체력 ${x.hp} · 공격 ${x.atk})</option>`).join('')}</optgroup>`:'';}).join('')}</select>
      <input type="number" min="1" max="99" data-en="${i}" data-ek="count" value="${e.count}" aria-label="기본 수">
      <label class="bx"><input type="checkbox" data-en="${i}" data-ek="boss" ${e.boss?'checked':''}>보스</label>
-     <input type="text" data-en="${i}" data-ek="img" value="${esc(e.img)}" placeholder="그림 파일 (비우면 상자)" aria-label="그림 파일">
+     <span data-ek="img" class="hint" style="font-size:12px">${M_?`${M_.kind} · ${M_.img?esc(M_.img):'그림 없음(상자)'}${M_.scale!==100?' · 크기 '+M_.scale+'%':''}`:'몬스터 탭에서 먼저 만드세요'}</span>
      <button class="btn" data-endel="${i}" aria-label="적 삭제">삭제</button>
      <div class="cnt2" data-encnt="${i}">이 기간에는 ${n}마리${e.boss?' · 보스는 수 늘지 않음':''}</div></div>`;});
+  if(v.enemies.length){const tot=v.enemies.reduce((t,e)=>{const M_=mon(e.mon);if(!M_)return t;const n=e.boss?e.count:durCalc(q.grade,v.delta,e.count).mon;return {hp:t.hp+M_.hp*n,atk:t.atk+M_.atk*n};},{hp:0,atk:0});
+    h+=`<div class="msg hint" style="margin:0 0 6px">이 기간의 적 전체: 체력 합 <b>${tot.hp}</b> · 공격력 합 <b>${tot.atk}</b></div>`;}
   if(v.enemies.length<3) h+=`<button class="btn" id="addEn">+ 적 추가</button>`;
   if(!v.enemies.length) h+=`<div class="msg hint">적이 없으면 미니 뷰에서 이동·결과 장면만 나옵니다 (조사·호위처럼 싸우지 않는 의뢰).</div>`;
   return h;
@@ -565,6 +725,7 @@ function questCond(q){
 function questBasic(q){
   const types=LINES.filter(l=>l.core), clients=[...new Set(S.quests.map(x=>x.client).filter(Boolean))].sort();
   let h=`<div class="field"><label for="fName">이름</label><input type="text" id="fName" value="${esc(q.name)}"></div>`;
+  if(isCellQ(q)) h+=`<p class="hint" style="margin:0 0 8px">게시판 칸 퀘스트 · ${lineName(q.line)} ${q.grade}급 칸의 ${cellQs(q.line,q.grade).length}개 중 하나로 무작위 게시. 분류를 바꾸면 칸에서 빠집니다.</p>`;
   if(q.core) h+=`<div class="row"><div class="field" style="flex:1"><span class="lbl">분류</span><div class="fixed">${catName(q.cat)}</div></div>
     <div class="field" style="flex:1"><span class="lbl">유형</span><div class="fixed">${lineName(q.line)}</div></div>
     <div class="field" style="flex:1"><span class="lbl">등급</span><div class="fixed"><span class="gl" data-g="${q.grade}">${q.grade}</span></div></div></div>
@@ -598,6 +759,8 @@ function questJudge(q){
   h+=`</div>`;
   if(F.over.length) h+=`<p class="hint" style="margin:-6px 0 8px">✎ 직접 입력한 항목 ${F.over.length}개: ${F.over.map(k=>JLABEL[k]).join(', ')}</p>`;
   h+=`<div class="sec">보상 소재 <span class="hint" style="font-weight:400">(구분 · 확률%)</span></div>`;
+  {const mm=mainMismatch(q);if(mm)h+=`<div class="msg" style="color:var(--warn);margin:0 0 6px">같은 칸 기본 의뢰의 주 소재는 <b>${esc((mat(mm)||{}).name||mm)}</b>입니다. 같게 두면 칸 퀘스트가 늘어도 주 소재 공급이 일정합니다.</div>`;
+   const ss=singleSourceMats().filter(x=>x.q===q.id);if(ss.length)h+=`<div class="msg" style="color:var(--warn);margin:0 0 6px">이 퀘스트에서만 나오는 부 소재: ${ss.map(x=>esc((mat(x.m)||{}).name||x.m)).join(', ')} · 다른 게시판 퀘스트에도 넣어 공급처를 2곳 이상으로 두기를 권합니다.</div>`;}
   q.rewards.forEach((r,i)=>{
     h+=`<div class="rw"><div class="row">${mat(r.m)?iconHtml(mat(r.m)):'<span class="ico" data-g="F">?</span>'}<select data-rwm="${i}" aria-label="보상 소재 ${i+1}">${opts(r.m)}</select></div>
     <div class="row"><select data-rwr="${i}" aria-label="구분">${ROLES.map(x=>`<option ${x===r.role?'selected':''}>${x}</option>`).join('')}</select><input type="number" min="0" max="100" step="0.5" data-rwp="${i}" value="${r.p}" aria-label="확률"><span class="hint">%</span><button class="btn" data-rwdel="${i}" aria-label="보상 삭제">삭제</button></div></div>`;
@@ -621,17 +784,18 @@ function renderStatus(){
   $('status').innerHTML=`<span>소재 <b>${S.mats.length}</b> (코어 ${core} · 추가 ${ex})</span><span>음식 <b>${c.food}</b> · 장비 <b>${c.gear}</b> · 물약 <b>${c.potion}</b></span>
   <span>퀘스트 <b>${S.quests.length}</b> · 보상 없음 <b>${S.quests.filter(q=>!q.rewards.length).length}</b></span><span>소재 아이콘 <b>${S.mats.length-noIcon}</b>/${S.mats.length}</span>
   ${(()=>{const n=S.mats.filter(m=>!gotFrom(m.id).length).length;return n?`<span class="w">획득처 없는 소재 ${n}종</span>`:'';})()}
+  ${(()=>{const a=S.quests.filter(q=>mainMismatch(q)).length,b=singleSourceMats().length;return (a?`<span class="w">주 소재가 칸 기본과 다른 퀘스트 ${a}</span>`:'')+(b?`<span class="w">공급처 1곳 부 소재 ${b}종</span>`:'');})()}
   ${bad?`<span class="w">조합법 미완성 ${bad}개</span>`:''}${emptyName?`<span class="w">이름이 빈 항목 ${emptyName}개</span>`:''}${dupNames?`<span class="w">소재 이름 중복 ${dupNames}건</span>`:''}`;
 }
 
 function render(){
   renderTabs();
-  $('left').innerHTML=tab==='mat'?renderMatLeft():tab==='quest'?renderQuestLeft():renderItemsLeft();
-  $('right').innerHTML=tab==='mat'?renderMatRight():tab==='quest'?renderQuestRight():renderItemRight();
+  $('left').innerHTML=tab==='mat'?renderMatLeft():tab==='quest'?renderQuestLeft():tab==='mon'?renderMonLeft():renderItemsLeft();
+  $('right').innerHTML=tab==='mat'?renderMatRight():tab==='quest'?renderQuestRight():tab==='mon'?renderMonRight():renderItemRight();
   renderStatus();
 }
 function rerenderKeepFocus(){const a=document.activeElement&&document.activeElement.id;render();if(a&&$(a)){$(a).focus();try{const l=$(a).value.length;$(a).setSelectionRange&&$(a).setSelectionRange(l,l);}catch(e){}}}
-const cur=()=>tab==='mat'?mat(sel.mat):tab==='quest'?quest(sel.quest):S.items.find(x=>x.id===sel[tab]);
+const cur=()=>tab==='mat'?mat(sel.mat):tab==='quest'?quest(sel.quest):tab==='mon'?mon(sel.mon):S.items.find(x=>x.id===sel[tab]);
 
 /* ========== 아이콘 업로드 ========== */
 function loadIcon(file){
@@ -649,73 +813,146 @@ function loadIcon(file){
 }
 
 /* ========== 내보내기 ========== */
-const csvCell=v=>{v=String(v??'');return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
-const csv=rows=>'﻿'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n')+'\r\n';
-const iconFile=o=>o.icon?`icons/${o.id}.png`:'';
-function buildFiles(){
-  const mrows=[['id','이름','등급','계열','구분','설명','아이콘']];
-  S.mats.forEach(m=>mrows.push([m.id,m.name,m.grade,lineName(m.line),m.core?'코어':'추가',m.desc,iconFile(m)]));
-  const irows=[['id','종류','이름','등급','설명','재료1','수량1','재료2','수량2','재료3','수량3','아이콘']];
-  S.items.forEach(i=>{const r=[];for(let s=0;s<3;s++){const x=i.recipe[s];r.push(x?x.m:'',x?x.n:'');}
-    irows.push([i.id,KINDS.find(k=>k.k===i.kind).n,i.name,i.grade,i.desc,...r,iconFile(i)]);});
-  const qrows=[['id','이름','분류','등급','유형','의뢰인','의뢰서 문구','기획 메모','배경','소요 주','기간 변화','요구 능력치','보스급','판정 기준치','사망률(%)','보상 금액','명성 성공','명성 실패','신뢰도 성공','신뢰도 실패','직접 입력 항목','등장 경로','길드 등급 이상','선행 퀘스트','명성 이상','신뢰도 이상','히든','소문 문구','근접 문구','재등장(주)','소재id','소재이름','구분','확률(%)']];
-  S.quests.forEach(q=>{const v=q.view||{region:'',delta:0},w=BAL.weeks[GRADES.indexOf(q.grade)]+v.delta;const F=questFinal(q),jd=q.judge||JDEF();const base=[q.id,q.name,catName(q.cat),q.grade,q.line?lineName(q.line):'',q.client||'',q.notice||'',q.desc,regionName(v.region||defRegion(q)),w,v.delta,jd.smode==='manual'&&jd.stats.length?jd.stats.map(k=>STATS[k]).join('|'):'자동',jd.boss?'예':'',F.fin.ref,Math.round(F.fin.death*1000)/10,Math.round(F.fin.reward),F.fin.fameS,F.fin.fameF,F.fin.trustS,F.fin.trustF,F.over.map(k=>JLABEL[k]).join('|'),...(()=>{const c=q.cond||CDEF(),b=q.core||q.cat==='res'||q.cat==='req';return [routeName(q),b?'':(c.minGrade||q.grade),b?'':c.prereq.join('|'),b?'':(c.fame??''),b?'':(c.trust??''),q.cat==='sub'&&c.hidden?'예':'',q.cat==='sub'&&c.hidden?c.rumor:'',q.cat==='sub'&&c.hidden?c.near:'',q.cat==='sub'?c.reappear:''];})()];
-    if(!q.rewards.length) qrows.push([...base,'','','','']);
-    q.rewards.forEach(r=>qrows.push([...base,r.m,(mat(r.m)||{}).name||'',r.role,r.p]));});
-  const erows=[['퀘스트id','순서','이름','기본 수','보스','그림']];
-  S.quests.forEach(q=>(q.view?q.view.enemies:[]).forEach((e,i)=>erows.push([q.id,i+1,e.name,e.count,e.boss?'예':'',e.img||''])));
-  const trows=[['퀘스트id','상황','방식','표정','대사','씬ID']];
-  S.quests.forEach(q=>{const R2=CATRULE[q.cat]||CATRULE.res;R2.talks.forEach(k=>{const t=(q.talk||{})[k];if(!t||t.mode==='none')return;trows.push([q.id,TALKS.find(x=>x.k===k).n,t.mode==='line'?'한 줄':'대화씬',t.mode==='line'?t.face:'',t.mode==='line'?t.text:'',t.mode==='scene'?t.scene:'']);});});
-  const R=S.qrule,rrows=[['항목','값','설명'],['rewardMul',R.rMul,'기본 기간보다 1주 늘 때 보상 배수'],['monsterMul',R.mMul,'1주 늘 때 몬스터 수 배수(보스 제외)'],['refPctPerWeek',R.refPct,'1주 늘 때 판정 기준치 +%'],['deltaMin',R.dMin,'기간 줄이기 한도(주)'],['deltaMax',R.dMax,'기간 늘리기 한도(주)'],['capNextGrade',R.cap?1:0,'주당 보상 상한: 한 등급 위 기본 주당 보상'],['death','기간 비례','1-(1-등급 사망률)^(기간/기본 기간)']];
-  const files=[{path:'quests.csv',data:new TextEncoder().encode(csv(qrows))},{path:'quest_enemies.csv',data:new TextEncoder().encode(csv(erows))},{path:'quest_rules.csv',data:new TextEncoder().encode(csv(rrows))},{path:'quest_talk.csv',data:new TextEncoder().encode(csv(trows))},{path:'materials.csv',data:new TextEncoder().encode(csv(mrows))},
-               {path:'items.csv',data:new TextEncoder().encode(csv(irows))},
-               {path:'backup.json',data:new TextEncoder().encode(JSON.stringify(S))}];
-  [...S.mats,...S.items].forEach(o=>{if(o.icon)files.push({path:iconFile(o),data:dataUrlBytes(o.icon)});});
-  return files;
+/* ========== 파일 저장·불러오기: data/collegium_data.json 하나 + icons/*.png ========== */
+const DATA_FILE='collegium_data.json', FORMAT='collegium-data', FVER=3;
+const iconPath=o=>o.icon?`icons/${o.id}.png`:(o.iconRef||'');
+let balRead=false, dirHandle=null, meta={dirty:false,lastSaved:null,lastOpened:null,dirName:''};
+const dbPut=async(k,v)=>{try{const d=await idb();await new Promise((res,rej)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error);});}catch(e){}};
+const dbGetK=async k=>{try{const d=await idb();return await new Promise((res,rej)=>{const q=d.transaction(STORE).objectStore(STORE).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}catch(e){return null;}};
+// data/balance.csv 읽기 → BAL (편집기 자동값을 게임과 같은 수치로)
+function parseCsv(t){t=t.replace(/^﻿/,'');const rows=[];let row=[],cell='',q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(q){if(ch==='"'){if(t[i+1]==='"'){cell+='"';i++;}else q=false;}else cell+=ch;}
+    else if(ch==='"')q=true;else if(ch===','){row.push(cell);cell='';}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;row.push(cell);rows.push(row);row=[];cell='';}else cell+=ch;}
+  if(cell||row.length){row.push(cell);rows.push(row);}return rows;}
+const BAL_KEYS={'gear.weaponPrice':'wprice','quest.reward':'reward','quest.weeks':'weeks','quest.ref':'ref','quest.deathBase':'death','quest.reqCount':'reqCount','quest.bossMult':'bossMult','fame.succ':'fameS','fame.fail':'fameF'};
+function applyBal(v){for(const k in v)if(k in BAL)BAL[k]=v[k];if(meta.balEdit&&meta.balEdit.reward)BAL.reward=meta.balEdit.reward.slice();}
+const fileReward=()=>(meta.bal&&meta.bal.v&&meta.bal.v.reward)||BAL_DEF_REWARD; // balance.csv(또는 내장값)의 기본 보상
+// balance.csv 의 quest,reward 줄 값만 바꿔 씀 (다른 줄·설명·줄바꿈은 그대로)
+async function writeBalanceReward(dir,arr){
+  const fh=await fileIn(dir,'balance.csv');if(!fh)throw new Error(`${dir.name} 폴더에 balance.csv가 없습니다`);
+  const raw=new Uint8Array(await (await fh.getFile()).arrayBuffer()),bom=raw[0]===0xEF&&raw[1]===0xBB&&raw[2]===0xBF; // 엑셀용 BOM 유지
+  const text=new TextDecoder().decode(bom?raw.subarray(3):raw);let hit=0;
+  const out=(bom?'\uFEFF':'')+text.replace(/^(quest,reward,)([^,\r\n]*)/m,(m0,a)=>{hit++;return a+arr.join('|');});
+  if(!hit)throw new Error('balance.csv에서 quest,reward 줄을 찾지 못했습니다');
+  await writeFile(dir,'balance.csv',new TextEncoder().encode(out));
 }
+async function readBalance(dir,quiet){
+  try{const fh=await fileIn(dir,'balance.csv');if(!fh){if(!quiet)toast(`${dir.name} 폴더에 balance.csv가 없어 내장값을 씁니다`);return;}
+    const rows=parseCsv(await (await fh.getFile()).text()),got={},bad=[];
+    for(const r of rows.slice(1)){const key=`${(r[0]||'').trim()}.${(r[1]||'').trim()}`,k=BAL_KEYS[key];if(!k)continue;
+      const vals=(r[2]||'').split('|').map(x=>parseFloat(x));
+      if(k==='bossMult'){if(vals.length===1&&isFinite(vals[0]))got[k]=vals[0];else bad.push(key);}
+      else if(vals.length===7&&vals.every(isFinite))got[k]=vals;else bad.push(key);}
+    const miss=Object.values(BAL_KEYS).filter(k=>!(k in got));
+    applyBal(got);setMeta({bal:{v:got,at:Date.now(),from:dir.name}});render();
+    if(bad.length||miss.length)toast(`balance.csv 일부 항목을 못 읽어 내장값을 씁니다: ${[...bad,...miss].join(', ')}`);else if(!quiet)toast('balance.csv 값을 읽었습니다');
+  }catch(e){if(!quiet)toast('balance.csv를 읽지 못했습니다: '+e.message);}
+}
+function setMeta(p){Object.assign(meta,p);dbPut('meta',meta);renderFstat();}
+const hhmm=t=>{if(!t)return '';const d=new Date(t),n=new Date(),same=d.toDateString()===n.toDateString();return (same?'':`${d.getMonth()+1}/${d.getDate()} `)+d.toTimeString().slice(0,5);};
+function renderFstat(){const e=$('fstat');if(!e)return;
+  const where=meta.dirName?`${meta.dirName}/${DATA_FILE}`:'저장할 폴더를 아직 고르지 않음';
+  e.innerHTML=meta.dirty?`<span class="dirty">● 저장 안 된 변경 있음</span><span class="p">${esc(where)}${meta.lastSaved?` · 마지막 저장 ${hhmm(meta.lastSaved)}`:''}</span>`
+    :`<span class="clean">✓ ${(meta.lastOpened||0)>(meta.lastSaved||0)?`불러옴 ${hhmm(meta.lastOpened)}`:meta.lastSaved?`저장됨 ${hhmm(meta.lastSaved)}`:'변경 없음'}</span><span class="p">${esc(where)}</span>`;}
+// 작업 상태 → 파일 내용 (키 순서·들여쓰기 고정: Git에서 바뀐 줄만 보이게)
+function toFile(){
+  const pick=(o,keys)=>{const r={};keys.forEach(k=>r[k]=o[k]);return r;};
+  return {format:FORMAT,version:FVER,savedAt:new Date().toISOString(),
+    rules:pick(S.qrule,['rMul','mMul','refPct','dMin','dMax','cap']), enhance:S.enh, seq:S.seq,
+    materials:S.mats.map(m=>({...pick(m,['id','name','grade','line','core','desc']),icon:iconPath(m)})),
+    items:S.items.map(i=>({...pick(i,['id','kind','name','grade','desc','recipe']),...(i.kind==='gear'?{gtype:i.gtype,slot:(gtype(i.gtype)||{}).slot||'',stats:i.stats,...pick(i,['atk','def','mdef','hp','mp','luck','price','effect'])}:{}),icon:iconPath(i)})),
+    monsters:(S.mons||[]).map(m=>pick(m,['id','name','grade','kind','atk','hp','img','scale','drops','desc'])),
+    quests:S.quests.map(q=>pick(q,['id','name','cat','grade','line','core','client','notice','desc','view','judge','cond','talk','rewards']))};
+}
+// 파일 내용 → 작업 상태. 예전 backup.json(mats/items 형식)도 받음. 아이콘은 경로만 기억(iconRef)하고 그림은 따로 읽음
+function fromFile(d){
+  if(d&&d.mats&&d.items){const o=JSON.parse(JSON.stringify(d));o.quests=o.quests||seedQuests(o.mats);o.seq=o.seq||{};return o;} // 예전 백업 (아이콘 그림 포함)
+  if(!d||d.format!==FORMAT) throw new Error('형식이 맞지 않는 파일입니다');
+  const ic=o=>{const r={...o};r.iconRef=o.icon||'';r.icon=null;return r;};
+  return {version:2,qrule:Object.assign({},RULE_DEF,d.rules||{}),enh:Array.isArray(d.enhance)&&d.enhance.length===10?d.enhance.slice():ENH_DEF.slice(),seq:d.seq||{},mats:(d.materials||[]).map(ic),items:(d.items||[]).map(ic),mons:d.monsters||[],quests:d.quests||[]};
+}
+async function ensureDir(pick){
+  if(!window.showDirectoryPicker) return null;
+  if(dirHandle&&!pick){try{let p=await dirHandle.queryPermission({mode:'readwrite'});if(p!=='granted')p=await dirHandle.requestPermission({mode:'readwrite'});if(p==='granted'){if(!balRead){balRead=true;await readBalance(dirHandle,true);}return dirHandle;}}catch(e){}}
+  try{const h=await window.showDirectoryPicker({id:'collegium-data',mode:'readwrite'});
+    if(h.name!=='data'&&!(await fileIn(h,DATA_FILE))) toast(`'${h.name}' 폴더를 골랐습니다. 보통은 Project_F/data 폴더를 고릅니다`);
+    dirHandle=h;await dbPut('dir',h);setMeta({dirName:h.name});balRead=true;await readBalance(h,false);return h;}
+  catch(e){if(e.name!=='AbortError')toast('폴더를 열지 못했습니다: '+e.message);return null;}
+}
+async function fileIn(dir,name){try{return await dir.getFileHandle(name);}catch(e){return null;}}
+async function writeFile(dir,path,data){const parts=path.split('/');let d=dir;for(let k=0;k<parts.length-1;k++)d=await d.getDirectoryHandle(parts[k],{create:true});
+  const fh=await d.getFileHandle(parts[parts.length-1],{create:true});const w=await fh.createWritable();await w.write(data);await w.close();}
+async function saveFile(force){
+  const body=JSON.stringify(toFile(),null,2)+'\n';
+  if(!window.showDirectoryPicker){download(new Blob([body],{type:'application/json'}),DATA_FILE);setMeta({dirty:false,lastSaved:Date.now()});toast('이 브라우저는 폴더 저장이 안 되어 파일로 내려받았습니다 (아이콘 제외)');return;}
+  const dir=await ensureDir(false);if(!dir)return;
+  // 이 편집기가 마지막으로 저장·불러온 뒤에 파일이 바뀌었으면(다른 PC·다른 도구) 덮어쓰기 전에 확인
+  if(!force){try{const fh=await fileIn(dir,DATA_FILE);if(fh){const lm=(await fh.getFile()).lastModified,base=Math.max(meta.lastSaved||0,meta.lastOpened||0);
+    if(base&&lm>base+3000){showDlg('파일이 바뀌었습니다',`<p style="font-size:13px;margin:0"><b>${esc(dir.name)}/${DATA_FILE}</b>이(가) 이 편집기가 마지막으로 저장·불러온 뒤(${hhmm(base)})에 바뀌었습니다 (${hhmm(lm)}).<br>지금 저장하면 그 내용이 사라집니다. 먼저 불러와서 확인하는 것을 권합니다.</p>`,
+      [{t:'취소'},{t:'덮어쓰기',fn:()=>saveFile(true)},{t:'불러오기',primary:true,fn:()=>openFromDir(false)}]);return;}}}catch(e){}}
+  try{let n=0;for(const o of [...S.mats,...S.items])if(o.icon){await writeFile(dir,iconPath(o),dataUrlBytes(o.icon));n++;}
+    await writeFile(dir,DATA_FILE,new TextEncoder().encode(body));
+    let balMsg='';
+    if(meta.balEdit&&meta.balEdit.reward){try{await writeBalanceReward(dir,meta.balEdit.reward);const v=Object.assign({},(meta.bal||{}).v||{},{reward:meta.balEdit.reward.slice()});setMeta({balEdit:null,bal:{v,at:Date.now(),from:dir.name}});balMsg=' · balance.csv 기본 보상 반영';}
+      catch(e){balMsg=` · balance.csv는 저장 못 함(${e.message})`;}}
+    setMeta({dirty:false,lastSaved:Date.now()});toast(`${dir.name}/${DATA_FILE} 저장 완료${n?` · 아이콘 ${n}개`:''}${balMsg}`);render();}
+  catch(e){toast('저장하지 못했습니다: '+e.message);}
+}
+const counts=x=>({소재:x.mats.length,몬스터:(x.mons||[]).length,음식:x.items.filter(i=>i.kind==='food').length,장비:x.items.filter(i=>i.kind==='gear').length,물약:x.items.filter(i=>i.kind==='potion').length,퀘스트:x.quests.length});
+// 불러오기 전 확인 창: 파일 정보와 지금 작업 비교
+function confirmLoad(next,info,go){
+  const a=counts(S),b=counts(next);
+  showDlg('이 파일로 바꿀까요?',`<p style="margin:0 0 4px;font-size:13px"><b>${esc(info.name)}</b>${info.savedAt?` · 저장 ${new Date(info.savedAt).toLocaleString('ko-KR')}`:''}${info.old?' · <span style="color:var(--warn)">예전 백업 형식</span>':''}</p>
+    <table class="cmp"><tr><th></th><th>지금 작업</th><th>불러올 파일</th></tr>${Object.keys(a).map(k=>`<tr><td>${k}</td><td>${a[k]}</td><td>${b[k]}</td></tr>`).join('')}</table>
+    ${meta.dirty?'<p class="msg" style="color:var(--warn);font-weight:600">저장하지 않은 변경이 사라집니다.</p>':'<p class="msg hint">지금 작업은 파일에 저장된 상태입니다.</p>'}
+    ${info.noIcons?'<p class="msg hint">파일 하나만 골라서 아이콘 그림은 읽지 않았습니다. 아이콘까지 보려면 폴더로 불러오세요.</p>':''}`,
+    [{t:'취소'},{t:'불러오기',primary:true,fn:go}]);
+}
+async function openFromDir(pick){
+  if(!window.showDirectoryPicker){$('fLoad').click();return;}
+  const dir=await ensureDir(pick);if(!dir)return;
+  let fh=await fileIn(dir,DATA_FILE),old=false;if(!fh){fh=await fileIn(dir,'backup.json');old=!!fh;}
+  if(!fh){showDlg('불러올 파일이 없습니다',`<p style="font-size:13px;margin:0"><b>${esc(dir.name)}</b> 폴더에 ${DATA_FILE}이(가) 없습니다.<br>처음이라면 <b>저장</b>을 눌러 지금 작업으로 파일을 만드세요.</p>`,[{t:'다른 폴더 고르기',fn:()=>openFromDir(true)},{t:'파일 하나 고르기',fn:()=>$('fLoad').click()},{t:'닫기',primary:true}]);return;}
+  try{const d=JSON.parse(await (await fh.getFile()).text()),next=fromFile(d);
+    confirmLoad(next,{name:`${dir.name}/${fh.name}`,savedAt:d.savedAt,old},async()=>{
+      let miss=0;for(const o of [...next.mats,...next.items])if(!o.icon&&o.iconRef){try{const parts=o.iconRef.split('/');let dd=dir;for(let k=0;k<parts.length-1;k++)dd=await dd.getDirectoryHandle(parts[k]);
+        const file=await (await dd.getFileHandle(parts[parts.length-1])).getFile();o.icon=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(file);});delete o.iconRef;}catch(e){miss++;}}
+      applyLoaded(next);if(miss)toast(`불러왔습니다 · 찾지 못한 아이콘 ${miss}개`);});}
+  catch(e){toast('불러오지 못했습니다: '+e.message);}
+}
+function applyLoaded(next){S=next;migrateQuests();sel={mat:null,food:null,gear:null,potion:null,mon:null,quest:null};confirming=null;save(true);setMeta({dirty:false,lastOpened:Date.now()});render();toast('불러왔습니다');}
+function showDlg(title,html,actions){$('dlgT').textContent=title;$('dlgB').innerHTML=html;const A=$('dlgA');A.innerHTML='';
+  actions.forEach(a=>{const b=document.createElement('button');b.className='btn'+(a.primary?' primary':'');b.textContent=a.t;b.onclick=()=>{$('dlg').hidden=true;if(a.fn)a.fn();};A.appendChild(b);});
+  $('dlg').hidden=false;(A.querySelector('.primary')||A.lastChild).focus();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('dlg').hidden){$('dlg').hidden=true;}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();saveFile();}});
+window.addEventListener('beforeunload',e=>{if(meta.dirty){e.preventDefault();e.returnValue='';}});
 function dataUrlBytes(u){const b=atob(u.split(',')[1]),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
-const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=t[(c^b[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;};})();
-function makeZip(files){ // 압축 없이 담는 zip
-  const enc=new TextEncoder(),parts=[],cd=[];let off=0;
-  const d=new Date(),dt=((d.getFullYear()-1980)<<9|(d.getMonth()+1)<<5|d.getDate()),tm=(d.getHours()<<11|d.getMinutes()<<5|d.getSeconds()>>1);
-  for(const f of files){
-    const nm=enc.encode(f.path),crc=CRC(f.data),sz=f.data.length;
-    const lh=new DataView(new ArrayBuffer(30));lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);lh.setUint16(10,tm,true);lh.setUint16(12,dt,true);lh.setUint32(14,crc,true);lh.setUint32(18,sz,true);lh.setUint32(22,sz,true);lh.setUint16(26,nm.length,true);lh.setUint16(28,0,true);
-    parts.push(new Uint8Array(lh.buffer),nm,f.data);
-    const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);ch.setUint16(12,tm,true);ch.setUint16(14,dt,true);ch.setUint32(16,crc,true);ch.setUint32(20,sz,true);ch.setUint32(24,sz,true);ch.setUint16(28,nm.length,true);ch.setUint32(42,off,true);
-    cd.push(new Uint8Array(ch.buffer),nm);off+=30+nm.length+sz;
-  }
-  const cdSize=cd.reduce((a,b)=>a+b.length,0);
-  const end=new DataView(new ArrayBuffer(22));end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,cdSize,true);end.setUint32(16,off,true);
-  return new Blob([...parts,...cd,new Uint8Array(end.buffer)],{type:'application/zip'});
-}
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
-async function saveToFolder(){
-  if(!window.showDirectoryPicker){toast('이 브라우저는 폴더 저장을 지원하지 않습니다. zip 내보내기를 쓰세요');return;}
-  try{
-    const dir=await window.showDirectoryPicker({mode:'readwrite'});
-    const files=buildFiles();let n=0;
-    for(const f of files){
-      const parts=f.path.split('/');let d=dir;
-      for(let i=0;i<parts.length-1;i++)d=await d.getDirectoryHandle(parts[i],{create:true});
-      const fh=await d.getFileHandle(parts[parts.length-1],{create:true});
-      const w=await fh.createWritable();await w.write(f.data);await w.close();n++;
-    }
-    toast(`${dir.name} 폴더에 ${n}개 파일 저장`);
-  }catch(e){if(e.name!=='AbortError')toast('저장하지 못했습니다: '+e.message);}
-}
 
 /* ========== 이벤트 ========== */
 document.addEventListener('click',e=>{
   const t=e.target.closest('button,[data-pick]');if(!t)return;
   if(t.dataset.tab){tab=t.dataset.tab;confirming=null;render();return;}
+  if(t.dataset.addcell){const [line,g]=t.dataset.addcell.split('|'),base=S.quests.find(x=>x.core&&x.line===line&&x.grade===g),n=cellQs(line,g).length+1;
+    let k=n,id;do{id=`q_${line}_${g}_${k++}`;}while(quest(id));
+    const q=JSON.parse(JSON.stringify(base||{}));Object.assign(q,{id,name:`${lineName(line)} ${g}급 의뢰 ${n}`,cat:'res',grade:g,line,core:false,client:'',notice:'',desc:'',judge:JDEF()});
+    if(q.view)q.view.enemies=[];if(!q.rewards)q.rewards=[];S.quests.push(q);migrateQuests();sel.quest=id;qsub='basic';confirming=null;save();render();const el=$('fName');if(el)el.select();toast('기본 의뢰를 복사해 만들었습니다 (보상 소재 포함). 부 소재를 바꿔 개성을 주세요');return;}
   if(t.dataset.endel!==undefined){const q=cur();if(q){q.view.enemies.splice(+t.dataset.endel,1);save();render();}return;}
-  if(t.id==='addEn'){const q=cur();if(q&&q.view.enemies.length<3){q.view.enemies.push({name:'',count:1,boss:false,img:''});save();render();const el=document.querySelector(`[data-en="${q.view.enemies.length-1}"][data-ek="name"]`);if(el)el.focus();}return;}
+  if(t.id==='addEn'){const q=cur();if(q&&q.view.enemies.length<3){q.view.enemies.push({mon:'',count:1,boss:false});save();render();const el=document.querySelector(`[data-en="${q.view.enemies.length-1}"][data-ek="mon"]`);if(el)el.focus();}return;}
   if(t.dataset.predel!==undefined){const q=cur();if(q){q.cond.prereq.splice(+t.dataset.predel,1);save();render();}return;}
   if(t.dataset.prejump){sel.quest=t.dataset.prejump;confirming=null;render();return;}
   if(t.dataset.tsauto){const q=cur();if(q){q.talk[t.dataset.tsauto].scene=`quest_${q.id}_${t.dataset.tsauto}`;save();render();}return;}
   if(t.dataset.jauto){const q=cur();if(q){q.judge[t.dataset.jauto]=null;save();render();}return;}
   if(t.dataset.jstat!==undefined){const q=cur();if(q){const k=+t.dataset.jstat,a=q.judge.stats,ix=a.indexOf(k);if(ix>=0)a.splice(ix,1);else a.push(k);a.sort();save();render();}return;}
+  if(t.id==='addMon'){S.seq.mon=(S.seq.mon||0)+1;const m=Object.assign({id:'mon_'+String(S.seq.mon).padStart(2,'0'),name:'새 몬스터',grade:'F',kind:'마물',img:'',scale:100,drops:[],desc:''},monBase('F'));S.mons.push(m);sel.mon=m.id;confirming=null;save();render();$('fName').select();return;}
+  if(t.id==='mBase'){const m=cur();if(m){Object.assign(m,monBase(m.grade));save();render();}return;}
+  if(t.id==='delMon'){confirming=(cur()||{}).id;render();return;}
+  if(t.id==='enhReset'){S.enh=ENH_DEF.slice();save();render();return;}
+  if(t.id==='gDef'){const o=cur();if(o&&o.gtype){Object.assign(o,gearDefaults(o.gtype,o.grade),{effect:o.effect});save();render();toast(`${o.grade}급 기본값으로 채웠습니다`);}return;}
+  if(t.id==='brwUndo'){setMeta({balEdit:null});BAL.reward=fileReward().slice();save();render();toast('기본 보상을 balance.csv 값으로 되돌렸습니다');return;}
+  if(t.id==='balRe'){(async()=>{const d=await ensureDir(false);if(d)await readBalance(d,false);})();return;}
   if(t.id==='ruleReset'){S.qrule=Object.assign({},RULE_DEF);save();render();toast('계수를 기본값으로 되돌렸습니다');return;}
   if(t.dataset.qsub){qsub=t.dataset.qsub;try{localStorage.setItem('mat_qsub',qsub);}catch(e){}render();return;}
   if(t.dataset.pick){sel[tab]=t.dataset.pick;confirming=null;render();return;}
@@ -726,7 +963,7 @@ document.addEventListener('click',e=>{
     case 'qvIcon':case 'qvText':qview=t.id==='qvText'?'text':'icon';try{localStorage.setItem('mat_qview',qview);}catch(e){}render();break;
     case 'sortDir':setSort(xsort.key,-xsort.dir);break;
     case 'addMat':{const n=nextId('mat'),m={id:'mat_x'+String(n).padStart(3,'0'),name:'새 소재',grade:'F',line:'etc',core:false,desc:'',icon:null};S.mats.push(m);sel.mat=m.id;save();render();$('fName').select();break;}
-    case 'addItem':{const p=KIND_PREFIX[tab],n=nextId(tab),i={id:`${p}_${String(n).padStart(2,'0')}`,kind:tab,name:'새 '+KINDS.find(k=>k.k===tab).n,grade:'F',desc:'',recipe:[],icon:null};S.items.push(i);sel[tab]=i.id;save();render();$('fName').select();break;}
+    case 'addItem':{const p=KIND_PREFIX[tab],n=nextId(tab),i={id:`${p}_${String(n).padStart(2,'0')}`,kind:tab,name:'새 '+KINDS.find(k=>k.k===tab).n,grade:'F',desc:'',recipe:[],icon:null};if(tab==='gear')Object.assign(i,{gtype:'',stats:{},atk:0,def:0,mdef:0,hp:0,mp:0,luck:0,price:0,effect:''});S.items.push(i);sel[tab]=i.id;save();render();$('fName').select();break;}
     case 'addQuest':{const n=nextId('quest'),q={id:'q_x'+String(n).padStart(3,'0'),name:'새 퀘스트',cat:'sub',grade:'F',line:'',core:false,client:'',notice:'',desc:'',rewards:[],view:{region:'',delta:0,enemies:[]},judge:JDEF(),cond:CDEF(),talk:Object.fromEntries(TALKS.map(t=>[t.k,TDEF()]))};S.quests.push(q);sel.quest=q.id;qsub='basic';save();render();$('fName').select();break;}
     case 'addRw':{const q=cur();if(q){q.rewards.push({m:'',role:q.rewards.length?'부':'주',p:q.rewards.length?10:100});save();render();}break;}
     case 'delQuest':confirming=(cur()||{}).id;render();break;
@@ -734,12 +971,12 @@ document.addEventListener('click',e=>{
     case 'clrIcon':{const o=cur();if(o){o.icon=null;save();render();}break;}
     case 'delMat':case 'delItem':confirming=(cur()||{}).id;render();break;
     case 'delNo':confirming=null;render();break;
-    case 'delYes':{if(tab==='mat'){S.mats=S.mats.filter(m=>m.id!==sel.mat);sel.mat=null;}else if(tab==='quest'){S.quests=S.quests.filter(q=>q.id!==sel.quest);sel.quest=null;}else{S.items=S.items.filter(i=>i.id!==sel[tab]);sel[tab]=null;}confirming=null;save();render();toast('삭제했습니다');break;}
-    case 'bFolder':saveToFolder();break;
-    case 'bZip':download(makeZip(buildFiles()),'materials_export.zip');toast('zip을 내려받았습니다');break;
-    case 'bLoad':$('fLoad').click();break;
+    case 'delYes':{if(tab==='mon'){S.mons=S.mons.filter(m=>m.id!==sel.mon);sel.mon=null;}else if(tab==='mat'){S.mats=S.mats.filter(m=>m.id!==sel.mat);sel.mat=null;}else if(tab==='quest'){S.quests=S.quests.filter(q=>q.id!==sel.quest);sel.quest=null;}else{S.items=S.items.filter(i=>i.id!==sel[tab]);sel[tab]=null;}confirming=null;save();render();toast('삭제했습니다');break;}
+    case 'bSave':saveFile();break;
+    case 'bOpen':openFromDir(false);break;
+    case 'bDir':ensureDir(true);break;
     case 'bReset':
-      if(t.dataset.arm){S=seed();migrateQuests();sel={mat:null,food:null,gear:null,potion:null,quest:null};t.dataset.arm='';t.textContent='처음 상태로';save();render();toast('처음 상태로 되돌렸습니다');}
+      if(t.dataset.arm){S=seed();migrateQuests();sel={mat:null,food:null,gear:null,potion:null,mon:null,quest:null};t.dataset.arm='';t.textContent='처음 상태로';save();render();toast('처음 상태로 되돌렸습니다');}
       else{t.dataset.arm='1';t.textContent='정말 되돌리기 (한 번 더)';setTimeout(()=>{t.dataset.arm='';t.textContent='처음 상태로';},3500);}
       break;
   }
@@ -755,6 +992,8 @@ document.addEventListener('input',e=>{
   if(t.id==='fName'){o.name=t.value;save();renderTabs();renderStatus();const el=document.querySelector(`[data-pick="${o.id}"]`);if(el){const nm=el.querySelector('.nm,b');if(nm)nm.textContent=o.name;}}
   else if(t.id==='fDesc'){o.desc=t.value;save();}
   else if(t.id==='fClient'){o.client=t.value;save();}
+  else if(t.id==='gEffect'){o.effect=t.value;save();}
+  else if(t.id==='mImg'){o.img=t.value;save();}
   else if(t.id==='cRumor'){o.cond.rumor=t.value;save();}
   else if(t.id==='cNear'){o.cond.near=t.value;save();}
   else if(t.dataset.ttext){o.talk[t.dataset.ttext].text=t.value;save();}
@@ -767,9 +1006,15 @@ document.addEventListener('change',e=>{
   const t=e.target;
   if(t.id==='sortKey'){setSort(t.value,xsort.dir);return;}
   if(t.id==='capOn'){S.qrule.cap=t.checked;save();render();return;}
+  if(t.dataset.mst){const o2=cur();if(o2){o2[t.dataset.mst]=Math.max(0,Math.round(+t.value||0));save();render();}return;}
+  if(t.dataset.mdrop!==undefined){const o2=cur();if(o2){const i2=+t.dataset.mdrop;o2.drops[i2]=t.value;o2.drops=o2.drops.filter(Boolean);save();render();}return;}
+  if(t.id==='mKind'){const o2=cur();if(o2){o2.kind=t.value;save();render();}return;}
+  if(t.dataset.enh!==undefined){const v=Math.round(parseFloat(t.value));if(isFinite(v)&&v>=0){S.enh[+t.dataset.enh]=v;save();}render();return;}
+  if(t.dataset.brw!==undefined){const gi=+t.dataset.brw,v=Math.round(parseFloat(t.value));if(!isFinite(v)||v<1){render();toast('기본 보상은 1 이상의 숫자여야 합니다');return;}
+    const arr=BAL.reward.slice();arr[gi]=v;const same=arr.every((x,i)=>x===fileReward()[i]);setMeta({balEdit:same?null:{reward:arr}});BAL.reward=arr;save();render();return;}
   if(t.id==='simMetric'){simMetric=t.value;try{localStorage.setItem('mat_sim',simMetric);}catch(x){}render();return;}
   if(t.id==='fIcon'){loadIcon(t.files[0]);t.value='';return;}
-  if(t.id==='fLoad'){const f=t.files[0];t.value='';if(!f)return;f.text().then(s=>{try{const d=JSON.parse(s);if(!d.mats||!d.items)throw 0;S=d;if(!S.quests)S.quests=seedQuests(S.mats);S.seq=S.seq||{};migrateQuests();sel={mat:null,food:null,gear:null,potion:null,quest:null};save();render();toast('백업을 불러왔습니다');}catch(x){toast('백업 파일 형식이 맞지 않습니다');}});return;}
+  if(t.id==='fLoad'){const f=t.files[0];t.value='';if(!f)return;f.text().then(x=>{try{const d=JSON.parse(x),next=fromFile(d);confirmLoad(next,{name:f.name,savedAt:d.savedAt,old:!!d.mats,noIcons:!d.mats},()=>applyLoaded(next));}catch(err){toast('불러오지 못했습니다: '+err.message);}});return;}
   const o=cur();if(!o)return;
   if(t.id==='fGrade'){o.grade=t.value;save();render();}
   else if(t.id==='fLine'){o.line=t.value;save();render();}
@@ -786,8 +1031,13 @@ document.addEventListener('change',e=>{
   else if(t.id==='jSmode'){o.judge.smode=t.value;if(t.value==='manual'&&!o.judge.stats.length){const F=questFinal(o);o.judge.stats=F.ti>=0?[F.ti]:[];}save();render();}
   else if(t.id==='jBoss'){o.judge.boss=t.checked;save();render();}
   else if(t.dataset.jk){const k=t.dataset.jk,v=t.value.trim();if(v===''||!isFinite(+v))o.judge[k]=null;else{let x=Math.max(0,+v);if(k==='death')x=Math.min(100,x)/100;o.judge[k]=x;}save();render();}
+  else if(t.id==='gType'){const was=o.gtype;o.gtype=t.value;if(t.value&&(!was||!Object.values(o.stats||{}).some(Boolean)))Object.assign(o,gearDefaults(t.value,o.grade),{effect:o.effect});save();render();}
+  else if(t.id==='gPrice'){o.price=Math.max(0,Math.round(+t.value||0));save();render();}
+  else if(t.dataset.gst!==undefined){const v=Math.max(0,Math.round(+t.value||0));o.stats=o.stats||{};if(v)o.stats[t.dataset.gst]=v;else delete o.stats[t.dataset.gst];save();render();}
+  else if(t.dataset.gcb){o[t.dataset.gcb]=Math.max(0,Math.round(+t.value||0));save();render();}
   else if(t.id==='vRegion'){o.view.region=t.value;save();render();}
   else if(t.id==='vDelta'){o.view.delta=parseInt(t.value)||0;save();render();}
+  else if(t.dataset.en!==undefined&&t.dataset.ek==='mon'){const en=o.view.enemies[+t.dataset.en];if(en){en.mon=t.value;save();render();}}
   else if(t.dataset.en!==undefined&&t.dataset.ek==='boss'){const en=o.view.enemies[+t.dataset.en];if(en){en.boss=t.checked;save();render();}}
   else if(t.dataset.rwm!==undefined){o.rewards[+t.dataset.rwm].m=t.value;save();render();}
   else if(t.dataset.rwr!==undefined){o.rewards[+t.dataset.rwr].role=t.value;save();}
@@ -798,7 +1048,7 @@ document.addEventListener('change',e=>{
     save();render();
   }
 });
-document.addEventListener('toggle',e=>{if(e.target.id==='rulesBox'){rulesOpen=e.target.open;try{localStorage.setItem('mat_rules',rulesOpen?'1':'0');}catch(x){}}},true);
+document.addEventListener('toggle',e=>{if(e.target.id==='enhBox'){enhOpen=e.target.open;try{localStorage.setItem('mat_enh',enhOpen?'1':'0');}catch(x){}}if(e.target.id==='rulesBox'){rulesOpen=e.target.open;try{localStorage.setItem('mat_rules',rulesOpen?'1':'0');}catch(x){}}},true);
 document.addEventListener('dragover',e=>{const d=e.target.closest('#drop');if(d){e.preventDefault();d.classList.add('over');}});
 document.addEventListener('dragleave',e=>{const d=e.target.closest('#drop');if(d)d.classList.remove('over');});
 document.addEventListener('drop',e=>{const d=e.target.closest('#drop');if(d){e.preventDefault();d.classList.remove('over');loadIcon(e.dataTransfer.files[0]);}});
@@ -813,6 +1063,8 @@ document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.tar
   seed().mats.filter(m=>m.core&&!have.has(m.id)).forEach(m=>S.mats.push(m));
   if(!S.quests){S.quests=seedQuests(S.mats);S.seq.q=S.seq.q||0;}
   migrateQuests();
+  const m=await dbGetK('meta');if(m)meta=Object.assign(meta,m);applyBal(meta.bal?meta.bal.v:{});dirHandle=await dbGetK('dir')||null;if(!dirHandle)meta.dirName='';renderFstat();
+  if(dirHandle){try{if(await dirHandle.queryPermission({mode:'readwrite'})==='granted'){balRead=true;readBalance(dirHandle,true);}}catch(e){}}
   sel.mat='mat_slay_F';
   render();
 })();
