@@ -12,6 +12,10 @@
   const EVW = 480, EVH = 203, PANEL = { x: 1920 - 16 - 360, y: 96, w: 360, h: 704 };
   const IM = {};
   function img(k) { if (!IM[k]) { IM[k] = new Image(); IM[k].src = 'assets/expedition/' + k + '.png'; } return IM[k]; }
+  // 몬스터 그림: 소재 편집기 몬스터 탭의 img (assets/expedition/ 기준 경로, 예: mon/mon_01.png). 없으면 네모 상자
+  const MON = {}; for (const m of ((root.GAME_DATA || {}).content || {}).monsters || []) MON[m.id] = m;
+  function monImg(id) { const m = MON[id]; if (!m || !m.img) return null; const k = 'm:' + m.img; if (!IM[k]) { IM[k] = new Image(); IM[k].src = 'assets/expedition/' + m.img; } return IM[k]; }
+  const ready = im => im && im.complete && im.naturalWidth > 0;
   ['forest_a', 'forest_b', 'fdirt_a', 'fdirt_b', 'o_pine', 'o_oak'].forEach(img);
   const josa = (w, a, b) => { const c = w.charCodeAt(w.length - 1); return w + (c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 ? a : b); };
   function groupName(list) { const m = new Map(); for (const e of list) m.set(e.name, (m.get(e.name) || 0) + 1); return [...m].map(([n, c]) => c > 1 ? `${n} ${c}마리` : n).join(', '); }
@@ -104,7 +108,7 @@
     view = { id, cam: 0, t: 0, phaseT: 0, phase: null, ev: timeline(F), applied: 0, fresh: true, sparks: [], combat: !!F,
       actors: party.map((a, i) => { const u = unitOf(a), k = CLS[a.core] + '_' + sexOf(a); ['walk', 'run', 'attack', 'fall'].forEach(n => img(k + '_' + n));
         return { id: a.id, name: a.name, k, i, x: 0, anim: 'walk', t: Math.random(), flash: 0, glow: 0, dodge: 0, dir: 1, hp: u ? u.maxHp : 1, maxHp: u ? u.maxHp : 1, down: false, show: 0 }; }),
-      enemies: (F ? F.enemies : []).map((m, i) => ({ n: m.name, boss: m.boss, scale: m.boss ? 140 : 100, x: 540 + i * 56, flash: 0, crit: 0, alpha: 1, hp: m.maxHp, maxHp: m.maxHp, shown: 1 })) };
+      enemies: (F ? F.enemies : []).map((m, i) => ({ n: m.name, boss: m.boss, scale: m.boss ? 140 : 100, im: monImg(m.mon), x: 540 + i * 56, flash: 0, crit: 0, alpha: 1, hp: m.maxHp, maxHp: m.maxHp, shown: 1 })) };
     ev.classList.add('on'); requestAnimationFrame(() => ev.classList.add('vis')); updSmall(); render();
   }
   function close() { sel = null; view = null; if (!ev) return; ev.classList.remove('vis'); setTimeout(() => { if (!view) ev.classList.remove('on'); }, 200); ui.querySelector('#hudExp').classList.remove('small'); render(); }
@@ -168,16 +172,22 @@
       a.flash = Math.max(0, a.flash - dt); a.glow = Math.max(0, a.glow - dt); a.dodge = Math.max(0, a.dodge - dt);
       a.show += ((v.combat && (P === 'fight' || P === 'result') ? 1 : 0) - a.show) * Math.min(1, dt * 6);
     });
-    // 적: x=320부터 오른쪽 끝(470)까지. 넘치면 겹쳐서 줄임 (보스는 140%)
-    const ws = v.enemies.map(m => Math.round(40 * m.scale / 100)), tot = ws.reduce((t, w) => t + w, 0) + 6 * (ws.length - 1), shrink = ws.length > 1 ? Math.min(0, (150 - tot) / (ws.length - 1)) : 0, XS = [];
-    ws.reduce((xx, w, i) => (XS[i] = xx, xx + w + 6 + shrink), 320);
-    v.enemies.forEach((m, i) => {
+    // 적: x=316부터 오른쪽 끝(478)까지. 넘치면 겹쳐서 줄이고, 홀수 번째는 4px 뒤(위)에 서서 덜 겹쳐 보이게. 그림이 있으면 그림 크기 그대로(도트 1:1), 없으면 상자(보스 140%)
+    const ws = v.enemies.map(m => ready(m.im) ? m.im.naturalWidth : Math.round(40 * m.scale / 100)), tot = ws.reduce((t, w) => t + w, 0) + 4 * (ws.length - 1), shrink = ws.length > 1 ? Math.min(0, (162 - tot) / (ws.length - 1)) : 0, XS = [];
+    ws.reduce((xx, w, i) => (XS[i] = xx, xx + w + 4 + shrink), 316);
+    const drawOrder = v.enemies.map((m, i) => i).sort((a, b) => (b % 2) - (a % 2) || a - b);   // 뒤(홀수) 먼저
+    drawOrder.forEach(i => { const m = v.enemies[i];
       if (P === 'move') m.x = 540 + i * 56; else m.x += (XS[i] - m.x) * Math.min(1, dt * 3);
       m.flash = Math.max(0, m.flash - dt); m.crit = Math.max(0, m.crit - dt); m.shown += (m.hp / m.maxHp - m.shown) * Math.min(1, dt * 8);
       if (m.hp <= 0) m.alpha = Math.max(0, m.alpha - dt * 1.2); if (m.alpha <= 0) return;
-      const w = ws[i], h = Math.round(54 * m.scale / 100), xx = Math.round(m.x), y = SURF - h;
+      const pic = ready(m.im), w = ws[i], h = pic ? m.im.naturalHeight : Math.round(54 * m.scale / 100), xx = Math.round(m.x), y = (pic ? SURF + 3 : SURF) - h - (i % 2 ? 4 : 0);
       g.globalAlpha = m.alpha;
-      g.fillStyle = m.crit > 0 ? '#fff4c2' : m.flash > 0 ? '#ff3b30' : m.boss ? '#7a2f3b' : '#5a3b6b'; g.fillRect(xx, y, w, h); g.strokeStyle = '#1b0f1f'; g.lineWidth = 2; g.strokeRect(xx + 1, y + 1, w - 2, h - 2);
+      if (pic) {   // 그림: 맞으면 붉게, 치명타는 밝게 (모험가와 같은 방식)
+        tmp.width = w; tmp.height = h; tg.clearRect(0, 0, w, h); tg.drawImage(m.im, 0, 0);
+        const c = m.crit > 0 ? 'rgba(255,244,194,' + (0.8 * Math.min(1, m.crit * 4)) + ')' : m.flash > 0 ? 'rgba(255,40,30,' + (0.65 * Math.min(1, m.flash * 4)) + ')' : null;
+        if (c) { tg.globalCompositeOperation = 'source-atop'; tg.fillStyle = c; tg.fillRect(0, 0, w, h); tg.globalCompositeOperation = 'source-over'; }
+        g.drawImage(tmp, xx, y);
+      } else { g.fillStyle = m.crit > 0 ? '#fff4c2' : m.flash > 0 ? '#ff3b30' : m.boss ? '#7a2f3b' : '#5a3b6b'; g.fillRect(xx, y, w, h); g.strokeStyle = '#1b0f1f'; g.lineWidth = 2; g.strokeRect(xx + 1, y + 1, w - 2, h - 2); }
       if (P !== 'move') bar(xx, y - 9, w, 5, m.shown, enCol);
       if (v.enemies.findIndex(o => o.n === m.n) === i) { g.fillStyle = '#fff'; g.font = 'bold 11px "MaruBuri",sans-serif'; g.textAlign = 'center'; g.lineJoin = 'round'; g.lineWidth = 3; g.strokeStyle = '#120a06'; g.strokeText(m.n, xx + w / 2, y - 14); g.fillText(m.n, xx + w / 2, y - 14); }
       g.globalAlpha = 1;

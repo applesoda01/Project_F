@@ -1646,7 +1646,7 @@
       "kind": "짐승",
       "atk": 15,
       "hp": 105,
-      "img": "",
+      "img": "mon/mon_01.png",
       "scale": 100,
       "drops": [
         "mat_slay_F",
@@ -1661,7 +1661,7 @@
       "kind": "사람",
       "atk": 25,
       "hp": 150,
-      "img": "",
+      "img": "mon/mon_02.png",
       "scale": 100,
       "drops": [],
       "desc": "호위 의뢰의 방해꾼. 공격적"
@@ -1673,7 +1673,7 @@
       "kind": "마물",
       "atk": 10,
       "hp": 120,
-      "img": "",
+      "img": "mon/mon_03.png",
       "scale": 100,
       "drops": [
         "mat_study_F"
@@ -1687,7 +1687,7 @@
       "kind": "짐승",
       "atk": 45,
       "hp": 270,
-      "img": "",
+      "img": "mon/mon_04.png",
       "scale": 100,
       "drops": [
         "mat_slay_E",
@@ -1702,7 +1702,7 @@
       "kind": "짐승",
       "atk": 55,
       "hp": 810,
-      "img": "",
+      "img": "mon/mon_05.png",
       "scale": 140,
       "drops": [
         "mat_slay_E"
@@ -1716,7 +1716,7 @@
       "kind": "마물",
       "atk": 35,
       "hp": 245,
-      "img": "",
+      "img": "mon/mon_06.png",
       "scale": 100,
       "drops": [
         "mat_mine_E",
@@ -1731,7 +1731,7 @@
       "kind": "짐승",
       "atk": 20,
       "hp": 210,
-      "img": "",
+      "img": "mon/mon_07.png",
       "scale": 100,
       "drops": [
         "mat_x003",
