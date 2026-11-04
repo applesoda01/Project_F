@@ -1,0 +1,64 @@
+{
+  "character": "chr_mage_f",
+  "facing": "right",
+  "palette_colors": 32,
+  "note": "cell size and pivot differ per animation; pivot = feet centre, baseline y=92",
+  "animations": {
+    "walk": {
+      "image": "chr_mage_f_px_walk.png",
+      "cell_size": [
+        128,
+        96
+      ],
+      "pivot": {
+        "x_px": 64,
+        "y_px": 92
+      },
+      "frames": 8,
+      "frame_duration_ms": 100,
+      "loop": true
+    },
+    "run": {
+      "image": "chr_mage_f_px_run.png",
+      "cell_size": [
+        128,
+        96
+      ],
+      "pivot": {
+        "x_px": 64,
+        "y_px": 92
+      },
+      "frames": 8,
+      "frame_duration_ms": 75,
+      "loop": true
+    },
+    "attack": {
+      "image": "chr_mage_f_px_attack.png",
+      "cell_size": [
+        128,
+        96
+      ],
+      "pivot": {
+        "x_px": 64,
+        "y_px": 92
+      },
+      "frames": 8,
+      "frame_duration_ms": 90,
+      "loop": false
+    },
+    "fall": {
+      "image": "chr_mage_f_px_fall.png",
+      "cell_size": [
+        160,
+        104
+      ],
+      "pivot": {
+        "x_px": 104,
+        "y_px": 92
+      },
+      "frames": 10,
+      "frame_duration_ms": 110,
+      "loop": false
+    }
+  }
+}
