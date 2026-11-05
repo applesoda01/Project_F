@@ -1,0 +1,56 @@
+[
+ {
+  "recall": 0.995,
+  "extra": 0.183,
+  "height_ratio": 1.053,
+  "dx": -7.4,
+  "iou": 0.841,
+  "pass_": true,
+  "file": "l_00001_.png"
+ },
+ {
+  "recall": 1.0,
+  "extra": 0.163,
+  "height_ratio": 1.018,
+  "dx": -3.7,
+  "iou": 0.859,
+  "pass_": true,
+  "file": "l_00002_.png"
+ },
+ {
+  "recall": 0.983,
+  "extra": 0.094,
+  "height_ratio": 1.014,
+  "dx": -3.4,
+  "iou": 0.898,
+  "pass_": true,
+  "file": "l_00003_.png"
+ },
+ {
+  "recall": 1.0,
+  "extra": 0.237,
+  "height_ratio": 1.07,
+  "dx": -4.8,
+  "iou": 0.808,
+  "pass_": true,
+  "file": "l_00004_.png"
+ },
+ {
+  "recall": 0.963,
+  "extra": 0.074,
+  "height_ratio": 1.005,
+  "dx": 4.0,
+  "iou": 0.897,
+  "pass_": true,
+  "file": "l_00005_.png"
+ },
+ {
+  "recall": 0.975,
+  "extra": 0.076,
+  "height_ratio": 1.004,
+  "dx": -5.3,
+  "iou": 0.906,
+  "pass_": true,
+  "file": "l_00006_.png"
+ }
+]

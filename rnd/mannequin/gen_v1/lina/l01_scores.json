@@ -1,0 +1,74 @@
+[
+ {
+  "recall": 0.911,
+  "extra": 0.058,
+  "height_ratio": 1.007,
+  "dx": -2.9,
+  "iou": 0.861,
+  "pass_": true,
+  "file": "l_00001_.png"
+ },
+ {
+  "recall": 0.927,
+  "extra": 0.146,
+  "height_ratio": 1.036,
+  "dx": 2.4,
+  "iou": 0.809,
+  "pass_": true,
+  "file": "l_00002_.png"
+ },
+ {
+  "recall": 0.978,
+  "extra": 0.208,
+  "height_ratio": 1.016,
+  "dx": 0.8,
+  "iou": 0.809,
+  "pass_": true,
+  "file": "l_00003_.png"
+ },
+ {
+  "recall": 0.986,
+  "extra": 1.236,
+  "height_ratio": 1.03,
+  "dx": 6.3,
+  "iou": 0.441,
+  "pass_": false,
+  "file": "l_00004_.png"
+ },
+ {
+  "recall": 0.91,
+  "extra": 0.814,
+  "height_ratio": 1.179,
+  "dx": 12.7,
+  "iou": 0.501,
+  "pass_": false,
+  "file": "l_00005_.png"
+ },
+ {
+  "recall": 0.906,
+  "extra": 0.817,
+  "height_ratio": 1.277,
+  "dx": -13.4,
+  "iou": 0.498,
+  "pass_": false,
+  "file": "l_00006_.png"
+ },
+ {
+  "recall": 0.947,
+  "extra": 0.164,
+  "height_ratio": 1.042,
+  "dx": 3.2,
+  "iou": 0.813,
+  "pass_": true,
+  "file": "l_00007_.png"
+ },
+ {
+  "recall": 0.986,
+  "extra": 0.74,
+  "height_ratio": 1.162,
+  "dx": 51.6,
+  "iou": 0.567,
+  "pass_": false,
+  "file": "l_00008_.png"
+ }
+]

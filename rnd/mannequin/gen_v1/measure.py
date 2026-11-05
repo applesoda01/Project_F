@@ -27,3 +27,17 @@ def measure(path):
     return dict(iou=round(float(iou),4), off=round(off,4), dark=round(dark,4), area_ratio=round(float(M.sum()/T.sum()),3), aux_ok=bool(ok_aux), pass_=bool(iou>=0.9 and ok_aux))
 if __name__=='__main__':
     for p in sys.argv[1:]: print(os.path.basename(p), measure(p))
+
+def measure_c(path):
+    """옷 입힌 그림용: 마네킹 실루엣 포함률(recall)과 초과 면적비. 머리카락·치마는 실루엣 밖으로 나가는 게 정상이라 IoU 대신 사용."""
+    img = cv2.imread(path)
+    if img.shape[:2] != (1024,1024): img = cv2.resize(img,(1024,1024))
+    M, bg = fig_mask(img)
+    rec = float((M&T).sum()/T.sum()); extra = float((M&~T).sum()/T.sum())
+    ys, xs = np.where(M)
+    ty, tx = np.where(T)
+    # 키(머리 꼭대기~발바닥)와 중심 x 어긋남, 템플릿 대비
+    dh = float((ys.max()-ys.min())/(ty.max()-ty.min())) if len(ys) else 0
+    dx = float((xs.mean()-tx.mean())) if len(xs) else 0
+    return dict(recall=round(rec,3), extra=round(extra,3), height_ratio=round(dh,3), dx=round(dx,1), iou=round(float((M&T).sum()/(M|T).sum()),3),
+                pass_=bool(rec>=0.9 and extra<=0.5 and 0.9<=dh<=1.1))
