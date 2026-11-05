@@ -341,3 +341,17 @@ with open(OUT, 'w', encoding='utf-8', newline='\n') as fp:
     fp.write("  if (typeof module !== 'undefined' && module.exports) module.exports = D;\n  if (root) root.GAME_DATA = D;\n")
     fp.write("})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));\n")
 print('만듦:', os.path.relpath(OUT, ROOT))
+
+# 아이콘을 게임 폴더로 복사: data/icons/*.png → prototype/assets/icons/ (배포는 prototype 폴더만 올라가므로)
+if content is not None:
+    import shutil
+    src_dir, dst_dir = os.path.join(ROOT, 'data'), os.path.join(ROOT, 'prototype', 'assets')
+    n_copy = n_miss = 0
+    for o in content['materials'] + content['items']:
+        rel = o.get('icon') or ''
+        if not rel: continue
+        src, dst = os.path.join(src_dir, rel), os.path.join(dst_dir, rel)
+        if not os.path.exists(src): n_miss += 1; continue
+        if os.path.exists(dst) and open(src, 'rb').read() == open(dst, 'rb').read(): continue
+        os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copyfile(src, dst); n_copy += 1
+    print(f'아이콘: 새로 복사 {n_copy}개' + (f', 파일 없음 {n_miss}개' if n_miss else '') + ' → prototype/assets/icons/')

@@ -43,6 +43,7 @@
 "econ.mealBuyRate": 3,
 "econ.mealBonus": 7,
 "econ.mealUnlockChance": 0,
+"econ.mealPerDish": 0,
 "gear.weaponPrice": 7,
 "gear.setMult": 0,
 "gear.weaponStat": 7,

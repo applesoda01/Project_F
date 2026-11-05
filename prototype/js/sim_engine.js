@@ -42,12 +42,12 @@
         startGold: 3000, feeBase: 0.10, feePerInfo: 0.02,
         subsidy: [300, 500, 800, 1200, 2000, 3000, 4500],
         buildCost: [0, 2000, 4000, 8000, 15000, 30000, 0],
-        upkeepRate: 0.015,
+        upkeepRate: 0,   // 2026-11-05 시설 유지비 없앰 (balance.csv와 같게)
         tavernPerAdvWeek: 4, tavernGradeMult: 1.6,
         resaleRate: 0.08,
         effectCost: [0.10, 0.20, 0.35],
         mealPriceRate: 0.15, mealMargin: 0.60, mealBuyRate: [0.30, 0.60, 0.90],
-        mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5
+        mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02
       },
       gear: {
         weaponPrice: [150, 400, 1000, 2500, 6000, 14000, 30000], setMult: 3.0,
@@ -137,6 +137,9 @@
   function simulate(cfg, botKey, seed) {
     const TPL = questTemplates();
     const CL = combatLib(), CB = CL ? CL.make(gameData()) : null, COMBAT = !!(CB && CB.ok);   // 전투 의뢰 = 적이 있는 의뢰
+    // 요리 (docs/design/cooking.md): meals.csv 메뉴 + 편집기 요리 레시피. 시뮬레이터는 '재료가 다 모이면 바로 만드는' 플레이어로 가정 (게임 autoCook과 같음)
+    const STATS_ = ['힘', '민첩', '지력', '정신', '기교'], DISH_FX = (e => { const m = /\+\s*(\d+(?:\.\d+)?)%/.exec(e || ''); if (!m) return { stats: [], pct: 0 }; const part = (e || '').slice(0, m.index); return { stats: part.includes('모든 능력치') ? [0, 1, 2, 3, 4] : STATS_.map((n, i) => part.includes(n) ? i : -1).filter(i => i >= 0), pct: +m[1] / 100 }; });
+    const DISH = (() => { const G = gameData(); if (!G || !G.meals) return []; return G.meals.map(m => { const it = G.content && G.content.items.find(i => i.kind === 'food' && i.name === m.name); return Object.assign({ name: m.name, g: 'FEDCBAS'.indexOf(m.grade), mats: it ? (it.recipe || []).map(r => r.m) : [] }, DISH_FX(m.effect)); }).filter(d => d.mats.length); })();
     const MEAL_N = 'FEDCBAS'.split('').map(g => { const G = gameData(); return ((G && G.meals) || []).filter(m => m.grade === g).length || 2; });   // 등급별 요리 수 (meals.csv)
     const R = rng(seed);
     const bot = BOTS[botKey];
@@ -146,7 +149,7 @@
 
     const s = {
       week: 0, grade: 0, gold: E.startGold, pop: T.startPop, trust: 50, fame: 0,
-      op: 0, built: {}, eff: {}, meals: [0, 0, 0, 0, 0, 0, 0], advs: [], board: [], nextId: 1,
+      op: 0, built: {}, eff: {}, meals: [0, 0, 0, 0, 0, 0, 0], mats: {}, dishes: {}, advs: [], board: [], nextId: 1,
       boss: [], bossDone: 0, bossRefill: [], invasionCooldown: 0,
       nextRaid: P.raidMonths[0] * WPM, heirsQueue: [],
       phase: 'normal', officer: 0, mainCooldown: 0, demonFlagFallback: false, ended: false, rebirthAdded: false,
@@ -213,10 +216,10 @@
       return { g, type, req: req2, r: R0 / n, boss: !!boss, T, enemies, seen, combat: enemies.length > 0 };
     }
 
-    function successP(party, q) {
+    function successP(party, q, sm) {
       let F = 0, bottleneck = false;
       for (const k of q.req) {
-        const vals = party.map(a => finalStat(a, k) * (k === a.core ? 1 + skillBonus(a) : 1)).sort((x, y) => y - x);
+        const vals = party.map(a => finalStat(a, k) * (sm ? sm(a, k) : 1) * (k === a.core ? 1 + skillBonus(a) : 1)).sort((x, y) => y - x);
         const P0 = vals[0] + Q.partyAssist * vals.slice(1).reduce((x, y) => x + y, 0);
         const fill = Math.min(P0 / q.r, 1.5);
         if (fill < 0.5) bottleneck = true;
@@ -228,7 +231,7 @@
       if (bottleneck) p /= 2;
       return p;
     }
-    const unitOf = (a, mealB) => CB.unit(a, i => finalStat(a, i), a.gear, mealB);
+    const unitOf = (a, mealB, sm) => CB.unit(a, i => finalStat(a, i) * (sm ? sm(a, i) : 1), a.gear, mealB);
     // 예상 성공 확률: 전투 의뢰는 예측 전투, 비전투 의뢰는 능력치 판정
     function questP(party, q) { return q.combat ? CB.predict(party.map(a => unitOf(a, 0)), q.seen, q.g, party[0].risk) : successP(party, q); }
     function perceived(a, p) {
@@ -329,26 +332,27 @@
       return -1;
     }
     function runQuest(party, q) {
-      let mealB = 0;
-      const mg = mealFor(q);
-      if (mg >= 0) {
-        let eaters = 0;
+      let mealB = 0, sm = null;
+      let dish = null, bs = -1; for (const d of DISH) { if (!s.dishes[d.name] || d.g > q.g) continue; const sc = d.stats.filter(k => q.req.includes(k)).length * 1000 + d.g * 10 + d.pct * 100; if (sc > bs) { bs = sc; dish = d; } }   // 게임 dishFor와 같음
+      if (dish) {
+        let eaters = 0; const ate = new Set();
         for (const a of party) {
-          const price = Q.reward[mg] * E.mealPriceRate;
-          if (a.wallet >= price && R() < E.mealBuyRate[a.spend]) { a.wallet -= price; s.gold += price * E.mealMargin; s.op += price * E.mealMargin; s.st.mealIncome += price * E.mealMargin; eaters++; }
+          const price = Q.reward[dish.g] * E.mealPriceRate;
+          if (a.wallet >= price && R() < E.mealBuyRate[a.spend]) { a.wallet -= price; s.gold += price * E.mealMargin; s.op += price * E.mealMargin; s.st.mealIncome += price * E.mealMargin; eaters++; ate.add(a); }
         }
+        if (dish.stats.length) sm = (a, k) => ate.has(a) && dish.stats.includes(+k) ? 1 + dish.pct : 1;
         // 메뉴가 2개 열려 있으면 의뢰 유형에 맞는 요리를 고를 확률이 높음
-        mealB = (eaters / party.length) * E.mealBonus[mg] * (s.meals[mg] >= 2 ? 1 : 0.6) * (1 + 0.5 * (effN('주점') >= 3 ? 1 : 0));
+        mealB = (eaters / party.length) * E.mealPerDish * Object.keys(s.dishes).length * (1 + 0.5 * (effN('주점') >= 3 ? 1 : 0));   // 2026-11-05: 발견한 요리 하나당 +2% (등급 무관)
       }
       let ok, fightRes = null;
       if (q.combat) {
         const C = CB.C, price = C.potionPrice[Math.min(q.g, s.grade)];
         for (const a of party) { const want = C.potionCarry[a.spend] - (R() < 0.5 ? 1 : 0); while (a.pots < want && a.wallet >= price) { a.wallet -= price; a.pots++; s.st.potionGold += price; } }
-        fightRes = CB.fight(party.map(a => unitOf(a, mealB)), q.enemies, q.g, R, party[0].risk);
+        fightRes = CB.fight(party.map(a => unitOf(a, mealB, sm)), q.enemies, q.g, R, party[0].risk);
         ok = fightRes.win; s.st.combatQ++; if (ok) s.st.combatWin++;
         if (q.g <= 1) { const k = q.g * 2 + (party.every(m => m.gear >= q.g) ? 1 : 0); s.st.gearFx[k][1]++; if (ok) s.st.gearFx[k][0]++; }   // F·E급: 그 등급 장비를 다 갖춘 파티인지
       } else {
-        const p = Math.min(0.97, successP(party, q) * (1 + mealB));
+        const p = Math.min(0.97, successP(party, q, sm) * (1 + mealB));
         ok = R() < p;
       }
       if (fightRes) for (const u of fightRes.units) {   // 전투의 대가: 물약 소모, 쓰러진 사람은 부상·사망 판정
@@ -363,7 +367,8 @@
       const reward = (q.T ? q.T.reward : Q.reward[q.g]) * (q.boss ? 2 : 1);
       if (ok) {
         s.st.qDone++;
-        if ((q.type === 0 || q.type === 1 || (q.type === 2 && (q.g === 2 || q.g === 6))) && s.meals[q.g] < MEAL_N[q.g] && R() < E.mealUnlockChance) { s.meals[q.g]++; s.st.mealsUnlocked.push(s.week); }
+        if (q.T) for (const r of q.T.rewards || []) if (R() * 100 < r.p) s.mats[r.m] = (s.mats[r.m] || 0) + 1;   // 소재 획득 (게임 dropMats와 같음)
+        for (const d of DISH) if (!s.dishes[d.name] && d.g <= s.grade && d.mats.every(m => s.mats[m] > 0)) { for (const m of d.mats) s.mats[m]--; s.dishes[d.name] = s.week; s.meals[d.g]++; s.st.mealsUnlocked.push(s.week); }
         const inc = reward * feeRate() + reward * E.resaleRate * (1 + 0.1 * effN('판매창구'));
         s.gold += inc; s.op += inc;
         const each = reward * (1 - feeRate()) / party.length;

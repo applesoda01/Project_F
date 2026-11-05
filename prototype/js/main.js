@@ -43,13 +43,17 @@
   const q = sel => stage.ui.querySelector(sel);
   q('#dWeek').onclick = () => { step(); UI.hud(); };
   q('#dMonth').onclick = () => { for (let i = 0; i < 4; i++) step(); UI.hud(); };
-  q('#dGrade').onclick = () => { const g0 = s.grade; Gm.debugSetGrade(s, s.grade + 1); if (!s.filter[s.grade]) { const w = s.filter.slice(); w[s.grade] = 5; Gm.setFilter(s, w); } if (s.grade > g0) UI.gradeUp(s.grade); UI.hud(); };
+  q('#dGrade').onclick = () => { const g0 = s.grade; Gm.debugSetGrade(s, s.grade + 1); if (s.grade > g0) UI.gradeUp(s.grade); UI.hud(); };
   q('#dPromo').onclick = () => { // [개발] 전직 시험: 관리소를 짓고 마을에 있는 모험가 능력치를 올린 뒤 제안을 만든다
     if (s.grade < 1) Gm.debugSetGrade(s, 1); s.built['관리소'] = true;
     const town = s.advs.filter(a => a.alive && a.stage === 1).slice(0, 2);
     town.forEach((a, i) => { a.stats[a.core] = Math.max(a.stats[a.core], 52); a.stats[(a.core + 1 + i) % 5] = Math.max(a.stats[(a.core + 1 + i) % 5], 41); a.attach = Math.max(a.attach, 62); });
     for (let i = 0; i < 4; i++) step(); UI.hud();
   };
+  // [개발] 식당 시험: F·E 음식 소재 각 3개 + 발견한 요리 초기화 후 식당 열기. 주소에 ?lab=kitchen 을 붙이면 시작하자마자 이 상태로 열림
+  const kitchenLab = () => { if (s.grade < 1) Gm.debugSetGrade(s, 1); Gm.debugKitchen(s, 'reset'); Gm.debugKitchen(s, 'fill'); Gm.log(s, '[디버그] 식당 시험: 음식 소재 각 3개, 요리 초기화', 'debug'); UI.hud(); UI.open('meals'); };
+  q('#dKitchen').onclick = kitchenLab;
+  if (/[?&]lab=kitchen/.test(location.search)) setTimeout(kitchenLab, 300);
   q('#dWalk').onclick = e => { e.currentTarget.classList.toggle('on', Director.demoWalk()); };
   q('#dGold').onclick = () => { s.gold += 5000; Gm.log(s, '[디버그] 금고에 5,000G를 넣었습니다.', 'debug'); UI.hud(); };
   q('#dLayer').onclick = e => { debug = !debug; e.currentTarget.classList.toggle('on', debug); };

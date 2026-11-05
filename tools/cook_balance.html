@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>요리 밸런스 계산기</title>
+<!-- 게임 규칙을 그대로 불러와 돌림 (prototype/js). 실제 게임·관문 1과 같은 계산 -->
+<script src="../prototype/js/data_gen.js"></script>
+<script src="../prototype/js/combat.js"></script>
+<script src="../prototype/js/sim_engine.js"></script>
+<script src="../prototype/js/game_core.js"></script>
+<style>
+:root{--ink:#3b2a1e;--muted:#8a735a;--paper:#fffaf0;--line:rgba(120,82,44,.28);--line2:rgba(120,82,44,.5);--wood:#5a3a22;--wood2:#7a5032;--gold:#c9963e;--green:#4f8a3c;--red:#b5452f}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Serif KR","Nanum Myeongjo",serif;color:var(--ink);background:#f3e6c8}
+.wrap{display:grid;grid-template-columns:330px 1fr;min-height:100vh}
+.ctl{background:#ead9b4;padding:18px;border-right:3px solid var(--wood2)}
+h1{font-size:20px;margin:0 0 4px;color:var(--wood)} .d{font-size:13px;color:var(--muted);margin:0 0 12px;line-height:1.5}
+h2{font-size:14px;margin:16px 0 6px;color:var(--wood);border-bottom:1px dashed var(--line2);padding-bottom:4px}
+.r{display:grid;grid-template-columns:1fr 84px;align-items:center;gap:8px;margin:6px 0;font-size:13px}
+.r input{width:100%;font:inherit;padding:4px 6px;border:1px solid var(--line2);border-radius:6px;background:var(--paper);text-align:right}
+.r small{display:block;color:var(--muted);font-size:11px}
+button{font:700 15px inherit;font-family:inherit;color:var(--wood);background:linear-gradient(#fffaf0,#efe0c0);border:2px solid var(--line2);border-radius:9px;padding:8px 16px;cursor:pointer;width:100%;margin-top:12px}
+button[disabled]{opacity:.5}
+.bar{height:8px;border-radius:6px;background:#e3d3b2;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;width:0;background:var(--gold)}
+.main{padding:22px 26px;overflow:auto}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.card span{display:block;font-size:12px;color:var(--muted)} .card b{font-size:22px} .card em{font-style:normal;font-size:13px;color:var(--muted);margin-left:6px}
+table{border-collapse:collapse;width:100%;background:var(--paper);border-radius:12px;overflow:hidden;font-size:14px;margin-bottom:18px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:right} th{background:#efe0c0;color:var(--wood)} td:first-child,th:first-child{text-align:left}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:18px}
+.panel h3{margin:0 0 6px;font-size:15px;color:var(--wood)}
+.note{font-size:12px;color:var(--muted);line-height:1.6}
+.lg{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:4px}.lg i{display:inline-block;width:14px;height:3px;margin-right:4px;vertical-align:middle}
+.ok{color:var(--green);font-weight:700}.ng{color:var(--red);font-weight:700}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}.ctl{border-right:0;border-bottom:3px solid var(--wood2)}.cards{grid-template-columns:repeat(2,1fr)}.main{padding:16px}}
+</style></head><body>
+<div class="wrap">
+  <div class="ctl">
+    <h1>요리 밸런스 계산기</h1>
+    <p class="d">게임 규칙(prototype/js)을 그대로 여러 판 돌립니다. "요리함"은 재료가 모이면 바로 맞는 요리를 만드는 플레이어, "안 함"은 요리를 전혀 안 하는 플레이어입니다.</p>
+    <h2>소재 확률</h2>
+    <div class="r"><label>소금·향신료·신선한 물<small>F급 의뢰 10종, 각각</small></label><input id="pStaple" type="number" value="15" min="0" max="100" step="1"></div>
+    <div class="r"><label>밀가루<small>E급 의뢰 7종</small></label><input id="pFlour" type="number" value="15" min="0" max="100" step="1"></div>
+    <h2>식사 효과</h2>
+    <div class="r"><label>발견 요리 하나당 (%)<small>econ.mealPerDish</small></label><input id="perDish" type="number" value="2" min="0" max="20" step="0.5"></div>
+    <div class="r"><label>요리 능력치 배율 (×)<small>meals.csv 효과 % × 이 값</small></label><input id="statMul" type="number" value="1" min="0" max="5" step="0.1"></div>
+    <div class="r"><label>식당 이용률 배율 (×)<small>절약 30 · 보통 60 · 낭비 90%</small></label><input id="buyMul" type="number" value="1" min="0" max="3" step="0.1"></div>
+    <h2>돌리는 방법</h2>
+    <div class="r"><label>판 수</label><input id="runs" type="number" value="60" min="5" max="300" step="5"></div>
+    <div class="r"><label>기간 (주)<small>48주 = 관문 1과 같은 1년</small></label><input id="weeks" type="number" value="48" min="8" max="240" step="4"></div>
+    <div class="r"><label>E급이 되는 주<small>0이면 F급 그대로 (관문 1과 같음)</small></label><input id="eWeek" type="number" value="0" min="0" max="240" step="4"></div>
+    <button id="go">계산하기</button><div class="bar"><i id="prog"></i></div>
+    <p class="note" style="margin-top:14px">시드 7000번부터 차례로 씀 (관문 1과 같은 판). 값을 바꿔도 같은 시드라 차이만 비교됩니다.</p>
+  </div>
+  <div class="main">
+    <div class="cards" id="cards"></div>
+    <div class="panel"><h3>주차별 평균 발견 요리 수</h3><svg id="chart" viewBox="0 0 760 220" width="100%" height="220"></svg><div class="lg"><span><i style="background:#c9963e"></i>F급 요리</span><span><i style="background:#4f8a3c"></i>E급 요리</span></div></div>
+    <table id="dishes"></table>
+    <p class="note" id="foot"></p>
+  </div>
+</div>
+<script>
+'use strict';
+const Gm = window.GuildGame, Sim = window.GuildSim, GD = window.GAME_DATA, $ = id => document.getElementById(id);
+const STAPLE = ['mat_x018', 'mat_x019', 'mat_x020'], FLOUR = 'mat_x021';
+const BASE_PCT = Gm.DISH.map(d => d.pct);
+const fmt = n => Math.round(n).toLocaleString('ko-KR');
+function setup(o) {   // 게임 데이터 값을 바꿈 (게임 규칙이 같은 객체를 참조)
+  for (const q of GD.content.quests) for (const r of q.rewards || []) { if (STAPLE.includes(r.m)) r.p = o.pStaple; if (r.m === FLOUR) r.p = o.pFlour; }
+  Gm.DISH.forEach((d, i) => { d.pct = BASE_PCT[i] * o.statMul; });
+}
+function runOne(o, seed, cookOn) {
+  const cfg = Sim.defaults(); cfg.econ.mealPerDish = o.perDish / 100; cfg.econ.mealBuyRate = cfg.econ.mealBuyRate.map(v => Math.min(1, v * o.buyMul));
+  const g = Gm.newGame(cfg, seed), seen = new Set(), curve = [];
+  let dep = 0, ate = 0, ateN = 0;
+  for (let w = 0; w < o.weeks; w++) {
+    if (o.eWeek && w === o.eWeek && g.grade < 1) Gm.debugSetGrade(g, 1);
+    Gm.stepWeek(g); if (cookOn) Gm.autoCook(g);
+    for (const x of g.active) if (!seen.has(x)) { seen.add(x); dep++; if (x.dish) { ate++; ateN += x.ate; } }
+    curve.push([0, 1].map(gr => Gm.DISH.filter(d => d.g === gr && g.dishes[d.name]).length));
+  }
+  const h = g.history, net = h.length ? h.reduce((t, m) => t + m.net, 0) / h.length : 0, meal = h.length ? h.reduce((t, m) => t + (m.meal || 0), 0) / h.length : 0;
+  return { net, meal, done: g.stats.done, fail: g.stats.fail, dep, ate, dishes: Object.assign({}, g.dishes), curve, nDish: Object.keys(g.dishes).length };
+}
+function med(a) { if (!a.length) return null; const b = a.slice().sort((x, y) => x - y); return b[b.length >> 1]; }
+$('go').onclick = () => {
+  const o = {}; for (const k of ['pStaple', 'pFlour', 'perDish', 'statMul', 'buyMul', 'runs', 'weeks', 'eWeek']) o[k] = +$(k).value;
+  setup(o); $('go').disabled = true;
+  const A = [], B = []; let i = 0;
+  const tick = () => {
+    const end = Math.min(o.runs, i + 5);
+    for (; i < end; i++) { A.push(runOne(o, 7000 + i, true)); B.push(runOne(o, 7000 + i, false)); }
+    $('prog').style.width = (i / o.runs * 100) + '%';
+    if (i < o.runs) return setTimeout(tick, 0);
+    $('go').disabled = false; show(o, A, B);
+  };
+  tick();
+};
+function show(o, A, B) {
+  const avg = (L, f) => L.reduce((t, x) => t + f(x), 0) / L.length;
+  const sr = L => { const d = avg(L, x => x.done), f = avg(L, x => x.fail); return d / (d + f) * 100; };
+  const nA = avg(A, x => x.net), nB = avg(B, x => x.net), sA = sr(A), sB = sr(B);
+  const eatRate = avg(A, x => x.dep ? x.ate / x.dep : 0) * 100, nd = avg(A, x => x.nDish);
+  const okNet = nA >= 300 && nA <= 600;
+  $('cards').innerHTML = [
+    ['월 운영 순이익 (요리함)', fmt(nA) + 'G', `안 함 ${fmt(nB)}G · 관문 1 기준 300~600G ${okNet ? '<span class="ok">안</span>' : '<span class="ng">밖</span>'} (48주 기준)`],
+    ['의뢰 성공률 (요리함)', sA.toFixed(1) + '%', `안 함 ${sB.toFixed(1)}%`],
+    ['출발 전 식사 비율', eatRate.toFixed(0) + '%', '출발한 의뢰 중 누군가 먹은 비율'],
+    ['기간 끝 발견 요리', nd.toFixed(1) + '개', `식사 효과 +${(nd * o.perDish).toFixed(1)}%`]
+  ].map(([a, b, c]) => `<div class="card"><span>${a}</span><b>${b}</b><span>${c}</span></div>`).join('');
+  // 요리별
+  let t = '<tr><th>요리</th><th>등급</th><th>재료</th><th>효과</th><th>발견한 판</th><th>발견 주 (중앙값)</th><th>가장 빠른 / 늦은 주</th></tr>';
+  const MAT = {}; for (const m of GD.content.materials) MAT[m.id] = m.name;
+  for (const d of Gm.DISH) {
+    if (d.g > 1) continue;
+    const ws = A.map(x => x.dishes[d.name]).filter(v => v != null);
+    t += `<tr><td>${d.name}</td><td>${'FE'[d.g]}</td><td>${d.mats.map(m => MAT[m]).join(' + ')}</td><td>${d.stats.map(k => ['힘', '민첩', '지력', '정신', '기교'][k]).join('·')} +${(d.pct * 100).toFixed(1)}%</td><td>${ws.length} / ${A.length}</td><td>${ws.length ? med(ws) + '주' : '—'}</td><td>${ws.length ? Math.min(...ws) + ' / ' + Math.max(...ws) : '—'}</td></tr>`;
+  }
+  $('dishes').innerHTML = t;
+  // 그래프
+  const W = 760, H = 220, P = 34, n = o.weeks, maxY = 3;
+  const line = gr => A[0].curve.map((_, w) => { const v = avg(A, x => x.curve[w][gr]); return `${P + (W - P - 10) * w / Math.max(1, n - 1)},${H - P - (H - P - 10) * v / maxY}`; }).join(' ');
+  let svg = '';
+  for (let y = 0; y <= maxY; y++) { const yy = H - P - (H - P - 10) * y / maxY; svg += `<line x1="${P}" x2="${W - 10}" y1="${yy}" y2="${yy}" stroke="rgba(120,82,44,.18)"/><text x="${P - 8}" y="${yy + 4}" font-size="11" text-anchor="end" fill="#8a735a">${y}</text>`; }
+  for (let w = 0; w <= n; w += Math.max(4, Math.round(n / 12 / 4) * 4)) { const xx = P + (W - P - 10) * w / Math.max(1, n - 1); svg += `<text x="${xx}" y="${H - 12}" font-size="11" text-anchor="middle" fill="#8a735a">${w}주</text>`; }
+  if (o.eWeek) { const xx = P + (W - P - 10) * o.eWeek / Math.max(1, n - 1); svg += `<line x1="${xx}" x2="${xx}" y1="10" y2="${H - P}" stroke="#4f8a3c" stroke-dasharray="4 4"/><text x="${xx + 4}" y="20" font-size="11" fill="#4f8a3c">E급</text>`; }
+  svg += `<polyline fill="none" stroke="#c9963e" stroke-width="2.5" points="${line(0)}"/><polyline fill="none" stroke="#4f8a3c" stroke-width="2.5" points="${line(1)}"/>`;
+  $('chart').innerHTML = svg;
+  $('foot').textContent = `${A.length}판 × ${o.weeks}주. 요리함 = 재료가 모이면 바로 맞는 요리를 만드는 플레이어(실패 없음). 식당 수입 월 평균: 요리함 ${fmt(avg(A, x => x.meal))}G · 안 함 ${fmt(avg(B, x => x.meal))}G.`;
+}
+</script>
+</body></html>

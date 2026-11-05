@@ -270,7 +270,7 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 .dlgOn #hudBR,.dlgOn #hudTR{transform:translateY(200px);opacity:0;pointer-events:none;transition-delay:0s}
 .dlgOn #hudBR *,.dlgOn #hudTR *{pointer-events:none}
 /* 원정 현황 패널(hudExp)·미니 뷰(expView) — expedition.js, docs/design/expedition_panel.md */
-#hudExp{position:absolute;right:16px;top:96px;width:360px;max-height:704px;display:flex;flex-direction:column;opacity:.5;transition:opacity .3s ease .3s;z-index:4;
+#hudExp{position:absolute;right:16px;top:96px;width:360px;max-height:704px;display:flex;flex-direction:column;opacity:.5;transition:opacity .3s ease .3s;z-index:3;
  background:linear-gradient(180deg,#3a2617,#2a1b10);border:2px solid #6b4a2b;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.45),inset 0 0 0 2px rgba(230,201,138,.18);font-family:"MaruBuri","Malgun Gothic",serif}
 #hudExp:hover{opacity:1;transition:opacity .15s}
 #hudExp.small{max-height:485px}
@@ -291,11 +291,12 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 #hudExp .risk{font-size:13px;width:56px;text-align:right;font-weight:700}
 #hudExp .r-safe{color:#7bd88f}#hudExp .r-warn{color:#f2c14e}#hudExp .r-risk{color:#ff6b5a}
 .stage-ui .exTip{position:absolute;right:388px;width:260px;padding:10px 12px;background:rgba(20,13,8,.95);border:1px solid #6b4a2b;border-radius:8px;font:15px/1.6 "MaruBuri",serif;color:#f1e6cf;pointer-events:none;display:none;z-index:5}
-#expView{position:absolute;right:16px;top:597px;width:480px;height:203px;overflow:hidden;display:none;opacity:0;transition:opacity .2s;background:transparent;z-index:4;cursor:grab;touch-action:none;user-select:none}
+#expView{position:absolute;right:16px;top:597px;width:480px;height:203px;overflow:hidden;display:none;opacity:0;transition:opacity .2s;background:transparent;z-index:3;cursor:grab;touch-action:none;user-select:none}
 #expView.on{display:block}#expView.vis{opacity:1}#expView.drag{cursor:grabbing;transition:none}
 #expView canvas{position:absolute;left:0;top:0;width:480px;height:203px;image-rendering:pixelated;pointer-events:none}
 #expView .msg{position:absolute;left:0;right:0;bottom:0;padding:5px 10px;text-shadow:0 0 3px #000,0 1px 2px #000,0 0 6px rgba(0,0,0,.8);font:15px "MaruBuri",serif;color:#fff3dc;text-align:center;pointer-events:none}
-</style></head><body>
+</style>
+<link rel="stylesheet" href="css/ui_kit.css"></head><body>
 <div id="game"></div>
 <div id="loading"><span id="loadMsg"></span></div>
 <template id="uiTpl">
@@ -318,7 +319,7 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
   <button class="plate btn" id="devToggle">개발</button>
   <div class="plate" id="dev"><span class="tag">개발</span>
     <button class="btn" id="dWeek">다음 주</button><button class="btn" id="dMonth">다음 달</button><button class="btn" id="dGrade">등급 올리기</button><button class="btn" id="dGold">+5,000G</button><button class="btn" id="dPromo">전직 시험</button><button class="btn" id="dWalk">걷기 시연</button>
-    <button class="btn" id="dLayer">레이어 경계</button><button class="btn" id="dStill">쪽지 흔들림 끄기</button><button class="btn" id="dTemp"></button><button class="btn" id="dVerify">관문 1 검증</button>
+    <button class="btn" id="dLayer">레이어 경계</button><button class="btn" id="dStill">쪽지 흔들림 끄기</button><button class="btn" id="dTemp"></button><button class="btn" id="dVerify">관문 1 검증</button><button class="btn" id="dKitchen">식당 시험</button>
     <span class="tag" id="dAssets"></span></div>
   <div id="dlg"><img id="dlgFace" alt="리나"><canvas id="dlgStand" width="341" height="640" hidden></canvas><div class="plate" id="dlgBox"><span id="dlgName">리나</span><span id="dlgText"></span><span id="dlgNext" hidden>▼</span></div></div>
   <div id="popBack"><div class="plate" id="pop" role="dialog" aria-modal="true" aria-labelledby="popTitle"><div id="popHead"><h2 id="popTitle"></h2><button class="btn" id="popClose" aria-label="닫기">✕</button></div><div id="popBody"></div></div></div>
