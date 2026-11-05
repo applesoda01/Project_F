@@ -1,0 +1,36 @@
+{
+  "_note": "마네킹 설계 초안 v0 (2026-11-05). 수치는 rnd/reference_spec.md 기준. 단위는 뼈대 좌표 단위이며 1단위=1px로 가정(미검증). 그림 없는 구조 데이터.",
+  "target_similarity": "구조 95% 이상 (관절 위치와 겹침 순서는 100%)",
+  "root": {"x": 0, "y": 2.8},
+  "joints": {
+    "body":   {"parent": "root",  "x": 11.0,  "y": 160.9},
+    "head":   {"parent": "body",  "dx": -8.1,  "dy": 89.7},
+    "armF":   {"parent": "body",  "dx": -32.6, "dy": 60.9},
+    "armB":   {"parent": "body",  "dx": 14.9,  "dy": 64.9},
+    "handF":  {"parent": "armF",  "note": "팔 끝(손목) 위치는 팔 뼈 길이 60 방향", "bone_length": 60},
+    "handB":  {"parent": "armB",  "bone_length": 60},
+    "thighF": {"parent": "body",  "dx": -23.1, "dy": -30.3},
+    "thighB": {"parent": "body",  "dx": 26.8,  "dy": -27.7},
+    "legF":   {"parent": "thighF","dx": -16.0, "dy": -59.9, "bone_length": 60},
+    "legB":   {"parent": "thighB","dx": 5.0,   "dy": -60.2, "bone_length": 60},
+    "skirtF": {"parent": "body",  "dx": -0.9,  "dy": -10.8},
+    "tail":   {"parent": "body",  "dx": -0.9,  "dy": -10.8}
+  },
+  "hair_chains_on_head": ["hairF", "hairB", "hairSideF", "hairSideB", "hairTail", "hairTwinF", "hairTwinB"],
+  "part_size_px": {
+    "head": [72, 62], "headB": [93, 78], "hairF": [100, 85], "hairB": [88, 86],
+    "body": [56, 71], "hipF": [60, 25],
+    "armF": [25, 37], "handF": [46, 53], "armB": [25, 34], "handB": [39, 50],
+    "thighF": [51, 52], "legF": [23, 50], "thighB": [45, 51], "legB": [22, 45]
+  },
+  "draw_order_back_to_front": [
+    "shadow", "tail", "hairB", "headB", "hairSideB", "armB", "handB", "skirtB", "hipB",
+    "legB", "thighB", "legF", "thighF", "body", "hipF", "skirtF", "head", "armF",
+    "hairSideF", "hairF", "face", "handF"
+  ],
+  "limb_segments": 2,
+  "expressions": ["normal", "blink", "joy", "anger", "pain", "look", "dead"],
+  "animations_first_pass": {"idle": 25, "walk": 24, "run": 18},
+  "fps": 30,
+  "status": "초안. 관절 좌표와 부위 크기는 참고 측정값. 부위 이미지의 관절 기준 오프셋은 미측정."
+}
