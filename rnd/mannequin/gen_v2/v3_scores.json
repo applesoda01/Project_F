@@ -1,0 +1,162 @@
+[
+ {
+  "iou": 0.9028,
+  "off": 0.0048,
+  "dark": 0.0032,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00001_.png"
+ },
+ {
+  "iou": 0.9331,
+  "off": 0.0143,
+  "dark": 0.0093,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00002_.png"
+ },
+ {
+  "iou": 0.8995,
+  "off": 0.0309,
+  "dark": 0.0056,
+  "aux_ok": false,
+  "pass_": false,
+  "file": "m_00003_.png"
+ },
+ {
+  "iou": 0.948,
+  "off": 0.0077,
+  "dark": 0.0,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00004_.png"
+ },
+ {
+  "iou": 0.9575,
+  "off": 0.005,
+  "dark": 0.0,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00005_.png"
+ },
+ {
+  "iou": 0.97,
+  "off": 0.001,
+  "dark": 0.0,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00006_.png"
+ },
+ {
+  "iou": 0.9518,
+  "off": 0.0284,
+  "dark": 0.0,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00007_.png"
+ },
+ {
+  "iou": 0.947,
+  "off": 0.0197,
+  "dark": 0.0132,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00008_.png"
+ },
+ {
+  "iou": 0.9552,
+  "off": 0.0016,
+  "dark": 0.0011,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00009_.png"
+ },
+ {
+  "iou": 0.9555,
+  "off": 0.0304,
+  "dark": 0.0215,
+  "aux_ok": false,
+  "pass_": false,
+  "file": "m_00010_.png"
+ },
+ {
+  "iou": 0.8703,
+  "off": 0.0082,
+  "dark": 0.0063,
+  "aux_ok": true,
+  "pass_": false,
+  "file": "m_00011_.png"
+ },
+ {
+  "iou": 0.9063,
+  "off": 0.006,
+  "dark": 0.0035,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00012_.png"
+ },
+ {
+  "iou": 0.9494,
+  "off": 0.0017,
+  "dark": 0.0011,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00013_.png"
+ },
+ {
+  "iou": 0.9614,
+  "off": 0.0028,
+  "dark": 0.0,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00014_.png"
+ },
+ {
+  "iou": 0.9162,
+  "off": 0.0001,
+  "dark": 0.0,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00015_.png"
+ },
+ {
+  "iou": 0.9366,
+  "off": 0.256,
+  "dark": 0.011,
+  "aux_ok": false,
+  "pass_": false,
+  "file": "m_00016_.png"
+ },
+ {
+  "iou": 0.9536,
+  "off": 0.0356,
+  "dark": 0.0147,
+  "aux_ok": false,
+  "pass_": false,
+  "file": "m_00017_.png"
+ },
+ {
+  "iou": 0.912,
+  "off": 0.0218,
+  "dark": 0.019,
+  "aux_ok": true,
+  "pass_": true,
+  "file": "m_00018_.png"
+ },
+ {
+  "iou": 0.8904,
+  "off": 0.0119,
+  "dark": 0.0,
+  "aux_ok": true,
+  "pass_": false,
+  "file": "m_00019_.png"
+ },
+ {
+  "iou": 0.9736,
+  "off": 0.1425,
+  "dark": 0.0164,
+  "aux_ok": false,
+  "pass_": false,
+  "file": "m_00020_.png"
+ }
+]
