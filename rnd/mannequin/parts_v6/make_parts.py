@@ -7,7 +7,8 @@ OW=1.1                            # 윤곽선 굵기(아틀라스 px)
 # 파츠: (w,h) 아틀라스 px, 도형 목록: ('cap',(x1,y1),(x2,y2),폭) / ('ell',(cx,cy),rx,ry)
 SPEC={
  'head':((72,62),[('ell',(44,30.5),24.5,29)]),
- 'body':((56,71),[('cap',(28,6),(28,22),12),('ell',(28,46),19,24)]),
+ 'body':((56,71),[('cap',(31,15),(31,27),12),
+   ('poly',[(19,23),(43,23),(44,34),(42,44),(47,56),(50,64),(46,69.5),(31,70.5),(16,69.5),(12,64),(15,56),(20,44),(18,34)],6)]),   # 몸통: 상체 폭 24 → 허리 24 → 골반 38, 모서리를 둥글게
  'hip':((60,25),[('ell',(30,12.5),27,10.5)]),
  'uArmF':((25,37),[('cap',(19,5),(7,31),10)]),
  'uArmB':((25,34),[('cap',(5,6),(19,28),10)]),
@@ -21,7 +22,12 @@ SPEC={
 def draw(shapes,w,h,color,extra=0.0):
     W,H=int(round(w*K))*SS,int(round(h*K))*SS; m=np.zeros((H,W),np.uint8); s=K*SS
     for sh in shapes:
-        if sh[0]=='cap':
+        if sh[0]=='poly':
+            pts=np.array([[p[0]*s,p[1]*s] for p in sh[1]],np.int32); pm=np.zeros_like(m); cv2.fillPoly(pm,[pts],255)
+            k=int(sh[2]*s)|1; pm=cv2.GaussianBlur(pm,(k,k),0); pm=(pm>127).astype(np.uint8)*255
+            if extra: pm=cv2.dilate(pm,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(int(extra*s)|1,int(extra*s)|1)))
+            m=np.maximum(m,pm)
+        elif sh[0]=='cap':
             a=(int(sh[1][0]*s),int(sh[1][1]*s)); b=(int(sh[2][0]*s),int(sh[2][1]*s)); t=int((sh[3]+extra)*s)
             cv2.line(m,a,b,255,t); cv2.circle(m,a,t//2,255,-1); cv2.circle(m,b,t//2,255,-1)
         else:
