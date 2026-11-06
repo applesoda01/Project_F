@@ -128,6 +128,8 @@
 | `prototype/js/ui.js` | 식당 팝업(`mealsHtml`·`cookMsg`), 아이콘 없는 소재 표시(`matImg`), 게시판 오버 창 "준비 중" 삭제 |
 | `prototype/css/ui_kit.css` | `kitchen`·`kmat`·`kslot`·`kmsg`·`kdish` |
 | `tools/gate1_check.js` · 게임 안 관문 1 | 매주 `autoCook` |
+| `tools/material_editor/index.html` | 요리 조합 규칙(각 1개·중복 경고), 효과 해석 미리보기, 오버 메모(`tip`). **요리 효과 원본 = 편집기 '효과'**(비면 meals.csv) |
+| `tools/data_build.py` | 요리 규칙 검사, `tip` 전달 |
 
 ## 9. 도구
 

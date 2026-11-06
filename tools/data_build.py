@@ -190,6 +190,8 @@ if os.path.exists(CPATH) and not errors:          # 밸런스에 오류가 있�
             if m.get('grade') not in GRADES: cerr(w, f"등급 '{m.get('grade')}' 이 잘못되었습니다")
             if m.get('line') not in MAT_LINES: cerr(w, f"계열 '{m.get('line')}' 을 모릅니다")
             if not m.get('name'): cerr(w, '이름이 비었습니다')
+        food_keys = {}
+        reward_mats = {r.get('m') for q in (cd.get('quests') or []) for r in (q.get('rewards') or [])}
         for it in items:
             w = f"{it.get('kind')} {it.get('id')}({it.get('name')})"
             if it.get('kind') not in ('food', 'gear', 'potion'): cerr(w, '종류는 food·gear·potion 중 하나여야 합니다')
@@ -197,6 +199,18 @@ if os.path.exists(CPATH) and not errors:          # 밸런스에 오류가 있�
             for r in it.get('recipe', []):
                 if r.get('m') and r['m'] not in mat_ids: cerr(w, f"조합법 재료 {r['m']} 이 소재 목록에 없습니다")
             if not it.get('recipe'): cwarn(w, '조합법이 없습니다')
+            if it.get('kind') == 'food':   # 요리 규칙: 소재 각 1개, 1~3종, 다른 요리와 조합 중복 금지 (docs/design/cooking.md)
+                ms = [r.get('m') for r in it.get('recipe', []) if r.get('m')]
+                if len(ms) != len(set(ms)): cerr(w, '같은 소재가 두 번 들어 있습니다 (요리는 소재 각 1개)')
+                if len(ms) > 3: cerr(w, '요리 재료는 최대 3종입니다')
+                if any(int(r.get('n', 1)) != 1 for r in it.get('recipe', [])): cwarn(w, '요리 재료 수량은 1로 계산됩니다')
+                key = '+'.join(sorted(ms))
+                if key and key in food_keys: cerr(w, f'{food_keys[key]} 과 조합법이 같습니다')
+                food_keys[key] = it.get('name')
+                for m in ms:
+                    if m in mat_ids and m not in reward_mats: cwarn(w, f'재료 {m} 을 주는 퀘스트가 없습니다')
+                d = it.get('desc') or ''
+                if d and not re.search(r'\d+(?:\.\d+)?\s*%', d): cwarn(w, f"효과 '{d}' 를 해석할 수 없습니다 ('능력치 +n%' 꼴, 수치 없는 효과는 발견 수 보너스만)")
             if it.get('kind') == 'gear':
                 if it.get('gtype') not in GEAR_TYPES: cerr(w, f"장비 종류 '{it.get('gtype')}' 를 모릅니다 (편집기에서 종류를 고르세요)")
                 for k, v in (it.get('stats') or {}).items():
@@ -287,7 +301,7 @@ if os.path.exists(CPATH) and not errors:          # 밸런스에 오류가 있�
                     elif len(t['text']) > 90: cwarn(w, f'{k} 대사가 90자를 넘습니다')
                 elif t.get('mode') == 'scene' and not t.get('scene'): cwarn(w, f'{k} 대화씬 ID가 비었습니다')
             out_q.append({'id': qid, 'name': q.get('name', ''), 'cat': q.get('cat'), 'grade': q['grade'], 'type': QTYPE_KEYS.index(q['line']) if q.get('line') in QTYPE_KEYS else -1,
-                          'core': bool(q.get('core')), 'board': on_board, 'client': q.get('client', ''), 'notice': q.get('notice', ''),
+                          'core': bool(q.get('core')), 'board': on_board, 'client': q.get('client', ''), 'notice': q.get('notice', ''), 'tip': q.get('tip', ''),
                           'region': v.get('region') or '', 'weeks': c['weeks'], 'delta': d,
                           'enemies': [{'mon': e.get('mon', ''), 'name': MON.get(e.get('mon'), {}).get('name', e.get('name', '')),
                                        'count': (int(e.get('count', 1)) if e.get('boss') else dur_calc(R, gi, d, int(e.get('count', 1)))['mon']),
@@ -313,11 +327,11 @@ if os.path.exists(CPATH) and not errors:          # 밸런스에 오류가 있�
         for m, ids in subs.items():
             if len(ids) == 1 and m not in mains and mline.get(m) != 'food': cwarn('quests', f'부 소재 {m} 은 게시판 퀘스트 {ids[0]} 한 곳에서만 나옵니다 (구하기 어려울 수 있음)')
         content = {'rules': R, 'materials': [{k: m.get(k) for k in ('id', 'name', 'grade', 'line', 'core', 'desc', 'icon')} for m in mats],
-                   'items': [{**{k: it.get(k) for k in ('id', 'kind', 'name', 'grade', 'desc', 'recipe', 'icon')},
+                   'items': [{**{k: it.get(k) for k in ('id', 'kind', 'name', 'grade', 'desc', 'tip', 'recipe', 'icon')},
                               **({'gtype': it.get('gtype'), 'slot': GEAR_TYPES.get(it.get('gtype'), ''), 'stats': {int(k): v for k, v in (it.get('stats') or {}).items()},
                                   **{k: it.get(k, 0) for k in ('atk', 'def', 'mdef', 'hp', 'mp', 'luck', 'price')}, 'effect': it.get('effect', '')} if it.get('kind') == 'gear' else {})}
                              for it in items],
-                   'monsters': [{k: m.get(k) for k in ('id', 'name', 'grade', 'kind', 'hp', 'atk', 'img', 'scale', 'drops', 'desc')} for m in mons],
+                   'monsters': [{k: m.get(k) for k in ('id', 'name', 'grade', 'kind', 'hp', 'atk', 'img', 'scale', 'drops', 'desc', 'tip')} for m in mons],
                    'enhance': ENH,      # 강화 결과 = 기본값 + round(기본값 × enhance[n-1] / 100) (반올림, 편집기와 같음)
                    'quests': out_q}
 

@@ -389,13 +389,14 @@ function migrateQuests(){
   S.qrule=Object.assign({},RULE_DEF,S.qrule||{});
   if(!Array.isArray(S.enh)||S.enh.length!==10)S.enh=ENH_DEF.slice();
   if(!Array.isArray(S.mons))S.mons=[];
-  S.mons.forEach(m=>{['atk','hp'].forEach(k=>{if(m[k]==null)m[k]=0;});if(m.scale==null)m.scale=100;if(!m.drops)m.drops=[];if(m.img==null)m.img='';if(m.desc==null)m.desc='';if(!m.kind)m.kind='마물';});
+  S.mons.forEach(m=>{['atk','hp'].forEach(k=>{if(m[k]==null)m[k]=0;});if(m.scale==null)m.scale=100;if(!m.drops)m.drops=[];if(m.img==null)m.img='';if(m.desc==null)m.desc='';if(m.tip==null)m.tip='';if(!m.kind)m.kind='마물';});
   // 예전 적(이름만 적힌 것)은 같은 이름의 몬스터로 연결, 없으면 새로 만듦
   (S.quests||[]).forEach(q=>((q.view||{}).enemies||[]).forEach(e=>{if(e.mon&&mon(e.mon))return;const nm=(e.name||'').trim()||'이름 없는 적';
     let m=S.mons.find(x=>x.name===nm);if(!m){S.seq.mon=(S.seq.mon||0)+1;m=Object.assign({id:'mon_'+String(S.seq.mon).padStart(2,'0'),name:nm,grade:q.grade,kind:'마물',img:e.img||'',scale:100,drops:[],desc:''},monBase(q.grade));S.mons.push(m);}
     e.mon=m.id;delete e.name;delete e.img;}));
+  (S.items||[]).forEach(i=>{if(i.tip==null)i.tip='';if(i.kind==='food')i.recipe=(i.recipe||[]).map(r=>({m:r.m,n:1}));});
   (S.items||[]).forEach(i=>{if(i.kind!=='gear')return;if(!i.gtype)i.gtype='';if(!i.stats)i.stats={};COMBAT.forEach(c=>{if(i[c.k]==null)i[c.k]=0;});if(i.price==null)i.price=0;if(i.effect==null)i.effect='';});
-  (S.quests||[]).forEach(q=>{ if(q.client==null)q.client=''; if(q.notice==null)q.notice=''; if(q.line==null)q.line=''; if(!q.rewards)q.rewards=[];
+  (S.quests||[]).forEach(q=>{ if(q.client==null)q.client=''; if(q.notice==null)q.notice=''; if(q.tip==null)q.tip=''; if(q.line==null)q.line=''; if(!q.rewards)q.rewards=[];
     if(!q.view)q.view={region:'',delta:0,enemies:[]}; if(!q.judge)q.judge=JDEF(); else q.judge=Object.assign(JDEF(),q.judge);
     q.cond=Object.assign(CDEF(),q.cond||{}); q.talk=q.talk||{}; TALKS.forEach(t=>q.talk[t.k]=Object.assign(TDEF(),q.talk[t.k]||{})); });
 }
@@ -426,6 +427,21 @@ const quest=id=>S.quests.find(q=>q.id===id);
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2200);}
 const nextId=(kind)=>{const p=kind==='mat'?'x':kind==='quest'?'q':KIND_PREFIX[kind];S.seq[p]=(S.seq[p]||0)+1;return S.seq[p];};
 const recipeDone=i=>i.recipe.length>0&&i.recipe.every(r=>r.m&&mat(r.m)&&r.n>=1);
+// 식사 효과 글 해석 (게임 game_core.js DISH_FX와 같은 규칙)
+const FX_STATS=['힘','민첩','지력','정신','기교'];
+function parseFx(t){t=t||'';const m=t.match(/\+\s*(\d+(?:\.\d+)?)%/);if(!m)return null;const head=t.slice(0,m.index);
+  const st=head.includes('모든 능력치')?FX_STATS.slice():FX_STATS.filter(k=>head.includes(k));return {stats:st,pct:+m[1]/100};}
+function fxPreview(t){if(!(t||'').trim())return `<div class="msg bad">효과가 비어 있습니다. 비워 두면 meals.csv 효과를 씁니다.</div>`;
+  const f=parseFx(t);if(!f&&/\d\s*%/.test(t))return `<div class="msg" style="color:var(--warn)">능력치 효과 없음 → 발견 수 보너스(요리당 +2%)만 적용</div>`;if(!f)return `<div class="msg bad">해석할 수 없습니다. “능력치 +n%” 꼴로 적어 주세요 (예: 힘·기교 +3%).</div>`;
+  if(!f.stats.length)return `<div class="msg" style="color:var(--warn)">능력치 없음 → 발견 수 보너스(요리당 +2%)만 적용</div>`;
+  return `<div class="msg ok">게임 적용: ${f.stats.join('·')} ×${(1+f.pct).toFixed(2).replace(/0$/,'')} (먹은 사람만)</div>`;}
+const recipeKey=i=>i.recipe.map(r=>r.m).filter(Boolean).sort().join('+');
+function foodWarn(i){let h='';const k=recipeKey(i);
+  if(k){const same=S.items.filter(x=>x.kind==='food'&&x.id!==i.id&&recipeKey(x)===k);
+    if(same.length)h+=`<div class="msg bad">다른 요리와 조합법이 같습니다: ${same.map(x=>esc(x.name)).join(', ')}</div>`;}
+  const noSrc=i.recipe.map(r=>mat(r.m)).filter(m=>m&&!gotFrom(m.id).length);
+  if(noSrc.length)h+=`<div class="msg" style="color:var(--warn)">어느 퀘스트 보상에도 없는 소재: ${noSrc.map(m=>esc(m.name)).join(', ')} (게임에서 못 얻음)</div>`;
+  return h;}
 
 /* ========== 화면: 탭 ========== */
 function renderTabs(){
@@ -497,7 +513,7 @@ function renderItemsLeft(){
   if(!items.length) return h+`<p class="hint">등록된 ${kn}이 없습니다. “${kn} 추가”로 첫 항목을 만드세요.</p>`;
   h+=`<div class="list">${items.map(i=>`<button class="card" data-pick="${i.id}" aria-pressed="${sel[k]===i.id}">
     <span class="top"><span class="gl" data-g="${i.grade}">${i.grade}</span><b>${esc(i.name)}</b></span>
-    <span class="mini">${i.recipe.length?i.recipe.map(r=>{const m=mat(r.m);return m?`${iconHtml(m)}<span class="x">×${r.n}</span>`:`<span class="incomplete">미선택</span>`;}).join(''):'<span class="incomplete">조합법 없음</span>'}</span></button>`).join('')}</div>`;
+    <span class="mini">${i.recipe.length?i.recipe.map(r=>{const m=mat(r.m);return m?`${iconHtml(m)}${i.kind==='food'?'':`<span class="x">×${r.n}</span>`}`:`<span class="incomplete">미선택</span>`;}).join(''):'<span class="incomplete">조합법 없음</span>'}</span></button>`).join('')}</div>`;
   return h;
 }
 function renderItemRight(){
@@ -510,15 +526,17 @@ function renderItemRight(){
     <div><button class="btn" id="upIcon">아이콘 올리기</button><br><button class="btn" id="clrIcon" style="margin-top:6px" ${i.icon?'':'disabled'}>아이콘 지우기</button></div></div>
   <div class="row"><div class="field" style="flex:3"><label for="fName">이름</label><input type="text" id="fName" value="${esc(i.name)}"></div>
     <div class="field" style="flex:1"><label for="fGrade">등급</label><select id="fGrade">${GRADES.map(g=>`<option ${g===i.grade?'selected':''}>${g}</option>`).join('')}</select></div></div>
-  <div class="field"><label for="fDesc">${EFFECT_LABEL[tab]}</label><textarea id="fDesc">${esc(i.desc)}</textarea></div>
-  <div class="lbl" style="margin-bottom:6px">조합법 (소재 1~3종, 수량)</div>`;
+  <div class="field"><label for="fDesc">${EFFECT_LABEL[tab]}${tab==='food'?' <span class="hint">· 게임 식사 효과의 원본. 예: 힘·기교 +3%</span>':''}</label><textarea id="fDesc">${esc(i.desc)}</textarea>${tab==='food'?`<div id="fxPrev">${fxPreview(i.desc)}</div>`:''}</div>
+  <div class="field"><label for="fTip">오버 메모 <span class="hint">· 나중에 게임에서 마우스를 올리면 보일 메모 (아직 게임에 표시 안 됨)</span></label><textarea id="fTip" rows="2">${esc(i.tip)}</textarea></div>
+  <div class="lbl" style="margin-bottom:6px">${tab==='food'?'조합법 (소재 1~3종, 각 1개 · 같은 소재 두 번 불가)':'조합법 (소재 1~3종, 수량)'}</div>`;
   for(let s=0;s<3;s++){
     const r=i.recipe[s];
-    h+=`<div class="slot"><span class="no">${s+1}</span><select data-slot="${s}" aria-label="재료 ${s+1}">${opts(r?r.m:'')}</select><input type="number" min="1" max="99" data-qty="${s}" value="${r?r.n:1}" ${r?'':'disabled'} aria-label="수량 ${s+1}"></div>`;
+    h+=`<div class="slot"><span class="no">${s+1}</span><select data-slot="${s}" aria-label="재료 ${s+1}">${opts(r?r.m:'')}</select>${tab==='food'?'':`<input type="number" min="1" max="99" data-qty="${s}" value="${r?r.n:1}" ${r?'':'disabled'} aria-label="수량 ${s+1}">`}</div>`;
   }
   if(!recipeDone(i)) h+=`<div class="msg" style="color:var(--warn)">${i.recipe.length?'재료를 모두 고르세요.':'재료를 1종 이상 고르세요.'}</div>`;
   const dup=i.recipe.map(r=>r.m).filter((m,ix,a)=>m&&a.indexOf(m)!==ix);
-  if(dup.length) h+=`<div class="msg bad">같은 소재가 두 칸에 있습니다. 수량으로 합치세요.</div>`;
+  if(dup.length) h+=`<div class="msg bad">${tab==='food'?'같은 소재를 두 칸에 넣을 수 없습니다 (요리는 소재 각 1개).':'같은 소재가 두 칸에 있습니다. 수량으로 합치세요.'}</div>`;
+  if(tab==='food') h+=foodWarn(i);
   if(tab==='gear') h+=gearPanel(i);
   h+=`<div class="field" style="margin-top:10px"><span class="lbl">ID <code>${i.id}</code></span></div>`;
   if(confirming===i.id) h+=`<div class="confirm"><span>삭제할까요?</span><button class="btn danger" id="delYes">삭제</button><button class="btn" id="delNo">취소</button></div>`;
@@ -584,6 +602,7 @@ function renderMonRight(){
   <div class="lbl" style="margin-bottom:6px">떨어뜨리는 소재 <span class="hint">(설명용, 최대 3개 · 실제 보상은 퀘스트에서)</span></div>`;
   for(let i=0;i<3;i++) h+=`<div class="slot"><span class="no">${i+1}</span><select data-mdrop="${i}" aria-label="소재 ${i+1}">${opts(m.drops[i]||'')}</select></div>`;
   h+=`<div class="field" style="margin-top:8px"><label for="fDesc">설명</label><textarea id="fDesc">${esc(m.desc)}</textarea></div>
+  <div class="field"><label for="fTip">오버 메모 <span class="hint">· 나중에 게임에서 마우스를 올리면 보일 메모 (아직 게임에 표시 안 됨)</span></label><textarea id="fTip" rows="2">${esc(m.tip)}</textarea></div>
   <div class="lbl">나오는 퀘스트 (${used.length})</div>${used.length?`<div class="list" style="margin-top:4px">${used.map(q=>{const e=q.view.enemies.find(x=>x.mon===m.id);return `<button class="card" data-jumpq="${q.id}"><span class="top"><span class="gl" data-g="${q.grade}">${q.grade}</span><b>${esc(q.name)}</b></span><span class="hint" style="font-size:12px">×${e.count}${e.boss?' · 보스':''}</span></button>`;}).join('')}</div>`:'<p class="hint">아직 쓰는 퀘스트가 없습니다.</p>'}
   <div class="field" style="margin-top:10px"><span class="lbl">ID <code>${m.id}</code></span></div>`;
   if(confirming===m.id) h+=`<div class="confirm"><span>삭제할까요?</span><button class="btn danger" id="delYes">삭제</button><button class="btn" id="delNo">취소</button></div>`;
@@ -736,7 +755,8 @@ function questBasic(q){
   h+=`<div class="field"><label for="fClient">의뢰인</label><input type="text" id="fClient" list="clientList" value="${esc(q.client)}" placeholder="예: 마을 촌장, 떠돌이 상인 (비우면 '길드 게시판')">
     <datalist id="clientList">${clients.map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
   <div class="field"><label for="fNotice">의뢰서 문구 <span class="hint">· 게시판 의뢰서·집무실 의뢰에 그대로 보이는 글</span></label><textarea id="fNotice" rows="4">${esc(q.notice)}</textarea><div class="cnt" id="noticeCnt">${[...q.notice].length}자</div></div>
-  <div class="field"><label for="fDesc">기획 메모 <span class="hint">· 게임에는 나오지 않음</span></label><textarea id="fDesc">${esc(q.desc)}</textarea></div>`;
+  <div class="field"><label for="fDesc">기획 메모 <span class="hint">· 게임에는 나오지 않음</span></label><textarea id="fDesc">${esc(q.desc)}</textarea></div>
+  <div class="field"><label for="fTip">오버 메모 <span class="hint">· 나중에 게임에서 마우스를 올리면 보일 메모 (아직 게임에 표시 안 됨)</span></label><textarea id="fTip" rows="2">${esc(q.tip)}</textarea></div>`;
   return h;
 }
 // 3. 판정·보상: 자동 계산값 + 퀘스트별 직접 입력, 보상 소재
@@ -816,8 +836,9 @@ function loadIcon(file){
 /* ========== 파일 저장·불러오기: data/collegium_data.json 하나 + icons/*.png ========== */
 const DATA_FILE='collegium_data.json', FORMAT='collegium-data', FVER=3;
 const iconPath=o=>o.icon?`icons/${o.id}.png`:(o.iconRef||'');
-let balRead=false, dirHandle=null, meta={dirty:false,lastSaved:null,lastOpened:null,dirName:''};
+let permState='', balRead=false, dirHandle=null, meta={dirty:false,lastSaved:null,lastOpened:null,dirName:''};
 const dbPut=async(k,v)=>{try{const d=await idb();await new Promise((res,rej)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error);});}catch(e){}};
+const dbPutChk=async(k,v)=>{try{const d=await idb();await new Promise((res,rej)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error);});return true;}catch(e){return false;}};
 const dbGetK=async k=>{try{const d=await idb();return await new Promise((res,rej)=>{const q=d.transaction(STORE).objectStore(STORE).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}catch(e){return null;}};
 // data/balance.csv 읽기 → BAL (편집기 자동값을 게임과 같은 수치로)
 function parseCsv(t){t=t.replace(/^﻿/,'');const rows=[];let row=[],cell='',q=false;
@@ -852,7 +873,8 @@ async function readBalance(dir,quiet){
 function setMeta(p){Object.assign(meta,p);dbPut('meta',meta);renderFstat();}
 const hhmm=t=>{if(!t)return '';const d=new Date(t),n=new Date(),same=d.toDateString()===n.toDateString();return (same?'':`${d.getMonth()+1}/${d.getDate()} `)+d.toTimeString().slice(0,5);};
 function renderFstat(){const e=$('fstat');if(!e)return;
-  const where=meta.dirName?`${meta.dirName}/${DATA_FILE}`:'저장할 폴더를 아직 고르지 않음';
+  if(dirHandle&&dirHandle.queryPermission&&!renderFstat.busy){renderFstat.busy=1;dirHandle.queryPermission({mode:'readwrite'}).then(p=>{renderFstat.busy=0;if(p!==permState){permState=p;renderFstat();}}).catch(()=>{renderFstat.busy=0;});}
+  const where=meta.dirName?`${meta.dirName}/${DATA_FILE}${permState==='granted'?'':' · 저장할 때 권한 다시 허락'}`:'저장할 폴더를 아직 고르지 않음';
   e.innerHTML=meta.dirty?`<span class="dirty">● 저장 안 된 변경 있음</span><span class="p">${esc(where)}${meta.lastSaved?` · 마지막 저장 ${hhmm(meta.lastSaved)}`:''}</span>`
     :`<span class="clean">✓ ${(meta.lastOpened||0)>(meta.lastSaved||0)?`불러옴 ${hhmm(meta.lastOpened)}`:meta.lastSaved?`저장됨 ${hhmm(meta.lastSaved)}`:'변경 없음'}</span><span class="p">${esc(where)}</span>`;}
 // 작업 상태 → 파일 내용 (키 순서·들여쓰기 고정: Git에서 바뀐 줄만 보이게)
@@ -861,9 +883,9 @@ function toFile(){
   return {format:FORMAT,version:FVER,savedAt:new Date().toISOString(),
     rules:pick(S.qrule,['rMul','mMul','refPct','dMin','dMax','cap']), enhance:S.enh, seq:S.seq,
     materials:S.mats.map(m=>({...pick(m,['id','name','grade','line','core','desc']),icon:iconPath(m)})),
-    items:S.items.map(i=>({...pick(i,['id','kind','name','grade','desc','recipe']),...(i.kind==='gear'?{gtype:i.gtype,slot:(gtype(i.gtype)||{}).slot||'',stats:i.stats,...pick(i,['atk','def','mdef','hp','mp','luck','price','effect'])}:{}),icon:iconPath(i)})),
-    monsters:(S.mons||[]).map(m=>pick(m,['id','name','grade','kind','atk','hp','img','scale','drops','desc'])),
-    quests:S.quests.map(q=>pick(q,['id','name','cat','grade','line','core','client','notice','desc','view','judge','cond','talk','rewards']))};
+    items:S.items.map(i=>({...pick(i,['id','kind','name','grade','desc','tip','recipe']),...(i.kind==='gear'?{gtype:i.gtype,slot:(gtype(i.gtype)||{}).slot||'',stats:i.stats,...pick(i,['atk','def','mdef','hp','mp','luck','price','effect'])}:{}),icon:iconPath(i)})),
+    monsters:(S.mons||[]).map(m=>pick(m,['id','name','grade','kind','atk','hp','img','scale','drops','desc','tip'])),
+    quests:S.quests.map(q=>pick(q,['id','name','cat','grade','line','core','client','notice','desc','tip','view','judge','cond','talk','rewards']))};
 }
 // 파일 내용 → 작업 상태. 예전 backup.json(mats/items 형식)도 받음. 아이콘은 경로만 기억(iconRef)하고 그림은 따로 읽음
 function fromFile(d){
@@ -872,12 +894,25 @@ function fromFile(d){
   const ic=o=>{const r={...o};r.iconRef=o.icon||'';r.icon=null;return r;};
   return {version:2,qrule:Object.assign({},RULE_DEF,d.rules||{}),enh:Array.isArray(d.enhance)&&d.enhance.length===10?d.enhance.slice():ENH_DEF.slice(),seq:d.seq||{},mats:(d.materials||[]).map(ic),items:(d.items||[]).map(ic),mons:d.monsters||[],quests:d.quests||[]};
 }
-async function ensureDir(pick){
+// 폴더 확보. 기억한 폴더는 권한만 다시 받음. 권한 요청이 실패하면 같은 클릭 안에서 폴더 창을 열지 않음
+// (Chrome은 클릭 하나에 권한 창 하나만 허용 → 예전엔 여기서 폴더 창이 막혀 저장이 조용히 실패했음)
+async function ensureDir(pick,retry){
   if(!window.showDirectoryPicker) return null;
-  if(dirHandle&&!pick){try{let p=await dirHandle.queryPermission({mode:'readwrite'});if(p!=='granted')p=await dirHandle.requestPermission({mode:'readwrite'});if(p==='granted'){if(!balRead){balRead=true;await readBalance(dirHandle,true);}return dirHandle;}}catch(e){}}
-  try{const h=await window.showDirectoryPicker({id:'collegium-data',mode:'readwrite'});
-    if(h.name!=='data'&&!(await fileIn(h,DATA_FILE))) toast(`'${h.name}' 폴더를 골랐습니다. 보통은 Project_F/data 폴더를 고릅니다`);
-    dirHandle=h;await dbPut('dir',h);setMeta({dirName:h.name});balRead=true;await readBalance(h,false);return h;}
+  if(dirHandle&&!pick){
+    let p='denied';
+    try{p=await dirHandle.queryPermission({mode:'readwrite'});if(p!=='granted')p=await dirHandle.requestPermission({mode:'readwrite'});}catch(e){p='error';}
+    if(p==='granted'){if(!balRead){balRead=true;await readBalance(dirHandle,true);}renderFstat();return dirHandle;}
+    showDlg('폴더 권한이 필요합니다',`<p style="font-size:13px;margin:0">기억한 폴더 <b>${esc(dirHandle.name)}</b>에 쓰려면 다시 허락이 필요합니다.<br>아래 <b>허락하고 계속</b>을 누른 뒤, 브라우저 창에서 <b>수정 허용</b>(가능하면 <b>방문할 때마다 허용</b>)을 고르세요.</p>`,
+      [{t:'취소'},{t:'다른 폴더 고르기',fn:async()=>{if(await ensureDir(true)&&retry)retry();}},{t:'허락하고 계속',primary:true,fn:async()=>{
+        let q='denied';try{q=await dirHandle.requestPermission({mode:'readwrite'});}catch(e){}
+        if(q==='granted'){renderFstat();if(retry)retry();}else toast('허락되지 않았습니다. "다른 폴더 고르기"로 data 폴더를 다시 고르세요');}}]);
+    return null;}
+  try{let h=await window.showDirectoryPicker({id:'collegium-data',mode:'readwrite'});
+    // Project_F 폴더를 골랐으면 그 안의 data 폴더를 자동으로 씀
+    if(h.name!=='data'&&!(await fileIn(h,DATA_FILE))){let sub=null;try{sub=await h.getDirectoryHandle('data');}catch(e){}
+      if(sub&&await fileIn(sub,DATA_FILE)){h=sub;toast(`그 안의 data 폴더를 쓰겠습니다`);}else toast(`'${h.name}' 폴더를 골랐습니다. 보통은 Project_F/data 폴더를 고릅니다`);}
+    dirHandle=h;const ok=await dbPutChk('dir',h);setMeta({dirName:h.name});if(!ok)toast('이 브라우저가 폴더를 기억하지 못합니다. 창을 다시 열면 폴더를 다시 골라야 합니다');
+    balRead=true;await readBalance(h,false);return h;}
   catch(e){if(e.name!=='AbortError')toast('폴더를 열지 못했습니다: '+e.message);return null;}
 }
 async function fileIn(dir,name){try{return await dir.getFileHandle(name);}catch(e){return null;}}
@@ -886,7 +921,7 @@ async function writeFile(dir,path,data){const parts=path.split('/');let d=dir;fo
 async function saveFile(force){
   const body=JSON.stringify(toFile(),null,2)+'\n';
   if(!window.showDirectoryPicker){download(new Blob([body],{type:'application/json'}),DATA_FILE);setMeta({dirty:false,lastSaved:Date.now()});toast('이 브라우저는 폴더 저장이 안 되어 파일로 내려받았습니다 (아이콘 제외)');return;}
-  const dir=await ensureDir(false);if(!dir)return;
+  const dir=await ensureDir(false,()=>saveFile(force));if(!dir)return;
   // 이 편집기가 마지막으로 저장·불러온 뒤에 파일이 바뀌었으면(다른 PC·다른 도구) 덮어쓰기 전에 확인
   if(!force){try{const fh=await fileIn(dir,DATA_FILE);if(fh){const lm=(await fh.getFile()).lastModified,base=Math.max(meta.lastSaved||0,meta.lastOpened||0);
     if(base&&lm>base+3000){showDlg('파일이 바뀌었습니다',`<p style="font-size:13px;margin:0"><b>${esc(dir.name)}/${DATA_FILE}</b>이(가) 이 편집기가 마지막으로 저장·불러온 뒤(${hhmm(base)})에 바뀌었습니다 (${hhmm(lm)}).<br>지금 저장하면 그 내용이 사라집니다. 먼저 불러와서 확인하는 것을 권합니다.</p>`,
@@ -911,7 +946,7 @@ function confirmLoad(next,info,go){
 }
 async function openFromDir(pick){
   if(!window.showDirectoryPicker){$('fLoad').click();return;}
-  const dir=await ensureDir(pick);if(!dir)return;
+  const dir=await ensureDir(pick,()=>openFromDir(false));if(!dir)return;
   let fh=await fileIn(dir,DATA_FILE),old=false;if(!fh){fh=await fileIn(dir,'backup.json');old=!!fh;}
   if(!fh){showDlg('불러올 파일이 없습니다',`<p style="font-size:13px;margin:0"><b>${esc(dir.name)}</b> 폴더에 ${DATA_FILE}이(가) 없습니다.<br>처음이라면 <b>저장</b>을 눌러 지금 작업으로 파일을 만드세요.</p>`,[{t:'다른 폴더 고르기',fn:()=>openFromDir(true)},{t:'파일 하나 고르기',fn:()=>$('fLoad').click()},{t:'닫기',primary:true}]);return;}
   try{const d=JSON.parse(await (await fh.getFile()).text()),next=fromFile(d);
@@ -937,7 +972,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.tab){tab=t.dataset.tab;confirming=null;render();return;}
   if(t.dataset.addcell){const [line,g]=t.dataset.addcell.split('|'),base=S.quests.find(x=>x.core&&x.line===line&&x.grade===g),n=cellQs(line,g).length+1;
     let k=n,id;do{id=`q_${line}_${g}_${k++}`;}while(quest(id));
-    const q=JSON.parse(JSON.stringify(base||{}));Object.assign(q,{id,name:`${lineName(line)} ${g}급 의뢰 ${n}`,cat:'res',grade:g,line,core:false,client:'',notice:'',desc:'',judge:JDEF()});
+    const q=JSON.parse(JSON.stringify(base||{}));Object.assign(q,{id,name:`${lineName(line)} ${g}급 의뢰 ${n}`,cat:'res',grade:g,line,core:false,client:'',notice:'',desc:'',tip:'',judge:JDEF()});
     if(q.view)q.view.enemies=[];if(!q.rewards)q.rewards=[];S.quests.push(q);migrateQuests();sel.quest=id;qsub='basic';confirming=null;save();render();const el=$('fName');if(el)el.select();toast('기본 의뢰를 복사해 만들었습니다 (보상 소재 포함). 부 소재를 바꿔 개성을 주세요');return;}
   if(t.dataset.endel!==undefined){const q=cur();if(q){q.view.enemies.splice(+t.dataset.endel,1);save();render();}return;}
   if(t.id==='addEn'){const q=cur();if(q&&q.view.enemies.length<3){q.view.enemies.push({mon:'',count:1,boss:false});save();render();const el=document.querySelector(`[data-en="${q.view.enemies.length-1}"][data-ek="mon"]`);if(el)el.focus();}return;}
@@ -946,7 +981,7 @@ document.addEventListener('click',e=>{
   if(t.dataset.tsauto){const q=cur();if(q){q.talk[t.dataset.tsauto].scene=`quest_${q.id}_${t.dataset.tsauto}`;save();render();}return;}
   if(t.dataset.jauto){const q=cur();if(q){q.judge[t.dataset.jauto]=null;save();render();}return;}
   if(t.dataset.jstat!==undefined){const q=cur();if(q){const k=+t.dataset.jstat,a=q.judge.stats,ix=a.indexOf(k);if(ix>=0)a.splice(ix,1);else a.push(k);a.sort();save();render();}return;}
-  if(t.id==='addMon'){S.seq.mon=(S.seq.mon||0)+1;const m=Object.assign({id:'mon_'+String(S.seq.mon).padStart(2,'0'),name:'새 몬스터',grade:'F',kind:'마물',img:'',scale:100,drops:[],desc:''},monBase('F'));S.mons.push(m);sel.mon=m.id;confirming=null;save();render();$('fName').select();return;}
+  if(t.id==='addMon'){S.seq.mon=(S.seq.mon||0)+1;const m=Object.assign({id:'mon_'+String(S.seq.mon).padStart(2,'0'),name:'새 몬스터',grade:'F',kind:'마물',img:'',scale:100,drops:[],desc:'',tip:''},monBase('F'));S.mons.push(m);sel.mon=m.id;confirming=null;save();render();$('fName').select();return;}
   if(t.id==='mBase'){const m=cur();if(m){Object.assign(m,monBase(m.grade));save();render();}return;}
   if(t.id==='delMon'){confirming=(cur()||{}).id;render();return;}
   if(t.id==='enhReset'){S.enh=ENH_DEF.slice();save();render();return;}
@@ -963,8 +998,8 @@ document.addEventListener('click',e=>{
     case 'qvIcon':case 'qvText':qview=t.id==='qvText'?'text':'icon';try{localStorage.setItem('mat_qview',qview);}catch(e){}render();break;
     case 'sortDir':setSort(xsort.key,-xsort.dir);break;
     case 'addMat':{const n=nextId('mat'),m={id:'mat_x'+String(n).padStart(3,'0'),name:'새 소재',grade:'F',line:'etc',core:false,desc:'',icon:null};S.mats.push(m);sel.mat=m.id;save();render();$('fName').select();break;}
-    case 'addItem':{const p=KIND_PREFIX[tab],n=nextId(tab),i={id:`${p}_${String(n).padStart(2,'0')}`,kind:tab,name:'새 '+KINDS.find(k=>k.k===tab).n,grade:'F',desc:'',recipe:[],icon:null};if(tab==='gear')Object.assign(i,{gtype:'',stats:{},atk:0,def:0,mdef:0,hp:0,mp:0,luck:0,price:0,effect:''});S.items.push(i);sel[tab]=i.id;save();render();$('fName').select();break;}
-    case 'addQuest':{const n=nextId('quest'),q={id:'q_x'+String(n).padStart(3,'0'),name:'새 퀘스트',cat:'sub',grade:'F',line:'',core:false,client:'',notice:'',desc:'',rewards:[],view:{region:'',delta:0,enemies:[]},judge:JDEF(),cond:CDEF(),talk:Object.fromEntries(TALKS.map(t=>[t.k,TDEF()]))};S.quests.push(q);sel.quest=q.id;qsub='basic';save();render();$('fName').select();break;}
+    case 'addItem':{const p=KIND_PREFIX[tab],n=nextId(tab),i={id:`${p}_${String(n).padStart(2,'0')}`,kind:tab,name:'새 '+KINDS.find(k=>k.k===tab).n,grade:'F',desc:'',tip:'',recipe:[],icon:null};if(tab==='gear')Object.assign(i,{gtype:'',stats:{},atk:0,def:0,mdef:0,hp:0,mp:0,luck:0,price:0,effect:''});S.items.push(i);sel[tab]=i.id;save();render();$('fName').select();break;}
+    case 'addQuest':{const n=nextId('quest'),q={id:'q_x'+String(n).padStart(3,'0'),name:'새 퀘스트',cat:'sub',grade:'F',line:'',core:false,client:'',notice:'',desc:'',tip:'',rewards:[],view:{region:'',delta:0,enemies:[]},judge:JDEF(),cond:CDEF(),talk:Object.fromEntries(TALKS.map(t=>[t.k,TDEF()]))};S.quests.push(q);sel.quest=q.id;qsub='basic';save();render();$('fName').select();break;}
     case 'addRw':{const q=cur();if(q){q.rewards.push({m:'',role:q.rewards.length?'부':'주',p:q.rewards.length?10:100});save();render();}break;}
     case 'delQuest':confirming=(cur()||{}).id;render();break;
     case 'upIcon':$('fIcon').click();break;
@@ -990,7 +1025,8 @@ document.addEventListener('input',e=>{
     if(k==='count'){en.count=Math.max(1,Math.min(99,parseInt(t.value)||1));}else if(k==='name'||k==='img')en[k]=t.value;
     save();if(k==='count'){const c=document.querySelector(`[data-encnt="${t.dataset.en}"]`);if(c){const n=en.boss?en.count:durCalc(o.grade,o.view.delta,en.count).mon;c.textContent=`이 기간에는 ${n}마리${en.boss?' · 보스는 수 늘지 않음':''}`;}}return;}
   if(t.id==='fName'){o.name=t.value;save();renderTabs();renderStatus();const el=document.querySelector(`[data-pick="${o.id}"]`);if(el){const nm=el.querySelector('.nm,b');if(nm)nm.textContent=o.name;}}
-  else if(t.id==='fDesc'){o.desc=t.value;save();}
+  else if(t.id==='fDesc'){o.desc=t.value;save();const fp=$('fxPrev');if(fp)fp.innerHTML=fxPreview(t.value);}
+  else if(t.id==='fTip'){o.tip=t.value;save();}
   else if(t.id==='fClient'){o.client=t.value;save();}
   else if(t.id==='gEffect'){o.effect=t.value;save();}
   else if(t.id==='mImg'){o.img=t.value;save();}
