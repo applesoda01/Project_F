@@ -81,28 +81,34 @@ def score(path, spec_path, vis=None, assemble=False):
                 v, _, loc = cv2.minMaxLoc(cost)[0], None, cv2.minMaxLoc(cost)[2]
                 if best is None or v < best[0]: best = (v, ang, sc, loc)
         return best
-    # 파츠는 왼쪽 조립 그림과 크기가 다를 수 있으므로 큰 파츠 몇 개로 전체 배율을 먼저 추정한다
-    gs = None; cand = sorted([k for k in ('head', 'body', 'hairF', 'headB', 'hairB') if k in parts], key=lambda k: -parts[k]['area'])[:3] if assemble else []
-    sc_list = []
-    for k in cand:
-        b0 = best_place(parts[k], (-15, 0, 15), np.arange(1.2, 3.6, 0.2))
-        if b0: sc_list.append((b0[0], b0[2]))
-    if sc_list: gs = sorted(sc_list)[0][1]
-    for k in (order if assemble else []):
-        if k not in parts: continue
-        p = parts[k]
-        b = best_place(p, range(0, 360, 15), tuple(gs * f for f in (0.92, 1.0, 1.08)) if gs else (0.9, 1.0, 1.1))
-        if b is None: continue
-        _, a0, s0, _ = b
-        b = best_place(p, [a0 + d for d in (-7, -3, 0, 3, 7)], [s0 * f for f in (0.95, 1.0, 1.05)]) or b
-        v, ang, sc, loc = b
-        r, mm = xform(p['rgb'], p['mask'], ang, sc)
-        x, y = int(loc[0] / ds), int(loc[1] / ds)
-        h2, w2 = mm.shape
-        y1, x1 = min(y + h2, comp.shape[0]), min(x + w2, comp.shape[1])
-        mm2 = mm[:y1 - y, :x1 - x]; r2 = r[:y1 - y, :x1 - x]
-        comp[y:y1, x:x1][mm2] = r2[mm2]; cmask[y:y1, x:x1] |= mm2
-        placed[k] = (x, y, round(float(ang), 1), round(float(sc), 2), round(float(v), 3))
+    # 확인된 사실: 슬롯 파츠는 회전 없이 원본의 2.0배이고, 왼쪽 조립 그림은 캐릭터마다 4.0~4.56배다.
+    # 따라서 파츠는 균일 배율(약 2.0~2.3배)과 평행이동만으로 맞는다. 배율은 큰 파츠 몇 개의 합산 비용으로 시트마다 한 번 정한다.
+    def place_all(sc):
+        cm = np.zeros(left.shape[:2], bool); cp = np.zeros(left.shape, np.uint8); pl = {}
+        for k in order:
+            if k not in parts: continue
+            bb = best_place(parts[k], (0,), (sc,))
+            if bb is None: continue
+            v, ang, sc2, loc = bb
+            r, mm = xform(parts[k]['rgb'], parts[k]['mask'], ang, sc2)
+            x, y = int(loc[0] / ds), int(loc[1] / ds); h2, w2 = mm.shape
+            y1, x1 = min(y + h2, cm.shape[0]), min(x + w2, cm.shape[1])
+            m2 = mm[:y1 - y, :x1 - x]; r2 = r[:y1 - y, :x1 - x]
+            cp[y:y1, x:x1][m2] = r2[m2]; cm[y:y1, x:x1] |= m2; pl[k] = (x, y, round(float(sc2), 2), round(float(v), 3))
+        return cm, cp, pl
+    gs = None
+    if assemble:
+        best = None
+        for sc in np.arange(1.3, 2.61, 0.1):
+            cm, cp, pl = place_all(float(sc))
+            i = (cm & left_mask).sum() / max((cm | left_mask).sum(), 1)
+            if best is None or i > best[0]: best = (i, float(sc))
+        for sc in np.arange(best[1] - 0.08, best[1] + 0.09, 0.04):
+            cm, cp, pl = place_all(float(sc))
+            i = (cm & left_mask).sum() / max((cm | left_mask).sum(), 1)
+            if i > best[0]: best = (i, float(sc))
+        gs = round(best[1], 2)
+        cmask, comp, placed = place_all(gs)
     # 4) 색 일치(조립과 무관): 파츠 픽셀 색이 왼쪽 캐릭터에 실제로 있는 색인지
     lp = left[left_mask].reshape(-1, 3).astype(int); q = (lp // 16)
     keys, cnt = np.unique(q[:, 0] * 256 + q[:, 1] * 16 + q[:, 2], return_counts=True)
@@ -120,7 +126,7 @@ def score(path, spec_path, vis=None, assemble=False):
     ov = cmask & left_mask
     diff = np.abs(comp.astype(int) - left.astype(int)).max(2)
     color_ok = float(((diff <= 45) & ov).sum() / max(ov.sum(), 1))
-    out = dict(palette_match=round(float(palette_ok), 3), area_ratio=round(float(area_ratio), 3), presence=f'{len(presence)}/{len(required)}', missing=[k for k in required if k not in parts],
+    out = dict(scale=gs, palette_match=round(float(palette_ok), 3), area_ratio=round(float(area_ratio), 3), presence=f'{len(presence)}/{len(required)}', missing=[k for k in required if k not in parts],
                in_slot=round(in_slot, 3), parts_found=len(parts))
     if assemble:  # 실험 기능: 정답 학습 시트에서도 일치율이 낮아 아직 신뢰할 수 없음
         out.update(iou=round(iou, 3), cover=round(cover, 3), color_match=round(color_ok, 3))
