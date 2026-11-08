@@ -1,0 +1,48 @@
+ep0 step50/2000 loss2.915 56s
+ep0 step100/2000 loss2.767 114s
+ep0 step150/2000 loss2.392 168s
+ep0 step200/2000 loss2.051 221s
+ep0 step250/2000 loss1.751 278s
+== ep0 val mIoU 0.080 pixacc 0.804
+ep1 step300/2000 loss1.427 436s
+ep1 step350/2000 loss1.092 486s
+ep1 step400/2000 loss1.425 539s
+ep1 step450/2000 loss1.172 593s
+ep1 step500/2000 loss0.846 644s
+== ep1 val mIoU 0.181 pixacc 0.851
+ep2 step550/2000 loss0.771 797s
+ep2 step600/2000 loss0.847 849s
+ep2 step650/2000 loss0.697 902s
+ep2 step700/2000 loss0.826 955s
+ep2 step750/2000 loss0.564 1007s
+== ep2 val mIoU 0.351 pixacc 0.888
+ep3 step800/2000 loss0.713 1152s
+ep3 step850/2000 loss0.411 1204s
+ep3 step900/2000 loss0.495 1255s
+ep3 step950/2000 loss0.521 1307s
+ep3 step1000/2000 loss0.459 1357s
+== ep3 val mIoU 0.382 pixacc 0.893
+ep4 step1050/2000 loss0.466 1505s
+ep4 step1100/2000 loss0.367 1556s
+ep4 step1150/2000 loss0.291 1605s
+ep4 step1200/2000 loss0.265 1655s
+ep4 step1250/2000 loss0.270 1703s
+== ep4 val mIoU 0.486 pixacc 0.911
+ep5 step1300/2000 loss0.319 1846s
+ep5 step1350/2000 loss0.217 1895s
+ep5 step1400/2000 loss0.233 1946s
+ep5 step1450/2000 loss0.388 1992s
+ep5 step1500/2000 loss0.229 2040s
+== ep5 val mIoU 0.516 pixacc 0.920
+ep6 step1550/2000 loss0.234 2183s
+ep6 step1600/2000 loss0.207 2233s
+ep6 step1650/2000 loss0.218 2280s
+ep6 step1700/2000 loss0.190 2328s
+ep6 step1750/2000 loss0.219 2377s
+== ep6 val mIoU 0.527 pixacc 0.922
+ep7 step1800/2000 loss0.273 2523s
+ep7 step1850/2000 loss0.298 2575s
+ep7 step1900/2000 loss0.220 2629s
+ep7 step1950/2000 loss0.186 2678s
+ep7 step2000/2000 loss0.255 2726s
+== ep7 val mIoU 0.531 pixacc 0.923
