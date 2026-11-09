@@ -57,8 +57,23 @@
     q('#hGrade').style.backgroundImage = 'url(assets/ui/hud/badge_' + GR[s.grade] + '.png)'; q('#hGrade').title = '길드 등급 ' + GR[s.grade];
     q('#hGold').textContent = fmt(s.gold); q('#hGold').classList.toggle('neg', s.gold < 0);
     q('#hTrust').textContent = Math.round(s.trust);
-    q('#hFame').textContent = Math.round(s.fame || 0);
-    q('#hAdv').textContent = s.advs.filter(a => a.alive).length;
+    { const t = Math.max(0, Math.min(100, s.trust)), st = Math.min(4, Math.floor(t / 20)), bar = q('#hTrustBar'), face = q('#hTrustFace'), box = q('#hTrustBox');   // 신뢰도: 리나 표정(5단계) + 50 기준 양쪽 막대(붉은색 → 초록)
+      const NAME = ['화남', '불만', '보통', '만족', '아주 만족'], QN = ['30~50', '45~65', '65~85', '80~100', '100~120'], QR = ['80~90', '85~95', '95~105', '105~115', '110~120'];
+      if (face && face.dataset.st !== String(st)) { face.dataset.st = st; face.src = 'assets/ui/hud/trust/trust_' + st + '.png'; }
+      if (bar) { const d = (t - 50) / 50; bar.style.left = d >= 0 ? '50%' : (50 + d * 50) + '%'; bar.style.width = Math.abs(d) * 50 + '%'; bar.style.background = `hsl(${Math.round(t * 1.2)},62%,42%)`; }
+      if (box) box.title = `신뢰도 ${Math.round(t)} · ${st + 1}단계 ${NAME[st]}\n의뢰 수 ${QN[st]}% · 보상·경험치 ${QR[st]}%`; }
+    { const A = s.cfg.adv || {}, step = A.fameStep || 10, f = s.fame || 0, n = s.advs.filter(a => a.alive).length;   // 명성: 다음 모험가까지 막대 · 모험가: 인원 / 등급 상한
+      const CAP = A.capByGrade || [8, 12, 16, 20, 24, 28, 32], cap = CAP[s.grade] || 8, GL = 'FEDCBAS'[s.grade] || 'F', full = n >= cap;
+      const into = f - Math.floor(f / step) * step, left = Math.ceil((step - into) * 10) / 10;
+      q('#hFame').textContent = Math.floor(f);
+      const fb = q('#hFameBar'), fw = q('#hFameBarW'), fx = q('#hFameBox');
+      if (fb) fb.style.width = (full ? 100 : into / step * 100) + '%';
+      if (fw) fw.classList.toggle('cap', full);
+      if (fx) fx.title = full ? `명성 ${Math.floor(f)} · 모험가가 등급 상한(${cap}명)이라 새 모험가가 오지 않음\n길드 등급이 오르면 다시 찾아옴` : `명성 ${Math.floor(f)} · 명성 ${step}마다 새 모험가 1명\n다음 모험가까지 명성 ${left}`;
+      q('#hAdv').textContent = n;
+      const ac = q('#hAdvCap'), ax = q('#hAdvBox');
+      if (ac) { ac.textContent = ' / ' + cap; ac.classList.toggle('full', full); }
+      if (ax) ax.title = `모험가 ${n}명 · ${GL}급 길드 상한 ${cap}명`; }
     q('#bBoard').textContent = s.board.length; q('#bBoard').hidden = !s.board.length;
     const np = (s.proposals || []).length; q('#bParty').textContent = np ? '★' + np : ''; q('#bParty').hidden = !np; q('#bPromo').hidden = !np; q('#bPromo').textContent = `전직 제안 ${np}건`;
     if (popup) renderPopup();
@@ -138,7 +153,7 @@
   };
 
   // ---------- 팝업 틀 ----------
-  const TITLES = { promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '시설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증' };
+  const TITLES = { sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '시설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증' };
   UI.open = function (name) {
     popup = name; q('#popTitle').textContent = TITLES[name];
     q('#popBack').classList.add('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.toggle('on', b.dataset.pop === name));
@@ -156,6 +171,31 @@
     else if (popup === 'meals') { const m0 = b.querySelector('.kmenuwrap'), y = m0 ? m0.scrollTop : 0; b.innerHTML = mealsHtml(); const m1 = b.querySelector('.kmenuwrap'); if (m1) m1.scrollTop = y; }   // 메뉴판만 스크롤 (위쪽 보관함·조리대는 고정)
     else if (popup === 'log') { const l0 = b.querySelector('.gl-list'), y = l0 ? l0.scrollTop : 0; b.innerHTML = logHtml(); const l1 = b.querySelector('.gl-list'); if (l1) l1.scrollTop = y; }   // 필터 줄은 고정, 목록만 스크롤 (다시 그려도 위치 유지)
     else if (popup === 'codex') b.innerHTML = codexHtml();
+    else if (popup === 'sell') b.innerHTML = sellHtml();
+  }
+
+  // 소재 판매 창구 (docs/balance/economy_v1.md 6절, 시설 팝업 '판매하기'로 열기): 보관 소재를 직접 팖. 음식이 아닌 소재 먼저, 음식 소재는 "요리 재료"
+  const SELL_P = [6, 9, 12, 30, 36, 48, 90];
+  let sellSel = null;
+  const sellPrice = m => m.price || SELL_P[Math.max(0, GR.indexOf(m.grade))];
+  function sellDo(ids, all) { let n = 0, g = 0; for (const id of ids) { const m = MATS[id], k = all ? (s.mats[id] || 0) : Math.min(1, s.mats[id] || 0); if (!m || !k) continue; s.mats[id] -= k; n += k; g += k * sellPrice(m); }
+    if (!n) return; s.gold += g; s.month.sell = (s.month.sell || 0) + g; s.month.resale += g;   // 장부: '소재 판매 차익' 줄에 합침
+    Gm.log(s, `소재 ${n}개를 팔아 ${g}G를 받았습니다.`, 'guild'); UI.hud && UI.hud(); }
+  function sellHtml() {
+    const mats = s.mats || {}, known = s.knownMats || {};
+    const have = Object.values(MATS).filter(m => known[m.id] && (mats[m.id] || 0) > 0).sort((a, b) => GR.indexOf(a.grade) - GR.indexOf(b.grade));
+    const nf = have.filter(m => m.line !== 'food'), fd = have.filter(m => m.line === 'food');
+    if (sellSel && !(mats[sellSel] > 0)) sellSel = null; if (!sellSel && have.length) sellSel = (nf[0] || fd[0]).id;
+    const cell = m => `<button class="kmat ${sellSel === m.id ? 'sel' : ''}" data-ssel="${m.id}" data-mt="${m.id}"><span class="ux-slot" data-g="${GR.indexOf(m.grade)}">${matImg(m)}${cntBadge(mats[m.id])}</span><em>${esc(m.name)}</em></button>`;
+    const sum = ms => ms.reduce((t, m) => t + mats[m.id] * sellPrice(m), 0);
+    const m = sellSel && MATS[sellSel];
+    const detail = m ? `<div class="sl-d"><div class="sl-top"><span class="ux-slot" data-g="${GR.indexOf(m.grade)}" style="width:96px;height:96px">${matImg(m)}</span><div><div class="sl-nm">${badge(GR.indexOf(m.grade))}<b>${esc(m.name)}</b></div>${m.line === 'food' ? '<span class="ux-tag sl-food">요리 재료</span>' : ''}<div class="ux-muted sl-ds">${esc(m.desc || '')}</div></div></div>
+      <div class="sl-kv"><span>보유</span><b>${mats[m.id]}개</b><span>1개 가격</span><b>${sellPrice(m)} G</b><span>전부 팔면</span><b>${mats[m.id] * sellPrice(m)} G</b></div>
+      <div class="sl-btns"><button class="ux-btn" data-sone="${m.id}">1개 팔기</button><button class="ux-btn primary" data-sall="${m.id}">전부 팔기</button></div></div>` : '<div class="ux-muted">팔 소재가 없습니다.</div>';
+    return `<div class="sell"><div class="kpan sl-left"><div class="ux-h">음식이 아닌 소재 <small>${nf.length}종 · ${sum(nf)} G</small></div><div class="kpantry">${nf.map(cell).join('') || '<span class="ux-muted">없음</span>'}</div>
+      <div class="ux-h" style="margin-top:16px">음식 소재 <small>요리 재료 · 팔면 요리를 못 만들 수 있음</small></div><div class="kpantry">${fd.map(cell).join('') || '<span class="ux-muted">없음</span>'}</div></div>
+      <div class="kpan sl-right">${detail}</div>
+      <div class="sl-bar"><span>이번 달 판매액 <b>${Math.round(s.month.sell || 0)} G</b></span><button class="ux-btn primary" data-snf="1" ${nf.length ? '' : 'disabled'}>음식이 아닌 소재 모두 팔기 (${sum(nf)} G)</button></div></div>`;
   }
 
   // 도감: 탭만 먼저 만든 빈 틀 (내용은 이후에 채움)
@@ -198,6 +238,9 @@
   const GD_ = root.GAME_DATA || {}, QT = {}, MATS = {}, MONS = {};
   for (const t of ((GD_.content || {}).quests || [])) QT[t.id] = t;
   for (const m of ((GD_.content || {}).materials || [])) MATS[m.id] = m;
+  // 아이템 칸 숫자: 개수 = 오른쪽 아래, 강화 = 오른쪽 위 (+n, 단계별 색)
+  const cntBadge = n => n > 0 ? `<b class="ux-cnt">${n}</b>` : '';
+  const enhBadge = n => n > 0 ? `<b class="ux-enh t${n >= 10 ? 3 : n >= 5 ? 2 : 1}">+${n}</b>` : '';
   const matImg = m => m.icon ? `<img src="assets/${m.icon}" alt="">` : `<b class="noimg">${esc(m.name).slice(0, 2)}</b>`;   // 아이콘이 아직 없는 소재는 이름 앞 두 글자
   for (const m of ((GD_.content || {}).monsters || [])) MONS[m.id] = m;
   const CBq = root.GuildCombat ? root.GuildCombat.make(GD_) : null;
@@ -290,7 +333,7 @@
   function lgTip(k, m, cur) {   // 줄 오버 내역
     const E = s.cfg.econ, fr = m.feeRate != null ? m.feeRate : Gm.feeRate(s);
     if (k === 'fee') return `성공한 의뢰 <b>${m.success || 0}건</b> · 보상의 ${Math.round(fr * 100)}%`;
-    if (k === 'resale') return `성공한 의뢰 <b>${m.success || 0}건</b> · 보상의 ${Math.round(E.resaleRate * 100)}%`;
+    if (k === 'resale') return `성공한 의뢰 <b>${m.success || 0}건</b> · 보상의 ${Math.round(E.resaleRate * 100)}%` + (m.sell ? ` · 판매 창구 <b>${fmt(m.sell)}G</b>` : '');
     if (k === 'meal') { const d = m.dishes || {}, ks = Object.keys(d); return ks.length ? ks.map(n => `${esc(n)} <b>${d[n]}그릇</b>`).join('<br>') : (m.dishes ? '판매 없음' : '내역 없음 (예전 기록)'); }
     if (k === 'tavern') return cur ? `월말 결산 때 들어옵니다${s.lastMonth ? ` (지난달 ${gG(s.lastMonth.tavern)})` : ''}` : (m.inTown != null ? `길드에 머문 모험가 <b>${m.inTown}명</b> 기준` : '내역 없음 (예전 기록)');
     if (k === 'subsidy') { const g = cur ? s.grade : (m.grade != null ? m.grade : s.grade); return `${cur ? '월말 결산 때 들어옵니다 · ' : ''}${GR[g]}급 길드 월 <b>${fmt(E.subsidy[g])}G</b>`; }
@@ -467,7 +510,7 @@
     for (const [nm, type] of slots) {
       const it = a.gear >= 0 ? gearItem(type, a.gear) : null;
       const tip = it ? `${nm} · ${it.name}\n${[it.atk && '공격 ' + it.atk, it.def && '방어 ' + it.def, it.mdef && '마방 ' + it.mdef, it.hp && '체력 ' + it.hp, it.mp && '마력 ' + it.mp].filter(Boolean).join(' · ')}` : nm + ': 없음';
-      eq += it ? `<span class="ux-slot" data-g="${a.gear}" data-gt="${it.id}"><img src="assets/${it.icon}" alt=""></span>` : `<span class="ux-slot empty" data-ph="${nm}" title="${tip}"></span>`;
+      eq += it ? `<span class="ux-slot" data-g="${a.gear}" data-gt="${it.id}"><img src="assets/${it.icon}" alt="">${enhBadge(((a.enh || {})[type]) || 0)}</span>` : `<span class="ux-slot empty" data-ph="${nm}" title="${tip}"></span>`;
     }
     // 물약 3칸: 가진 수만큼 채움, 소비 성향으로 못 드는 칸은 잠금 (절약 1 · 보통 2 · 낭비 3)
     const carry = (CB_ && CB_.C.potionCarry[a.spend]) || 3, pg = Math.min(1, s.grade), pot = ITEMS_.find(i => i.id === (pg ? 'pot_03' : 'pot_01'));
@@ -609,7 +652,7 @@
     for (const f of all) {
       const g = Gm.FAC_COST[f] == null ? 0 : Gm.FAC_COST[f], cost = s.cfg.econ.buildCost[g], ready = !!FAC_READY[f];
       let st, grp;
-      if (s.built[f]) { st = '<span class="ux-tag town">● 운영 중</span>'; grp = run; }
+      if (s.built[f]) { st = '<span class="ux-tag town">● 운영 중</span>' + (f === '판매창구' ? ' <button class="ux-btn sm" data-opensell="1">판매하기</button>' : ''); grp = run; }
       else if (!ready) { st = '<span class="ux-tag fx-soon">준비 중</span>'; grp = lock; }
       else if (g > s.grade) { st = `<span class="fx-lock">${GR[g]}급부터</span>`; grp = lock; }
       else { st = `<button class="ux-btn sm" data-build="${f}" ${s.gold < cost ? 'disabled' : ''}>짓기 <b>${fmt(cost)}G</b></button>`; grp = can; }
@@ -732,7 +775,7 @@
     // 소재 보관함: 음식 소재만
     const food = Object.values(MATS).filter(m => m.line === 'food' && GR.indexOf(m.grade) <= top).sort((a, b) => GR.indexOf(a.grade) - GR.indexOf(b.grade));
     const pantry = food.map(m => { const k = !!known[m.id], n = mats[m.id] || 0, used = kSel.filter(x => x === m.id).length;
-      return `<button class="kmat ${!k ? 'unk' : n - used <= 0 ? 'zero' : ''}" ${k && n - used > 0 ? `data-kmat="${m.id}"` : 'aria-disabled="true"'} data-mt="${m.id}"><span class="ux-slot${k ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${k || m.icon ? matImg(m) : ''}</span><em>${k ? esc(m.name) : '???'}</em>${k ? `<i>×${n - used}</i>` : ''}</button>`; }).join('');
+      return `<button class="kmat ${!k ? 'unk' : n - used <= 0 ? 'zero' : ''}" ${k && n - used > 0 ? `data-kmat="${m.id}"` : 'aria-disabled="true"'} data-mt="${m.id}"><span class="ux-slot${k ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${k || m.icon ? matImg(m) : ''}${k ? cntBadge(n - used) : ''}</span><em>${k ? esc(m.name) : '???'}</em></button>`; }).join('');
     // 조리대
     let slots = '';
     const shown = kAnim ? kAnim.sel : kSel;
@@ -804,7 +847,12 @@
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
-      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook]'); if (!t) return;
+      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf]'); if (!t) return;
+      if (t.dataset.opensell) { UI.open('sell'); return; }
+      if (t.dataset.ssel) { sellSel = t.dataset.ssel; renderPopup(); return; }
+      if (t.dataset.sone) { sellDo([t.dataset.sone], false); renderPopup(); return; }
+      if (t.dataset.sall) { sellDo([t.dataset.sall], true); renderPopup(); return; }
+      if (t.dataset.snf) { sellDo(Object.values(MATS).filter(m => m.line !== 'food').map(m => m.id), true); renderPopup(); return; }
       if (t.dataset.psel) { promoSel = +t.dataset.psel; renderPopup(); return; }
       if (t.dataset.lf) { logFilter = t.dataset.lf; renderPopup(); const l = q('#popBody .gl-list'); if (l) l.scrollTop = 0; return; }
       if (t.dataset.kmat) { if (kSel.length < 3 && !kSel.includes(t.dataset.kmat)) kSel.push(t.dataset.kmat); kMsg = null; renderPopup(); return; }

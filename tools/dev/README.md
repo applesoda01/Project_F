@@ -22,6 +22,8 @@ Claude 작업 공간(클라우드)에는 프로젝트가 없으므로 먼저 가
 | 시설 (관리소 지은 상태) | `--pop=fac --weeks=60 --grade=1 --setup="s.gold=5000; G.build(s,'관리소');"` |
 | 식당 조리 연출 | `--lab=kitchen --click="[data-kmat=mat_x003],[data-kmat=mat_x019],[data-kcook]" --wait=2600` |
 | 작은 창 배율 확인 | `--vw=1366 --vh=768` |
+| 소재 판매 창구 | `--pop=sell --weeks=44` (시설 팝업에서 열기: `--pop=fac --click="[data-opensell]"`) |
+| 확대 캡처 (사용자에게 보여 줄 때) | `--dsf=2` |
 
 ### 함께 쓰는 검사
 
