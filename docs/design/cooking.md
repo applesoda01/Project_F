@@ -74,6 +74,7 @@
 | 조리대 | 칸 3개 + "만들어 보기". 올린 소재를 누르면 빠짐 |
 | 리나 토스트 | 결과·힌트를 팝업 가운데 토스트로 (성공 금색, 실패 붉은색). 3.2초 뒤 또는 화면을 누르면 닫힘 |
 | 큰 솥 | 조리대 아래 GPT 그림(`assets/ui/kitchen/`). 만들어 보기 → 재료 퐁당 → 국자 젓기(약 1.6초) → 실패: 검은 연기·흔들림 / 성공: 요리가 솥 위로 떠오름. 연출 중 누르면 바로 결과 |
+| 소재 오버 창 | 보관함·조리대·메뉴판 재료 아이콘에 마우스를 올리면 아이콘·이름·등급·**소재 설명**(편집기 '설명')·보유 개수. 모르는 소재는 ??? + "아직 얻지 못한 소재". 0개 소재도 뜸. 의뢰 게시판은 이름만(A안, 2026-11-09) |
 | 스크롤 | 소재 보관함·조리대는 고정, **메뉴판만** 휠 스크롤 (다시 그려도 위치 유지) |
 | 메뉴판 | 등급별 발견 수 + 보너스 태그. 발견한 요리 = 아이콘·이름·재료 아이콘, 못 찾은 요리 = 실루엣 + ???(재료 개수 숨김) |
 
@@ -126,7 +127,7 @@
 | `prototype/js/game_core.js` | `s.mats`·`s.dishes`, `dropMats`, `cook`(힌트), `autoCook`, `syncMeals`, 50% 해금 삭제, 예전 저장 변환 |
 | `prototype/js/sim_engine.js` | 소재 획득 + 자동 조합 (게임과 같은 기준) |
 | `prototype/js/ui.js` | 식당 팝업(`mealsHtml`·`cookMsg`), 아이콘 없는 소재 표시(`matImg`), 게시판 오버 창 "준비 중" 삭제 |
-| `prototype/css/ui_kit.css` | `kitchen`·`kmat`·`kslot`·`kmsg`·`kdish` |
+| `prototype/css/ui_kit.css` | `kitchen`·`kmat`·`kslot`·`kmsg`·`kdish`·`#mTip`(소재 오버 창) |
 | `tools/gate1_check.js` · 게임 안 관문 1 | 매주 `autoCook` |
 | `tools/material_editor/index.html` | 요리 조합 규칙(각 1개·중복 경고), 효과 해석 미리보기, 오버 메모(`tip`). **요리 효과 원본 = 편집기 '효과'**(비면 meals.csv) |
 | `tools/data_build.py` | 요리 규칙 검사, `tip` 전달 |

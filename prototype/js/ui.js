@@ -145,25 +145,52 @@
     q('#popBody').innerHTML = ''; q('#popBody').dataset.g = ''; q('#popBody').dataset.p = name; renderPopup(); q('#popBody').scrollTop = 0;
     if (name === 'verify') verify();
   };
-  UI.close = function () { const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
+  UI.close = function () { mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
   function renderPopup() {
     const b = q('#popBody');
     if (popup === 'board') renderBoard(b);
     else if (popup === 'ledger') { b.innerHTML = ledgerHtml(); ledgerTipBind(b); }
     else if (popup === 'advs') { const keep = sel => { const el = b.querySelector(sel); return el ? el.scrollTop : 0; }, t1 = keep('.av-list'), t2 = keep('.av-main'); b.innerHTML = advsHtml(); const d1 = b.querySelector('.av-list'), d2 = b.querySelector('.av-main'); if (d1) d1.scrollTop = t1; if (d2) d2.scrollTop = t2; advTipBind(b); }
-    else if (popup === 'promo') b.innerHTML = promoHtml();
+    else if (popup === 'promo') { const l0 = b.querySelector('.pm-list'), m0 = b.querySelector('.pm-main'), y = l0 ? l0.scrollTop : 0, sel0 = b.dataset.psel, my = m0 ? m0.scrollTop : 0; b.innerHTML = promoHtml(); const l1 = b.querySelector('.pm-list'), m1 = b.querySelector('.pm-main'); if (l1) l1.scrollTop = y; if (m1 && sel0 === String(promoSel)) m1.scrollTop = my; b.dataset.psel = promoSel; const on = l1 && l1.querySelector('.ux-row.on'); if (on && (on.offsetTop < l1.scrollTop || on.offsetTop + on.offsetHeight > l1.scrollTop + l1.clientHeight)) on.scrollIntoView({ block: 'nearest' }); }   // 목록이 길어도 스크롤 위치 유지, 고른 모험가는 보이게
     else if (popup === 'fac') b.innerHTML = facHtml();
     else if (popup === 'meals') { const m0 = b.querySelector('.kmenuwrap'), y = m0 ? m0.scrollTop : 0; b.innerHTML = mealsHtml(); const m1 = b.querySelector('.kmenuwrap'); if (m1) m1.scrollTop = y; }   // 메뉴판만 스크롤 (위쪽 보관함·조리대는 고정)
-    else if (popup === 'log') b.innerHTML = logHtml();
+    else if (popup === 'log') { const l0 = b.querySelector('.gl-list'), y = l0 ? l0.scrollTop : 0; b.innerHTML = logHtml(); const l1 = b.querySelector('.gl-list'); if (l1) l1.scrollTop = y; }   // 필터 줄은 고정, 목록만 스크롤 (다시 그려도 위치 유지)
     else if (popup === 'codex') b.innerHTML = codexHtml();
   }
 
   // 도감: 탭만 먼저 만든 빈 틀 (내용은 이후에 채움)
-  const CODEX_TABS = ['몬스터', '소재·아이템', '모험가', '요리', '장비'];
+  const CODEX_TABS = ['몬스터', '소재·아이템', '직업', '요리', '장비'];
   let codexTab = 0;
+  // 도감 (docs/design/popup_codex.md): 모든 항목을 등급 줄마다 아이콘 칸으로. 모르는 것은 실루엣 + ?, 아는 것은 마우스를 올리면 오버 창
   function codexHtml() {
-    return '<div class="cdx-tabs">' + CODEX_TABS.map((t, i) => '<button data-ctab="' + i + '"' + (i === codexTab ? ' class="on"' : '') + '>' + t + '</button>').join('') + '</div>'
-      + '<h3>' + CODEX_TABS[codexTab] + ' 도감 <small>0 / 0</small></h3><div class="cdx-empty">아직 등록된 항목이 없습니다.</div>';
+    const C = GD_.content || {}, top = s.grade, known = s.knownMats || {}, seen = s.seenMons || {}, disc = s.discovered || {};
+    const maxGear = Math.max(-1, ...s.advs.map(a => a.gear == null ? -1 : a.gear));
+    const img = src => src ? `<img src="assets/${src}" alt="">` : '';
+    let rows = [];   // [등급, [칸 html]]
+    const tabs = '<div class="cdx-tabs">' + CODEX_TABS.map((t, i) => `<button data-ctab="${i}"${i === codexTab ? ' class="on"' : ''}>${t}</button>`).join('') + '</div>';
+    const cell = (g, on, inner, attr, name) => `<div class="cdx-c ${on ? '' : 'off'}"><span class="ux-slot ${on ? '' : 'unk'}" data-g="${g}" ${on ? attr : ''}>${on || /<img|cdx-mon/.test(inner) ? inner : ''}</span><em>${on ? esc(name) : '???'}</em></div>`;
+    let n = 0, got = 0;
+    const byGrade = (list, fn) => { for (let g = 0; g < 7; g++) { const xs = list.filter(x => GR.indexOf(x.grade) === g); if (!xs.length) continue; rows.push([g, xs.map(x => { const r = fn(x, g); n++; if (r.on) got++; return cell(g, r.on, r.inner, r.attr, x.name); })]); } };
+    if (codexTab === 0) byGrade(C.monsters || [], m => ({ on: !!seen[m.id], inner: `<i class="cdx-mon" style="background-image:url(assets/expedition/${m.img || 'mon/' + m.id + '.png'})"></i>`, attr: `data-nt="${m.id}"` }));
+    else if (codexTab === 1) {
+      byGrade((C.materials || []).slice().sort((a, b) => (a.line === 'food') - (b.line === 'food')), m => ({ on: !!known[m.id], inner: matImg(m), attr: `data-mt="${m.id}"` }));
+      const mats = rows; rows = []; const pots = (C.items || []).filter(i => i.kind === 'potion');
+      byGrade(pots, p => ({ on: GR.indexOf(p.grade) <= top, inner: img(p.icon), attr: `data-pt="${p.id}"` }));
+      const potRows = rows; rows = mats;
+      var extra = potRows.length ? `<div class="cdx-sub">물약</div>` + potRows.map(([g, cs]) => `<div class="cdx-row">${badge(g)}<div class="cdx-grid">${cs.join('')}</div></div>`).join('') : '';
+      var subTitle = '<div class="cdx-sub">소재</div>';
+    }
+    else if (codexTab === 2) {   // 직업: 1차는 처음부터, 2·3차는 길을 찾으면(discovered) 공개
+      const C1 = Gm.CLASS1.map((name, i) => ({ name, st: 1, icon: `chr/chr_${['warrior', 'archer', 'mage', 'cleric', 'rogue'][i]}_m_front.png`, line: [i] }));
+      const groups = [['1차 직업', C1], ['2차 직업', Gm.CLASS2.map(c => ({ name: c.name, st: 2, line: c.line, req: c.req }))], ['3차 직업', Gm.CLASS3.map(c => ({ name: c.name, st: 3, line: c.line, req: c.req, from: c.from, town: c.town }))]];
+      var jobHtml = groups.map(([t, list]) => { const cs = list.map(c => { const on = c.st === 1 || !!disc[c.name] || s.advs.some(a => a.cls === c.name); n++; if (on) got++;
+        return `<div class="cdx-c ${on ? '' : 'off'}"><span class="ux-slot ${on ? '' : 'unk'} job" data-g="${c.st - 1}" ${on ? `data-jt="${esc(c.name)}"` : ''}>${c.icon ? img(c.icon) : `<b class="jl">${on ? esc(c.name.slice(0, 1)) : ''}</b>`}</span><em>${on ? esc(c.name) : '???'}</em></div>`; }).join('');
+        return `<div class="cdx-sub">${t}</div><div class="cdx-grid">${cs}</div>`; }).join('');
+    }
+    else if (codexTab === 3) byGrade(Gm.DISH.map(d => ({ name: d.name, grade: GR[d.g], icon: d.icon })), d => ({ on: !!s.dishes[d.name], inner: img(d.icon), attr: `data-dt="${esc(d.name)}"` }));
+    else byGrade((C.items || []).filter(i => i.kind === 'gear'), it => ({ on: GR.indexOf(it.grade) <= maxGear, inner: img(it.icon), attr: `data-gt="${it.id}"` }));
+    const body = codexTab === 2 ? jobHtml : (subTitle || '') + rows.map(([g, cs]) => `<div class="cdx-row">${badge(g)}<div class="cdx-grid">${cs.join('')}</div></div>`).join('') + (extra || '');
+    return `<div class="cdx">${tabs}<div class="cdx-head"><b>${CODEX_TABS[codexTab]} 도감</b><span class="ux-muted">${got} / ${n} 발견</span><span class="ux-bar"><i style="width:${n ? got / n * 100 : 0}%"></i></span></div><div class="cdx-list">${body}</div></div>`;
   }
 
   // ---------- 의뢰 게시판 (docs/design/popup_board.md) ----------
@@ -235,7 +262,7 @@
     if (!q || !c) { tip.classList.remove('on'); return; }
     const T = QT[q.tid] || {}, d = danger(T, q.g), fb = foeBand(q), intel = !!s.built['정보실'], wk = T.weeks || 1;
     let h = `<div class="t1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b><span class="ux-tag">${Gm.QTYPE[q.type]}</span><span class="ux-tag">${wk}주</span></div>`;
-    if (T.client || T.notice) h += `<div class="note">${T.client ? `<b>${esc(T.client)}</b> ` : ''}${esc(T.notice || '')}</div>`;
+    if (T.client || T.notice || T.tip) h += `<div class="note">${T.client ? `<b>${esc(T.client)}</b> ` : ''}${esc(T.notice || '')}${T.notice && T.tip ? '<br>' : ''}${esc(T.tip || '')}</div>`;   // 오버 메모(편집기)
     if (d.n) {
       h += '<div class="sec">출현 몬스터</div><div class="mons">' + (T.enemies || []).map(e => { const m = MONS[e.mon] || {}; return `<div class="mon"><span class="pic"${m.img ? ` style="background-image:url(assets/expedition/${m.img})"` : ''}></span><b>${esc(e.name)}</b> ×${e.count}${e.boss ? ' <span class="ux-tag injured">보스</span>' : ''}<small>체력 ${e.hp} · 공격 ${e.atk}</small></div>`; }).join('') + '</div>';
       h += `<div class="sec">위험도</div><div class="row">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}<span>${GR[q.g]}급 모험가 <b>${d.n}명${d.more ? ' 이상' : ''}</b> 권장${d.more ? ' (장비가 필요할 수 있음)' : ''}</span></div>`;
@@ -251,7 +278,7 @@
     // 카드 오른쪽, 공간이 없으면 왼쪽
     const bw = b.clientWidth, x = c.offsetLeft + c.offsetWidth + 10, tw = tip.offsetWidth;
     tip.style.left = (x + tw > bw ? c.offsetLeft - tw - 10 : x) + 'px';
-    tip.style.top = Math.max(0, Math.min(c.offsetTop - 6, b.scrollHeight - tip.offsetHeight - 6)) + 'px';
+    tip.style.top = Math.max(b.scrollTop, Math.min(c.offsetTop - 6, b.scrollTop + b.clientHeight - tip.offsetHeight - 6)) + 'px';   // 보이는 영역 안에 (창이 길어도 아래가 잘리지 않게)
   }
   // ---------- 장부: 수입 · 지출 (지난달 | 이번 달) + 12개월 순이익 그래프 (docs/design/popup_ledger.md) ----------
   // 순이익 = 수입 − 지출(시설 건설비·기타). 관문 1의 "운영 순이익(m.net)"은 건설비를 빼고 계산하므로 따로 둠
@@ -440,12 +467,12 @@
     for (const [nm, type] of slots) {
       const it = a.gear >= 0 ? gearItem(type, a.gear) : null;
       const tip = it ? `${nm} · ${it.name}\n${[it.atk && '공격 ' + it.atk, it.def && '방어 ' + it.def, it.mdef && '마방 ' + it.mdef, it.hp && '체력 ' + it.hp, it.mp && '마력 ' + it.mp].filter(Boolean).join(' · ')}` : nm + ': 없음';
-      eq += it ? `<span class="ux-slot" data-g="${a.gear}" title="${tip}"><img src="assets/${it.icon}" alt=""></span>` : `<span class="ux-slot empty" data-ph="${nm}" title="${tip}"></span>`;
+      eq += it ? `<span class="ux-slot" data-g="${a.gear}" data-gt="${it.id}"><img src="assets/${it.icon}" alt=""></span>` : `<span class="ux-slot empty" data-ph="${nm}" title="${tip}"></span>`;
     }
     // 물약 3칸: 가진 수만큼 채움, 소비 성향으로 못 드는 칸은 잠금 (절약 1 · 보통 2 · 낭비 3)
     const carry = (CB_ && CB_.C.potionCarry[a.spend]) || 3, pg = Math.min(1, s.grade), pot = ITEMS_.find(i => i.id === (pg ? 'pot_03' : 'pot_01'));
     eq += '</div><div class="ux-h" style="margin-top:12px">물약 <small>최대 ' + carry + '개 (' + Gm.SPEND[a.spend] + ')</small></div><div class="potgrid">';
-    for (let k = 0; k < 3; k++) eq += k < (a.pots || 0) ? `<span class="ux-slot pot" data-g="${pg}" title="${pot ? pot.name : '회복 물약'}"><img src="assets/${pot ? pot.icon : ''}" alt=""></span>` : k < carry ? '<span class="ux-slot pot empty" data-ph=""></span>' : '<span class="ux-slot pot locked" title="소비 성향 때문에 들고 다니지 않음"></span>';
+    for (let k = 0; k < 3; k++) eq += k < (a.pots || 0) ? `<span class="ux-slot pot" data-g="${pg}"${pot ? ` data-pt="${pot.id}"` : ''}><img src="assets/${pot ? pot.icon : ''}" alt=""></span>` : k < carry ? '<span class="ux-slot pot empty" data-ph=""></span>' : '<span class="ux-slot pot locked" title="소비 성향 때문에 들고 다니지 않음"></span>';
     eq += '</div></div>';
     // 능력치: 10칸 × 10점 (상한 100). 칸 안은 아래에서부터 차오름. 주 능력치 = 주황, 장비 보너스 = 초록
     const anim = advAnimFor !== a.id; advAnimFor = a.id;
@@ -516,27 +543,44 @@
   }
 
   // ---------- 전직 제안 (M3-3) ----------
+  // 전직 제안 (docs/design/popup_promo.md): 왼쪽 = 제안 받은 모험가 목록 / 오른쪽 = 머리(초상화·애착·수락 확률) · 능력치 10칸 · 선택지 카드 · 보류
+  let promoSel = null;
+  const ro = n => { const c = n.charCodeAt(n.length - 1) - 0xAC00, j = c % 28; return n + (c >= 0 && c <= 11171 && j && j !== 8 ? '으로' : '로'); };   // ㄹ 받침·받침 없음 → 로
+  const cells10 = (v, cls, extra) => { let h = ''; for (let i = 0; i < 10; i++) { const f = Math.max(0, Math.min(10, v - i * 10)) * 10; h += `<span class="cell">${f > 0 ? `<i class="${cls}" style="--t:${100 - f}%"></i>` : ''}</span>`; } return `<span class="cells">${h}${extra || ''}</span>`; };
   function promoHtml() {
-    const ps = s.proposals || [];
-    if (!ps.length) return '<p class="muted">지금은 전직 제안이 없습니다. 모험가가 조건을 채우면 리나가 매달 초에 알려 드려요.</p>';
-    return ps.map(p => {
-      const a = s.advs.find(x => x.id === p.id); if (!a) return '';
-      const tier = Gm.attachTier(a), chance = Math.min(1, [0.40, 0.65, 0.90, 1.00][tier] * (p.to === 2 ? 1.2 : 0.9));
-      const opts = p.opts.map(n => {
-        const c = Gm.CLASS2.find(x => x.name === n) || Gm.CLASS3.find(x => x.name === n);
-        const fake = Object.assign({}, a, { stage: p.to, line: c.line, fin: !!c.fin });
-        const g0 = Gm.growthOf(a), g1 = Gm.growthOf(fake);
-        const evo = a.skills.filter(k => c.line.includes(k.line)).map(k => `${skillName(k).name} → ${skillName({ line: k.line, form: n }).name}`);
-        return `<div class="opt"><div class="ot"><b>${n}</b>${c.fin ? '<span class="tagx">2차 종결 · 레벨 상한 50</span>' : '<span class="tagx">3차로 이어짐 · 레벨 상한 40</span>'}</div>
-          <div class="muted">조건 ${Object.keys(c.req).map(k => `${Gm.STATS[k]} ${c.req[k]} (현재 ${Math.floor(a.stats[k])})`).join(' · ')}</div>
-          <div>레벨업 성장 ${[0, 1, 2, 3, 4].map(i => `${Gm.STATS[i]} ${g0[i].toFixed(1)}→<b class="${g1[i] > g0[i] ? 'pos' : g1[i] < g0[i] ? 'neg' : ''}">${g1[i].toFixed(1)}</b>`).join(' · ')}</div>
-          <div>스킬 진화 ${evo.length ? evo.join(', ') : '<span class="muted">없음 (바탕 능력치가 이 직업 조건에 없음)</span>'}</div>
-          <button class="sbtn big" data-promo="${a.id}" data-cls="${n}">${n}(으)로 전직 승인</button></div>`;
-      }).join('');
-      return `<section class="prop"><div class="ph">${radar(a, 200)}<div><h3>${a.name} ${badge(a.grade)} <small class="muted">${a.cls} · Lv ${a.lv}</small></h3>
-        <p>애착 ${Math.round(a.attach)} <b>${Gm.ATTACH_TITLE[tier]}</b> → 수락 확률 약 <b>${Math.round(chance * 100)}%</b> <span class="muted">(거절해도 벌칙 없이 3개월 뒤 다시 제안)</span></p>
-        <button class="sbtn" data-hold="${a.id}">보류</button></div></div><div class="opts">${opts}</div></section>`;
-    }).join('');
+    const ps = (s.proposals || []).filter(p => s.advs.some(a => a.id === p.id));
+    if (!ps.length) return '<div class="ux-empty pm-none">지금은 전직 제안이 없습니다. 모험가가 조건을 채우면 리나가 매달 초에 알려 드려요.</div>';
+    if (!ps.some(p => p.id === promoSel)) promoSel = ps[0].id;
+    const list = ps.map(p => { const a = s.advs.find(x => x.id === p.id);
+      return `<button class="ux-row promo ${p.id === promoSel ? 'on' : ''}" data-psel="${a.id}"><span class="ux-face" style="${faceStyle(a, 44, 230, 24)}"><i class="star">★</i></span><span><span class="nm">${a.name}</span><span class="sub">${a.cls} · ${p.to}차 제안</span></span><span class="rt"><b>Lv ${a.lv}</b></span></button>`; }).join('');
+    const p = ps.find(x => x.id === promoSel), a = s.advs.find(x => x.id === p.id);
+    const tier = Gm.attachTier(a), chance = Math.min(1, [0.40, 0.65, 0.90, 1.00][tier] * (p.to === 2 ? 1.2 : 0.9));
+    // 머리
+    let h = `<div class="pm-top"><div class="pm-head"><div class="ux-portrait sm"><i style="${faceStyle(a, 104, 260, 58)}"></i></div><div class="who">
+      <div class="nm">${a.name} ${badge(a.grade)}<span class="cls">${STAGE[a.stage]} ${a.cls} · Lv ${a.lv}</span><span class="ux-tag town">${p.to}차 전직 제안</span></div>
+      <div class="pm-bar"><em>애착</em><div class="ux-bar"><i style="width:${Math.min(100, a.attach)}%"></i></div><span><b>${Math.round(a.attach)}</b> ${Gm.ATTACH_TITLE[tier]}</span></div>
+      <div class="pm-bar"><em>수락 확률</em><div class="ux-bar blue"><i style="width:${chance * 100}%"></i></div><span><b>약 ${Math.round(chance * 100)}%</b></span></div></div></div>`;
+    // 능력치 10칸 (모험가 팝업과 같은 칸)
+    h += `<div class="pm-st"><div class="ux-h">능력치</div>` + [0, 1, 2, 3, 4].map(i => { const core = (a.line || [a.core]).includes(i), v = Math.min(100, a.stats[i]);
+      return `<div class="srow ${core ? 'core' : ''}"><span class="k">${Gm.STATS[i]}</span>${cells10(v, core ? 'cr' : 'gd')}<span class="v">${Math.floor(a.stats[i])}</span></div>`; }).join('') + '</div></div>';
+    // 선택지 카드
+    const g0 = Gm.growthOf(a);
+    const cards = p.opts.map(n => {
+      const c = Gm.CLASS2.find(x => x.name === n) || Gm.CLASS3.find(x => x.name === n); if (!c) return '';
+      const g1 = Gm.growthOf(Object.assign({}, a, { stage: p.to, line: c.line, fin: !!c.fin })), can = Object.keys(c.req).every(k => a.stats[k] >= c.req[k]);   // 정상 제안은 늘 조건 충족. 예전 저장·디버그 대비
+      const req = Object.keys(c.req).map(k => { const r = c.req[k], v = a.stats[k], ok = v >= r;
+        return `<div class="srow"><span class="k">${Gm.STATS[k]}</span>${cells10(Math.min(100, v), +k === a.core ? 'cr' : 'gd', `<i class="goal" style="left:${r / 10 * 12 - 1}px" title="필요 ${r}"></i>`)}<span class="v ${ok ? 'ok' : 'no'}">${ok ? '✓' : '✕'} ${Math.floor(v)}/${r}</span></div>`; }).join('');
+      const grow = [0, 1, 2, 3, 4].map(i => { const d = g1[i] - g0[i], cl = d > 0.001 ? 'up' : d < -0.001 ? 'dn' : '';
+        return `<div class="gr ${cl}"><span class="k">${Gm.STATS[i]}</span><span class="b0">${g0[i].toFixed(1)}</span><span class="ar">${cl === 'up' ? '▲' : cl === 'dn' ? '▼' : '→'}</span><b>${g1[i].toFixed(1)}</b></div>`; }).join('');
+      const evo = a.skills.filter(k => c.line.includes(k.line)).map(k => { const k1 = { line: k.line, form: n };
+        return `<div class="evo"><img src="assets/icons/${skillIcon(k)}" alt=""><span>${skillName(k).name}</span><i>→</i><img src="assets/icons/${skillIcon(k1)}" alt=""><b>${skillName(k1).name}</b></div>`; }).join('') || '<div class="ux-muted evo none">없음 (바탕 능력치가 이 직업 조건에 없음)</div>';
+      return `<div class="pm-card ${can ? '' : 'off'}"><div class="ct"><b>${n}</b><span class="ux-tag">${c.fin ? '2차 종결 · Lv 상한 50' : p.to === 2 ? '3차로 이어짐 · Lv 상한 40' : '3차'}</span></div>
+        <div class="sec">조건</div><div class="reqs">${req}</div>
+        <div class="sec">레벨업 성장 <small>(레벨마다 오르는 양)</small></div><div class="grs">${grow}</div>
+        <div class="sec">스킬 진화</div>${evo}
+        ${can ? `<button class="ux-btn primary pm-go" data-promo="${a.id}" data-cls="${n}">${ro(n)} 전직 승인</button>` : '<button class="ux-btn pm-go off" disabled>조건 부족 · 전직 불가</button>'}</div>`; }).join('');
+    h += `<div class="pm-cards">${cards}</div><div class="pm-foot"><button class="ux-btn" data-hold="${a.id}">보류</button><span class="ux-muted">보류하거나 모험가가 거절해도 벌칙은 없고, 3개월 뒤 다시 제안합니다.</span></div>`;
+    return `<div class="pm"><div class="pm-side"><div class="ux-h">제안 <small>${ps.length}명</small></div><div class="pm-list">${list}</div></div><div class="pm-main">${h}</div></div>`;
   }
   function decide(id, cls) {
     const a = s.advs.find(x => x.id === id), r = Gm.decidePromotion(s, id, cls);
@@ -587,6 +631,66 @@
     if (r.kind === 'wrong') return { bad: true, text: `${nm(r.mat)} 대신에 다른 걸 넣어 보면 어떨까요?` };
     return null;
   }
+  // 소재 오버 창: data-mt="소재 id"인 칸에 마우스를 올리면 이름·등급·설명(소재 편집기 '설명')을 보여 줌. 팝업(#pop) 위에 떠서 다시 그려도 유지
+  // 장비 오버 창: 이름·종류·등급 / 공격력(무기) 또는 방어(방어구) / 능력치 / 전투 수치 / 고유 효과 / 오버 메모(편집기, 비면 '설명')
+  const GT_NAME = { sword: '검', bow: '활', staff: '지팡이', mace: '성구', dagger: '단검', heavy: '중갑', light: '경갑', robe: '로브', ring: '반지', anklet: '발찌', necklace: '목걸이', rosary: '묵주', gloves: '장갑' };
+  const SLOT_NAME = { weapon: '무기', armor: '방어구', acc: '장신구' }, ST5 = ['힘', '민첩', '지력', '정신', '기교'];
+  function gTipHtml(id) {
+    const it = ITEMS_.find(i => i.id === id); if (!it) return '';
+    const g = GR.indexOf(it.grade), kind = [SLOT_NAME[it.slot], GT_NAME[it.gtype]].filter(Boolean).join(' · ');
+    const big = it.slot === 'weapon' ? [['공격력', it.atk]] : it.slot === 'armor' ? [['방어', it.def], ['마법 방어', it.mdef]] : [];
+    const stats = Object.entries(it.stats || {}).filter(([, v]) => v).map(([k, v]) => `<span class="ux-tag">${ST5[+k]} +${v}</span>`).join('');
+    const cb = [['공격력', 'atk'], ['방어', 'def'], ['마법 방어', 'mdef'], ['체력', 'hp'], ['마력', 'mp'], ['행운', 'luck']].filter(([n, k]) => it[k] && !big.some(b => b[0] === n)).map(([n, k]) => `<span>${n} <b>+${it[k]}</b></span>`).join('');
+    const txt = it.tip || it.desc || '';   // 오버 메모가 원본, 비면 '설명'
+    return `<div class="t1"><span class="ux-slot" data-g="${g}">${it.icon ? `<img src="assets/${it.icon}" alt="">` : ''}</span><div class="nm"><b>${esc(it.name)}</b><small>${kind}</small></div>${badge(g)}</div>
+      ${big.filter(b => b[1]).map(b => `<div class="big"><em>${b[0]}</em><b>${b[1]}</b></div>`).join('')}
+      ${stats ? `<div class="sec">능력치</div><div class="tags">${stats}</div>` : ''}${cb ? `<div class="cb">${cb}</div>` : ''}
+      ${it.effect ? `<div class="fx">✦ ${esc(it.effect)}</div>` : ''}${txt ? `<p>${esc(txt)}</p>` : ''}`;
+  }
+  // 물약 오버 창: 이름·등급 / 효과(편집기 '효과') / 오버 메모
+  function pTipHtml(id) {
+    const it = ITEMS_.find(i => i.id === id); if (!it) return ''; const g = GR.indexOf(it.grade);
+    return `<div class="t1"><span class="ux-slot" data-g="${g}">${it.icon ? `<img src="assets/${it.icon}" alt="">` : ''}</span><div class="nm"><b>${esc(it.name)}</b><small>물약</small></div>${badge(g)}</div>${it.desc ? `<div class="fx">✦ ${esc(it.desc)}</div>` : ''}${it.tip ? `<p>${esc(it.tip)}</p>` : ''}`;
+  }
+  // 요리 오버 창 (메뉴판의 발견한 요리): 이름·등급 / 식사 효과 / 오버 메모
+  function dTipHtml(name) {
+    const d = Gm.DISH.find(x => x.name === name), it = ITEMS_.find(i => i.kind === 'food' && i.name === name); if (!d) return '';
+    return `<div class="t1"><span class="ux-slot" data-g="${d.g}">${d.icon ? `<img src="assets/${d.icon}" alt="">` : ''}</span><div class="nm"><b>${esc(name)}</b><small>${GR[d.g]}급 요리</small></div>${badge(d.g)}</div>${d.effect ? `<div class="fx">✦ 먹은 모험가 ${esc(d.effect)}</div>` : ''}${it && it.tip ? `<p>${esc(it.tip)}</p>` : ''}`;
+  }
+  // 몬스터 오버 창 (도감): 그림·이름·등급·종류 / 체력·공격력 / 처음 만난 날 / 오버 메모
+  function nTipHtml(id) {
+    const m = MONS[id]; if (!m) return ''; const g = GR.indexOf(m.grade), w = (s.seenMons || {})[id];
+    return `<div class="t1"><span class="ux-slot" data-g="${g}"><i class="cdx-mon" style="background-image:url(assets/expedition/${m.img || 'mon/' + id + '.png'})"></i></span><div class="nm"><b>${esc(m.name)}</b><small>${esc(m.kind || '')}</small></div>${badge(g)}</div>
+      <div class="cb"><span>체력 <b>${m.hp}</b></span><span>공격력 <b>${m.atk}</b></span></div>${m.tip ? `<p>${esc(m.tip)}</p>` : ''}${w != null ? `<div class="ft">처음 만난 날 ${Gm.dateLabel(w)}</div>` : ''}`;
+  }
+  // 직업 오버 창 (도감): 이름·차수 / 조건 능력치 / (3차) 이전 직업·필요한 마을 건물 / 지금 이 직업인 모험가
+  function jTipHtml(name) {
+    const c1 = Gm.CLASS1.indexOf(name), c2 = Gm.CLASS2.find(c => c.name === name), c3 = Gm.CLASS3.find(c => c.name === name), c = c2 || c3, st = c1 >= 0 ? 1 : c2 ? 2 : 3;
+    const req = c ? Object.entries(c.req).map(([k, v]) => `<span class="ux-tag">${Gm.STATS[+k]} ${v} 이상</span>`).join('') : `<span class="ux-tag">주 능력치 ${Gm.STATS[c1]}</span>`;
+    const who = s.advs.filter(a => a.alive && a.cls === name).map(a => a.name);
+    return `<div class="t1"><div class="nm"><b>${esc(name)}</b><small>${st}차 직업${c2 && c2.fin ? ' · 종결' : ''}</small></div></div><div class="sec">${c ? '전직 조건' : '바탕'}</div><div class="tags">${req}</div>
+      ${c3 ? `<div class="cb"><span>이전 직업 <b>${esc(c3.from)}</b></span><span>마을 건물 <b>${esc(c3.town)}</b></span></div>` : ''}<div class="ft">${who.length ? '지금 ' + who.map(esc).join('·') : '지금 이 직업인 모험가 없음'}</div>`;
+  }
+  function mTipHtml(id) {
+    const m = MATS[id] || {}, k = !!(s.knownMats || {})[id], n = (s.mats || {})[id] || 0, g = GR.indexOf(m.grade);
+    if (!k) return `<div class="t1"><span class="ux-slot unk" data-g="${g}">${m.icon ? matImg(m) : ''}</span><b>???</b></div><p class="ux-muted">아직 얻지 못한 소재입니다. 의뢰를 다녀오면 알 수 있어요.</p>`;
+    return `<div class="t1"><span class="ux-slot" data-g="${g}">${matImg(m)}</span><b>${esc(m.name)}</b>${badge(g)}</div>${m.desc ? `<p>${esc(m.desc)}</p>` : ''}<div class="ft">보유 ${n}개</div>`;
+  }
+  let mTipEl = null, mTipFor = null;
+  function mTipHide() { if (mTipEl) mTipEl.classList.remove('on'); mTipFor = null; }
+  document.addEventListener('mouseover', e => {
+    const c = e.target.closest && e.target.closest('#popBody [data-mt], #popBody [data-gt], #popBody [data-pt], #popBody [data-dt], #popBody [data-nt], #popBody [data-jt]');
+    if (!c) { if (mTipFor && !(e.target.closest && e.target.closest('#mTip'))) mTipHide(); return; }
+    if (mTipFor === c) return; mTipFor = c;
+    const pop = q('#pop'); if (!mTipEl || !pop.contains(mTipEl)) { mTipEl = document.createElement('div'); mTipEl.id = 'mTip'; pop.appendChild(mTipEl); }
+    const D = c.dataset; mTipEl.innerHTML = D.gt ? gTipHtml(D.gt) : D.pt ? pTipHtml(D.pt) : D.dt ? dTipHtml(D.dt) : D.nt ? nTipHtml(D.nt) : D.jt ? jTipHtml(D.jt) : mTipHtml(D.mt); mTipEl.classList.add('on');
+    const pr = pop.getBoundingClientRect(), k = pr.width / pop.offsetWidth, r = c.getBoundingClientRect();   // 화면 배율·팝업 테두리 보정
+    const x0 = (r.left - pr.left) / k - pop.clientLeft, y0 = (r.top - pr.top) / k - pop.clientTop, w = r.width / k, h = r.height / k;
+    const tw = mTipEl.offsetWidth, th = mTipEl.offsetHeight, W = pop.clientWidth, H = pop.clientHeight;
+    let top = y0 + h + 8; if (top + th > H - 4) top = y0 - th - 8;
+    mTipEl.style.left = Math.max(4, Math.min(x0 + w / 2 - tw / 2, W - tw - 4)) + 'px'; mTipEl.style.top = Math.max(4, top) + 'px';
+  });
+  document.addEventListener('pointerdown', mTipHide, true);
   function kToast(m) {   // 리나의 결과·힌트: 팝업 위 토스트 (식당 화면 공간 절약)
     if (!m) return; const pop = q('#pop'); let el = pop.querySelector('#kToast');
     if (!el) { el = document.createElement('div'); el.id = 'kToast'; pop.appendChild(el); }
@@ -628,11 +732,11 @@
     // 소재 보관함: 음식 소재만
     const food = Object.values(MATS).filter(m => m.line === 'food' && GR.indexOf(m.grade) <= top).sort((a, b) => GR.indexOf(a.grade) - GR.indexOf(b.grade));
     const pantry = food.map(m => { const k = !!known[m.id], n = mats[m.id] || 0, used = kSel.filter(x => x === m.id).length;
-      return `<button class="kmat ${!k ? 'unk' : n - used <= 0 ? 'zero' : ''}" ${k && n - used > 0 ? `data-kmat="${m.id}"` : 'disabled'} title="${k ? esc(m.name) : '???'}"><span class="ux-slot${k ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${k || m.icon ? matImg(m) : ''}</span><em>${k ? esc(m.name) : '???'}</em>${k ? `<i>×${n - used}</i>` : ''}</button>`; }).join('');
+      return `<button class="kmat ${!k ? 'unk' : n - used <= 0 ? 'zero' : ''}" ${k && n - used > 0 ? `data-kmat="${m.id}"` : 'aria-disabled="true"'} data-mt="${m.id}"><span class="ux-slot${k ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${k || m.icon ? matImg(m) : ''}</span><em>${k ? esc(m.name) : '???'}</em>${k ? `<i>×${n - used}</i>` : ''}</button>`; }).join('');
     // 조리대
     let slots = '';
     const shown = kAnim ? kAnim.sel : kSel;
-    for (let i = 0; i < 3; i++) { const m = MATS[shown[i]]; slots += (i ? `<span class="plus ${kAnim ? 'gone' : ''}">+</span>` : '') + (m ? `<button class="kslot ${kAnim ? 'drop' : ''}" style="--d:${i * 90}ms" ${kAnim ? '' : `data-kslot="${i}"`} title="빼기"><span class="ux-slot" data-g="${GR.indexOf(m.grade)}">${matImg(m)}</span><em>${esc(m.name)}</em></button>` : `<span class="kslot ${kAnim ? 'drop' : ''}" style="--d:${i * 90}ms"><span class="ux-slot empty" data-ph=""></span><em>&nbsp;</em></span>`); }   // 조리 중에는 빈 칸까지 3칸 모두 사라짐
+    for (let i = 0; i < 3; i++) { const m = MATS[shown[i]]; slots += (i ? `<span class="plus ${kAnim ? 'gone' : ''}">+</span>` : '') + (m ? `<button class="kslot ${kAnim ? 'drop' : ''}" style="--d:${i * 90}ms" ${kAnim ? '' : `data-kslot="${i}"`} data-mt="${m.id}"><span class="ux-slot" data-g="${GR.indexOf(m.grade)}">${matImg(m)}</span><em>${esc(m.name)}</em></button>` : `<span class="kslot ${kAnim ? 'drop' : ''}" style="--d:${i * 90}ms"><span class="ux-slot empty" data-ph=""></span><em>&nbsp;</em></span>`); }   // 조리 중에는 빈 칸까지 3칸 모두 사라짐
     const pot = `<div class="kpot ${kAnim ? 'stir' : kFx} ${kFx && Date.now() - kFxAt > 100 ? 'held' : ''}"><i class="steam s1"></i><i class="steam s2"></i><i class="steam s3"></i><img class="cauldron" src="assets/ui/kitchen/cauldron.png" alt=""><span class="ladlewrap"><img class="ladle" src="assets/ui/kitchen/ladle.png" alt=""></span><i class="burst"></i><i class="puff p1"></i><i class="puff p2"></i><i class="puff p3"></i>${kFx === 'ok' && kDish && kDish.icon ? `<img class="dishup" src="assets/${kDish.icon}" alt="">` : ''}</div>`;
     const msg = '';   // 결과·힌트는 팝업 가운데 토스트로 (kToast)
     // 메뉴판: 등급 줄 태그 = 그 등급에서 발견한 요리 × 2% (식사 효과, 모든 등급 합이 실제 효과). 카드 = 요리별 능력치 효과
@@ -651,19 +755,58 @@
       }
       menu += '</div>';
     }
-    function dishFront(d) { return `<div class="kdish"><span class="pic"><img src="assets/${d.icon}" alt=""></span><div><b>${d.name}</b><div class="rc">${d.mats.map(m => `<span class="ux-slot" data-g="${GR.indexOf((MATS[m] || {}).grade)}">${matImg(MATS[m] || {})}</span>`).join('<span class="plus">+</span>')}<span class="kfx">${esc(d.effect)}</span></div></div></div>`; }
+    function dishFront(d) { return `<div class="kdish" data-dt="${esc(d.name)}"><span class="pic"><img src="assets/${d.icon}" alt=""></span><div><b>${d.name}</b><div class="rc">${d.mats.map(m => `<span class="ux-slot" data-mt="${m}" data-g="${GR.indexOf((MATS[m] || {}).grade)}">${matImg(MATS[m] || {})}</span>`).join('<span class="plus">+</span>')}<span class="kfx">${esc(d.effect)}</span></div></div></div>`; }
     return `<div class="kitchen"><div class="kpan"><div class="ux-h">소재 보관함 <small>음식 소재</small></div><div class="kpantry">${pantry}</div></div>
       <div class="kpan"><div class="ux-h">조리대</div><div class="kslots">${slots}</div>${pot}<button class="ux-btn kcook" data-kcook="1" ${kSel.length && !kAnim ? '' : 'disabled'}>만들어 보기</button>${msg}</div>
       <div class="kpan wide"><div class="ux-h">메뉴판</div><div class="kmenuwrap">${menu}</div></div></div>`;
   }
+  // 길드 기록: 월 단위 카드(머리 = 그 달 결산) · 종류 아이콘 · 필터. 'sys'(버튼 반응)·'debug'는 기록에서 숨김
+  const LK = {   // 종류 → [아이콘 글자, 이름, 필터 묶음]
+    success: ['✓', '의뢰 성공', 'q'], fail: ['✕', '의뢰 실패', 'q'], withdraw: ['⊘', '의뢰 철회', 'q'], depart: ['➜', '출발', 'q'],
+    death: ['☠', '사망', 'a'], injury: ['✚', '부상', 'a'], leave: ['↩', '떠남', 'a'], arrive: ['☺', '새 모험가', 'a'], grow: ['▲', '성장', 'a'], promo: ['★', '전직', 'a'],
+    unlock: ['◆', '발견', 'g'], build: ['⌂', '건설', 'g'], guild: ['⚑', '길드', 'g'], info: ['•', '기록', 'g'], warn: ['!', '알림', 'g']
+  };
+  const LF = [['all', '전체'], ['q', '의뢰'], ['a', '모험가'], ['g', '길드'], ['imp', '중요']], LIMP = { death: 1, injury: 1, leave: 1 }, isImp = e => LIMP[e.kind] || (e.kind === 'promo' && (e.done || /전직했습니다/.test(e.text)));   // 중요 = 사망·부상·떠남·실제 전직 (제안·거절·보류 제외)
+  let logFilter = 'all';
+  // 기록 글 꾸미기: 모험가 이름(e.who) 굵게, 퀘스트 이름(「」) 색
+  function logText(e) {
+    let t = esc(e.text).replace(/「(.+?)」/g, '<span class="gl-q">$1</span>');
+    for (const n of [...new Set(e.who || [])].sort((a, b) => b.length - a.length)) { const N = esc(n).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      t = t.replace(new RegExp(`(^|[\\s·(])${N}(?=[이가은는의을를과와·\\s)]|$)`, 'g'), `$1<b class="gl-n">${esc(n)}</b>`); }
+    return t;
+  }
   function logHtml() {
-    return '<div class="log">' + s.log.slice(0, 120).map(e => `<div class="k-${e.kind}"><span class="w">${Gm.dateLabel(e.week).replace('년차 ', '/').replace('월 ', '/').replace('주', '')}</span>${e.text}</div>`).join('') + '</div>';
+    const W = Gm.WPM, mk = w => Math.floor(w / W), show = e => !(e.kind === 'sys' || e.kind === 'debug' || e.kind === 'ledger');
+    const pass = e => logFilter === 'all' || (logFilter === 'imp' ? isImp(e) : (LK[e.kind] || LK.info)[2] === logFilter);
+    const sum = {}, months = [], by = {};
+    for (const e of s.log) {
+      if (e.kind === 'ledger') { sum[mk(e.week - 1)] = e; continue; }   // 결산은 지난달 것 → 그 달 머리로
+      if (!show(e)) continue; const k = mk(e.week); if (!by[k]) { by[k] = []; months.push(k); } by[k].push(e);
+    }
+    for (const k in sum) if (!by[k]) { by[k] = []; months.push(+k); }
+    months.sort((a, b) => b - a);
+    const cnt = f => s.log.filter(e => show(e) && (f === 'all' || (f === 'imp' ? isImp(e) : (LK[e.kind] || LK.info)[2] === f))).length;
+    let h = `<div class="glog"><div class="gl-top">${LF.map(([k, n]) => `<button class="gl-chip ${logFilter === k ? 'on' : ''}" data-lf="${k}">${n}<small>${cnt(k)}</small></button>`).join('')}</div><div class="gl-list">`;
+    let any = false;
+    for (const k of months) {
+      const rows = by[k].filter(pass), S = sum[k]; if (!rows.length && logFilter !== 'all') continue; any = true;
+      const ml = Gm.dateLabel(k * W).replace(/ \d+주$/, '');
+      const head = S ? `<span class="gl-net ${S.net < 0 ? 'neg' : ''}">순이익 ${S.net >= 0 ? '+' : '−'}${fmt(Math.abs(S.net))}G</span><span class="ux-muted">의뢰 ${S.nq}건 · 성공 ${S.nok}건</span>` : `<span class="ux-tag town">진행 중</span>`;
+      h += `<section class="gl-month"><header><b>${ml}</b>${head}</header>`;
+      h += rows.length ? rows.map(e => { const L = LK[e.kind] || LK.info, wk = (e.week % W) + 1;
+        return `<div class="gl-row k-${e.kind}"><i class="gl-ic" title="${L[1]}">${L[0]}</i><span class="gl-w">${wk}주</span><span class="gl-t">${logText(e)}</span></div>`; }).join('') : '<div class="gl-empty ux-muted">기록 없음</div>';
+      h += '</section>';
+    }
+    if (!any) h += '<p class="ux-muted gl-none">해당하는 기록이 없습니다.</p>';
+    return h + '</div></div>';
   }
   stagePopClicks();
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
-      const t = e.target.closest('[data-build], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook]'); if (!t) return;
+      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook]'); if (!t) return;
+      if (t.dataset.psel) { promoSel = +t.dataset.psel; renderPopup(); return; }
+      if (t.dataset.lf) { logFilter = t.dataset.lf; renderPopup(); const l = q('#popBody .gl-list'); if (l) l.scrollTop = 0; return; }
       if (t.dataset.kmat) { if (kSel.length < 3 && !kSel.includes(t.dataset.kmat)) kSel.push(t.dataset.kmat); kMsg = null; renderPopup(); return; }
       if (t.dataset.kslot) { kSel.splice(+t.dataset.kslot, 1); kMsg = null; renderPopup(); return; }
       if (t.dataset.kcook) {   // 큰 솥 연출(약 1.6초) 뒤 결과. 연출 중 식당 아무 곳이나 누르면 바로 결과

@@ -28,3 +28,5 @@ Claude 작업 공간(클라우드)에는 프로젝트가 없으므로 먼저 가
 - 관문 1: `node tools/gate1_check.js` (게임·시뮬레이터 100판, 규칙을 바꾸면 반드시 실행)
 - 요리 밸런스: `tools/cook_balance.html`(브라우저)
 - 데이터 다시 만들기: `python3 tools/data_build.py` (data/*.csv · collegium_data.json → prototype/js/data_gen.js)
+
+- 2026-11-09: `popup_shot.js`는 이제 **스크롤 막대를 보이게** 찍습니다(실제 게임과 같음). 숨기려면 `--nobars`. 막대가 자리를 차지해 글이 꺾이는 문제를 시안 단계에서 잡기 위함.

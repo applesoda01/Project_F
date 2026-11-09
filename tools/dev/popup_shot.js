@@ -17,6 +17,7 @@
 //   --lab=kitchen  주소에 ?lab=kitchen 을 붙여 식당 시험 상태로 시작 (--pop·--weeks 무시)
 //   --vw/--vh      창 크기 (기본 1920×1080). 작은 창(예: 1366×768)에서 배율 문제를 확인할 때
 //   --full         화면 전체를 찍음 (기본은 팝업 둘레만)
+//   --nobars       스크롤 막대를 숨기고 찍음 (기본은 실제 게임처럼 보임. Playwright 기본값은 숨김이라 막대 자리 문제를 놓칠 수 있음)
 //   --out=파일     저장 경로 (기본 popup_shot.png)
 //
 // 주의: 시안 확인용. 게임 화면의 HUD(금고 등)는 main.js의 원래 상태를 보여 주므로 --setup으로 바꾼 값과 다를 수 있음.
@@ -29,7 +30,7 @@ const flag = k => process.argv.includes('--' + k);
 (async () => {
   const vw = +(arg('vw') || 1920), vh = +(arg('vh') || 1080), out = arg('out') || 'popup_shot.png';
   const lab = arg('lab'), pop = arg('pop'), weeks = +(arg('weeks') || 20), grade = arg('grade'), seed = +(arg('seed') || 77);
-  const b = await chromium.launch(), p = await b.newPage({ viewport: { width: vw, height: vh } });
+  const b = await chromium.launch(flag('nobars') ? {} : { ignoreDefaultArgs: ['--hide-scrollbars'] }), p = await b.newPage({ viewport: { width: vw, height: vh } });   // 기본: 실제 게임처럼 스크롤 막대를 보이게 찍음
   const errs = []; p.on('pageerror', e => errs.push(e.message));
   const url = 'file://' + path.resolve(__dirname, '../../prototype/index.html') + (lab ? '?lab=' + lab : '');
   await p.goto(url); await p.waitForTimeout(lab ? 4500 : 3500);
