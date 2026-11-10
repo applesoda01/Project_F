@@ -1,6 +1,6 @@
 {
  "date": "2026-11-10",
- "status": "user-confirmed (7 chars from original-sheet inputs)",
+ "status": "user-confirmed (10 chars; archer_f added 2026-11-10)",
  "chair_asset": "chair_left.png (406x593, faces right character)",
  "chair_height_px": 390,
  "scale_basis": "standing sprite height ~516px",
@@ -42,6 +42,10 @@
    "cx": 6,
    "by": 33,
    "note": "확정 체크 미표시"
+  },
+  "archer_f": {
+   "cx": -10,
+   "by": 32
   }
  },
  "pending": [
