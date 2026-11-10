@@ -8,6 +8,7 @@
 - `sit/sit_chair_placement.json`: 종별 의자 오프셋(cx, by). 10종 사용자 확정.
 - `walk/<char>/walk_NN.png`: 걷기 1주기 24프레임(30fps 기준 0.8초). 640×800 RGBA, 서 있는 기준(키 516px, 바닥 y=787) 정렬.
 - `idle/<char>/idle_NN.png`: 서 있기 대기 72프레임. 640×800 RGBA, 걷기와 같은 서 있는 기준(키 약 516px, 바닥 y≈787). `idle/<char>/idle.gif`는 미리보기(프레임당 40ms).
+- `lina/<motion>/<motion>_NN.png`: 접수원 리나 5모션(idle, greet, guide, paper, thanks) 각 72프레임. 256×256 RGBA, 발끝 y=244, 캐릭터 높이 약 214px, 24fps. `lina/<motion>/<motion>.gif`는 녹색 배경 미리보기, `lina/lina_<motion>_sheet_12x6.png`는 12×6 시트.
 - `*/sitdown.gif`, `walk/<char>/walk.gif`: 미리보기(원본 정렬본 기준).
 
 ## 제작 방식
