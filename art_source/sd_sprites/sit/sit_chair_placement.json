@@ -1,0 +1,50 @@
+{
+ "date": "2026-11-10",
+ "status": "user-confirmed (7 chars from original-sheet inputs)",
+ "chair_asset": "chair_left.png (406x593, faces right character)",
+ "chair_height_px": 390,
+ "scale_basis": "standing sprite height ~516px",
+ "offset_rule": "chair center x = char bbox center x + chair_center_from_char_center_x; chair bottom y = char bbox bottom + chair_bottom_from_feet_y (positive = down)",
+ "chars": {
+  "cleric_f": {
+   "cx": 1,
+   "by": 28
+  },
+  "rogue_f": {
+   "cx": -21,
+   "by": 27
+  },
+  "warrior_m": {
+   "cx": 2,
+   "by": 30
+  },
+  "archer_m": {
+   "cx": 2,
+   "by": 27
+  },
+  "mage_m": {
+   "cx": -18,
+   "by": 5
+  },
+  "cleric_m": {
+   "cx": -20,
+   "by": 13
+  },
+  "rogue_m": {
+   "cx": -23,
+   "by": 30
+  },
+  "mage_f": {
+   "cx": -18,
+   "by": 38
+  },
+  "warrior_f": {
+   "cx": 6,
+   "by": 33,
+   "note": "확정 체크 미표시"
+  }
+ },
+ "pending": [
+  "archer_f (hold)"
+ ]
+}

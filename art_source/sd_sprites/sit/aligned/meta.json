@@ -1,0 +1,83 @@
+{
+ "canvas": [
+  720,
+  700
+ ],
+ "chair_center_x": 360,
+ "chair_bottom_y": 620,
+ "chair_h": 390,
+ "chars": {
+  "cleric_f": {
+   "x": 222,
+   "y": 78,
+   "w": 273,
+   "h": 514,
+   "chair_dx": 1,
+   "chair_dy": 28
+  },
+  "rogue_f": {
+   "x": 238,
+   "y": 62,
+   "w": 287,
+   "h": 531,
+   "chair_dx": -21,
+   "chair_dy": 27
+  },
+  "warrior_m": {
+   "x": 226,
+   "y": 90,
+   "w": 265,
+   "h": 500,
+   "chair_dx": 2,
+   "chair_dy": 30
+  },
+  "archer_m": {
+   "x": 216,
+   "y": 91,
+   "w": 285,
+   "h": 502,
+   "chair_dx": 2,
+   "chair_dy": 27
+  },
+  "mage_m": {
+   "x": 192,
+   "y": 67,
+   "w": 373,
+   "h": 548,
+   "chair_dx": -18,
+   "chair_dy": 5
+  },
+  "cleric_m": {
+   "x": 250,
+   "y": 92,
+   "w": 260,
+   "h": 515,
+   "chair_dx": -20,
+   "chair_dy": 13
+  },
+  "rogue_m": {
+   "x": 246,
+   "y": 61,
+   "w": 273,
+   "h": 529,
+   "chair_dx": -23,
+   "chair_dy": 30
+  },
+  "mage_f": {
+   "x": 202,
+   "y": 66,
+   "w": 351,
+   "h": 516,
+   "chair_dx": -18,
+   "chair_dy": 38
+  },
+  "warrior_f": {
+   "x": 198,
+   "y": 71,
+   "w": 313,
+   "h": 516,
+   "chair_dx": 6,
+   "chair_dy": 33
+  }
+ }
+}
