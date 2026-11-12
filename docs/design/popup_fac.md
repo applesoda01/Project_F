@@ -47,7 +47,7 @@
 
 ## 3. 유지비 삭제
 
-- `data/balance.csv` `econ.upkeepRate` 0.015 → 0, 시뮬레이터 기본값도 0.
+- `prototype/data/balance.csv` `econ.upkeepRate` 0.015 → 0, 시뮬레이터 기본값도 0.
 - 시뮬레이터 40판 비교(유지비 1.5% → 0%): 첫해 월 순이익 451 → 451G, 등급 도달 주차 차이 2% 이내(E 98 → 98, C 166 → 163, A 310 → 309, S 447 → 450). 중반 이후 쌓이는 돈만 늘어남(5년차 6,500 → 10,600G, 9년차 18만 → 28만G).
 - 관문 1 변화 없음 (게임 456G·93.1%, 시뮬레이터 454G·92.0%).
 - 장부 팝업의 유지비 줄은 5번 장부 개편 때 정리.
@@ -64,5 +64,5 @@
 | --- | --- |
 | `prototype/js/ui.js` | `badge()` → HUD 배지, `facHtml` 다시 짬(`FAC_FX`·`FAC_READY`·`FAC_LABEL`) |
 | `prototype/css/ui_kit.css` | `fx-row`(4칸 격자), `fx-row.glow`(전직 제안 테두리 공유), `fx-soon`·`fx-lock` |
-| `data/balance.csv` · `prototype/js/data_gen.js` | 유지비율 0 |
+| `prototype/data/balance.csv` · `prototype/js/data_gen.js` | 유지비율 0 |
 | `prototype/js/sim_engine.js` | 기본 유지비율 0 |

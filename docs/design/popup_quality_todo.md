@@ -72,7 +72,7 @@
 | 후반 돈 과잉 대책 | popup_fac.md 4 | 유지비 삭제로 더 커짐 |
 | 준비 중 시설의 효과 구현 | popup_fac.md 4 | F·E 범위에서는 집무실 |
 | 식사 효과 상한 | cooking.md 7 | 16개 다 찾으면 발견 보너스 +32% |
-| E급 요리 발견이 늦음 | cooking.md 6 | 숲 버섯 파이는 E급 후 40주(2년 안에 절반). 밀가루 확률 조정 검토 — `tools/cook_balance.html` |
+| E급 요리 발견이 늦음 | cooking.md 6 | 숲 버섯 파이는 E급 후 40주(2년 안에 절반). 밀가루 확률 조정 검토 — `prototype/tools/cook_balance.html` |
 | 음식이 아닌 소재: 판매·장비 해금 | cooking.md 3 | 지금은 보관만 |
 | 길드 기록 그림 아이콘 | popup_log.md 5 | 지금 글자 기호 |
 | 2·3차 직업 아이콘 27종 | popup_codex.md 4 | 지금 이름 첫 글자 |
@@ -86,7 +86,7 @@
 
 ## 도구
 
-- `tools/skill_slot_tuner.html`: 스킬 칸 크기·간격 조절 페이지 (게임 값 = 칸 68px, 간격 12px)
-- `tools/dev/popup_shot.js`: 팝업 시안 캡처 (Claude 작업 공간용, 사용법은 `tools/dev/README.md`)
-- `tools/cook_balance.html`: 요리 밸런스 계산기 (소재 확률·식사 효과를 바꿔 여러 판 돌림)
+- `prototype/tools/skill_slot_tuner.html`: 스킬 칸 크기·간격 조절 페이지 (게임 값 = 칸 68px, 간격 12px)
+- `prototype/tools/dev/popup_shot.js`: 팝업 시안 캡처 (Claude 작업 공간용, 사용법은 `prototype/tools/dev/README.md`)
+- `prototype/tools/cook_balance.html`: 요리 밸런스 계산기 (소재 확률·식사 효과를 바꿔 여러 판 돌림)
 - 식당 체험: 게임 주소에 `?lab=kitchen` 또는 개발 패널 "식당 시험"

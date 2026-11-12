@@ -16,7 +16,7 @@
 
 ## 외부 작업자: 깃허브 웹에서 고치기 (프로그램 설치 없이)
 
-1. 저장소의 `data` 폴더에서 고칠 CSV를 엽니다 (예: `data/speech.csv`).
+1. 저장소의 `prototype/data` 폴더에서 고칠 CSV를 엽니다 (예: `prototype/data/speech.csv`).
 2. 오른쪽 위 연필 아이콘(Edit)을 누르고 고칩니다. 쉼표(,)가 들어간 칸은 큰따옴표로 감쌉니다.
 3. **Commit changes…** → "Create a new branch for this commit and start a pull request" 선택 → **Propose changes** → **Create pull request**.
 4. 1~2분 뒤 PR 아래에 검사 결과 댓글이 달립니다. 오류가 있으면 알려 준 행을 고쳐 같은 PR에 다시 커밋합니다.
@@ -27,7 +27,7 @@
 ## 외부 작업자: GitHub Desktop으로 고치기
 
 1. **Current branch → New branch** 로 작업 가지를 만듭니다 (이름 예: `speech-수정`).
-2. CSV를 고치고, 가능하면 `python tools/data_build.py` 로 미리 검사합니다.
+2. CSV를 고치고, 가능하면 `python prototype/tools/data_build.py` 로 미리 검사합니다.
 3. Commit → **Publish branch** → **Create Pull Request**.
 
 ## 윤석 (관리자)

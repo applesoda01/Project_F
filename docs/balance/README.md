@@ -10,4 +10,4 @@
 | [promotion_timing.md](promotion_timing.md) | 2차 전직 시점 → progression_v1.md로 해결 |
 | [m2_observation.md](m2_observation.md) | 관문 2 중간 점검 — 로비 관찰 |
 
-재현 방법: 저장소 최상위에서 `node sim/scripts/fame_cmp.js sim/sim_engine.js` (시뮬레이터 60판 요약), `node sim/scripts/long_cmp.js sim/sim_engine.js` (장기 지표). 게임 쪽은 프로토타입 개발 패널의 "관문 1 검증"(100판).
+재현 방법: 저장소 최상위에서 `node prototype/sim/scripts/fame_cmp.js prototype/sim/sim_engine.js` (시뮬레이터 60판 요약), `node prototype/sim/scripts/long_cmp.js prototype/sim/sim_engine.js` (장기 지표). 게임 쪽은 프로토타입 개발 패널의 "관문 1 검증"(100판).

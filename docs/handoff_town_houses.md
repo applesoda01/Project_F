@@ -30,9 +30,9 @@
 - `docs/art/town_ref/houses/base_1x1/` — 1×1 원본 (이번에 함께 저장)
   - `h1~h5_{0..3}.png`, `v2/s3a, s3b, s4a, s4b, s5b_{0..3}.png`
   - 사용처: 2단계 `h2`, 3단계 1층 `h3`, 3단계 2층 `v2/s3b`, 5단계 1층 `h5`, 5단계 2층 `v2/s5b`
-- `tools/art/house_stretch/` — 1×2 제작 스크립트 (아래 5절)
-- `data/town_houses.csv` — 67채. 열: `house_id,gx,gy,w,d,등장_단계,지붕색(0~3),층수(1~2)`
-- `data/town_slots.csv` — 건물 슬롯 17행 (사용자 `town_slots 1.csv`. 프로젝트 원본은 아직 교체 안 함)
+- `prototype/tools/art/house_stretch/` — 1×2 제작 스크립트 (아래 5절)
+- `prototype/data/town_houses.csv` — 67채. 열: `house_id,gx,gy,w,d,등장_단계,지붕색(0~3),층수(1~2)`
+- `prototype/data/town_slots.csv` — 건물 슬롯 17행 (사용자 `town_slots 1.csv`. 프로젝트 원본은 아직 교체 안 함)
 - `docs/working_rules.md` — 협업 규칙
 
 ### 주의할 임시/잔여 파일
@@ -50,7 +50,7 @@
 
 ## 5. 1×2 제작 방법 (재현용)
 
-스크립트는 `tools/art/house_stretch/`에 있고, 경로가 클라우드 작업 환경(`/tmp/hs`, `/mnt/user-data/outputs`)에 고정되어 있어 새 환경에서는 경로를 고쳐야 합니다.
+스크립트는 `prototype/tools/art/house_stretch/`에 있고, 경로가 클라우드 작업 환경(`/tmp/hs`, `/mnt/user-data/outputs`)에 고정되어 있어 새 환경에서는 경로를 고쳐야 합니다.
 
 1. `stretch3.py` — 핵심. 1×1 스프라이트를 세로 경계선(`c`)에서 자르고, 용마루 방향으로 `L=310px` 만큼 한 칸을 끼움. 끼우는 구간은 장식 없는 띠(`bL`~`c`)를 반복해 채우고, 경계는 가로 7px 크로스페이드. 기울기 `SL=0.52`.
    - 굴뚝·지붕창이 띠에 걸리면 폴리곤을 지우고 용마루 축 방향 이웃 픽셀로 메운 뒤 가운데에 다시 붙임 (3단계·2단계)
@@ -87,7 +87,7 @@
 
 1. **배율 정리**: 1×1(폭 약 580px)과 1×2(폭 약 830~890px)를 같은 배율로 줄임(게임 내 1×1 폭 약 100~130px 목표). 바닥 기준 정렬, 용량 최적화(WebP/PNG)
 2. **패키징**: `prototype/assets/town/`에 1×1/1×2 × 외관 × 1·2층 × 지붕 4색
-3. **`town.js` 구현**: `data/town_houses.csv` 읽기, 클릭 불가, 깊이 정렬, 1×1·1×2 점유 칸, 1·2층, 단계별 외관, 지붕색, 등장 단계 전 숨김. 1×2의 gx가 긴 방향이면 좌우 반전
+3. **`town.js` 구현**: `prototype/data/town_houses.csv` 읽기, 클릭 불가, 깊이 정렬, 1×1·1×2 점유 칸, 1·2층, 단계별 외관, 지붕색, 등장 단계 전 숨김. 1×2의 gx가 긴 방향이면 좌우 반전
 4. **`town_editor.html`**: 같은 렌더 반영
 5. **슬롯 교체**: `town.js`, `town_editor.html`에 내장된 옛 기본 슬롯 배열을 사용자 `town_slots.csv` 레이아웃으로 교체 (`그림_배율` 포함, 좌표 (19,9) 주의)
 6. **문서 갱신**: `decisions.md`, `progress.md`, README, `design_v0.1`의 "무기점" 표현
