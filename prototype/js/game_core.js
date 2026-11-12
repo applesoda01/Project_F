@@ -32,7 +32,7 @@
   function newGame(cfg, seed) {
     const s = {
       cfg, seed: seed >>> 0, rngState: seed >>> 0,
-      week: 0, grade: 0, gold: cfg.econ.startGold, trust: 50, fame: 0, pop: cfg.town.startPop,
+      expireV: 1, week: 0, grade: 0, gold: cfg.econ.startGold, trust: 50, fame: 0, pop: cfg.town.startPop,
       built: { 게시판: true, 접수대: true, 주점: true, 판매창구: true }, eff: {}, meals: [0, 0, 0, 0, 0, 0, 0],
       filter: [4, 0, 0, 0, 0, 0, 0], filterV: 2, // 게시판 칸 배분: 등급별 비중 0(없음)·1(적게)·2(보통)·4(우선) (docs/design/popup_board.md)
       advs: [], board: [], active: [], nextId: 1, log: [],
@@ -240,6 +240,7 @@
   function migrate(s) {
     s.proposals = s.proposals || []; s.discovered = s.discovered || {}; s.knownMats = s.knownMats || {}; s.seenMons = s.seenMons || {}; if (s.fame == null) s.fame = 0;
     s.mats = s.mats || {};
+    if (!s.expireV) { s.expireV = 1; for (const q of s.board || []) q.posted = s.week; }   // 2026-11-12 의뢰 기한 도입 전 저장: 게시판 의뢰가 한꺼번에 만료되지 않게 기한을 새로 시작
     if (!s.dishes) { s.dishes = {}; for (let g = 0; g < 7; g++) DISH.filter(d => d.g === g).slice(0, s.meals[g] || 0).forEach(d => { s.dishes[d.name] = s.week; }); }   // 예전 저장: 등급별 해금 수 → 앞에서부터 그만큼 발견한 것으로
     syncMeals(s);
     s.ui = s.ui || {}; if (s.ui.expView === undefined) s.ui.expView = null; // 예전 저장에는 화면 배치가 없음
@@ -270,6 +271,16 @@
   }
   // 새 등급이 열리면 그 등급만 "우선"(4), 기존 등급 값은 그대로
   function openGrades(s, g0) { for (let g = g0 + 1; g <= s.grade; g++) s.filter[g] = FILTER_W[3]; }
+  // 의뢰 기한 (2026-11-12, docs/design/popup_board.md 10장): 게시 후 expireWeeks 주 동안 아무도 받지 않으면 사라지고 신뢰도 하락
+  const expireWeeks = s => s.cfg.quest.expireWeeks || 4;
+  function expireQuests(s) {
+    const W = expireWeeks(s), dt = s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1;
+    for (let i = s.board.length - 1; i >= 0; i--) {
+      const q = s.board[i]; if (s.week - q.posted < W) continue;
+      s.board.splice(i, 1); s.trust = Math.max(0, s.trust - dt); s.month.expired = (s.month.expired || 0) + 1;
+      log(s, `${qn(q)} 의뢰가 기한(${W}주)이 지나 게시판에서 사라졌습니다. 신뢰도 −${dt}.`, 'expire');
+    }
+  }
   function withdrawQuest(s, qid) {
     const i = s.board.findIndex(q => q.id === qid); if (i < 0) return false;
     const q = s.board[i]; const cost = Math.round(q.reward * 0.10);
@@ -483,7 +494,8 @@
   }
 
   function stepWeek(s) {
-    if (s.week % WPM === 0) generateQuests(s);
+    expireQuests(s);
+    generateQuests(s);   // 2026-11-12: 매주 게시 (예전에는 매달 초에만 = 월 유입의 1/4만 들어왔음)
     returns(s);
     departures(s);
     s.week++;
@@ -491,6 +503,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { expireWeeks, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

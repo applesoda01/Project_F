@@ -3,8 +3,10 @@ quest,ref,15|25|35|45|60|75|90,판정 기준치
 quest,reqCount,1|1|2|2|3|3|4,요구 능력치 수
 quest,reward,100|150|200|500|600|800|1500,
 quest,weeks,1|1|1|2|2|2|3,소요 주
-quest,perMonth,10,기본 월 유입량
-quest,boardCap,6|8|10|12|14|16|18,
+quest,perMonth,5,기본 월 유입량
+quest,boardCap,18|18|18|18|18|18|18,게시판 최대 칸 (2026-11-12 프로토타입: 처음부터 18칸)
+quest,expireWeeks,4,게시 후 만료까지 주 (아무도 받지 않으면 사라짐)
+quest,trustExpire,1,의뢰 만료 시 신뢰도 하락
 quest,partyAssist,0.25,파티원 보조 계수
 quest,deathBase,0.01|0.01|0.03|0.03|0.05|0.05|0.08,
 quest,subGrowth,0.2,성공 시 유형 능력치 성장
@@ -38,6 +40,7 @@ econ,buildCost,0|2000|4000|8000|15000|30000|0,
 econ,upkeepRate,0,
 econ,tavernPerAdvWeek,4,
 econ,tavernGradeMult,1.6,
+econ,effectOpen,0,시설 효과 개방 (0 = 끔: 프로토타입 게임에 없음. 시뮬레이터만 쓰던 기능)
 econ,resaleRate,0.08,
 econ,effectCost,0.1|0.2|0.35,
 econ,mealPriceRate,0.25,

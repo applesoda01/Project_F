@@ -15,7 +15,9 @@
         reward: [100, 200, 400, 800, 1500, 3000, 6000],
         weeks: [1, 1, 1, 2, 2, 2, 3],              // 소요 주
         perMonth: 10,                              // 기본 월 유입량
-        boardCap: [6, 8, 10, 12, 14, 16, 18],
+        boardCap: [18, 18, 18, 18, 18, 18, 18],   // 2026-11-12 프로토타입: 처음부터 18칸
+        expireWeeks: 4,                            // 게시 후 만료까지 주
+        trustExpire: 1,                            // 만료 시 신뢰도 하락
         partyAssist: 0.25,                         // 파티원 보조 계수
         deathBase: [0.01, 0.01, 0.03, 0.03, 0.05, 0.05, 0.08],
         subGrowth: 0.2,                            // 성공 시 유형 능력치 성장
@@ -46,6 +48,7 @@
         tavernPerAdvWeek: 4, tavernGradeMult: 1.6,
         resaleRate: 0.08,
         effectCost: [0.10, 0.20, 0.35],
+        effectOpen: 0,                             // 시설 효과 개방 (0 = 끔. 2026-11-12: 프로토타입 게임에는 없으므로 시뮬레이터도 끔)
         mealPriceRate: 0.15, mealMargin: 0.60, mealBuyRate: [0.30, 0.60, 0.90],
         mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02
       },
@@ -212,7 +215,7 @@
           seen.push({ hp: e.hp * (1 + (f - 1) * look), atk: e.atk * (1 + (f - 1) * look), def: e.def || 0, name: e.name, boss: !!e.boss });
         }
       }
-      return { g, type, req: req2, r: R0 / n, boss: !!boss, T, enemies, seen, combat: enemies.length > 0 };
+      return { g, type, req: req2, r: R0 / n, boss: !!boss, T, enemies, seen, combat: enemies.length > 0, posted: s.week };
     }
 
     function successP(party, q, sm) {
@@ -313,6 +316,11 @@
       return R() < Math.min(1, 2 / interval);
     }
 
+    // 의뢰 기한 (2026-11-12): 게시 후 expireWeeks 주 동안 아무도 받지 않으면 사라지고 신뢰도 하락
+    function expireQuests() {
+      const W = Q.expireWeeks || 4;
+      for (let i = s.board.length - 1; i >= 0; i--) if (s.week - s.board[i].posted >= W) { s.board.splice(i, 1); s.trust = Math.max(0, s.trust - (Q.trustExpire != null ? Q.trustExpire : 1)); s.st.qExpire = (s.st.qExpire || 0) + 1; }
+    }
     function generateQuests() {
       const mult = T.inflowMult[popStage()] * (0.7 + 0.6 * s.trust / 100) * (1 + 0.1 * s.grade) * (1 + 0.1 * Math.min(1, effN('접수대')));
       const n = Math.round(Q.perMonth * mult / WPM + R() * 0.5);
@@ -546,7 +554,7 @@
       }
       // 시설 효과 개방 (금전 부분만 모델링)
       const effFac = ['정보실', '의무실', '훈련장', '도서관', '휴게실', '주점', '접수대', '게시판', '판매창구'];
-      for (const f of effFac) {
+      for (const f of (E.effectOpen === 0 ? [] : effFac)) {   // 2026-11-12: econ.effectOpen 0 = 프로토타입(게임에 효과 개방이 없음 → 게임과 같게 끔)
         const baseG = f === '주점' || f === '접수대' || f === '게시판' || f === '판매창구' ? 0 : FAC.find(x => x[0] === f)[1];
         if (!(has(f))) continue;
         const max = f === '정보실' ? 5 : 3;
@@ -566,7 +574,8 @@
       // 신규 모험가
       const lam = A.arrivalPerMonth * (0.7 + 0.6 * s.trust / 100) * (1 + cfg.fame.maxBonus * Math.min(1, s.fame / cfg.fame.full)); // 신뢰도 × 명성
       let k = Math.floor(lam); if (R() < lam - k) k++;
-      for (let i = 0; i < k; i++) {
+      const advCap = (A.capByGrade || [8, 12, 16, 20, 24, 28, 32])[s.grade] || 8;   // 2026-11-12: 게임(game_core.js advCap)과 같게 길드 등급별 모험가 상한 적용
+      for (let i = 0; i < k && s.advs.filter(x => x.alive).length < advCap; i++) {
         const ext = R() < 0.05 && s.grade > 0 ? Math.min(6, s.grade + (R() < 0.3 ? 2 : 1)) : 0;
         const a = newAdv({ grade: ext });
         if (s.demonFlagFallback) { a.demonHeir = true; a.heirWeek = s.week; s.demonFlagFallback = false; s.st.demonFallback = true; }
@@ -595,7 +604,8 @@
         if (has('훈련장')) { const m = 1 + [0, 0.15, 0.40, 0.40][Math.min(3, effN('훈련장'))]; for (const i of [0, 1, 4]) if (i === a.core || (a.pair && a.pair.includes(i))) a.stats[i] = Math.min(G.statCap, a.stats[i] + G.trainPerWeek * m); }
         if (has('도서관')) { const m = 1 + (effN('도서관') ? 0.15 : 0); for (const i of [2, 3]) if (i === a.core || (a.pair && a.pair.includes(i))) a.stats[i] = Math.min(G.statCap, a.stats[i] + G.trainPerWeek * m); }
       }
-      if (s.week % WPM === 0) generateQuests();
+      expireQuests();
+      generateQuests();   // 2026-11-12: 매주 게시 (예전에는 매달 초에만 = 월 유입의 1/4만 들어왔음)
       adventurersChoose();
       bossStep();
       invasionStep();

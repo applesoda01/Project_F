@@ -81,6 +81,8 @@
   // 주 게이지 끝에 시간대 아이콘이 붙어 함께 움직임: 1·2주(아침·낮)·3주(노을)는 태양, 4주(저녁)는 달. 배경 시간대(lobby_sky.js)와 같은 4주 주기
   UI.weekBar = p => {
     q('#hWeekBar').style.width = (p * 100).toFixed(1) + '%';
+    wkFrac = p;
+    if (popup === 'board') for (const el of document.querySelectorAll('#popBody .qdl i[data-dl]')) { const bq = s.board.find(x => x.id === +el.dataset.dl); if (bq) { const v = dlLeft(bq, p); el.style.width = (v * 100).toFixed(1) + '%'; el.classList.toggle('low', v <= 0.25); } }
     const ic = q('#hTime'); if (!ic) return;
     const ph = ((s && s.week) || 0) % 4, key = ph === 3 ? 'moon' : 'sun';
     if (ic.dataset.k !== key) { ic.dataset.k = key; ic.src = `assets/ui/hud/time_${key}.png`; }
@@ -276,6 +278,9 @@
     return (dangerCache[T.id] = { n: need, rate, more: rate < 0.7 });
   }
   const foeBand = q => q.foe == null ? null : q.foe < 0.95 ? 'down' : q.foe > 1.05 ? 'up' : 'mid';
+  // 의뢰 기한 막대 (2026-11-12): 남은 비율 = (기한 − 게시 후 지난 주 − 이번 주 진행률) ÷ 기한. 주 게이지와 같은 진행률로 매 프레임 줄어듦
+  let wkFrac = 0;
+  const dlLeft = (q, f) => { const W = Gm.expireWeeks(s); return Math.max(0, Math.min(1, (W - (s.week - q.posted) - (f || 0)) / W)); };
   const ageOf = q => { const w = s.week - q.posted; return w >= 4 ? 2 : w >= 2 ? 1 : 0; };
   const cleanName = q => q.name || `${GR[q.g]}급 ${Gm.QTYPE[q.type]} 의뢰`;
   const gradeImg = (g, cls) => `<i class="ux-grade ${cls || ''}" style="background-image:url(assets/ui/hud/badge_${GR[g]}.png)" title="${GR[g]}급"></i>`;
@@ -295,9 +300,10 @@
       const sk = d.n ? `<span class="skulls" title="위험도">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}</span>` : '';
       const foe = d.n ? (intel ? (fb === 'up' ? '<i class="foe up" title="강한 무리">▲</i>' : fb === 'down' ? '<i class="foe down" title="약한 무리">▼</i>' : '') : '<i class="foe unk" title="정보실이 있으면 알 수 있음">?</i>') : '';
       cards += `<div class="qcard age${ageOf(q)}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b></div>
-        <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward)}G</span><button class="ux-btn danger sm" data-wd="${q.id}">취소</button></div></div>`;
+        <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward)}G</span><button class="ux-btn danger sm" data-wd="${q.id}">취소</button></div>
+        <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
     }
-    if (!s.board.length) cards = '<div class="ux-empty qb-none">게시된 의뢰가 없습니다. 의뢰는 매달 초에 들어옵니다.</div>';
+    if (!s.board.length) cards = '<div class="ux-empty qb-none">게시된 의뢰가 없습니다. 의뢰는 매주 들어옵니다.</div>';
     b.innerHTML = top + `<div class="ux-h qb-h">게시된 의뢰 <small>${s.board.length} / ${cap}칸 · 카드에 마우스를 올리면 자세히 보입니다</small></div><div class="qb-grid">${cards}</div><div class="qtip" id="qTip"></div>`;
     b.onclick = e => {
       const wd = e.target.closest('[data-wd]'); if (wd) { Gm.withdrawQuest(s, +wd.dataset.wd); qHover = null; hooks.changed(); return; }
@@ -327,7 +333,8 @@
       return `<span class="mat ${r.role === '주' ? 'main' : ''}" title="${known ? esc(m.name) : '???'}"><span class="ux-slot${known ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${known || m.icon ? matImg(m) : ''}</span><em>${r.p}%</em></span>`; }).join('')}</div>`;
     const fs = q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g], ff = q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g], ts = q.trustS != null ? q.trustS : 0.3, tf = q.trustF != null ? q.trustF : 0.6;
     h += `<div class="foot"><span>성공 명성 <b class="ux-plus">+${fs}</b> · 신뢰 <b class="ux-plus">+${ts}</b></span><span>실패 명성 <b class="ux-minus">−${ff}</b> · 신뢰 <b class="ux-minus">−${tf}</b></span></div>`;
-    h += `<div class="foot muted">${s.week - q.posted ? (s.week - q.posted) + '주째 게시' : '이번 주 게시'} · 떼면 ${fmt(Math.round(q.reward * 0.10))}G, 신뢰도 −2</div>`;
+    { const left = Gm.expireWeeks(s) - (s.week - q.posted);
+      h += `<div class="foot muted">기한 ${left}주 남음 (지나면 사라지고 신뢰도 −${s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1}) · 떼면 ${fmt(Math.round(q.reward * 0.10))}G, 신뢰도 −2</div>`; }
     tip.innerHTML = h; tip.classList.add('on');
     // 카드 오른쪽, 공간이 없으면 왼쪽
     const bw = b.clientWidth, x = c.offsetLeft + c.offsetWidth + 10, tw = tip.offsetWidth;
@@ -844,7 +851,7 @@
   }
   // 길드 기록: 월 단위 카드(머리 = 그 달 결산) · 종류 아이콘 · 필터. 'sys'(버튼 반응)·'debug'는 기록에서 숨김
   const LK = {   // 종류 → [아이콘 글자, 이름, 필터 묶음]
-    success: ['✓', '의뢰 성공', 'q'], fail: ['✕', '의뢰 실패', 'q'], withdraw: ['⊘', '의뢰 철회', 'q'], depart: ['➜', '출발', 'q'],
+    success: ['✓', '의뢰 성공', 'q'], fail: ['✕', '의뢰 실패', 'q'], withdraw: ['⊘', '의뢰 철회', 'q'], expire: ['⌛', '의뢰 만료', 'q'], depart: ['➜', '출발', 'q'],
     death: ['☠', '사망', 'a'], injury: ['✚', '부상', 'a'], leave: ['↩', '떠남', 'a'], arrive: ['☺', '새 모험가', 'a'], grow: ['▲', '성장', 'a'], promo: ['★', '전직', 'a'],
     unlock: ['◆', '발견', 'g'], build: ['⌂', '건설', 'g'], guild: ['⚑', '길드', 'g'], info: ['•', '기록', 'g'], warn: ['!', '알림', 'g']
   };

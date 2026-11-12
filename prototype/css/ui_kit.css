@@ -124,6 +124,10 @@
 .qcard .r1 b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qcard .r2{display:flex;align-items:center;gap:5px}
 .qcard .r2 .ux-btn{margin-left:auto;white-space:nowrap;padding:2px 9px;font-size:14px}
+/* 의뢰 기한 막대 (2026-11-12): 카드 아래 가장자리, 남은 기한만큼. 4분의 1 이하면 빨강 */
+.qcard .qdl{position:absolute;left:8px;right:8px;bottom:4px;height:4px;border-radius:2px;background:rgba(90,58,34,.18);overflow:hidden}
+.qcard .qdl i{display:block;height:100%;border-radius:2px;background:#c9a24a}
+.qcard .qdl i.low{background:#c0503a}
 .qcard.age1{background:linear-gradient(#f8eccd,#efdcb2);border-color:rgba(120,82,44,.45)}
 .qcard.age2{background:linear-gradient(#ecd9ab,#dcc28c);border-color:rgba(110,72,34,.55);color:#5a4630}
 .qcard.age2::after{content:"";position:absolute;right:-1px;top:-1px;width:18px;height:18px;background:linear-gradient(225deg,#cbb27c 0 50%,#f6e8c8 50%);border-bottom-left-radius:4px;box-shadow:-1px 1px 2px rgba(60,36,16,.25)}
