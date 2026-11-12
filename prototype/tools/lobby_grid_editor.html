@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>로비 배치 칸 편집기</title>
+<style>
+  body { margin: 0; background: #2b2118; color: #f3e6c8; font: 14px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
+  header { padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #3a2c1f; border-bottom: 1px solid #5a4430; }
+  header h1 { font-size: 16px; margin: 0 12px 0 0; }
+  .brush { display: flex; gap: 6px; }
+  .brush button, .act button, .act label { background: #5a4430; color: #f3e6c8; border: 1px solid #8a6a46; border-radius: 6px; padding: 5px 10px; cursor: pointer; font: inherit; }
+  .brush button.on { background: #c9a24a; color: #2b2118; font-weight: 700; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+  .act { display: flex; gap: 6px; margin-left: auto; }
+  #wrap { position: relative; margin: 10px auto; width: min(96vw, 1600px); }
+  canvas { width: 100%; display: block; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.5); cursor: crosshair; }
+  #info { padding: 4px 16px 14px; color: #c9b58f; line-height: 1.6; }
+  #info b { color: #f3e6c8; }
+  #msg { color: #8fd18f; }
+</style>
+</head>
+<body>
+<header>
+  <h1>로비 배치 칸 편집기</h1>
+  <div class="brush" id="brush">
+    <button data-b="0" class="on"><span class="sw" style="background:#3fbf5f"></span>놓기 가능</button>
+    <button data-b="1"><span class="sw" style="background:#d04a3a"></span>놓기 불가</button>
+    <button data-b="2"><span class="sw" style="background:#e08a2a"></span>벽난로 전용 (벽만)</button>
+  </div>
+  <div class="act">
+    <button id="bDraft">초안으로 되돌리기</button>
+    <label>불러오기 <input type="file" id="fLoad" accept=".json" hidden></label>
+    <button id="bSave">저장 (lobby_grid.json 내려받기)</button>
+  </div>
+</header>
+<div id="wrap"><canvas id="cv" width="1920" height="1080"></canvas></div>
+<div id="info">
+  <b>쓰는 법</b> — 위에서 붓을 고르고 바닥 칸이나 벽 칸을 누르거나 끌어서 칠합니다. 바닥 14×14칸, 벽은 왼쪽 벽·오른쪽 벽 각 14칸입니다.
+  "벽난로 전용"은 벽 칸에만 칠할 수 있고, 벽난로는 그 칸에만 놓을 수 있습니다.<br>
+  저장하면 <b>lobby_grid.json</b> 이 내려받아집니다. 이 파일을 <b>prototype/data/</b> 폴더에 넣어 주세요 (같은 이름이 있으면 덮어쓰기).
+  점선 사각형 = 지금 게임의 고정 테이블 자리(참고용), 파란 점 = 접수 줄·입구 등 모험가가 지나가는 지점(참고용).<br>
+  <span id="cnt"></span> <span id="msg"></span>
+</div>
+<script src="../js/iso.js"></script>
+<script>
+'use strict';
+// 2026-11-12 (docs/design/guild_interior.md 10-1): 로비 자유 배치에서 "놓을 수 있는 칸"을 정하는 편집기.
+// 바닥 칸 (gx, gy) 0~13: gx = 오른쪽 벽 쪽(→), gy = 왼쪽 벽 쪽(↙). 벽: R = 오른쪽 안쪽 벽(gy = 0 가장자리), L = 왼쪽 안쪽 벽(gx = 0 가장자리)
+const I = window.Iso, P = I.P, N = 14, WALL_H = 150;
+const cv = document.getElementById('cv'), g = cv.getContext('2d');
+const bg = new Image(); bg.src = '../assets/lobby_iso/bg.jpg'; bg.onload = draw;
+const COL = ['rgba(63,191,95,.35)', 'rgba(208,74,58,.45)', 'rgba(224,138,42,.55)'];
+let brush = 0, G = null, painting = false, hover = null;
+
+// 초안: 접수 줄·입구 통로·접수대 앞·문 앞은 막고, 벽은 문·창·게시판 자리를 막아 둔다 (화면 보며 고쳐 쓰는 출발점)
+function draft() {
+  const floor = Array.from({ length: N }, () => Array(N).fill(0));
+  // 1) 배경에 그려진 큰 물건(화면 1920×1080 좌표 사각형) 위의 칸: 접수대·리나, 식당 카운터, 계단, 소재 판매 책상
+  const RECT = [[1000, 400, 1360, 650], [250, 480, 610, 740], [1440, 400, 1720, 730], [1150, 720, 1420, 950]];
+  // 2) 모험가가 지나가는 길(칸 좌표 선분): 입구 → 접수대 손님 자리, 접수 줄, 문 앞
+  const PATH = [[[13.2, 10.6], [5.4, 3.5]], [[5.4, 3.5], [5.4, 8.3]], [[14.6, 12.2], [13.2, 10.6]], [[0.5, 0.5], [2.5, 2.5]]];
+  const dSeg = (px, py, [ax, ay], [bx, by]) => { const vx = bx - ax, vy = by - ay, L = vx * vx + vy * vy, k = Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / L)); return Math.hypot(px - ax - k * vx, py - ay - k * vy); };
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const c = P(x + .5, y + .5);
+    if (RECT.some(r => c[0] >= r[0] && c[0] <= r[2] && c[1] >= r[1] && c[1] <= r[3])) floor[y][x] = 1;
+    if (PATH.some(s => dSeg(x + .5, y + .5, s[0], s[1]) < 0.95)) floor[y][x] = 1;
+  }
+  // 벽 (0 = 가장 안쪽 모서리): 왼쪽 벽 = 집무실 문 0~1 · 게시판 4~8 · 창문·선반 10~13 막음 / 오른쪽 벽 = 관리소 문 0~1 · 접수대 2~6 · 계단 10~13 막음
+  const wallL = [1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1];
+  const wallR = [1, 1, 1, 1, 1, 1, 1, 2, 2, 0, 1, 1, 1, 1];   // 벽난로 전용 7~8 (가안)
+  return { v: 1, n: N, floor, wallL, wallR };
+}
+G = draft();
+fetch('../data/lobby_grid.json').then(r => r.ok ? r.json() : null).then(j => { if (j && j.floor) { G = j; msg('prototype/data/lobby_grid.json 을 불러왔습니다.'); draw(); } }).catch(() => {});
+
+// 칸 다각형
+const cellPoly = (x, y) => [P(x, y), P(x + 1, y), P(x + 1, y + 1), P(x, y + 1)];
+const wallPoly = (side, i) => {   // 벽 칸: 바닥 가장자리 한 칸 위로 WALL_H 만큼 세운 사각형
+  const a = side === 'R' ? P(i, 0) : P(0, i), b = side === 'R' ? P(i + 1, 0) : P(0, i + 1);
+  return [[a[0], a[1] - WALL_H], [b[0], b[1] - WALL_H], b, a];
+};
+function inPoly(px, py, pts) { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if (((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) c = !c; } return c; }
+function hit(px, py) {
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (inPoly(px, py, cellPoly(x, y))) return { t: 'f', x, y };
+  for (const side of ['R', 'L']) for (let i = 0; i < N; i++) if (inPoly(px, py, wallPoly(side, i))) return { t: 'w', side, i };
+  return null;
+}
+function poly(pts, fill, stroke, dash) { g.beginPath(); pts.forEach((p, k) => k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.setLineDash(dash || []); g.strokeStyle = stroke; g.lineWidth = 2; g.stroke(); g.setLineDash([]); } }
+
+function draw() {
+  g.clearRect(0, 0, 1920, 1080);
+  if (bg.complete && bg.naturalWidth) g.drawImage(bg, 0, 0, 1920, 1080);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) poly(cellPoly(x, y), COL[G.floor[y][x]] || COL[0], 'rgba(255,255,255,.35)');
+  for (const side of ['R', 'L']) { const W = side === 'R' ? G.wallR : G.wallL; for (let i = 0; i < N; i++) poly(wallPoly(side, i), COL[W[i]] || COL[0], 'rgba(255,255,255,.5)'); }
+  // 참고: 지금 게임의 고정 테이블 자리, 모험가 통행 지점
+  for (const [tx, ty] of I.TABLES) poly(cellPoly(tx, ty), null, '#fff6d0', [6, 5]);
+  const pts = [I.CUST_AT, I.ENTRY, I.DOOR_OUT].concat([1, 2, 3, 4, 5].map(i => P(5.4, 3.5 + i * 0.8)));
+  g.fillStyle = '#4aa3ff'; for (const p of pts) { g.beginPath(); g.arc(p[0], p[1], 7, 0, 7); g.fill(); }
+  if (hover) { const pl = hover.t === 'f' ? cellPoly(hover.x, hover.y) : wallPoly(hover.side, hover.i); poly(pl, 'rgba(255,255,255,.25)', '#ffffff'); }
+  // 칸 수
+  let c = [0, 0, 0]; G.floor.forEach(r => r.forEach(v => c[v]++)); const w = [0, 0, 0]; G.wallL.concat(G.wallR).forEach(v => w[v]++);
+  document.getElementById('cnt').textContent = `바닥: 놓기 가능 ${c[0]} · 불가 ${c[1]}칸 / 벽: 가능 ${w[0]} · 불가 ${w[1]} · 벽난로 전용 ${w[2]}칸`;
+}
+function paint(h) {
+  if (!h) return;
+  if (h.t === 'f') { if (brush === 2) { msg('벽난로 전용은 벽 칸에만 칠할 수 있습니다.'); return; } G.floor[h.y][h.x] = brush; }
+  else (h.side === 'R' ? G.wallR : G.wallL)[h.i] = brush;
+  draw();
+}
+const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * 1920 / r.width, (e.clientY - r.top) * 1080 / r.height]; };
+cv.addEventListener('mousedown', e => { painting = true; paint(hit(...pos(e))); });
+cv.addEventListener('mousemove', e => { const h = hit(...pos(e)); const k = JSON.stringify(h); if (k !== JSON.stringify(hover)) { hover = h; if (painting) paint(h); else draw(); } });
+window.addEventListener('mouseup', () => { painting = false; });
+cv.addEventListener('mouseleave', () => { hover = null; draw(); });
+document.getElementById('brush').addEventListener('click', e => { const b = e.target.closest('[data-b]'); if (!b) return; brush = +b.dataset.b; document.querySelectorAll('#brush button').forEach(x => x.classList.toggle('on', x === b)); });
+document.getElementById('bDraft').onclick = () => { if (confirm('지금 칠한 것을 버리고 초안으로 되돌릴까요?')) { G = draft(); draw(); msg('초안으로 되돌렸습니다.'); } };
+document.getElementById('bSave').onclick = () => {
+  const out = JSON.stringify({ v: 1, n: N, floor: G.floor, wallL: G.wallL, wallR: G.wallR, savedAt: new Date().toISOString() }, null, 1);
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out], { type: 'application/json' })); a.download = 'lobby_grid.json'; a.click();
+  msg('lobby_grid.json 을 내려받았습니다. prototype/data/ 폴더에 넣어 주세요.');
+};
+document.getElementById('fLoad').onchange = e => { const f = e.target.files[0]; if (!f) return; f.text().then(t => { const j = JSON.parse(t); if (!j.floor || j.floor.length !== N) throw new Error('형식이 다릅니다'); G = j; draw(); msg(f.name + ' 을 불러왔습니다.'); }).catch(err => msg('불러오기 실패: ' + err.message)); };
+function msg(t) { document.getElementById('msg').textContent = t; }
+draw();
+</script>
+</body>
+</html>

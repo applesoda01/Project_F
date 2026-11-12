@@ -25,7 +25,7 @@
   const standPos = (ac, seat) => { const s = I.seatStand(seat, ac.ik); return { x: s[0], y: s[1] }; };
 
   // ---------- 좌석 ----------
-  D.layout = function (nTables) { // Lobby가 테이블 개수를 알려 준다 (탁자 하나에 2석)
+  D.layout = function (nTables) { // Lobby가 놓인 테이블 목록(또는 개수)을 알려 준다 (탁자 하나에 2석). 2026-11-12: 자유 배치라 목록
     const old = D.seats; D.seats = [];
     for (const se of I.seatsFor(nTables)) {
       const inf = I.seatInfo(se), prev = old.find(o => o.id === se.id);
@@ -46,7 +46,7 @@
   D.chairDrawables = () => [];
   const sitN = ac => I.SITI[ac.ik].n;
   // 접수 줄: 리나(접수대) 앞 손님 자리에서 왼쪽 아래(왼쪽 벽 쪽)로 한 줄
-  function claimWin(win, ac) { const u = D.winUse.quest; let i = u.indexOf(null); if (i < 0) { i = u.length; u.push(null); } u[i] = ac.id; const q = P(5.4, 3.5 + i * 0.8); return { x: q[0], y: q[1], i }; }
+  function claimWin(win, ac) { const u = D.winUse.quest; let i = u.indexOf(null); if (i < 0) { i = u.length; u.push(null); } u[i] = ac.id; const q = P(5.4 + Math.min(i, 8) * 0.8, 2.6); return { x: q[0], y: q[1], i }; }   // 2026-11-12: 줄은 접수대 앞 붉은 띠(놓기 불가 칸) 안에서 오른쪽 벽을 따라 옆으로
   function freeWin(win, ac) { const u = D.winUse.quest; const i = u.indexOf(ac.id); if (i >= 0) u[i] = null; while (u.length && u[u.length - 1] === null) u.pop(); }
 
   // ---------- 배우 ----------

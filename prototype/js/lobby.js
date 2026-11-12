@@ -162,22 +162,35 @@
   }
 
   // ---------- 테이블 ----------
-  let lastTables = -1;
-  const tableCount = s => 2 + (s.grade >= 1 ? 1 : 0) + (s.grade >= 2 ? 1 : 0); // [가안] 정식 하우징(M3-8) 전까지 등급으로 대신함 (칸은 6개까지 마련됨)
+  let lastTables = '';
+  // 2026-11-12 자유 배치: 테이블·장식은 저장 데이터의 s.place.items (game_core.js). 앉을 자리는 놓인 테이블 기준
+  const tablesOf = s => (s.place ? s.place.items.filter(it => it.id === 'table').map(it => [it.gx, it.gy]) : []);
   function floorImg(g, key, gx, gy) { // 바닥 칸 (gx,gy) 위의 가구. 2배 크기로 저장된 그림을 0.5배로, 칸 가운데·앞 꼭짓점에 놓음
     const it = A.items[key]; if (!it || !it.img) return { z: -1e9, f: () => {} };
     const a = I.P(gx + .5, gy + .5), b = I.P(gx + 1, gy + 1), w = it.img.width / 2, h = it.img.height / 2;
     return { z: b[1], f: () => { g.drawImage(it.img, a[0] - w / 2, b[1] - h, w, h); } };
+  }
+  // 놓인 물건 하나를 그리는 조각들 (테이블 세트 = 의자 2 + 테이블, 바닥 장식, 벽 장식, 벽난로)
+  function wallImg(g, key, wall, i, onFloor) {   // 벽 칸 i 의 가운데에 붙임. 그림은 왼쪽 벽 기준 → 오른쪽 벽이면 좌우반전
+    const it = A.items[key]; if (!it || !it.img) return { z: -1e9, f: () => {} };
+    const a = wall === 'L' ? I.P(0, i + .5) : I.P(i + .5, 0), w = it.img.width / 2, h = it.img.height / 2, lift = onFloor ? -6 : 70;
+    return { z: a[1] - (onFloor ? 0 : 400), f: () => { g.save(); g.translate(a[0], a[1] - lift); if (wall === 'R') g.scale(-1, 1); g.drawImage(it.img, -w / 2, -h, w, h); g.restore(); } };
+  }
+  function placedDrawables(g, it) {
+    const d = (root.GuildGame.DECO_BY || {})[it.id]; if (!d) return [];
+    if (d.kind === 'table') { const tb = floorImg(g, 'iso_table', it.gx, it.gy); tb.z += 0.5; return [floorImg(g, 'iso_chair_l', it.gx - 1, it.gy), floorImg(g, 'iso_chair_r', it.gx, it.gy - 1), tb]; }
+    if (d.kind === 'wall' || d.kind === 'fire') return [wallImg(g, d.img, it.wall, it.i, d.kind === 'fire')];
+    return [floorImg(g, d.img, it.gx, it.gy)];
   }
   function emptyTable(g, c) {
     g.save(); g.setLineDash([10, 8]); g.strokeStyle = 'rgba(255,243,214,.55)'; g.lineWidth = 3;
     g.beginPath(); g.ellipse(c[0], c[1] + 8, 52, 24, 0, 0, 7); g.stroke(); g.restore();
   }
 
-  const Lobby = { SLOTS, FILL, TABLES, Board, BT, layout };
+  const Lobby = { SLOTS, FILL, TABLES, Board, BT, layout, floorImg, wallImg, placedDrawables, ghostUid: null, overlay: null };
   Lobby.update = function (s, dt) {
-    const n = tableCount(s);
-    if (n !== lastTables) { lastTables = n; root.Director.layout(n); }
+    const tl = tablesOf(s), key = JSON.stringify(tl);
+    if (key !== lastTables) { lastTables = key; root.Director.layout(tl); }
     Board.t += dt;
   };
   Lobby.draw = function (g, s, t, opt) {
@@ -202,13 +215,12 @@
     // 떼어 낸 쪽지는 리나 손으로 날아가므로 카운터보다 앞에 그림
     for (const n of Board.notes.values()) if (n.st === 'taken') drawNote(g, n, t);
     // 8 앞뒤 정렬 묶음
-    const list = root.Director.drawables(g, t), nt = tableCount(s);
-    for (let i = 0; i < TABLES.length; i++) {
-      const [tx, ty] = TABLES[i];
-      if (i >= nt) { const c = I.P(tx + .5, ty + .5); list.push({ z: c[1] - 200, f: () => emptyTable(g, c) }); continue; }
-      list.push(floorImg(g, 'iso_chair_l', tx - 1, ty), floorImg(g, 'iso_chair_r', tx, ty - 1));
-      const tb = floorImg(g, 'iso_table', tx, ty); tb.z += 0.5; list.push(tb);
+    const list = root.Director.drawables(g, t);
+    for (const it of (s.place ? s.place.items : [])) {
+      if (Lobby.ghostUid === it.uid) continue;   // 옮기는 중인 물건은 배치 모드가 따로 그림
+      for (const o of placedDrawables(g, it)) list.push(o);
     }
+    if (Lobby.overlay) Lobby.overlay(g, list);   // 배치 모드(격자·미리보기) — ui.js
         list.sort((a, b) => a.z - b.z).forEach(o => o.f());
     // 9 말풍선
     root.Director.bubbles(g);

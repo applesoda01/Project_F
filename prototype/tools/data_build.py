@@ -344,6 +344,12 @@ if errors:
     sys.exit(1)
 data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog}
 if content is not None: data['content'] = content       # 편집기 데이터가 없으면 넣지 않음 (게임은 balance 값만 씀)
+# 로비 배치 칸 (2026-11-12, tools/lobby_grid_editor.html 로 칠한 값). 없으면 게임은 모든 바닥 칸을 놓기 가능으로 봄
+_lg = os.path.join(DATA, 'lobby_grid.json')
+if os.path.exists(_lg):
+    _g = json.load(open(_lg, encoding='utf-8-sig'))
+    if len(_g.get('floor', [])) != 14 or any(len(r) != 14 for r in _g['floor']) or len(_g.get('wallL', [])) != 14 or len(_g.get('wallR', [])) != 14: print('  경고: lobby_grid.json 이 바닥 14×14·벽 14칸 형식이 아니라 넣지 않았습니다')
+    else: data['lobbyGrid'] = {'floor': _g['floor'], 'wallL': _g['wallL'], 'wallR': _g['wallR']}
 print(f'검사 통과: 밸런스 {len(seen)}항목, 의뢰 종류 {len(qtypes)}, 이름 {len(names)}, 요리 {len(meals)}, 스킬 {len(skills)}, '
       f'말풍선 {sum(len(x) for e in speech["L"].values() for x in e.values()) + len(speech["rumor"]) + sum(len(x) for x in speech["lina"].values())}줄, 대화 {sum(len(v) for v in dialog.values())}줄'
       + (f', 편집기 데이터: 소재 {len(content["materials"])}·아이템 {len(content["items"])}·몬스터 {len(content["monsters"])}·퀘스트 {len(content["quests"])}' if content else ', 편집기 데이터 없음(collegium_data.json)')

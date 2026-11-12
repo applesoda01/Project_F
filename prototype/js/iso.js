@@ -13,7 +13,7 @@
   }
   const TABLES = [[4, 9], [7, 9], [10, 9], [4, 12], [7, 12], [10, 12]];
   const LINA_AT = [1221, 505];                 // 리나 발밑 (접수대 뒤). 확정 2026.11
-  const CUST_AT = P(5.4, 3.5), ENTRY = P(13.2, 10.6), DOOR_OUT = P(14.6, 12.2);
+  const CUST_AT = P(5.4, 2.6), ENTRY = P(13.2, 10.6), DOOR_OUT = P(14.6, 12.2);
   const COUNTER_AT = [1020, 410];              // 접수대 그림(배경에서 오려 낸 것) 왼쪽 위
   const SH = {
     lina: { cw: 192, ch: 192, cols: 12, piv: 183, sc: 0.87 },
@@ -31,10 +31,10 @@
   // 자리: 탁자 칸 (tx,ty) 의 좌우. side 'r' = 위쪽 칸(오른쪽 의자, 그림 좌우반전), 'l' = 왼쪽 칸
   function seatInfo(se) { const a = P(se.cell[0] + .5, se.cell[1] + .5), b = P(se.cell[0] + 1, se.cell[1] + 1); return { ax: a[0], ay: b[1], flip: se.side === 'r' }; }
   function seatStand(se, c) { const si = seatInfo(se), f = SITI[c].f0, k = si.flip ? -1 : 1; return [si.ax + (f[0] - 360) * SIT.sc * k, si.ay + (f[1] - 620) * SIT.sc]; }
-  function seatsFor(nTables) {
-    const L = [];
-    for (let i = 0; i < Math.min(nTables, TABLES.length); i++) {
-      const [tx, ty] = TABLES[i];
+  function seatsFor(tables) {   // tables: 놓인 테이블 칸 목록 [[tx,ty], …] (2026-11-12 자유 배치). 숫자를 주면 예전처럼 고정 자리 앞에서부터
+    const L = [], list = Array.isArray(tables) ? tables : TABLES.slice(0, Math.min(tables, TABLES.length));
+    for (let i = 0; i < list.length; i++) {
+      const [tx, ty] = list[i];
       L.push({ id: i * 2, cell: [tx, ty - 1], side: 'r', tab: i });
       L.push({ id: i * 2 + 1, cell: [tx - 1, ty], side: 'l', tab: i });
     }

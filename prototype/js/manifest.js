@@ -18,6 +18,8 @@
   add('iso_table', ISO + 'table.png', 200, 169, { color: '#9a6a3c' });
   add('iso_chair_l', ISO + 'chair_l.png', 138, 202, { color: '#a8784a' });
   add('iso_chair_r', ISO + 'chair_r.png', 138, 202, { color: '#a8784a' });
+  // F급 장식 8종 (2026-11-12 자유 배치, 그림은 2배 크기 → 0.5배로 그림. docs/design/guild_interior.md 10-2)
+  for (const [k, w, h] of [['plant', 159, 220], ['crest', 122, 180], ['locker', 160, 264], ['banner', 169, 256], ['bench', 216, 193], ['map', 146, 196], ['fireplace', 183, 280], ['trophy', 167, 256]]) add('deco_' + k, 'deco/deco_' + k + '.png', w / 2, h / 2, { optional: true, color: '#8a6a46' });
   for (const k of ['idle', 'greet', 'guide', 'paper', 'thanks']) add('iso_lina_' + k, ISO + `lina_${k}.webp`, 2304, 1152, { color: '#6b4a7a' });
   const ISO_CHARS = ['cleric_f', 'rogue_f', 'archer_m', 'mage_m', 'cleric_m', 'rogue_m', 'mage_f', 'warrior_f', 'warrior_m', 'archer_f'];
   const ISO_SZ = {'cleric_f_walk':[1920,400],'cleric_f_idle':[1920,600],'cleric_f_sit':[2160,700],'rogue_f_walk':[1920,400],'rogue_f_idle':[1920,600],'rogue_f_sit':[2160,875],'archer_m_walk':[1920,400],'archer_m_idle':[1920,600],'archer_m_sit':[2160,700],'mage_m_walk':[1920,400],'mage_m_idle':[1920,600],'mage_m_sit':[2160,700],'cleric_m_walk':[1920,400],'cleric_m_idle':[1920,600],'cleric_m_sit':[2160,700],'rogue_m_walk':[1920,400],'rogue_m_idle':[1920,600],'rogue_m_sit':[2160,700],'mage_f_walk':[1920,400],'mage_f_idle':[1920,600],'mage_f_sit':[2160,700],'warrior_f_walk':[1920,400],'warrior_f_idle':[1920,600],'warrior_f_sit':[2160,700],'archer_f_walk':[1920,400],'archer_f_idle':[1920,600],'archer_f_sit':[2160,525],'warrior_m_walk':[1920,400],'warrior_m_idle':[1920,600],'warrior_m_sit':[2160,525]};

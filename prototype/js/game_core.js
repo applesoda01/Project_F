@@ -32,7 +32,7 @@
   function newGame(cfg, seed) {
     const s = {
       cfg, seed: seed >>> 0, rngState: seed >>> 0,
-      expireV: 1, up: {}, week: 0, grade: 0, gold: cfg.econ.startGold, trust: 50, fame: 0, pop: cfg.town.startPop,
+      expireV: 1, up: {}, place: { items: [], next: 1 }, week: 0, grade: 0, gold: cfg.econ.startGold, trust: 50, fame: 0, pop: cfg.town.startPop,
       built: { 게시판: true, 접수대: true, 주점: true, 판매창구: true }, eff: {}, meals: [0, 0, 0, 0, 0, 0, 0],
       filter: [4, 0, 0, 0, 0, 0, 0], filterV: 2, // 게시판 칸 배분: 등급별 비중 0(없음)·1(적게)·2(보통)·4(우선) (docs/design/popup_board.md)
       advs: [], board: [], active: [], nextId: 1, log: [],
@@ -240,6 +240,10 @@
   function migrate(s) {
     s.proposals = s.proposals || []; s.discovered = s.discovered || {}; s.knownMats = s.knownMats || {}; s.seenMons = s.seenMons || {}; if (s.fame == null) s.fame = 0;
     s.mats = s.mats || {}; s.up = s.up || {};
+    if (!s.place) {   // 2026-11-12 자유 배치 도입 전 저장: 그때 있던 테이블(등급별 2·3·4세트)을 예전 자리에 무료로 놓아 줌
+      s.place = { items: [], next: 1 }; const n = 2 + (s.grade >= 1 ? 1 : 0) + (s.grade >= 2 ? 1 : 0);
+      for (const [gx, gy] of OLD_TABLES.slice(0, n)) s.place.items.push({ uid: s.place.next++, id: 'table', gx, gy });
+    }
     if (!s.expireV) { s.expireV = 1; for (const q of s.board || []) q.posted = s.week; }   // 2026-11-12 의뢰 기한 도입 전 저장: 게시판 의뢰가 한꺼번에 만료되지 않게 기한을 새로 시작
     if (!s.dishes) { s.dishes = {}; for (let g = 0; g < 7; g++) DISH.filter(d => d.g === g).slice(0, s.meals[g] || 0).forEach(d => { s.dishes[d.name] = s.week; }); }   // 예전 저장: 등급별 해금 수 → 앞에서부터 그만큼 발견한 것으로
     syncMeals(s);
@@ -488,6 +492,60 @@
   }
   const FAC_COST = { 게시판: null, 접수대: null, 주점: null, 판매창구: null, 관리소: 1, 집무실: 0, 훈련장: 2, 창고: 2, 추모실: 2, 정보실: 3, 의무실: 3, 도서관: 3, 해체장: 4, 휴게실: 5, '명예의 전당': 5 };
 
+
+  // ---------- 길드 로비 배치 (2026-11-12, docs/design/guild_interior.md 10장) ----------
+  // 바닥 14×14칸(gx: 오른쪽 벽 쪽, gy: 왼쪽 벽 쪽), 벽 L·R 각 14칸. 놓을 수 있는 칸은 data/lobby_grid.json (tools/lobby_grid_editor.html)
+  // 카이로소프트 방식: 종류마다 개수 제한, 옮기기 무료, 파괴는 돈을 돌려받지 않고 지을 수 있는 수만 복구
+  const DECO = [
+    { id: 'table', name: '테이블 세트', kind: 'table', price: 200, max: 4, desc: '테이블 1 + 의자 2 (2석)' },
+    { id: 'plant', name: '화분', kind: 'floor', price: 150, max: 1, img: 'deco_plant', fx: '의뢰 성공 시 애착 +1' },
+    { id: 'boardDeco', name: '의뢰 게시판 장식', kind: 'wall', price: 250, max: 1, img: 'deco_crest', fx: '의뢰 성공 시 신뢰도 +1' },
+    { id: 'locker', name: '모험가 사물함', kind: 'floor', price: 300, max: 1, img: 'deco_locker', fx: '의뢰 성공 시 기본 소재 +1개' },
+    { id: 'banner', name: '길드 현수막', kind: 'wall', price: 350, max: 1, img: 'deco_banner', fx: '의뢰 성공 시 명성 +1' },
+    { id: 'bench', name: '의뢰인 대기 벤치', kind: 'floor', price: 400, max: 1, img: 'deco_bench', fx: '의뢰 성공 시 +5G' },
+    { id: 'map', name: '낡은 지도', kind: 'wall', price: 400, max: 1, img: 'deco_map', fx: '의뢰 성공 시 경험치 +5' },
+    { id: 'fireplace', name: '벽난로', kind: 'fire', price: 500, max: 1, img: 'deco_fireplace', fx: '부상 기간 −1주 (최소 1주)' },
+    { id: 'trophy', name: '트로피 장식장', kind: 'floor', price: 650, max: 1, img: 'deco_trophy', fx: '매달 ×2 의뢰 1건 보장' }
+  ];
+  const DECO_BY = Object.fromEntries(DECO.map(d => [d.id, d]));
+  const LN = 14, OLD_TABLES = [[4, 9], [7, 9], [10, 9], [4, 12], [7, 12], [10, 12]];   // 예전 고정 테이블 자리 (예전 저장 옮겨 담기용)
+  const grid = () => GD.lobbyGrid || { floor: Array.from({ length: LN }, () => Array(LN).fill(0)), wallL: Array(LN).fill(0), wallR: Array(LN).fill(0) };
+  // 물건이 차지하는 칸: 테이블 세트 = 테이블 칸 + 왼쪽 의자(gx−1) + 위쪽 의자(gy−1)
+  function cellsOf(id, p) {
+    const d = DECO_BY[id]; if (!d || !p) return [];
+    if (d.kind === 'wall' || d.kind === 'fire') return [p.wall + p.i];
+    return d.kind === 'table' ? [[p.gx, p.gy], [p.gx - 1, p.gy], [p.gx, p.gy - 1]].map(c => c.join(',')) : [p.gx + ',' + p.gy];
+  }
+  function placeOk(s, id, p, skipUid) {
+    const d = DECO_BY[id], G = grid(); if (!d || !p) return false;
+    const used = new Set(); for (const it of s.place.items) if (it.uid !== skipUid) cellsOf(it.id, it).forEach(c => used.add(c));
+    if (d.kind === 'wall' || d.kind === 'fire') {
+      if ((p.wall !== 'L' && p.wall !== 'R') || !(p.i >= 0 && p.i < LN)) return false;
+      const v = (p.wall === 'L' ? G.wallL : G.wallR)[p.i];
+      return (d.kind === 'fire' ? v === 2 : v === 0) && !used.has(p.wall + p.i);
+    }
+    for (const c of cellsOf(id, p)) { const [x, y] = c.split(',').map(Number); if (!(x >= 0 && y >= 0 && x < LN && y < LN) || G.floor[y][x] !== 0 || used.has(c)) return false; }
+    return true;
+  }
+  const placedN = (s, id) => s.place.items.filter(it => it.id === id).length;
+  function placeBuy(s, id, p) {
+    const d = DECO_BY[id]; if (!d) return false;
+    if (placedN(s, id) >= d.max) { log(s, `${d.name}은(는) ${d.max}개까지 놓을 수 있습니다.`, 'sys'); return false; }
+    if (s.gold < d.price) { log(s, `${d.name} 가격 ${d.price}G가 부족합니다.`, 'sys'); return false; }
+    if (!placeOk(s, id, p)) return false;
+    const it = Object.assign({ uid: s.place.next++, id }, p.wall ? { wall: p.wall, i: p.i } : { gx: p.gx, gy: p.gy });
+    s.place.items.push(it); s.gold -= d.price; s.month.build = (s.month.build || 0) - d.price; (s.month.builds = s.month.builds || []).push({ f: d.name, c: d.price });
+    log(s, `${J(d.name, '을', '를')} 놓았습니다. (${d.price}G)`, 'build'); return it;
+  }
+  function placeMove(s, uid, p) {
+    const it = s.place.items.find(x => x.uid === uid); if (!it || !placeOk(s, it.id, p, uid)) return false;
+    delete it.gx; delete it.gy; delete it.wall; delete it.i; Object.assign(it, p.wall ? { wall: p.wall, i: p.i } : { gx: p.gx, gy: p.gy }); return true;   // 옮기기는 무료
+  }
+  function placeDestroy(s, uid) {
+    const k = s.place.items.findIndex(x => x.uid === uid); if (k < 0) return false;
+    const it = s.place.items.splice(k, 1)[0], d = DECO_BY[it.id]; log(s, `${J(d.name, '을', '를')} 치웠습니다. (돌려받는 돈 없음)`, 'build'); return true;
+  }
+  const tablesOf = s => s.place.items.filter(it => it.id === 'table').map(it => [it.gx, it.gy]);
   // 건설비: 등급별 기본값, 집무실만 따로 (2026-11-12: F급 1,000G)
   const facCost = (s, f) => f === '집무실' ? (s.cfg.econ.officeCost || 1000) : s.cfg.econ.buildCost[FAC_COST[f] || 0];
   // 시설 업그레이드 1단계 (2026-11-12, docs/design/popup_fac.md 6장): 지은 시설만, 금전만. 효과는 각 규칙에서 upg(s, 시설)로 확인
@@ -517,6 +575,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { DECO, DECO_BY, placeOk, placeBuy, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
