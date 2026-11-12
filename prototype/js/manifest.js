@@ -17,6 +17,39 @@
   add('recep_idle', 'npc/receptionist_idle_blink.png', 384, 128, { optional: true, sheet: Object.assign({}, RECEP, { cols: 3, rows: 1 }) });
   for (const k of ['greet_a', 'guide_a', 'guide_b', 'read_a', 'read_b']) add('recep_' + k, `npc/receptionist_${k}.png`, 1536, 768, { optional: true, sheet: RECEP });
 
+  // 아이소메트릭 로비 (2026.11): 배경은 접수대를 오려 낸 두 장 + 접수대 그림 + 탁자·의자 + 리나 5종 + 모험가 9명 × (걷기·서기·앉기)
+  const ISO = 'lobby_iso/';
+  add('iso_bg', ISO + 'bg.jpg', 1920, 1080, { color: '#d9b783' });
+  add('iso_bg_open', ISO + 'bg_open.jpg', 1920, 1080, { color: '#d9b783' });
+  add('iso_counter', ISO + 'counter.webp', 320, 220, { color: '#8b5a33' });
+  add('iso_table', ISO + 'table.png', 200, 169, { color: '#9a6a3c' });
+  add('iso_chair_l', ISO + 'chair_l.png', 138, 202, { color: '#a8784a' });
+  add('iso_chair_r', ISO + 'chair_r.png', 138, 202, { color: '#a8784a' });
+  for (const k of ['idle', 'greet', 'guide', 'paper', 'thanks']) add('iso_lina_' + k, ISO + `lina_${k}.webp`, 2304, 1152, { color: '#6b4a7a' });
+  const ISO_CHARS = ['cleric_f', 'rogue_f', 'archer_m', 'mage_m', 'cleric_m', 'rogue_m', 'mage_f', 'warrior_f', 'warrior_m', 'archer_f'];
+  const ISO_SZ = {'cleric_f_walk':[1920,400],'cleric_f_idle':[1920,600],'cleric_f_sit':[2160,700],'rogue_f_walk':[1920,400],'rogue_f_idle':[1920,600],'rogue_f_sit':[2160,875],'archer_m_walk':[1920,400],'archer_m_idle':[1920,600],'archer_m_sit':[2160,700],'mage_m_walk':[1920,400],'mage_m_idle':[1920,600],'mage_m_sit':[2160,700],'cleric_m_walk':[1920,400],'cleric_m_idle':[1920,600],'cleric_m_sit':[2160,700],'rogue_m_walk':[1920,400],'rogue_m_idle':[1920,600],'rogue_m_sit':[2160,700],'mage_f_walk':[1920,400],'mage_f_idle':[1920,600],'mage_f_sit':[2160,700],'warrior_f_walk':[1920,400],'warrior_f_idle':[1920,600],'warrior_f_sit':[2160,700],'archer_f_walk':[1920,400],'archer_f_idle':[1920,600],'archer_f_sit':[2160,525],'warrior_m_walk':[1920,400],'warrior_m_idle':[1920,600],'warrior_m_sit':[2160,525]};
+  ISO_CHARS.forEach(c => { for (const v of ['walk', 'idle', 'sit']) add(`iso_${c}_${v}`, ISO + `chr/${c}_${v}.webp`, ISO_SZ[c + '_' + v][0], ISO_SZ[c + '_' + v][1], { color: '#7a6a5a' }); });   // 남 전사 서 있기 시트 적용 완료 (2026.11)
+
+  // 길드 바깥 계절·시간대 (2026.11): 바깥 그림 4종(일반·가을·겨울·비)은 방 크기 89%로 맞춰 흐림 5px 처리, 건물 안은 iso_bg 를 마스크로 얹음
+  const SKY = 'lobby_iso/season/';
+  add('sky_o_day', SKY + 'O_day.jpg', 1920, 1080, { color: '#9ec36a' });
+  add('sky_sk_day', SKY + 'SKY_day.png', 1920, 1080, { color: '#8fc0ee' });
+  add('sky_lp_day', SKY + 'LP_day.png', 61, 55, { color: '#e8b85a' });
+  add('sky_glw_day', SKY + 'GLW_day.png', 104, 99, { color: '#e8b85a' });
+  add('sky_o_autumn', SKY + 'O_autumn.jpg', 1920, 1080, { color: '#9ec36a' });
+  add('sky_sk_autumn', SKY + 'SKY_autumn.png', 1920, 1080, { color: '#8fc0ee' });
+  add('sky_lp_autumn', SKY + 'LP_autumn.png', 60, 55, { color: '#e8b85a' });
+  add('sky_glw_autumn', SKY + 'GLW_autumn.png', 102, 96, { color: '#e8b85a' });
+  add('sky_o_winter', SKY + 'O_winter.jpg', 1920, 1080, { color: '#9ec36a' });
+  add('sky_sk_winter', SKY + 'SKY_winter.png', 1920, 1080, { color: '#8fc0ee' });
+  add('sky_lp_winter', SKY + 'LP_winter.png', 70, 66, { color: '#e8b85a' });
+  add('sky_glw_winter', SKY + 'GLW_winter.png', 107, 94, { color: '#e8b85a' });
+  add('sky_o_rain', SKY + 'O_rain.jpg', 1920, 1080, { color: '#9ec36a' });
+  add('sky_sk_rain', SKY + 'SKY_rain.png', 1920, 1080, { color: '#8fc0ee' });
+  add('sky_lp_rain', SKY + 'LP_rain.png', 60, 54, { color: '#e8b85a' });
+  add('sky_glw_rain', SKY + 'GLW_rain.png', 102, 96, { color: '#e8b85a' });
+  add('sky_room', SKY + 'ROOM.png', 1920, 1080);
+  add('sky_cloud', SKY + 'cloud.png', 560, 262);
   // 리나 대화 초상 (표정 6종, 상반신)
   for (const f of ['smile', 'serious', 'laugh', 'worried', 'awkward', 'surprised']) add('lina_face_' + f, `npc/lina_face_${f}.png`, 340, 640, { color: '#efe2cf' });
 

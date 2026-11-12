@@ -30,7 +30,9 @@ const SVG={
     quest: { ico: 'quest', t: '메인 퀘스트', s: '지명할 모험가 선택', main: 1 },
     town: { ico: 'town', t: '마을로 가기', s: '마을로 나가기' }
   };
-  const LEFT = ['talk', 'cook', 'menu'], RIGHT = ['promo', 'quest', 'town'];
+  // [보류] 요리하기는 '메뉴'(음식 설정)와 합쳐져 목록에서 뺌. 되살리려면 아래 주석 줄로 교체
+  // const LEFT = ['talk', 'cook', 'menu'], RIGHT = ['promo', 'quest', 'town'];
+  const LEFT = ['talk', 'menu'], RIGHT = ['promo', 'quest', 'town'];
   const LM = { open: false, slots: [], hovered: null, anims: [], busy: 0 };
   let host, wrap, getS, UIr;
 
@@ -129,9 +131,11 @@ const SVG={
     host = stage.ui; getS = getState; UIr = ui;
     const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
     const hit = document.createElement('div'); hit.id = 'linaHit'; hit.title = '리나';
-    hit.addEventListener('click', ev => { ev.stopPropagation(); if (!LM.blocked()) LM.toggle(); });
+    // [보류] 리나 클릭 시 메뉴/대화 팝업 — 마을 화면에서 길드 본관 클릭과 겹쳐 열려 임시 비활성화 (필요 시 // 제거)
+    // hit.addEventListener('click', ev => { ev.stopPropagation(); if (!LM.blocked()) LM.toggle(); });
     wrap = document.createElement('div'); wrap.id = 'lmenu';
-    host.appendChild(hit); host.appendChild(wrap);
+    // host.appendChild(hit);   // [보류] 클릭 영역 요소 (위 핸들러와 함께 복구)
+    host.appendChild(wrap);
     host.addEventListener('click', ev => { if (LM.open && !ev.target.closest('.lm-slot, #linaHit')) LM.close(); });
     root.addEventListener('keydown', ev => { if (ev.key === 'Escape' && LM.open) LM.close(); });
     setInterval(() => { if (LM.open) { const keep = LM.hovered && LM.hovered._k; const np = ((getS() || {}).proposals || []).length; const cur = wrap.querySelector('.lm-cnt'); if ((cur ? +cur.textContent : 0) !== np) { const was = LM.slots.map(e => e.style.visibility); build(); LM.slots.forEach(e => e.style.visibility = 'visible'); } } }, 600);

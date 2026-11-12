@@ -51,6 +51,7 @@
   const M = root.ASSET_MANIFEST.items;
   // 단계별 지면판 (1~5단계: 개척촌 흙길 → 자갈 → 거친 돌길 → 정돈된 돌길·성벽 → 판석·성채)
   for (let i = 1; i <= 5; i++) M['town_plate' + i] = { src: `town/plate_s${i}.jpg`, w: 1920, h: 1080, ax: 0, ay: 0, color: '#8aa36a', optional: true };
+  for (const k of ['autumn', 'winter', 'rain']) M['town_plate20_' + k] = { src: `town/plate20_${k}.jpg`, w: 1920, h: 1080, ax: 0, ay: 0, color: '#8aa36a', optional: true };   // 1단계(개척촌) 계절 판
   for (const b of B) if (b.id !== 'castle') M['town_' + b.id] = { src: `town/${b.id}.png`, w: b.sw, h: b.sh, ax: 0.5, ay: 1, color: '#c9b48a', optional: true };
   for (let i = 1; i <= 3; i++) M['town_bridge' + i] = { src: `town/bridge${i}.png`, w: 600, h: 415, ax: 0.5, ay: 0.5, color: '#8a6a45', optional: true };
   CASTLE_H.forEach((c, i) => { M['town_castle' + (i + 1)] = { src: `town/castle${i + 1}.png`, w: c[0], h: c[1], ax: 0.5, ay: 1, color: '#c9b48a', optional: true }; });
@@ -122,8 +123,19 @@
     if (r.moving) { const dx = x - r.x, dy = y - r.y; if (r.x || r.y) r.dir = Math.abs(dx) >= Math.abs(dy) * 0.6 ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'); }
     r.x = x; r.y = y; r.gd = gx + gy;
   }
-  function drawRes(g, r, T) {
-    const a = r.a, c = CLS()[a.core] || 'warrior', sex = a.id % 2 ? 'm' : 'f', k = `chr_${c}_${sex}_walk`, it = root.Assets.items[k], sc = 0.7 * S;
+  function drawRes(g, r, T) { // 마을 거주 모험가: 길드 로비와 같은 시트(걷기·서 있기)를 씀. 그림은 한 방향뿐이라 왼쪽·위로 갈 때 좌우반전
+    const a = r.a, I = root.Iso, A = root.Assets;
+    if (I) {
+      const ik = I.charKey(CLS()[a.core] || 'warrior', a.id % 2 ? 'm' : 'f'), moving = !!r.moving;
+      const it = A.items[`iso_${ik}_${moving ? 'walk' : 'idle'}`], sc = 0.56 * S;   // 키가 예전 마을 그림과 같도록(길드 안보다 작게) 줄임
+      if (it && it.ok) {
+        const f = moving ? Math.floor(T * 30) % 24 : Math.floor(T * 12 + r.ph * 5) % 36, sh = moving ? I.SH.walk : I.SH.idle;
+        g.fillStyle = 'rgba(40,24,10,.22)'; g.beginPath(); g.ellipse(r.x, r.y - 2, 14 * S, 5 * S, 0, 0, 7); g.fill();
+        I.frame(g, it.img, sh, f % 12, Math.floor(f / 12), r.x, r.y, moving && (r.dir === 'left' || r.dir === 'up'), 1, sc);
+        return;
+      }
+    }
+    const c = CLS()[a.core] || 'warrior', sex = a.id % 2 ? 'm' : 'f', k = `chr_${c}_${sex}_walk`, it = root.Assets.items[k], sc = 0.7 * S;
     if (it && it.ok) {
       const rows = it.sheet.rows, cs = it.img.height / rows.length, f = cs / it.sheet.cell, row = Math.max(0, rows.indexOf(r.dir));
       const fr = r.moving ? Math.floor((T * it.sheet.fps) % it.sheet.cols) : 0, pv = it.sheet.pivotY * f;
@@ -202,7 +214,7 @@
     const y0 = rnd(150, 850), ang = rnd(-0.35, 0.35), vx = Math.cos(ang) * sp * (fromLeft ? 1 : -1), vy = Math.sin(ang) * sp;
     const x0 = fromLeft ? -60 : 1980;
     for (let k = 0; k < n; k++) { const row = Math.ceil(k / 2), side = k % 2 ? 1 : -1; // 느슨한 V자
-      birds.push({ x: x0 - Math.sign(vx) * row * rnd(30, 45), y: y0 + side * row * rnd(18, 30), vx: vx * rnd(0.95, 1.05), vy, ph: rnd(0, 6.28), fr: rnd(9, 12), sz: rnd(1.25, 1.5) }); }
+      birds.push({ x: x0 - Math.sign(vx) * row * rnd(30, 45), y: y0 + side * row * rnd(18, 30), vx: vx * rnd(0.95, 1.05), vy, ph: rnd(0, 6.28), fr: rnd(9, 12), sz: rnd(0.62, 0.75) }); }
   }
   function skyUpdate(dt, mouse) {
     for (const c of clouds) {
@@ -238,10 +250,31 @@
     g.restore();
   }
   // 그리는 순서: (세계) → 구름 그림자 → 새 그림자·새 → 구름 → (이름표·말풍선)
+  // 강 영역 마스크 (town_data.js 의 river: 8px 칸마다 강 세기). 한 번 만들어 재사용
+  let waterCv = null;
+  function waterMask(W, H) {
+    if (waterCv && waterCv.width === W && waterCv.height === H) return waterCv;
+    const d = root.TOWN_SKY_DATA; if (!d || !d.river) return null;
+    const small = document.createElement('canvas'); small.width = Math.ceil(W / 8); small.height = Math.ceil(H / 8);
+    const sx = small.getContext('2d');
+    for (const [tx, ty, rv] of d.river) { if (rv < 25) continue; sx.fillStyle = `rgba(0,0,0,${Math.min(1, rv / 60)})`; sx.fillRect(Math.floor(tx / 8), Math.floor(ty / 8), 1, 1); }
+    waterCv = document.createElement('canvas'); waterCv.width = W; waterCv.height = H;
+    const wx = waterCv.getContext('2d'); wx.imageSmoothingEnabled = true; wx.drawImage(small, 0, 0, W, H); return waterCv;
+  }
   function skyDraw(g, getImg) {
     g.save();
     for (const c of clouds) { const art = cloudImg(c.i, getImg); g.globalAlpha = SKY.SHADOW_ALPHA; drawCloud(g, art.sh, c, art, SKY.SHADOW_OFF); }
-    g.globalAlpha = 0.16; for (const b of birds) drawBird(g, { ...b, x: b.x + 45, y: b.y + 95 }, true, getImg);
+    if (birds.length) {   // 새 그림자는 물 위에서만 보임: 따로 그린 뒤 강 영역 마스크로 잘라냄
+      const wm = waterMask(g.canvas.width, g.canvas.height);
+      if (wm) {
+        if (!skyDraw.sh) { skyDraw.sh = document.createElement('canvas'); skyDraw.sc = skyDraw.sh.getContext('2d'); }
+        const sh = skyDraw.sh, sc = skyDraw.sc; if (sh.width !== g.canvas.width || sh.height !== g.canvas.height) { sh.width = g.canvas.width; sh.height = g.canvas.height; }
+        sc.setTransform(1, 0, 0, 1, 0, 0); sc.clearRect(0, 0, sh.width, sh.height); sc.globalAlpha = 1; sc.globalCompositeOperation = 'source-over';
+        for (const b of birds) drawBird(sc, { ...b, x: b.x + 28, y: b.y + 60 }, true, getImg);
+        sc.globalCompositeOperation = 'destination-in'; sc.drawImage(wm, 0, 0);
+        g.globalAlpha = 0.28; g.drawImage(sh, 0, 0);
+      }
+    }
     g.globalAlpha = 1; for (const b of birds) drawBird(g, b, false, getImg);
     for (const c of clouds) { const art = cloudImg(c.i, getImg); g.globalAlpha = c.a; drawCloud(g, art.body, c, art, [0, 0]); }
     g.restore();
@@ -257,24 +290,30 @@
     T += dt; syncRes(s); if ((T | 0) !== (Town._t | 0) && ui) { const e = ui.querySelector('#tPop'); if (e) e.textContent = `인구 ${Math.round(s.pop)} · 현재 ${STAGE_NAMES[curStage(s)]} · 거주 모험가 ${res.size}명`; } Town._t = T;
     for (const r of res.values()) moveRes(r, dt);
     nextBub -= dt;
-    if (nextBub <= 0) { const p = RUMOR[Math.floor(Math.random() * RUMOR.length)]; bub = { x: px(p[0], p[1]), y: py(p[0], p[1]) - 70, t: 4, text: LINES[Math.floor(Math.random() * LINES.length)] }; nextBub = 6 + Math.random() * 5; }
+    if (nextBub <= 0) {   // 말풍선: 거주 모험가가 있으면 그 사람을 따라다님, 없으면 예전처럼 정해진 자리
+      const rs = [...res.values()], who = rs.length ? rs[Math.floor(Math.random() * rs.length)] : null, p = RUMOR[Math.floor(Math.random() * RUMOR.length)];
+      bub = { who, x: px(p[0], p[1]), y: py(p[0], p[1]) - 34, t: 4, text: LINES[Math.floor(Math.random() * LINES.length)] }; nextBub = 6 + Math.random() * 5; }
+    if (bub && bub.who) { if (res.get(bub.who.a.id) === bub.who) { bub.x = bub.who.x; bub.y = bub.who.y - 96; } else bub = null; }
     if (bub) { bub.t -= dt; if (bub.t <= 0) bub = null; }
     skyUpdate(dt, mouse);
+    if (root.TownSeason) root.TownSeason.update(s, dt, Town.wf, Town.still);   // 계절·시간대·입자 (길드와 같은 달력)
   };
   function diamond(g, b, fill, stroke) {
     const f = foot(b); g.beginPath(); f.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath();
     if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.strokeStyle = stroke; g.lineWidth = 3; g.stroke(); }
   }
   Town.draw = function (g, s) {
-    const A = root.Assets;
-    g.fillStyle = '#6f8d56'; g.fillRect(0, 0, 1920, 1080);
-    const pk = 'town_plate' + (curStage(s) + 1);
-    if (A.has(pk)) A.draw(g, pk, 0, 0); else ground(g);
+    const A = root.Assets, TS = root.TownSeason, wg = TS ? TS.world() : g;   // 세계(판·건물·모험가)는 따로 그린 뒤 시간대 색을 곱해 올림
+    wg.fillStyle = '#6f8d56'; wg.fillRect(0, 0, 1920, 1080);
+    if (TS) {
+      const imgOf = k => A.has(k) && A.items[k].img ? A.items[k].img : null, keyOf2 = (st, k) => TS.plateKey(st, k, x => A.has(x));
+      if (imgOf(keyOf2(curStage(s), TS.state.key))) TS.drawPlate(wg, curStage(s), keyOf2, imgOf); else ground(wg);   // 1단계는 계절 판, 그 밖은 일반 판 + 흔들림
+    } else { const pk = 'town_plate' + (curStage(s) + 1); if (A.has(pk)) A.draw(wg, pk, 0, 0); else ground(wg); }
     for (const br of BR) {
       const st = curStage(s); if (st < br.st) continue;
       const k = 'town_bridge' + bridgeMat(st), it = A.items[k]; if (!(it && it.img)) continue;
       const cx = px(br.gx + br.w / 2, br.gy + br.d / 2), cy = py(br.gx + br.w / 2, br.gy + br.d / 2), w = (br.w + br.d) * HX * 1.1 * br.sc, h = w * 415 / 600;
-      g.save(); g.translate(cx, cy); if (br.flip) g.scale(-1, 1); g.drawImage(it.img, -w / 2, -h / 2, w, h); g.restore();
+      wg.save(); wg.translate(cx, cy); if (br.flip) wg.scale(-1, 1); wg.drawImage(it.img, -w / 2, -h / 2, w, h); wg.restore();
     }
     const items = visible(s).map(b => ({ t: 0, d: depth(b), b }));
     for (const r of res.values()) items.push({ t: 1, d: r.gd + 0.05, r });
@@ -282,13 +321,14 @@
     for (const it of items) {
       if (it.b) {
         const b = it.b, [ax, ay] = anchor(b);
-        if (b === hover || b === sel) diamond(g, b, 'rgba(255,230,140,.35)', b === sel ? '#ffd25a' : 'rgba(255,240,190,.9)');
+        if (b === hover || b === sel) diamond(wg, b, 'rgba(255,230,140,.35)', b === sel ? '#ffd25a' : 'rgba(255,240,190,.9)');
         const k = keyOf(b, s);
-        if (A.items[k] && A.items[k].img) { const [dw, dh] = sizeOf(b, s); A.draw(g, k, ax, ay, { w: dw, h: dh }); }
-        else { diamond(g, b, 'rgba(180,150,100,.7)', '#5a3a22'); g.fillStyle = '#3b2a1e'; g.font = '700 18px "Malgun Gothic",sans-serif'; g.textAlign = 'center'; g.fillText(b.name, ax, ay - 20); }
-      } else drawRes(g, it.r, T);
+        if (A.items[k] && A.items[k].img) { const [dw, dh] = sizeOf(b, s); A.draw(wg, k, ax, ay, { w: dw, h: dh }); }
+        else { diamond(wg, b, 'rgba(180,150,100,.7)', '#5a3a22'); wg.fillStyle = '#3b2a1e'; wg.font = '700 18px "Malgun Gothic",sans-serif'; wg.textAlign = 'center'; wg.fillText(b.name, ax, ay - 20); }
+      } else drawRes(wg, it.r, T);
     }
-    skyDraw(g, skyImg); // 구름 그림자·새·구름 (클릭 판정과 무관)
+    if (TS) { TS.tint(wg); g.drawImage(TS.worldImage(), 0, 0); TS.drawFx(g); }   // 시간대 색 → 화면 → 낙엽·눈·비
+    if (TS) TS.drawSky(g, c => skyDraw(c, skyImg)); else skyDraw(g, skyImg); // 구름 그림자·새·구름 (클릭 판정과 무관). 계절 모듈이 있으면 일반 배경의 아침~노을에만 보임
     // 이름표
     const tag = hover || sel;
     if (tag) {
@@ -298,11 +338,15 @@
       g.fillStyle = st.on ? '#fbf1dc' : '#ee9a8a'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(txt, ax, y + 1); g.textBaseline = 'alphabetic';
     }
     if (bub) {
+      if (root.Director && root.Director.drawBubble) root.Director.drawBubble(g, bub.x, bub.y + 36, bub.text, 4 - bub.t, bub.t);   // 길드와 같은 말풍선
+      /* [보관] 예전 마을 말풍선
       g.font = '600 20px "Malgun Gothic",sans-serif'; const w = g.measureText(bub.text).width + 30, a = Math.min(1, bub.t * 2);
       g.globalAlpha = a; g.fillStyle = '#fff8e8'; g.strokeStyle = '#5a3a22'; g.lineWidth = 3;
       g.beginPath(); g.roundRect(bub.x - w / 2, bub.y - 22, w, 44, 14); g.fill(); g.stroke();
       g.beginPath(); g.moveTo(bub.x - 8, bub.y + 22); g.lineTo(bub.x, bub.y + 36); g.lineTo(bub.x + 8, bub.y + 22); g.fillStyle = '#fff8e8'; g.fill();
       g.fillStyle = '#3b2a1e'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(bub.text, bub.x, bub.y + 1); g.textBaseline = 'alphabetic'; g.globalAlpha = 1;
+    }
+      */
     }
   };
 
@@ -311,7 +355,6 @@
 #townUi{position:absolute;inset:0;display:none;pointer-events:none}
 #townUi.on{display:block}
 #townUi .plate{pointer-events:auto;z-index:6}
-#tBack{position:absolute;left:900px;top:26px;padding:12px 26px;font-size:24px;cursor:pointer}
 #tInfo{left:480px;bottom:26px;width:520px;padding:16px 20px 18px;font-size:21px;line-height:1.5}
 #tInfo h3{margin:0 0 4px;font-size:27px}
 #tInfo .tg{display:inline-block;padding:1px 10px;border-radius:9px;font-size:17px;font-weight:700;background:#6fc47a;color:#fff;margin-left:8px;vertical-align:middle}
@@ -324,13 +367,12 @@
   function buildUi() {
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     ui = document.createElement('div'); ui.id = 'townUi'; stage.ui.appendChild(ui);
-    ui.innerHTML = `<button class="plate btn" id="tBack">← 길드로</button>
+    ui.innerHTML = `
 <div class="plate" id="tInfo" style="display:none"></div>
 <div class="plate" id="tDev"><h4>마을 개발 패널</h4>
 <div>단계: <select id="tStage"><option value="-1">자동(인구)</option>${STAGE_NAMES.map((n, i) => `<option value="${i}">${i + 1}. ${n}</option>`).join('')}</select> <span id="tPop"></span></div>
 <div style="margin:6px 0"><button class="btn" id="tAll">모두 해금</button> <button class="btn" id="tNone">모두 잠금</button></div>
 <div id="tList"></div></div>`;
-    ui.querySelector('#tBack').onclick = () => Town.close();
     ui.querySelector('#tStage').onchange = e => { override = +e.target.value; refreshUi(); };
     ui.querySelector('#tAll').onclick = () => { const u = unl(getS()); B.forEach(b => { if (b.special) u[b.id] = true; }); refreshUi(); };
     ui.querySelector('#tNone').onclick = () => { const u = unl(getS()); B.forEach(b => { if (b.special) u[b.id] = false; }); refreshUi(); };
@@ -351,7 +393,7 @@
     const stt = status(sel, s), nm = sel.id === 'castle' ? `영주의 성 (${curStage(s) + 1}단계)` : sel.name;
     box.style.display = 'block';
     box.innerHTML = `<h3>${nm}<span class="tg ${stt.on ? '' : 'off'}">${stt.on ? '운영 중' : '잠김'}</span></h3>
-<div>등장 단계: ${STAGE_NAMES[sel.st]} 이상 · 규모 ${sel.w}×${sel.d}칸</div><div>해금 조건: ${sel.req}</div><div style="color:var(--muted)">${stt.text}</div>`;
+<div>등장 단계: ${STAGE_NAMES[sel.st]} 이상 · 규모 ${sel.w}×${sel.d}칸</div><div>해금 조건: ${sel.req}</div>${stt.on ? '' : `<div style="color:var(--muted)">${stt.text}</div>`}`;   // 운영 중일 때는 위 배지와 같은 말이라 생략
   }
 
   Town.init = function (st, getState, h) {
@@ -359,11 +401,18 @@
     cv.style.pointerEvents = 'auto';
     root.addEventListener('keydown', e => { if (e.key === 'Escape' && Town.active) Town.close(); });
   };
+  // 하단 hub 의 '마을' 버튼: 마을 화면에서는 '길드'로 바뀜
+  function hubLabel(inTown) {
+    const b = document.querySelector('#hud [data-act="town"], [data-act="town"]'); if (!b) return;
+    const n = [...b.childNodes].reverse().find(x => x.nodeType === 3 && x.textContent.trim()); if (n) n.textContent = inTown ? '길드' : '마을';
+    b.title = inTown ? '길드 화면으로 이동' : '마을 화면으로 이동';
+    const ic = b.querySelector('img.ic'); if (ic) ic.src = inTown ? 'assets/ui/hud/bt/guild.png' : 'assets/ui/hud/bt/town.png';   // 마을에서는 '길드로 돌아가기' 아이콘
+  }
   Town.open = function () {
     if (!ui) return; Town.active = true; ui.classList.add('on'); const dg = document.getElementById('dlg'); if (dg) dg.style.visibility = 'hidden'; sel = null; hover = null; res.clear(); skyReset(); refreshUi();
-    if (hooks.onOpen) hooks.onOpen();
+    hubLabel(true); if (hooks.onOpen) hooks.onOpen();
   };
-  Town.close = function () { Town.active = false; if (ui) ui.classList.remove('on'); const dg = document.getElementById('dlg'); if (dg) dg.style.visibility = ''; hover = null; cv.style.cursor = ''; if (hooks.onClose) hooks.onClose(); };
+  Town.close = function () { Town.active = false; if (ui) ui.classList.remove('on'); const dg = document.getElementById('dlg'); if (dg) dg.style.visibility = ''; hover = null; cv.style.cursor = ''; hubLabel(false); if (hooks.onClose) hooks.onClose(); };
   Town.refresh = () => { if (Town.active) refreshUi(); };
   Town._res = res; root.Town = Town;
 })(this);

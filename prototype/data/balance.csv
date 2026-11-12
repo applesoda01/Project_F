@@ -1,0 +1,118 @@
+﻿구분,항목,값,설명
+quest,ref,15|25|35|45|60|75|90,판정 기준치
+quest,reqCount,1|1|2|2|3|3|4,요구 능력치 수
+quest,reward,100|150|200|500|600|800|1500,
+quest,weeks,1|1|1|2|2|2|3,소요 주
+quest,perMonth,10,기본 월 유입량
+quest,boardCap,6|8|10|12|14|16|18,
+quest,partyAssist,0.25,파티원 보조 계수
+quest,deathBase,0.01|0.01|0.03|0.03|0.05|0.05|0.08,
+quest,subGrowth,0.2,성공 시 유형 능력치 성장
+quest,bossMult,1.15,보스급 기준치 배수
+growth,xpBase,80,성공 경험치 = xpBase × mult^등급
+growth,xpGradeMult,2,
+growth,xpFailRate,0.3,
+growth,lvA,20,다음 레벨 필요 경험치 = A × Lv^B
+growth,lvB,1.55,
+growth,lvCap,30|40|50,
+growth,trainPerWeek,0.1,훈련장·도서관 주간 훈련량
+growth,statCap,100,
+adv,arrivalPerMonth,0.8,"arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)"
+adv,arrivalPerGrade,0.1,
+adv,startCount,5,
+adv,startCore,15,
+adv,startOther,6,
+adv,attachSuccess,2,
+adv,attachPerMonthInTown,1,
+adv,visitBaseWeeks,2,
+adv,leaveAfterYears,2,
+adv,leaveAttach,20,
+adv,heirDelayWeeks,24,
+adv,seekTh,0.5|0.7|0.85,이보다 낮으면 동료를 찾음 (독불장군|보통|사교적)
+adv,departTh,0.95|0.85|0.65,출발 기준: 예상 성공 확률 (신중|보통|무모)
+econ,startGold,3000,
+econ,feeBase,0.1,
+econ,feePerInfo,0.02,
+econ,subsidy,300|500|800|1200|2000|3000|4500,
+econ,buildCost,0|2000|4000|8000|15000|30000|0,
+econ,upkeepRate,0,
+econ,tavernPerAdvWeek,4,
+econ,tavernGradeMult,1.6,
+econ,resaleRate,0.08,
+econ,effectCost,0.1|0.2|0.35,
+econ,mealPriceRate,0.25,
+econ,mealMargin,0.6,
+econ,mealBuyRate,0.3|0.6|0.9,
+econ,mealBonus,0.03|0.04|0.045|0.05|0.06|0.05|0.07,
+econ,mealUnlockChance,0.5,
+econ,mealPerDish,0.02,
+gear,weaponPrice,150|300|500|1500|2400|3750|7500,
+gear,setMult,3,
+gear,weaponStat,0|0|0|0|0|0|0,무기 능력치 보정 폐지
+gear,armorStat,0|0|0|0|0|0|0,방어구 능력치 보정 폐지
+gear,accStat,3|6|9|12|15|18|21,장신구 능력치 +3×등급 순번 (모험가 주력 능력치에 적용)
+gear,weaponAtk,10|18|28|40|55|72|92,
+gear,reserveMult,2|1|0.3,절약 / 보통 / 낭비
+promo,N,2|3|3|4|4|5,
+promo,bossRefillWeeks,6,
+promo,invasionScale,16,
+promo,raidScale,4,
+promo,battleK,6,
+promo,battleDeathWin,0.01,
+promo,battleDeathLoss,0.03,
+promo,raidMonths,8|6|5|4|3,
+promo,sCandidates,2,
+fame,succ,0.4|0.8|1.2|1.6|2|2.4|3,의뢰 성공 시 등급별 상승
+fame,fail,0.6|1.2|1.8|2.4|3|3.6|4.5,의뢰 실패 시 등급별 하락 (등급이 높을수록 크게)
+fame,gradeUp,0|25|50|75|100|125|150,길드 승급 시 상승
+fame,maxBonus,0.6,"명성 보정 = 1 + 0.6 × min(1, 명성/500) → 최대 1.6배 (명성 도입 전 S급 보정과 같음)"
+fame,full,500,
+fame,cap,1000,
+town,startPop,150,
+town,growthBase,0.012,
+town,growthPerGrade,0.002,
+town,perResident,1,
+town,stages,300|1000|3000|8000,
+town,inflowMult,1|1.3|1.6|2|2.5,
+town,raidLoss,0.05,
+town,invasionLoss,0.1,
+ending,officerScale,4|4.3|4.6,
+ending,demonScale,6,
+ending,demonPopMult,1|1|1|0.85|0.7,
+ending,rebirthYear,15,
+ending,rebirthTotal,300,
+ending,mainRetryWeeks,8,
+ending,demonRetryWeeks,24,
+ending,demonHeirFallbackYear,8,
+combat,classHp,100|80|60|70|75,"1차 직업 기본 체력 (전사|궁수|마법사|성직자|도적), 전투 수치는 5배 단위"
+combat,classHpLv,10|8|6|7|8,레벨당 체력 (직업 순서 같음)
+combat,classMp,20|30|60|50|30,기본 마력
+combat,classMpLv,2|3|6|5|3,레벨당 마력
+combat,classAtk,35|30|25|25|30,기본 공격력 (맨손으로도 싸울 수 있게)
+combat,classAtkLv,3|3|2|2|3,레벨당 공격력
+combat,hpPerStr,3,힘 1당 체력
+combat,mpPerMind,3,지력 1당 마력 (정신은 마력에 기여하지 않음)
+combat,mdefPerSpirit,0,(사용 안 함) 마법 방어 폐지
+combat,dmgVar,0.1,피해 무작위 ± 비율
+combat,evadePerAgi,0,(사용 안 함) 회피율 폐지
+combat,evadeCap,0,(사용 안 함) 회피율 폐지
+combat,critPerDex,0.005,민첩 1당 치명타 확률 (2당 1%)
+combat,critCap,9,(사실상 상한 없음) 치명타 확률 상한
+combat,critMult,1.5,치명타 피해 배수
+combat,healBase,20,성직자 회복 1회 기본량
+combat,healPerSpirit,2,정신 1당 회복량
+combat,healMp,10,회복 1회 마력 소모
+combat,retreatHp,0.5|0.3|0.1,"후퇴선: 파티 전체 체력 비율 (신중|보통|무모, 파티장 기준)"
+combat,potionHp,0.5|0.3|0.1,물약 사용선: 자기 체력 비율 (신중|보통|무모)
+combat,potionCarry,1|2|3,"물약 지참 상한 (절약|보통|낭비), 하한은 상한−1"
+combat,potionHeal,0.3|0.4|0.5|0.55|0.6|0.65|0.7,"물약 회복량 = 최대 체력(마력)의 비율, 물약 등급 F~S"
+combat,injuryWeeks,2|2|3|3|4|4|5,"부상 기간(주), 의뢰 등급 F~S"
+combat,injuryClinic,1,의무실이 있으면 부상 기간 단축(주)
+combat,deathRisk,0.5|1|1.5,쓰러진 사람 사망 판정 배수 (신중|보통|무모) × quest.deathBase
+combat,maxRounds,30,전투 최대 라운드 (넘으면 후퇴)
+combat,speedPerSkill,0.005,기교 1당 공격 속도 (2당 1%, 상한 없음)
+combat,skillRate,0.2,1차 스킬 발동 확률 (성직자 제외)
+combat,skillMp,20|20|30|0|15,"스킬 마력 소모 (전사 더블 스윙|궁수 연사|마법사 파이어볼|성직자(스킬 없음)|도적 급소 찌르기)"
+combat,groupMax,2|3|4|4|5|6|6,"웨이브 한 그룹 최대 적 수 (의뢰 등급 F~S, D 이상은 임시)"
+combat,potionPrice,20|30|40|80|100|130|250,물약 1개 가격(모험가 소지금), 물약 등급 F~S
+combat,enemyVar,0.15,적 개체 차이 (게시 정보 대비 체력·공격력 ±비율). 정보실 1단계당 예측 오차 25% 감소

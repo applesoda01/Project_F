@@ -40,6 +40,9 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 /* HUD 글자 위치 보정 (조절기 값, 2026-10-26·10-27, 마루부리 기준 재조정) */
 #hudTL #hDate{display:inline-block;transform:translateY(-9px)}
 #hudTL .weekbar{transform:translateY(-11px)}
+#hudTL .wkrow{position:absolute;left:0;right:0;bottom:-16px;height:9px;transform:translateY(-11px);pointer-events:none}
+#hTime{position:absolute;left:0;top:50%;width:20px;height:20px;transform:translate(-50%,-50%);filter:drop-shadow(0 1px 1px rgba(40,22,8,.55));transition:filter .6s}
+#hTime.dusk{filter:drop-shadow(0 1px 1px rgba(40,22,8,.55)) hue-rotate(-14deg) saturate(1.25) brightness(.95)}
 #hudTL #hGrade{transform:translateY(-4px)}
 #hudTL .stat b{transform:translateY(1px)}
 #hudTL .stat small{display:inline-block}
@@ -81,22 +84,26 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 .btn.on{background:var(--wood2);color:#fff3d6}
 /* 알림 */
 /* ---- 로그박스: 온라인 게임 채팅처럼 흐르는 기록·대화 (왼쪽 아래 기본, 끌어서 이동) ---- */
-#logBox{position:absolute;left:18px;bottom:96px;width:440px;z-index:3;pointer-events:none;transition:opacity .2s;--lh:35px}
+#logBox{position:absolute;left:18px;bottom:96px;width:440px;z-index:3;pointer-events:none;transition:opacity .2s;--lh:44px}
 #logBox.hide{opacity:0}#logBox.hide *{pointer-events:none!important}
-#logBox .ll{display:flex;flex-direction:column;justify-content:flex-end;max-height:calc(var(--lh)*6);overflow:hidden;pointer-events:none;scrollbar-width:thin;scrollbar-color:rgba(255,240,210,.5) transparent}
+#logBox .ll{display:flex;flex-direction:column;justify-content:flex-end;max-height:calc(var(--lh)*6);overflow:hidden;pointer-events:none;scrollbar-width:thin;scrollbar-color:rgba(255,240,210,.5) transparent;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 44px);mask-image:linear-gradient(to bottom,transparent 0,#000 44px)}
 #logBox.show .ll{overflow-y:auto;pointer-events:auto;justify-content:flex-start}
 #logBox .ll::before{content:"";flex:1 1 auto}
-#logBox .ln{align-self:flex-start;max-width:100%;margin-top:3px;padding:3px 11px 4px;border-radius:9px;background:rgba(34,22,13,.66);color:#fbf1dc;font-size:19px;line-height:1.28;text-shadow:0 1px 1px rgba(0,0,0,.5);border-left:4px solid #c9b48a;word-break:keep-all;overflow-wrap:anywhere;opacity:1;transition:opacity .9s ease;animation:lnin .22s ease-out}
+/* 채팅창 (2026.11 개편): 모험가·리나 대화 = 색 있는 둥근 말풍선(이름은 위), 시스템 기록 = 말풍선 없이 외곽선 글씨 */
+#logBox .ln{align-self:flex-start;max-width:100%;margin-top:3px;padding:1px 6px 2px;color:#fff1da;font-size:18px;font-weight:700;line-height:1.3;text-shadow:-1px 0 #2e2012,1px 0 #2e2012,0 -1px #2e2012,0 1px #2e2012,-1px -1px #2e2012,1px 1px #2e2012,-1px 1px #2e2012,1px -1px #2e2012,0 2px 3px rgba(0,0,0,.5);word-break:keep-all;overflow-wrap:anywhere;opacity:1;transition:opacity .9s ease;animation:lnin .22s ease-out}
 @keyframes lnin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 #logBox .ln.dim{opacity:0;pointer-events:none}
 #logBox.show .ln{opacity:1;pointer-events:auto;transition:opacity .15s}
 #logBox .ln b{font-weight:700;margin-right:6px}
-#logBox .ln.chat{border-left-color:transparent;background:rgba(34,22,13,.58)}
-#logBox .ln.chat b{color:#ffe2a8}#logBox .ln.lina b{color:#ffb9cb}
-#logBox .ln.k-success{border-left-color:#6fc47a}#logBox .ln.k-fail,#logBox .ln.k-warn,#logBox .ln.k-sys,#logBox .ln.k-withdraw,#logBox .ln.k-injury,#logBox .ln.k-leave{border-left-color:#ee7466}#logBox .ln.k-death{border-left-color:#ee7466;color:#ffc9c0}
-#logBox .ln.k-grow,#logBox .ln.k-unlock,#logBox .ln.k-promo{border-left-color:#e8b44a;color:#ffe9b0}
-#logBox .ln.k-depart,#logBox .ln.k-arrive,#logBox .ln.k-build{border-left-color:#7fb4e8}
-#logBox .ln.k-ledger{border-left-color:#d9a05b}#logBox .ln.k-debug{opacity:.7}
+#logBox .ln.chat{display:flex;flex-direction:column;align-items:flex-start;padding:0;margin-top:7px;text-shadow:none}
+#logBox .ln.chat b{display:block;margin:0 0 2px 6px;font-size:16px;color:#fff;text-shadow:-1px 0 #2e2012,1px 0 #2e2012,0 -1px #2e2012,0 1px #2e2012,-1px -1px #2e2012,1px 1px #2e2012,-1px 1px #2e2012,1px -1px #2e2012,0 2px 3px rgba(0,0,0,.5)}
+#logBox .ln.chat .bt{max-width:100%;padding:7px 16px 8px;border-radius:20px;font-size:19px;font-weight:600;line-height:1.3;background:#f2c53a;color:#3a2a10;border:2px solid rgba(70,45,20,.55);box-shadow:0 2px 4px rgba(0,0,0,.25);word-break:keep-all;overflow-wrap:anywhere}
+#logBox .ln.lina .bt{background:#f6b3c6;color:#4a2030;border-color:rgba(120,50,70,.55)}
+/* 시스템 기록: 종류별 글자색 */
+#logBox .ln.k-success{color:#b8f0be}#logBox .ln.k-fail,#logBox .ln.k-warn,#logBox .ln.k-sys,#logBox .ln.k-withdraw,#logBox .ln.k-injury,#logBox .ln.k-leave{color:#ffb4a8}#logBox .ln.k-death{color:#ff9d90}
+#logBox .ln.k-grow,#logBox .ln.k-unlock,#logBox .ln.k-promo{color:#ffe08a}
+#logBox .ln.k-depart,#logBox .ln.k-arrive,#logBox .ln.k-build{color:#b5d8ff}
+#logBox .ln.k-ledger{color:#ffd9a0}#logBox .ln.k-debug{opacity:.7}
 #logBox .lg{height:22px;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;width:150px;border-radius:11px;background:rgba(34,22,13,.5);color:#e9d9b8;font-size:13px;line-height:1;letter-spacing:.5px;cursor:grab;pointer-events:auto;user-select:none;touch-action:none;opacity:.45;transition:opacity .2s,width .2s,background .2s}
 #logBox.show .lg,#logBox .lg:hover{opacity:1;width:230px;background:rgba(34,22,13,.82)}
 #logBox .lg::before{content:"⋮⋮";letter-spacing:-2px;font-size:15px}
@@ -120,9 +127,9 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 #hudBR .up::after{content:"";position:absolute;left:-10px;right:-10px;top:100%;height:30px} /* 마우스가 틈을 지나도 닫히지 않게 이어줌 */
 #hudBR .grp:hover .up,#hudBR .grp:focus-within .up{pointer-events:auto}
 #hudBR .up .btn{position:relative;display:block;width:var(--cd);height:var(--cd);padding:0;border:0;border-radius:50%;background:none;color:var(--ink);font:inherit;cursor:pointer;opacity:0;pointer-events:none;transform:translateY(14px) scale(.5);transition:opacity .15s ease .25s,transform .15s ease .25s,filter .1s}
-#hudBR .up .btn:nth-last-child(2){transition-delay:.28s}#hudBR .up .btn:nth-last-child(3){transition-delay:.31s}#hudBR .up .btn:nth-last-child(4){transition-delay:.34s}#hudBR .up .btn:nth-last-child(5){transition-delay:.37s}
+#hudBR .up .btn:nth-last-child(2){transition-delay:0.28s}#hudBR .up .btn:nth-last-child(3){transition-delay:0.31s}#hudBR .up .btn:nth-last-child(4){transition-delay:0.34s}#hudBR .up .btn:nth-last-child(5){transition-delay:0.37s}#hudBR .up .btn:nth-last-child(6){transition-delay:0.40s}#hudBR .up .btn:nth-last-child(7){transition-delay:0.43s}#hudBR .up .btn:nth-last-child(8){transition-delay:0.46s}
 #hudBR .grp:hover .up .btn,#hudBR .grp:focus-within .up .btn{opacity:1;pointer-events:auto;transform:none;transition:opacity .15s ease,transform .18s cubic-bezier(.2,.9,.3,1.2),filter .1s}
-#hudBR .grp:hover .up .btn:nth-last-child(2){transition-delay:.04s}#hudBR .grp:hover .up .btn:nth-last-child(3){transition-delay:.08s}#hudBR .grp:hover .up .btn:nth-last-child(4){transition-delay:.12s}
+#hudBR .grp:hover .up .btn:nth-last-child(2){transition-delay:0.04s}#hudBR .grp:hover .up .btn:nth-last-child(3){transition-delay:0.08s}#hudBR .grp:hover .up .btn:nth-last-child(4){transition-delay:0.12s}#hudBR .grp:hover .up .btn:nth-last-child(5){transition-delay:0.16s}#hudBR .grp:hover .up .btn:nth-last-child(6){transition-delay:0.20s}#hudBR .grp:hover .up .btn:nth-last-child(7){transition-delay:0.24s}#hudBR .grp:hover .up .btn:nth-last-child(8){transition-delay:0.28s}
 #hudBR .up .btn:hover{filter:brightness(1.08);background:none}#hudBR .up .btn.on{background:none;color:inherit}
 #hudBR .up .cb{position:absolute;inset:0;display:grid;place-items:center}
 #hudBR .up .cb::before{content:"";position:absolute;inset:-11%;background:url(assets/ui/hud/speed_btn.png) center/100% 100% no-repeat}
@@ -145,6 +152,24 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 #dev.open{display:flex}
 #dev .tag{color:var(--muted);font-size:15px;align-self:center}
 /* 팝업 */
+#slotPick{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(20,12,6,.72);backdrop-filter:blur(3px)}#slotPick.on{display:flex}
+#slotPick .sp-box{width:1180px;max-width:94%;padding:34px 40px 30px;border-radius:22px;background:linear-gradient(#fff6e2,#f4e3bd);border:4px solid #7a5230;box-shadow:0 12px 40px rgba(0,0,0,.45);text-align:center}
+#slotPick h1{margin:0 0 6px;font:700 40px var(--hf);color:#5a3a22}#slotPick p{margin:0 0 24px;font:600 19px var(--hf);color:#8a6a48}
+.sp-list{display:flex;gap:22px;justify-content:center}.sp-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 16px 20px;border-radius:16px;background:#fffaf0;border:3px solid #d9c7a3;min-height:270px}
+.sp-card.recent{border-color:#c8963a;box-shadow:0 0 0 3px rgba(232,178,79,.35)}.sp-card.empty{background:repeating-linear-gradient(45deg,#f6ecd6 0 10px,#f0e3c7 10px 20px);border-style:dashed}
+.sp-no{font:700 24px var(--hf);color:#5a3a22}.sp-no i{font-style:normal;font-size:14px;color:#fff;background:#c8963a;border-radius:10px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+.sp-d{font:700 26px var(--hf);color:#3d2a18;margin-top:6px}.sp-s{font:600 17px var(--hf);color:#6a4c30;line-height:1.5}.sp-w{font:500 15px var(--hf);color:#9a8264;min-height:20px}.sp-ph{font:600 20px var(--hf);color:#a99577;margin:30px 0 22px}
+#titleLay{position:fixed;inset:0;z-index:40;background:#000;display:none}#titleLay.on{display:block}#titleLay iframe{width:100%;height:100%;border:0;display:block}
+#prologue{position:fixed;inset:0;z-index:45;background:#000;display:none}#prologue.on{display:block}#prologue video{width:100%;height:100%;object-fit:contain;background:#000}
+#prologueSkip{position:absolute;top:22px;right:26px;opacity:0;pointer-events:none;transition:opacity .6s}#prologueSkip.show{opacity:.85;pointer-events:auto}
+#fadeBlack{position:fixed;inset:0;z-index:50;background:#000;opacity:0;pointer-events:none;transition:opacity .9s}#fadeBlack.on{opacity:1;pointer-events:auto}
+.sp-back{position:absolute;left:22px;top:20px;font-size:15px;padding:5px 12px}.sp-box{position:relative}
+.sp-card .ux-btn{width:80%;margin-top:auto}.sp-card .sp-del{margin-top:0;font-size:14px;padding:4px 10px;opacity:.75}.sp-card .sp-del.arm{background:#f3c9c0;border-color:#b5483a;color:#7a1f14;opacity:1}
+#hudBR .up #mSellBtn.lock .cb{filter:grayscale(1) brightness(.85);opacity:.7}
+.op-wrap{padding:8px 18px;display:flex;flex-direction:column;gap:14px}.op-sec{background:rgba(255,250,238,.7);border:2px solid var(--ux-line2,#d9c7a3);border-radius:14px;padding:10px 16px}
+.op-sec h3{margin:0 0 8px;background:none;border:0;box-shadow:none;padding:0;width:auto;text-align:left;font:700 18px var(--hf);color:#5a3a22}.op-row{display:flex;align-items:center;gap:14px;padding:7px 0;border-top:1px dashed rgba(90,58,34,.2)}.op-row:first-of-type{border-top:0}
+.op-nm{flex:1;font:600 17px var(--hf);color:#4a3322}.op-rg{width:220px;accent-color:#b97a2a}.op-row b{width:48px;text-align:right;font:700 17px var(--hf);color:#5a3a22}
+.op-sw.on{color:#3b2207;background:linear-gradient(#ffe7a3,#e2b24f);border-color:#a8792a}.op-btns{justify-content:flex-start;border-top:0}
 #popBack{position:absolute;inset:0;background:rgba(20,12,6,.45);display:none;z-index:4}
 #popBack.open{display:block}
 #pop{left:50%;top:46%;transform:translate(-50%,-50%);width:1180px;height:780px;display:flex;flex-direction:column;padding:0;overflow:hidden}
@@ -267,8 +292,8 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 .cdx-empty{padding:70px 0;text-align:center;color:var(--muted);font-size:21px}
 /* 대사창이 열리면 하단 HUD·배속이 아래로 숨음 */
 #hudBR,#hudTR{transition:transform .9s cubic-bezier(.4,0,.2,1) .3s,opacity .7s ease .3s}
-.dlgOn #hudBR,.dlgOn #hudTR{transform:translateY(200px);opacity:0;pointer-events:none;transition-delay:0s}
-.dlgOn #hudBR *,.dlgOn #hudTR *{pointer-events:none}
+.dlgOn:not(:has(#townUi.on)) #hudBR,.dlgOn:not(:has(#townUi.on)) #hudTR{transform:translateY(200px);opacity:0;pointer-events:none;transition-delay:0s}
+.dlgOn:not(:has(#townUi.on)) #hudBR *,.dlgOn:not(:has(#townUi.on)) #hudTR *{pointer-events:none}
 /* 원정 현황 패널(hudExp)·미니 뷰(expView) — expedition.js, docs/design/expedition_panel.md */
 #hudExp{position:absolute;right:16px;top:96px;width:360px;max-height:704px;display:flex;flex-direction:column;opacity:.5;transition:opacity .3s ease .3s;z-index:3;
  background:linear-gradient(180deg,#3a2617,#2a1b10);border:2px solid #6b4a2b;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.45),inset 0 0 0 2px rgba(230,201,138,.18);font-family:"MaruBuri","Malgun Gothic",serif}
@@ -309,7 +334,7 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 <div id="game"></div>
 <div id="loading"><span id="loadMsg"></span></div>
 <template id="uiTpl">
-  <div id="hudTL"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><span id="hGrade"></span><span class="dt"><span class="date" id="hDate"></span><div class="weekbar"><i id="hWeekBar"></i></div></span><span class="sep"></span><span class="stat"><img src="assets/ui/hud/icon_coin.png" alt=""><span><span class="lb">금고</span><span class="val"><b id="hGold"></b><small> G</small></span></span></span><span class="sep"></span><span class="stat" id="hTrustBox" title=""><img id="hTrustFace" class="tface" src="assets/ui/hud/trust/trust_2.png" alt=""><span><span class="lb">신뢰도</span><span class="val"><b id="hTrust"></b></span><span class="tbar"><i id="hTrustBar"></i></span></span></span><span class="sep"></span><span class="stat" id="hFameBox" title=""><img src="assets/ui/hud/icon_star.png" alt=""><span><span class="lb">명성</span><span class="val"><b id="hFame"></b></span><span class="fbar" id="hFameBarW"><i id="hFameBar"></i></span></span></span><span class="sep"></span><span class="stat" id="hAdvBox" title=""><img src="assets/ui/hud/icon_adventurer.png" alt=""><span><span class="lb">모험가</span><span class="val"><b id="hAdv"></b><small class="cap" id="hAdvCap"></small></span></span></span></div></div>
+  <div id="hudTL"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><span id="hGrade"></span><span class="dt"><span class="date" id="hDate"></span><div class="weekbar"><i id="hWeekBar"></i></div><div class="wkrow"><img id="hTime" alt="" draggable="false" src="assets/ui/hud/time_sun.png" data-k="sun"></div></span><span class="sep"></span><span class="stat"><img src="assets/ui/hud/icon_coin.png" alt=""><span><span class="lb">금고</span><span class="val"><b id="hGold"></b><small> G</small></span></span></span><span class="sep"></span><span class="stat" id="hTrustBox" title=""><img id="hTrustFace" class="tface" src="assets/ui/hud/trust/trust_2.png" alt=""><span><span class="lb">신뢰도</span><span class="val"><b id="hTrust"></b></span><span class="tbar"><i id="hTrustBar"></i></span></span></span><span class="sep"></span><span class="stat" id="hFameBox" title=""><img src="assets/ui/hud/icon_star.png" alt=""><span><span class="lb">명성</span><span class="val"><b id="hFame"></b></span><span class="fbar" id="hFameBarW"><i id="hFameBar"></i></span></span></span><span class="sep"></span><span class="stat" id="hAdvBox" title=""><img src="assets/ui/hud/icon_adventurer.png" alt=""><span><span class="lb">모험가</span><span class="val"><b id="hAdv"></b><small class="cap" id="hAdvCap"></small></span></span></span></div></div>
   <div id="hudTR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><button class="btn" id="ppBtn" title="일시정지·재생 (스페이스)"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg></button><span class="more"><button class="chip on" data-speed="1"><b>1×</b></button><button class="chip" data-speed="2"><b>2×</b></button><button class="chip" data-speed="4"><b>4×</b></button></span></div></div>
   <div id="toasts"></div>
   <div id="logBox"><div class="ll"></div><div class="lg" title="끌어서 이동 · 더블클릭: 원위치">기록 · 끌어서 이동</div></div>
@@ -319,17 +344,19 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
     <button class="mb" data-pop="advs"><img class="ic" src="assets/ui/hud/bt/advs.png" alt="" draggable="false">모험가<span class="cnt" id="bParty"></span></button>
     <button class="mb" data-pop="fac"><img class="ic" src="assets/ui/hud/bt/fac.png" alt="" draggable="false">시설</button>
     <span class="grp"><button class="mb" id="mgBtn"><img class="ic" src="assets/ui/hud/bt/mgmt.png" alt="" draggable="false">경영</button>
-      <div class="up" id="mgUp"><button class="btn" data-pop="ledger"><span class="cb"><img class="mi" src="assets/ui/hud/mi/ledger.png" alt="" draggable="false"></span><b class="nm">장부</b></button><button class="btn" data-act="cook"><span class="cb"><img class="mi" src="assets/ui/hud/mi/cook.png" alt="" draggable="false"></span><b class="nm">요리하기</b></button><button class="btn" data-pop="meals"><span class="cb"><img class="mi" src="assets/ui/hud/mi/meals.png" alt="" draggable="false"></span><b class="nm">음식 설정</b></button><button class="btn" data-pop="codex"><span class="cb"><img class="mi" src="assets/ui/hud/mi/codex.png" alt="" draggable="false"></span><b class="nm">도감</b></button><button class="btn" data-pop="log"><span class="cb"><img class="mi" src="assets/ui/hud/mi/log.png" alt="" draggable="false"></span><b class="nm">기록</b></button></div></span>
+      <div class="up" id="mgUp"><button class="btn" data-pop="ledger"><span class="cb"><img class="mi" src="assets/ui/hud/mi/ledger.png" alt="" draggable="false"></span><b class="nm">장부</b></button><!-- [보류] 요리하기: 음식 설정과 합쳐져서 숨김 (2026.11) <button class="btn" data-act="cook"><span class="cb"><img class="mi" src="assets/ui/hud/mi/cook.png" alt="" draggable="false"></span><b class="nm">요리하기</b></button> --><button class="btn" data-pop="meals"><span class="cb"><img class="mi" src="assets/ui/hud/mi/meals.png" alt="" draggable="false"></span><b class="nm">음식 설정</b></button><button class="btn" data-pop="sell" id="mSellBtn"><span class="cb"><img class="mi" src="assets/ui/hud/mi/sell.png" onerror="this.onerror=null;this.src='assets/ui/hud/mi/ledger.png'" alt="" draggable="false"></span><b class="nm">소재 판매</b></button><button class="btn" data-pop="codex"><span class="cb"><img class="mi" src="assets/ui/hud/mi/codex.png" alt="" draggable="false"></span><b class="nm">도감</b></button><button class="btn" data-pop="log"><span class="cb"><img class="mi" src="assets/ui/hud/mi/log.png" alt="" draggable="false"></span><b class="nm">기록</b></button></div></span>
     <button class="mb" data-act="town" title="마을 화면으로 이동"><img class="ic" src="assets/ui/hud/bt/town.png" alt="" draggable="false">마을</button>
     <i class="sep"></i>
     <span class="grp"><button class="mb" id="menuBtn"><img class="ic" src="assets/ui/hud/bt/opt.png" alt="" draggable="false">옵션</button>
-      <div class="up" id="menu"><button class="btn" id="mSave"><span class="cb"><img class="mi" src="assets/ui/hud/mi/save.png" alt="" draggable="false"></span><b class="nm">저장하기</b></button><button class="btn" id="mLoad"><span class="cb"><img class="mi" src="assets/ui/hud/mi/load.png" alt="" draggable="false"></span><b class="nm">불러오기</b></button><button class="btn" id="mNew"><span class="cb"><img class="mi" src="assets/ui/hud/mi/new.png" alt="" draggable="false"></span><b class="nm">새 게임</b></button><button class="btn" id="mReport"><span class="cb"><img class="mi" src="assets/ui/hud/mi/report.png" alt="" draggable="false"></span><b class="nm">월간 보고 자동 표시 <i>켬</i></b></button></div></span>
+      <div class="up" id="menu"><button class="btn" data-pop="opts"><span class="cb"><img class="mi" src="assets/ui/hud/mi/option.png" onerror="this.onerror=null;this.src='assets/ui/hud/bt/opt.png'" alt="" draggable="false"></span><b class="nm">설정</b></button><button class="btn" id="mSave"><span class="cb"><img class="mi" src="assets/ui/hud/mi/save.png" alt="" draggable="false"></span><b class="nm">저장하기</b></button><button class="btn" id="mLoad"><span class="cb"><img class="mi" src="assets/ui/hud/mi/load.png" alt="" draggable="false"></span><b class="nm">불러오기</b></button><button class="btn" id="mReport"><span class="cb"><img class="mi" src="assets/ui/hud/mi/report.png" alt="" draggable="false"></span><b class="nm">월간 보고 자동 표시 <i>켬</i></b></button></div></span>
   </div></div>
   <button class="plate btn" id="devToggle">개발</button>
   <div class="plate" id="dev"><span class="tag">개발</span>
-    <button class="btn" id="dWeek">다음 주</button><button class="btn" id="dMonth">다음 달</button><button class="btn" id="dGrade">등급 올리기</button><button class="btn" id="dGold">+5,000G</button><button class="btn" id="dPromo">전직 시험</button><button class="btn" id="dWalk">걷기 시연</button>
+    <button class="btn" id="dWeek">다음 주</button><button class="btn" id="dMonth">다음 달</button><button class="btn" id="dGrade">등급 올리기</button><button class="btn" id="dGold">+5,000G</button><button class="btn" id="dPromo">전직 시험</button><button class="btn" id="dWalk">걷기 시연</button><button class="btn" id="dX2">2배 의뢰 보기</button>
     <button class="btn" id="dLayer">레이어 경계</button><button class="btn" id="dStill">쪽지 흔들림 끄기</button><button class="btn" id="dTemp"></button><button class="btn" id="dVerify">관문 1 검증</button><button class="btn" id="dKitchen">식당 시험</button>
     <span class="tag" id="dAssets"></span></div>
+  <div id="slotPick"><div class="sp-box"><h1>모험가 길드</h1><p>저장 슬롯을 골라 주세요. 고른 슬롯에 자동으로 저장됩니다.</p><div class="sp-list"></div></div></div>
+  <div id="titleLay"><iframe id="titleFrame" title="타이틀" allow="autoplay"></iframe></div><div id="prologue"><video id="prologueVid" playsinline preload="auto"></video><button id="prologueSkip" class="ux-btn">건너뛰기 (Esc)</button></div><div id="fadeBlack"></div>
   <div id="dlg"><img id="dlgFace" alt="리나"><canvas id="dlgStand" width="341" height="640" hidden></canvas><div class="plate" id="dlgBox"><span id="dlgName">리나</span><span id="dlgText"></span><span id="dlgNext" hidden>▼</span></div></div>
   <div id="popBack"><div class="plate" id="pop" role="dialog" aria-modal="true" aria-labelledby="popTitle"><div id="popHead"><h2 id="popTitle"></h2><button class="btn" id="popClose" aria-label="닫기">✕</button></div><div id="popBody"></div></div></div>
 </template>
@@ -341,13 +368,19 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 <script src="js/assets.js"></script>
 <script src="js/stage.js"></script>
 <script src="js/speech.js"></script>
+<script src="js/iso.js"></script>
 <script src="js/lina.js"></script>
 <script src="js/actors.js"></script>
+<script src="js/sky_data.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/lobby_sky.js"></script>
 <script src="js/lobby.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/lina_menu.js"></script>
 <script src="js/expedition.js"></script>
 <script src="js/town_layout.js"></script>
+<script src="js/town_data.js"></script>
+<script src="js/town_season.js"></script>
 <script src="js/town.js"></script>
 <script src="js/main.js"></script>
 </body></html>

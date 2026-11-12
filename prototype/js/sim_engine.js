@@ -187,9 +187,8 @@
     function finalStat(a, i) {
       let v = Math.min(G.statCap, a.stats[i]);
       if (a.gear >= 0) {
-        if (i === a.core) v += GE.weaponStat[a.gear];
+        if (i === a.core) v += GE.weaponStat[a.gear] + GE.accStat[a.gear];
         if (a.pair && a.pair.includes(i) && i !== a.core) v += GE.armorStat[a.gear];
-        if (i === (a.core + 2) % 5) v += GE.accStat[a.gear];
       }
       return v;
     }
@@ -209,8 +208,8 @@
         // 개체 차이: 실제 적은 게시된 정보보다 강하거나 약할 수 있음(±enemyVar). 정보실이 있으면 예측이 실제에 가까워짐
         const v = CB.C.enemyVar || 0, f = 1 + (R() * 2 - 1) * v, look = Math.min(1, 0.25 * effN('정보실'));
         for (const e of T.enemies) for (let k = 0; k < e.count; k++) {
-          enemies.push({ hp: e.hp * f, atk: e.atk * f, name: e.name });
-          seen.push({ hp: e.hp * (1 + (f - 1) * look), atk: e.atk * (1 + (f - 1) * look), name: e.name });
+          enemies.push({ hp: e.hp * f, atk: e.atk * f, def: e.def || 0, name: e.name, boss: !!e.boss });
+          seen.push({ hp: e.hp * (1 + (f - 1) * look), atk: e.atk * (1 + (f - 1) * look), def: e.def || 0, name: e.name, boss: !!e.boss });
         }
       }
       return { g, type, req: req2, r: R0 / n, boss: !!boss, T, enemies, seen, combat: enemies.length > 0 };

@@ -1,0 +1,185 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>명찰 위치 조절 (캐릭터 1명 확대)</title>
+<style>
+:root{--ink:#3b2a1e;--muted:#8a735a;--line2:rgba(120,82,44,.5);--wood:#5a3a22}
+*{box-sizing:border-box}body{margin:0;font-family:"Malgun Gothic","Noto Sans KR",sans-serif;color:var(--ink);background:#2b2118}
+.wrap{display:grid;grid-template-columns:380px 1fr;min-height:100vh}
+.ctl{background:#f3e6c8;padding:16px 16px 40px;border-right:3px solid #7a5032;overflow:auto;max-height:100vh}
+h1{font-size:19px;margin:0 0 4px;color:var(--wood)}p.d{font-size:13px;color:var(--muted);margin:0 0 10px;line-height:1.5}
+h2{font-size:14px;margin:14px 0 6px;color:var(--wood);border-bottom:1px dashed var(--line2);padding-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+h2 small{font-weight:400;color:var(--muted);font-size:12px}
+.r{display:grid;grid-template-columns:78px 1fr 44px;align-items:center;gap:8px;margin:4px 0;font-size:13px}.r input[type=range]{width:100%}.r output{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.r.c{grid-template-columns:78px 1fr}.r.c input[type=text],.r.c input[type=color]{width:100%}
+.ck{display:flex;gap:8px;align-items:center;font-size:13px;margin:6px 0}
+button,select{font:600 13px inherit;font-family:inherit;color:var(--wood);background:linear-gradient(#fffaf0,#efe0c0);border:2px solid var(--line2);border-radius:9px;padding:5px 10px;cursor:pointer}
+button.sm{padding:1px 8px;font-size:12px}
+textarea{width:100%;height:250px;white-space:pre;overflow:auto;margin-top:8px;font:12px/1.45 ui-monospace,Consolas,monospace;border:2px solid var(--line2);border-radius:8px;padding:8px;background:#fffdf7}
+.btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.view{padding:14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.view canvas{max-width:100%;border:3px solid #000;background:#8fa982;touch-action:none}
+.bar{display:flex;gap:10px;align-items:center;color:#f3e6c8;font-size:13px;flex-wrap:wrap}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}.ctl{max-height:none}}
+</style></head><body><div class="wrap"><div class="ctl">
+<h1>명찰 위치 조절</h1>
+<p class="d">캐릭터 한 명만 크게 보여 줍니다. <b>배지·이름·레벨은 각각 따로</b> 움직입니다 (화면에서 직접 끌어도 되고, 슬라이더도 됩니다). 마음에 들면 아래 <b>값 복사</b> 후 채팅창에 붙여 넣어 주세요.</p>
+<h2>보기 <small>게임 화면과 같은 규격</small></h2>
+<div class="r c"><span>캐릭터</span><select id="chr"></select></div>
+<div class="r c"><span>자세</span><select id="pose"><option value="stand">서 있기·걷기</option><option value="sit">앉기</option></select></div>
+<div class="r c"><span>등급 배지</span><select id="grade"><option>F</option><option selected>E</option><option>D</option><option>C</option><option>B</option><option>A</option><option>S</option></select></div>
+<div class="r c"><span>이름</span><input type="text" id="nm" value="에이든" maxlength="8"></div>
+<div class="r c"><span>레벨</span><input type="text" id="lvs" value="12" maxlength="3"></div>
+<div class="r"><span>확대</span><input type="range" id="zoom" min="2" max="6" step="0.1" value="4"><output id="zoomO">4.0×</output></div>
+<div class="ck"><label><input type="checkbox" id="guide" checked> 기준선 보기 (머리 높이·가운데)</label></div>
+<div id="groups"></div>
+<h2>색 · 외곽선</h2>
+<div class="r c"><span>이름 색</span><input type="color" id="cName" value="#fff8e8"></div>
+<div class="r c"><span>레벨 색</span><input type="color" id="cLv" value="#ffd98a"></div>
+<div id="gColor"></div>
+<div class="btns"><button id="copy">값 복사</button><button id="reset">처음 값으로</button></div>
+<textarea id="out" readonly></textarea>
+</div><div class="view"><div class="bar"><span id="info"></span></div><canvas id="cv" width="980" height="900"></canvas></div></div>
+<script>
+// ── 게임 규격 (js/iso.js 와 같은 값) ─────────────────────────────
+const SH = { cw: 160, ch: 200, cols: 12, piv: 197 };
+const SIT = { fw: 180, fh: 175, sc: 0.25, cols: 12 };
+const SITI = {
+  cleric_f:{n:38,f0:[370.0,593,79]}, rogue_f:{n:49,f0:[384.0,582,62]}, archer_m:{n:43,f0:[352.5,605,92]},
+  mage_m:{n:44,f0:[331.0,618,68]}, cleric_m:{n:48,f0:[372.5,610,92]}, rogue_m:{n:43,f0:[383.0,578,62]},
+  mage_f:{n:46,f0:[376.5,580,67]}, warrior_f:{n:38,f0:[359.5,588,72]}, archer_f:{n:35,f0:[370.0,587,70]},
+  warrior_m:{n:35,f0:[362.0,592,73]}
+};
+const FF = '"MaruBuri","Malgun Gothic","Apple SD Gothic Neo",sans-serif';
+const DEF = { lift:-4, dx:0, sitDy:0, h:30, fs:17, lfs:17, bs:24, bdx:0, bdy:0, ndx:0, ndy:0, ldx:0, ldy:0, pad:10, gap:6, ow:4,
+  nameColor:'#fff8e8', lvColor:'#ffd98a', outline:'rgba(46,32,18,.92)', pill:false, bubbleGap:0 };
+const NP = Object.assign({}, DEF);
+// 슬라이더 묶음: [키, 이름, 최소, 최대, 단계]
+const GROUPS = [
+  ['명찰 전체', '배지·이름·레벨이 한 덩어리로 움직입니다', [['lift','높이 (+위)',-60,80,1],['dx','좌우',-80,80,1],['sitDy','앉았을 때 높이',-40,40,1],['h','판 높이',16,60,1],['pad','양 끝 여백',0,30,1],['gap','사이 간격',0,24,1]]],
+  ['① 등급 배지', '이 배지만 움직입니다', [['bdx','좌우',-60,60,1],['bdy','상하',-40,40,1],['bs','크기',12,56,1]]],
+  ['② 이름', '이 이름만 움직입니다', [['ndx','좌우',-60,60,1],['ndy','상하',-40,40,1],['fs','글자 크기',10,36,1]]],
+  ['③ 레벨', '레벨 글자만 움직입니다', [['ldx','좌우',-60,60,1],['ldy','상하',-40,40,1],['lfs','글자 크기',10,36,1]]]
+];
+const $ = id => document.getElementById(id), cv = $('cv'), g = cv.getContext('2d');
+const ctrls = {};
+function mkSlider(host, [k, label, mn, mx, st]) {
+  const r = document.createElement('div'); r.className = 'r';
+  r.innerHTML = `<span>${label}</span><input type="range" min="${mn}" max="${mx}" step="${st}"><output></output>`;
+  const inp = r.querySelector('input'), out = r.querySelector('output');
+  inp.value = NP[k]; out.textContent = NP[k];
+  inp.oninput = () => { NP[k] = +inp.value; out.textContent = NP[k]; draw(); };
+  ctrls[k] = () => { inp.value = NP[k]; out.textContent = NP[k]; };
+  host.appendChild(r);
+}
+GROUPS.forEach(([title, sub, list]) => {
+  const h = document.createElement('h2'); h.innerHTML = `${title} <small>${sub}</small>`;
+  if (title !== '명찰 전체') { const b = document.createElement('button'); b.className = 'sm'; b.textContent = '0으로'; b.onclick = () => { list.forEach(([k]) => { if (/dx|dy$/.test(k)) { NP[k] = 0; ctrls[k](); } }); draw(); }; h.appendChild(b); }
+  $('groups').appendChild(h); list.forEach(s => mkSlider($('groups'), s));
+});
+mkSlider($('gColor'), ['ow', '외곽선 굵기', 0, 10, 1]);
+Object.keys(SITI).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = k; $('chr').appendChild(o); });
+$('chr').value = 'warrior_m';
+// ── 그림 불러오기 (docs/tools → ../../prototype/assets 또는 ../../assets) ─────
+const BASES = ['../../prototype/assets/', '../../assets/', '../prototype/assets/', 'prototype/assets/', 'assets/'];
+const cache = {};
+function loadImg(rel) {
+  if (cache[rel]) return cache[rel];
+  const p = new Promise(res => { let i = 0; (function t() { if (i >= BASES.length) return res(null); const im = new Image(); im.onload = () => res(im); im.onerror = () => { i++; t(); }; im.src = BASES[i] + rel; })(); });
+  return cache[rel] = p;
+}
+let sprite = null, badge = null;
+async function refreshAssets() {
+  const c = $('chr').value; $('info').textContent = '그림 불러오는 중…';
+  sprite = await loadImg(`lobby_iso/chr/${c}_${$('pose').value === 'sit' ? 'sit' : 'walk'}.webp`);
+  badge = await loadImg(`ui/hud/badge_${$('grade').value}.png`);
+  if (!sprite) $('info').textContent = '캐릭터 그림을 찾지 못했습니다. 이 파일을 prototype 폴더 옆(docs/tools)에서 열어 주세요.';
+  draw();
+}
+// ── 그리기: 게임의 plate() 와 같은 계산 ───────────────────────────
+let hit = {};      // 끌기용 영역 (게임 좌표)
+function geom(Z) {
+  const vw = cv.width / Z, vh = cv.height / Z, fx = vw / 2, fy = vh * 0.86;
+  return { vw, vh, fx, fy };
+}
+function draw() {
+  const Z = +$('zoom').value; $('zoomO').textContent = Z.toFixed(1) + '×';
+  const { vw, vh, fx, fy } = geom(Z), sit = $('pose').value === 'sit', c = $('chr').value;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, cv.width, cv.height);
+  // 바닥 (캐릭터 발 아래만 은은하게)
+  g.fillStyle = '#9db38f'; g.fillRect(0, 0, cv.width, cv.height);
+  g.setTransform(Z, 0, 0, Z, 0, 0); g.imageSmoothingQuality = 'high';
+  g.fillStyle = 'rgba(60,45,28,.18)'; g.beginPath(); g.ellipse(fx, fy + 1, 26, 8, 0, 0, 7); g.fill();
+  const ac = { x: fx, y: fy };   // 캐릭터 발밑 (ac.x, ac.y) — 게임과 같음
+  if (sprite) {
+    if (!sit) g.drawImage(sprite, 0, 0, SH.cw, SH.ch, ac.x - SH.cw / 2, ac.y - SH.piv, SH.cw, SH.ch);
+    else {
+      const f = SITI[c], fi = f.n - 1, ax = ac.x - (f.f0[0] - 360) * SIT.sc, ay = ac.y - (f.f0[1] - 620) * SIT.sc;
+      g.drawImage(sprite, (fi % SIT.cols) * SIT.fw, Math.floor(fi / SIT.cols) * SIT.fh, SIT.fw, SIT.fh, ax - 360 * SIT.sc, ay - 620 * SIT.sc, SIT.fw, SIT.fh);
+    }
+  }
+  const headY = ac.y - (sit ? 135 : 150);
+  if ($('guide').checked) {
+    g.save(); g.lineWidth = 0.5; g.setLineDash([3, 3]); g.strokeStyle = 'rgba(255,255,255,.8)';
+    g.beginPath(); g.moveTo(0, headY); g.lineTo(vw, headY); g.moveTo(fx, 0); g.lineTo(fx, vh); g.stroke(); g.restore();
+    g.font = '5px sans-serif'; g.fillStyle = '#fff'; g.fillText('머리 기준 y', 3, headY - 2);
+  }
+  // 명찰 (actors.js plate() 와 동일)
+  const nm = $('nm').value || '이름', lv = 'Lv.' + ($('lvs').value || '1'), bs = NP.bs, pad = NP.pad, gap = NP.gap, H = NP.h;
+  g.save(); g.font = `700 ${NP.fs}px ${FF}`;
+  const nw = Math.ceil(g.measureText(nm).width); g.font = `700 ${NP.lfs}px ${FF}`; const lw = Math.ceil(g.measureText(lv).width);
+  const w = pad + bs + gap + nw + gap + lw + pad, x0 = ac.x - w / 2 + NP.dx, yb = headY - NP.lift - (sit ? NP.sitDy : 0), y0 = yb - H;
+  let bx = x0 + pad - 2 + NP.bdx, by = y0 + (H - bs) / 2 + NP.bdy, bw = bs;
+  if (badge && badge.naturalWidth) { bw = bs * badge.naturalWidth / badge.naturalHeight; bx += (bs - bw) / 2; g.drawImage(badge, bx, by, bw, bs); }
+  g.textBaseline = 'middle'; g.textAlign = 'left'; g.lineJoin = 'round'; g.lineWidth = NP.ow; g.strokeStyle = NP.outline;
+  const ty = y0 + H / 2 + 1, tx1 = x0 + pad + bs + gap + NP.ndx, tx2 = x0 + pad + bs + gap + nw + gap + NP.ldx;
+  g.font = `700 ${NP.fs}px ${FF}`; if (NP.ow) g.strokeText(nm, tx1, ty + NP.ndy); g.fillStyle = NP.nameColor; g.fillText(nm, tx1, ty + NP.ndy);
+  g.font = `700 ${NP.lfs}px ${FF}`; if (NP.ow) g.strokeText(lv, tx2, ty + NP.ldy); g.fillStyle = NP.lvColor; g.fillText(lv, tx2, ty + NP.ldy);
+  g.restore();
+  hit = {
+    badge: [bx, by, bw, bs],
+    name: [tx1, ty + NP.ndy - NP.fs * 0.6, nw, NP.fs * 1.2],
+    lv: [tx2, ty + NP.ldy - NP.lfs * 0.6, lw, NP.lfs * 1.2],
+    all: [x0, y0, w, H]
+  };
+  // 선택/호버 표시
+  const hl = drag ? drag.k : hover;
+  if (hl && hit[hl]) { const r = hit[hl]; g.save(); g.lineWidth = 0.7; g.strokeStyle = hl === 'all' ? '#ffd23c' : '#4ad0ff'; g.strokeRect(r[0] - 1, r[1] - 1, r[2] + 2, r[3] + 2); g.restore(); }
+  $('info').textContent = `${c} · ${sit ? '앉기' : '서 있기'} · 화면 확대 ${Z.toFixed(1)}× · 배지/이름/레벨을 끌어서 움직여 보세요 (Shift+끌기 = 명찰 전체)`;
+  out();
+}
+// ── 마우스로 끌기 ────────────────────────────────────────────
+let drag = null, hover = null;
+const pos = e => { const r = cv.getBoundingClientRect(), Z = +$('zoom').value; return [(e.clientX - r.left) * (cv.width / r.width) / Z, (e.clientY - r.top) * (cv.height / r.height) / Z]; };
+const inR = (p, r, m = 3) => p[0] >= r[0] - m && p[0] <= r[0] + r[2] + m && p[1] >= r[1] - m && p[1] <= r[1] + r[3] + m;
+function pick(p, shift) { if (shift) return inR(p, hit.all, 0) ? 'all' : null; for (const k of ['badge', 'name', 'lv']) if (inR(p, hit[k])) return k; return inR(p, hit.all, 0) ? 'all' : null; }
+const MAP = { badge: ['bdx', 'bdy'], name: ['ndx', 'ndy'], lv: ['ldx', 'ldy'], all: ['dx', 'lift'] };
+cv.onpointerdown = e => { const p = pos(e), k = pick(p, e.shiftKey); if (!k) return; drag = { k, p, v0: MAP[k].map(n => NP[n]) }; cv.setPointerCapture(e.pointerId); draw(); };
+cv.onpointermove = e => {
+  const p = pos(e);
+  if (drag) {
+    const [kx, ky] = MAP[drag.k], dx = p[0] - drag.p[0], dy = p[1] - drag.p[1];
+    NP[kx] = Math.round(drag.v0[0] + dx); NP[ky] = Math.round(drag.v0[1] + (drag.k === 'all' ? -dy : dy));   // 전체의 lift 는 위가 +
+    ctrls[kx](); ctrls[ky](); draw(); return;
+  }
+  const k = pick(p, e.shiftKey); cv.style.cursor = k ? 'grab' : ''; if (k !== hover) { hover = k; draw(); }
+};
+cv.onpointerup = () => { drag = null; draw(); };
+// ── 값 내보내기 ─────────────────────────────────────────────
+function out() {
+  const n = NP, L = [
+    `const NP = {`,
+    `  lift: ${n.lift}, dx: ${n.dx}, sitDy: ${n.sitDy}, h: ${n.h},`,
+    `  fs: ${n.fs}, lfs: ${n.lfs}, bs: ${n.bs}, pad: ${n.pad}, gap: ${n.gap}, ow: ${n.ow},`,
+    `  bdx: ${n.bdx}, bdy: ${n.bdy}, ndx: ${n.ndx}, ndy: ${n.ndy}, ldx: ${n.ldx}, ldy: ${n.ldy},`,
+    `  nameColor: '${n.nameColor}', lvColor: '${n.lvColor}', outline: '${n.outline}',`,
+    `  pill: false, bubbleGap: 0`,
+    `};`];
+  $('out').value = L.join('\n');
+}
+$('cName').oninput = e => { NP.nameColor = e.target.value; draw(); };
+$('cLv').oninput = e => { NP.lvColor = e.target.value; draw(); };
+['nm', 'lvs', 'zoom', 'guide'].forEach(i => $(i).oninput = draw);
+['chr', 'pose', 'grade'].forEach(i => $(i).onchange = refreshAssets);
+$('copy').onclick = () => { $('out').select(); try { document.execCommand('copy'); $('copy').textContent = '복사됨 ✓'; setTimeout(() => $('copy').textContent = '값 복사', 1200); } catch (e) { /* 직접 복사 */ } };
+$('reset').onclick = () => { Object.assign(NP, DEF); Object.keys(ctrls).forEach(k => ctrls[k]()); $('cName').value = DEF.nameColor; $('cLv').value = DEF.lvColor; draw(); };
+refreshAssets();
+</script></body></html>

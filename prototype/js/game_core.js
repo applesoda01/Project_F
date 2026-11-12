@@ -77,6 +77,8 @@
   }
   function boardCap(s) { return s.cfg.quest.boardCap[s.grade] + [0, 2, 5, 5][Math.min(3, effN(s, '게시판'))]; }
 
+  // 길드 등급별 모험가 상한 (설정 adv.capByGrade 가 없으면 F~S 순서로 8·12·16·20·24·28·32명)
+  function advCap(s) { const A = (s.cfg && s.cfg.adv) || {}, C = A.capByGrade || [8, 12, 16, 20, 24, 28, 32]; return C[s.grade] || 8; }
   function spawnAdv(s, o) {
     o = o || {};
     const A = s.cfg.adv;
@@ -98,7 +100,7 @@
 
   function finalStat(s, a, i) {
     const GE = s.cfg.gear; let v = Math.min(s.cfg.growth.statCap, a.stats[i]);
-    if (a.gear >= 0) { if (i === a.core) v += GE.weaponStat[a.gear]; if (i === (a.core + 2) % 5) v += GE.accStat[a.gear]; }
+    if (a.gear >= 0) { if (i === a.core) v += GE.weaponStat[a.gear] + GE.accStat[a.gear]; }   // 장신구: 주력 능력치 +3×등급 순번 (직업 제한 없는 장신구를 주력에 맞게 착용한다고 봄)
     return v;
   }
   function makeQuest(s, g) {
@@ -113,8 +115,8 @@
       const f = 1 + (s.R() * 2 - 1) * (CB.C.enemyVar || 0), look = Math.min(1, 0.25 * effN(s, '정보실'));
       q.enemies = []; q.seen = []; q.foe = f;
       for (const e of T.enemies) for (let k = 0; k < e.count; k++) {
-        q.enemies.push({ hp: e.hp * f, atk: e.atk * f, name: e.name, mon: e.mon, boss: !!e.boss });
-        q.seen.push({ hp: e.hp * (1 + (f - 1) * look), atk: e.atk * (1 + (f - 1) * look), name: e.name });
+        q.enemies.push({ hp: e.hp * f, atk: e.atk * f, def: e.def || 0, name: e.name, mon: e.mon, boss: !!e.boss });
+        q.seen.push({ hp: e.hp * (1 + (f - 1) * look), atk: e.atk * (1 + (f - 1) * look), def: e.def || 0, name: e.name, boss: !!e.boss });
       }
     }
     return q;
@@ -382,7 +384,7 @@
           for (const m of party) { const want = C.potionCarry[m.spend] - (s.R() < 0.5 ? 1 : 0); while (m.pots < want && m.wallet >= price) { m.wallet -= price; m.pots++; } }
           const r = CB.fight(party.map(m => unitOf(s, m, mealB, sm)), q.enemies, q.g, s.R, party[0].risk, true);
           fight = { win: r.win, result: r.result, rounds: r.rounds, log: r.log.map(e => e.hp != null ? Object.assign({}, e, { hp: Math.round(e.hp) }) : e),
-            units: r.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), hp: Math.round(u.hp), down: u.down, pots: u.pots, used: u.used })),
+            units: r.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), maxMp: Math.round(u.maxMp || 0), hp: Math.round(u.hp), down: u.down, pots: u.pots, used: u.used })),
             enemies: q.enemies.map(e => ({ name: e.name, mon: e.mon, boss: e.boss, maxHp: Math.round(e.hp), atk: Math.round(e.atk) })) };
           p = r.win ? 1 : 0;
         } else p = Math.min(0.97, successP(s, party, q, sm) * (1 + mealB));
@@ -457,7 +459,7 @@
     // 새 모험가 방문 수 = 기본 × 신뢰도 보정(0.7~1.3) × 명성 보정(1~1.6)
     const F = s.cfg.fame, lam = A.arrivalPerMonth * (0.7 + 0.6 * s.trust / 100) * (1 + F.maxBonus * Math.min(1, (s.fame || 0) / F.full));
     let k = Math.floor(lam); if (s.R() < lam - k) k++;
-    for (let i = 0; i < k; i++) spawnAdv(s, {});
+    for (let i = 0; i < k && s.advs.filter(x => x.alive).length < advCap(s); i++) spawnAdv(s, {});   // 등급 상한이 차면 새 모험가는 오지 않는다
     for (const a of s.advs) {
       if (!a.alive) continue;
       const ng = Math.min(s.grade, a.gear + 1); if (ng <= a.gear) continue;
@@ -489,6 +491,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

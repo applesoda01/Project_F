@@ -1,0 +1,137 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>게시판 의뢰서 전체 조절</title>
+<style>
+:root{--ink:#3b2a1e;--muted:#8a735a;--line2:rgba(120,82,44,.5);--wood:#5a3a22}
+*{box-sizing:border-box}body{margin:0;font-family:"Malgun Gothic","Noto Sans KR",sans-serif;color:var(--ink);background:#2b2118}
+.wrap{display:grid;grid-template-columns:370px 1fr;min-height:100vh}
+.ctl{background:#f3e6c8;padding:16px 16px 40px;border-right:3px solid #7a5032;overflow:auto;max-height:100vh}
+h1{font-size:19px;margin:0 0 4px;color:var(--wood)}p.d{font-size:13px;color:var(--muted);margin:0 0 10px;line-height:1.5}
+h2{font-size:14px;margin:14px 0 6px;color:var(--wood);border-bottom:1px dashed var(--line2);padding-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+h2 small{font-weight:400;color:var(--muted);font-size:12px}
+.r{display:grid;grid-template-columns:96px 1fr 50px;align-items:center;gap:8px;margin:4px 0;font-size:13px}.r input[type=range]{width:100%}.r output{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.ck{display:flex;gap:8px;align-items:center;font-size:13px;margin:6px 0}
+button{font:600 13px inherit;font-family:inherit;color:var(--wood);background:linear-gradient(#fffaf0,#efe0c0);border:2px solid var(--line2);border-radius:9px;padding:5px 10px;cursor:pointer}
+textarea{width:100%;height:230px;white-space:pre;overflow:auto;margin-top:8px;font:12px/1.45 ui-monospace,Consolas,monospace;border:2px solid var(--line2);border-radius:8px;padding:8px;background:#fffdf7}
+.btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.view{padding:14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.view canvas{max-width:100%;border:3px solid #000;background:#000;touch-action:none;cursor:grab}
+.bar{color:#f3e6c8;font-size:13px;line-height:1.5}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}.ctl{max-height:none}}
+</style></head><body><div class="wrap"><div class="ctl">
+<h1>게시판 의뢰서 전체 조절</h1>
+<p class="d">의뢰서 <b>24장이 모두 붙은 최대치</b> 상태로 보여 줍니다. 한 장씩이 아니라 <b>전체가 한꺼번에</b> 움직입니다. 화면을 끌면 이동, <b>Shift+끌기</b>는 회전입니다. 마음에 들면 <b>값 복사</b> 후 채팅창에 붙여 넣어 주세요.</p>
+<h2>위치 · 각도 <small>게시판 전체</small></h2><div id="g1"></div>
+<h2>퍼짐 · 크기 <small>쪽지가 놓이는 범위</small></h2><div id="g2"></div>
+<h2>쪽지 각도 · 흔들림 <small>모든 쪽지 공통</small></h2><div id="g3"></div>
+<h2>보기</h2>
+<div class="r"><span>확대</span><input type="range" id="zoom" min="2" max="8" step="0.1" value="4.2"><output id="zoomO"></output></div>
+<div class="ck"><label><input type="checkbox" id="orig"> 원래 칸 위치 점 보기</label></div>
+<div class="ck"><label><input type="checkbox" id="anim"> 바람 흔들림 움직여 보기</label></div>
+<div class="ck"><label><input type="checkbox" id="cnt" checked> 24장 모두 붙이기 (끄면 12장)</label></div>
+<div class="btns"><button id="copy">값 복사</button><button id="reset">처음 값으로</button></div>
+<textarea id="out" readonly></textarea>
+</div><div class="view"><div class="bar" id="info"></div><canvas id="cv" width="1000" height="780"></canvas></div></div>
+<script>
+// ── 게임 규격 (js/lobby.js 와 같은 값) ─────────────────────────────
+const BOARD = { tl: [541, 386], tr: [745, 308], bl: [541, 495], cols: 8, rows: 3, w: 84, h: 110, s: 0.27 };
+const FILL = [0,13,6,19,3,16,9,22,1,14,7,20,4,17,10,23,2,15,8,21,5,18,11,12];
+const SEAL = ['#9a9a9a','#3fae4a','#2f6fd0','#8a4fd0','#e0782a','#d0302c','#e8b828'];
+const hash = n => { n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n ^= n >>> 4; n = Math.imul(n, 0x27d4eb2d); return (n ^ (n >>> 15)) >>> 0; };
+const DEF = { dx:0, dy:0, rot:0, gw:100, gh:100, ns:100, tilt:0, jit:100, pj:100, sway:100, wall:100 };
+const BT = Object.assign({}, DEF);
+const GR = {
+  g1: [['dx','좌우 이동',-120,120,1,'px'],['dy','상하 이동',-120,120,1,'px'],['rot','회전',-45,45,0.5,'°']],
+  g2: [['gw','가로 퍼짐',50,150,1,'%'],['gh','세로 퍼짐',50,150,1,'%'],['ns','쪽지 크기',50,160,1,'%']],
+  g3: [['tilt','전체 각도 더하기',-45,45,0.5,'°'],['jit','제각각 각도',0,200,1,'%'],['pj','제각각 위치',0,300,1,'%'],['wall','벽면 기울기',0,150,1,'%'],['sway','바람 흔들림',0,300,1,'%']]
+};
+const $ = id => document.getElementById(id), cv = $('cv'), g = cv.getContext('2d'), ctrls = {};
+for (const [host, list] of Object.entries(GR)) for (const [k, label, mn, mx, st, u] of list) {
+  const r = document.createElement('div'); r.className = 'r';
+  r.innerHTML = `<span>${label}</span><input type="range" min="${mn}" max="${mx}" step="${st}"><output></output>`;
+  const inp = r.querySelector('input'), out = r.querySelector('output');
+  const show = () => { inp.value = BT[k]; out.textContent = BT[k] + u; };
+  inp.oninput = () => { BT[k] = +inp.value; show(); draw(); };
+  ctrls[k] = show; show(); $(host).appendChild(r);
+}
+// ── 그림 ─────────────────────────────────────────────────────
+const BASES = ['../../prototype/assets/', '../../assets/', '../prototype/assets/', 'prototype/assets/', 'assets/'];
+const IM = {};
+function load(rel) { return new Promise(res => { let i = 0; (function t() { if (i >= BASES.length) return res(null); const im = new Image(); im.onload = () => res(im); im.onerror = () => { i++; t(); }; im.src = BASES[i] + rel; })(); }); }
+const files = { bg: 'lobby_iso/bg_open.jpg', seal: 'quest/quest_seal.png' };
+for (let i = 0; i < 3; i++) files['p' + i] = `quest/quest_paper_${i}.png`;
+for (let i = 0; i < 5; i++) files['s' + i] = `quest/quest_stamp_${i}.png`;
+const sealC = {};
+function sealFor(gr) {
+  if (sealC[gr]) return sealC[gr];
+  const S = 72, c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
+  x.drawImage(IM.seal, 0, 0, S, S); x.globalCompositeOperation = 'color'; x.fillStyle = SEAL[gr]; x.fillRect(0, 0, S, S);
+  if (gr === 6) { x.globalCompositeOperation = 'screen'; x.fillStyle = 'rgba(120,90,10,.9)'; x.fillRect(0, 0, S, S); }
+  x.globalCompositeOperation = 'destination-in'; x.drawImage(IM.seal, 0, 0, S, S); x.globalCompositeOperation = 'source-over';
+  x.font = 'bold 38px Georgia,"Times New Roman",serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillStyle = gr === 6 ? 'rgba(70,44,10,.92)' : 'rgba(255,248,232,.92)'; x.fillText('FEDCBAS'[gr], S / 2, S / 2 + 2);
+  return sealC[gr] = c;
+}
+// ── 칸 계산 (lobby.js layout() 과 동일) ─────────────────────────
+function layout(B) {
+  const ux0 = (BOARD.tr[0] - BOARD.tl[0]) * B.gw / 100, uy0 = (BOARD.tr[1] - BOARD.tl[1]) * B.gw / 100;
+  const vx0 = (BOARD.bl[0] - BOARD.tl[0]) * B.gh / 100, vy0 = (BOARD.bl[1] - BOARD.tl[1]) * B.gh / 100;
+  const cx0 = BOARD.tl[0] + ((BOARD.tr[0] - BOARD.tl[0]) + (BOARD.bl[0] - BOARD.tl[0])) / 2, cy0 = BOARD.tl[1] + ((BOARD.tr[1] - BOARD.tl[1]) + (BOARD.bl[1] - BOARD.tl[1])) / 2;
+  const r = B.rot * Math.PI / 180, co = Math.cos(r), si = Math.sin(r);
+  const ux = ux0 * co - uy0 * si, uy = ux0 * si + uy0 * co, vx = vx0 * co - vy0 * si, vy = vx0 * si + vy0 * co;
+  const cx = cx0 + B.dx, cy = cy0 + B.dy, UL = Math.hypot(ux, uy), S = [];
+  for (let k = 0; k < BOARD.cols; k++) for (let q = 0; q < BOARD.rows; q++) { const fu = (k + .5) / BOARD.cols - .5, fv = (q + .5) / BOARD.rows - .5; S.push({ x: cx + ux * fu + vx * fv, y: cy + uy * fu + vy * fv }); }
+  return { S, UVX: ux / UL, UVY: uy / UL, NS: BOARD.s * B.ns / 100, cx, cy };
+}
+function note(L, slot, id, t) {
+  const h = hash(id), sl = L.S[slot], paper = h % 3, type = id % 5, gr = id % 7;
+  const base = ((h >>> 3) % 50 - 25) / 10 * BT.jit / 100 + BT.tilt;
+  const amp = (1.2 + ((h >>> 9) % 10) / 10) * BT.sway / 100, spd = 0.9 + ((h >>> 13) % 7) / 10, ph = ((h >>> 17) % 628) / 100;
+  const sway = Math.sin(t * spd * 2.1 + ph) * amp + Math.sin(t * spd * 3.7 + ph * 1.7) * amp * 0.25;
+  const x = sl.x + ((h >>> 20) % 5 - 2) * BT.pj / 100, y = sl.y + ((h >>> 24) % 5 - 2) * BT.pj / 100, W = BOARD.w, H = BOARD.h, s = L.NS, wl = BT.wall / 100;
+  g.save(); g.translate(x, y); g.transform(L.UVX * s, L.UVY * wl * s, 0, s, 0, 0);
+  g.rotate((base + sway) * Math.PI / 180); g.translate(-W / 2, -H / 2);
+  g.shadowColor = 'rgba(40,22,8,.38)'; g.shadowBlur = 3; g.shadowOffsetY = 2;
+  g.drawImage(IM['p' + paper], 0, 0, W, H); g.shadowColor = 'transparent';
+  g.save(); g.translate(W / 2 - 22 + 22, H * 0.3 + 22); g.rotate((((h >>> 5) % 16) - 8) * Math.PI / 180); g.drawImage(IM['s' + type], -22, -22, 44, 44); g.restore();
+  g.drawImage(sealFor(gr), W * 0.58, H * 0.66, 30, 30); g.restore();
+}
+// ── 그리기 ──────────────────────────────────────────────────
+let pan = [0, 0];   // 확대 화면 중심 (게임 좌표)
+const C0 = layout(DEF);
+function view() { const Z = +$('zoom').value; return { Z, ox: C0.cx - cv.width / Z / 2, oy: C0.cy - cv.height / Z / 2 }; }
+let T0 = performance.now();
+function draw() {
+  if (!IM.bg) return;
+  const { Z, ox, oy } = view(); $('zoomO').textContent = Z.toFixed(1) + '×';
+  g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, cv.width, cv.height); g.imageSmoothingQuality = 'high';
+  g.setTransform(Z, 0, 0, Z, -ox * Z, -oy * Z);
+  g.drawImage(IM.bg, 0, 0, 1920, 1080);
+  const L = layout(BT), n = $('cnt').checked ? 24 : 12, t = $('anim').checked ? (performance.now() - T0) / 1000 : 0;
+  for (let i = 0; i < n; i++) note(L, FILL[i], i + 1, t);
+  if ($('orig').checked) { const L0 = layout(DEF); g.fillStyle = 'rgba(255,60,60,.9)'; for (const p of L0.S) { g.beginPath(); g.arc(p.x, p.y, 1.6, 0, 7); g.fill(); } }
+  $('info').innerHTML = `화면을 <b>끌면 이동</b> · <b>Shift+끌기 = 회전</b> · 현재: 이동 (${BT.dx}, ${BT.dy}) · 회전 ${BT.rot}° · 쪽지 크기 ${BT.ns}%`;
+  out();
+}
+// ── 마우스 ──────────────────────────────────────────────────
+let drag = null;
+const gp = e => { const r = cv.getBoundingClientRect(), { Z, ox, oy } = view(); return [(e.clientX - r.left) * (cv.width / r.width) / Z + ox, (e.clientY - r.top) * (cv.height / r.height) / Z + oy]; };
+cv.onpointerdown = e => { drag = { p: gp(e), v: [BT.dx, BT.dy, BT.rot], rot: e.shiftKey, a0: Math.atan2(gp(e)[1] - layout(BT).cy, gp(e)[0] - layout(BT).cx) }; cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; };
+cv.onpointermove = e => {
+  if (!drag) return; const p = gp(e);
+  if (drag.rot) { const L = layout(BT), a = Math.atan2(p[1] - L.cy, p[0] - L.cx); let d = (a - drag.a0) * 180 / Math.PI; BT.rot = Math.max(-45, Math.min(45, Math.round((drag.v[2] + d) * 2) / 2)); ctrls.rot(); }
+  else { BT.dx = Math.max(-120, Math.min(120, Math.round(drag.v[0] + p[0] - drag.p[0]))); BT.dy = Math.max(-120, Math.min(120, Math.round(drag.v[1] + p[1] - drag.p[1]))); ctrls.dx(); ctrls.dy(); }
+  draw();
+};
+cv.onpointerup = () => { drag = null; cv.style.cursor = 'grab'; };
+// ── 내보내기 ────────────────────────────────────────────────
+function out() {
+  const b = BT; $('out').value = `const BT = {\n  dx: ${b.dx}, dy: ${b.dy}, rot: ${b.rot},\n  gw: ${b.gw}, gh: ${b.gh}, ns: ${b.ns},\n  tilt: ${b.tilt}, jit: ${b.jit}, pj: ${b.pj},\n  sway: ${b.sway}, wall: ${b.wall}\n};`;
+}
+['zoom', 'orig', 'cnt'].forEach(i => $(i).oninput = draw);
+$('anim').onchange = () => { T0 = performance.now(); (function loop() { if ($('anim').checked) { draw(); requestAnimationFrame(loop); } else draw(); })(); };
+$('copy').onclick = () => { $('out').select(); try { document.execCommand('copy'); $('copy').textContent = '복사됨 ✓'; setTimeout(() => $('copy').textContent = '값 복사', 1200); } catch (e) {} };
+$('reset').onclick = () => { Object.assign(BT, DEF); Object.keys(ctrls).forEach(k => ctrls[k]()); draw(); };
+Promise.all(Object.entries(files).map(async ([k, f]) => IM[k] = await load(f))).then(() => {
+  if (!IM.bg) $('info').textContent = '그림을 찾지 못했습니다. 이 파일을 prototype 폴더 옆(docs/tools)에서 열어 주세요.'; else draw();
+});
+</script></body></html>

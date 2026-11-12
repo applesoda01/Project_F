@@ -99,22 +99,33 @@
     for (const x of F.log) (by[x.r] = by[x.r] || []).push(x);
     const out = []; for (const r in by) { const a = by[r]; a.forEach((x, k) => out.push(Object.assign({ at: (r - 1 + (k + 1) / a.length) / R }, x))); } return out;
   }
+  // 아군 한 명의 행동 시각(기록상 진행도) 목록. 스킬의 연속 타격(k 있음)은 한 번의 행동으로 묶음
+  function actTimes(F, id) {
+    const out = []; let last = null;
+    for (const x of timeline(F)) {
+      if (x.by !== id || (x.t !== 'hit' && x.t !== 'heal')) { last = null; continue; }
+      if (last && x.k && last.k === x.k) continue;
+      out.push(x.at); last = x;
+    }
+    return out;
+  }
   function open(id) {
     if (sel === id) { close(); return; }
     const s = getS(), e = entries().find(o => o.id === id); if (!e) return;
     const x = e.x, F = x.fight, party = x.party.map(pid => advOf(s, pid)).filter(Boolean).sort((a, b) => ROW[a.core] - ROW[b.core]);
     sel = id;
     const unitOf = a => (F && F.units.find(u => u.id === a.id)) || null;
-    view = { id, cam: 0, t: 0, phaseT: 0, phase: null, ev: timeline(F), applied: 0, fresh: true, sparks: [], combat: !!F,
+    view = { id, cam: 0, t: 0, phaseT: 0, phase: null, ev: timeline(F), applied: 0, fresh: true, sparks: [], nums: [], combat: !!F,
       actors: party.map((a, i) => { const u = unitOf(a), k = CLS[a.core] + '_' + sexOf(a); ['walk', 'run', 'attack', 'fall'].forEach(n => img(k + '_' + n));
-        return { id: a.id, name: a.name, k, i, x: 0, anim: 'walk', t: Math.random(), flash: 0, glow: 0, dodge: 0, dir: 1, hp: u ? u.maxHp : 1, maxHp: u ? u.maxHp : 1, down: false, show: 0 }; }),
+        return { id: a.id, name: a.name, k, i, x: 0, anim: 'walk', t: Math.random(), flash: 0, glow: 0, dodge: 0, dir: 1, hp: u ? u.maxHp : 1, maxHp: u ? u.maxHp : 1, mp: u ? u.maxMp : 0, maxMp: u ? u.maxMp : 0, acts: actTimes(F, a.id), down: false, show: 0 }; }),
       enemies: (F ? F.enemies : []).map((m, i) => ({ n: m.name, boss: m.boss, scale: m.boss ? 140 : 100, im: monImg(m.mon), x: 540 + i * 56, flash: 0, crit: 0, alpha: 1, hp: m.maxHp, maxHp: m.maxHp, shown: 1 })) };
     ev.classList.add('on'); requestAnimationFrame(() => ev.classList.add('vis')); updSmall(); render();
   }
   function close() { sel = null; view = null; if (!ev) return; ev.classList.remove('vis'); setTimeout(() => { if (!view) ev.classList.remove('on'); }, 200); ui.querySelector('#hudExp').classList.remove('small'); render(); }
   X.close = close;
 
-  const phaseOf = p => p < 0.3 ? 'move' : p < 0.5 ? 'meet' : p < 0.85 ? 'fight' : 'result';
+  const MEET_END = 0.34; // 전투 의뢰는 조우 직후 곧바로 교전 (조우 구간 30~34%)
+  const phaseOf = (p, c) => p < 0.3 ? 'move' : p < (c ? MEET_END : 0.5) ? 'meet' : p < 0.85 ? 'fight' : 'result';
   const SURF = 150, GAP = 54, LEAD_X = 270;
   const SHEET = { walk: [128, 96, 64, 8, 100, true], run: [128, 96, 64, 8, 75, true], attack: [128, 96, 64, 8, 90, true], fall: [160, 104, 104, 10, 110, false], stand: [128, 96, 64, 8, 100, false] };
   const tmp = document.createElement('canvas'), tg = tmp.getContext('2d');
@@ -133,21 +144,23 @@
   // 기록 1건 반영. fx=false 면 효과 없이 상태만 (미니 뷰를 교전 도중에 열었을 때)
   function apply(v, x, fx) {
     const A = id => v.actors.find(a => a.id === id), E = i => v.enemies[i];
-    if (x.t === 'hit') { const m = E(x.to); if (!m) return; m.hp = x.hp; if (fx) { m.flash = 0.25; if (x.c) m.crit = 0.4; } }
+    if (x.by && x.mp != null) { const b = A(x.by); if (b) b.mp = x.mp; }
+    if (x.t === 'hit') { const m = E(x.to); if (!m) return; m.hp = x.hp; if (fx) { m.flash = 0.25; if (x.c) m.crit = 0.4; if (x.d != null) v.nums.push({ who: m, e: 1, txt: String(x.d), crit: !!x.c, t: 0, ox: Math.random() * 14 - 7 }); } }
     else { const a = A(x.to); if (!a) return;
-      if (x.t === 'hurt') { a.hp = x.hp; if (fx) a.flash = 0.3; }
+      if (x.t === 'hurt') { a.hp = x.hp; if (fx) { a.flash = 0.3; if (x.d != null) v.nums.push({ who: a, txt: String(x.d), t: 0, ox: Math.random() * 10 - 5 }); } }
       else if (x.t === 'miss') { if (fx) a.dodge = 0.3; }
-      else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx) { a.glow = 0.5; for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
+      else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx) { a.glow = 0.5; if (x.d != null && x.d > 0) v.nums.push({ who: a, txt: '+' + x.d, heal: true, t: 0, ox: Math.random() * 10 - 5 }); for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
       else if (x.t === 'down') { a.hp = 0; a.down = true; a.anim = 'fall'; a.t = 0; } }
   }
   function drawScene(dt) {
     const v = view, e = entries().find(o => o.id === v.id); if (!e) { close(); return; }
-    const x = e.x, ok = x.ok != null ? x.ok : (x.fight ? x.fight.win : true), p = e.p, ph = phaseOf(p);
+    const x = e.x, ok = x.ok != null ? x.ok : (x.fight ? x.fight.win : true), p = e.p, ph = phaseOf(p, !!x.fight);
     if (ph !== v.phase && v.phaseT >= 0.5 / Math.max(speed, 1) || v.phase === null) { v.phase = ph; v.phaseT = 0; }
     v.phaseT += dt; v.t += dt; const P = v.phase, en = x.fight ? groupName(x.fight.enemies) : '';
     // 전투 기록 재생: 교전 구간 진행도까지의 기록을 반영
+    let fp = -1;
     if (v.combat) {
-      const fp = P === 'move' || P === 'meet' ? -1 : P === 'result' ? 1.01 : Math.max(0, Math.min(1, (p - 0.5) / 0.35));
+      fp = P === 'move' || P === 'meet' ? -1 : P === 'result' ? 1.01 : Math.max(0, Math.min(1, (p - MEET_END) / (0.85 - MEET_END)));
       while (v.applied < v.ev.length && v.ev[v.applied].at <= fp) { apply(v, v.ev[v.applied], !v.fresh && P === 'fight'); v.applied++; }
     }
     v.fresh = false;
@@ -188,12 +201,28 @@
         if (c) { tg.globalCompositeOperation = 'source-atop'; tg.fillStyle = c; tg.fillRect(0, 0, w, h); tg.globalCompositeOperation = 'source-over'; }
         g.drawImage(tmp, xx, y);
       } else { g.fillStyle = m.crit > 0 ? '#fff4c2' : m.flash > 0 ? '#ff3b30' : m.boss ? '#7a2f3b' : '#5a3b6b'; g.fillRect(xx, y, w, h); g.strokeStyle = '#1b0f1f'; g.lineWidth = 2; g.strokeRect(xx + 1, y + 1, w - 2, h - 2); }
-      if (P !== 'move') bar(xx, y - 9, w, 5, m.shown, enCol);
+      m.cx = xx + w / 2; m.top = y - 22;
+      if (P !== 'move') bar(xx, y - 9, w, 4, m.shown, enCol);
       if (v.enemies.findIndex(o => o.n === m.n) === i) { g.fillStyle = '#fff'; g.font = 'bold 11px "MaruBuri",sans-serif'; g.textAlign = 'center'; g.lineJoin = 'round'; g.lineWidth = 3; g.strokeStyle = '#120a06'; g.strokeText(m.n, xx + w / 2, y - 14); g.fillText(m.n, xx + w / 2, y - 14); }
       g.globalAlpha = 1;
     });
+    // 모험가 막대: 위 노랑 = 다음 행동까지 게이지 / 가운데 빨강 = 체력 / 아래 파랑 = 마력. 길이는 몬스터 막대와 같게
+    const BW = v.enemies.length ? Math.max(24, Math.round((ws.find((w, i) => !v.enemies[i].boss) || ws[0]))) : 28;
     v.actors.slice().reverse().forEach(a => { drawActor(a, a.x);
-      if (a.show > 0.02 && !(a.down && P === 'result' && a.t > 1.5)) { g.globalAlpha = a.show; bar(Math.round(a.x) - 14, SURF - 86, 28, 4, a.hp / a.maxHp, hpCol); g.globalAlpha = 1; } });
+      if (a.show > 0.02 && !(a.down && P === 'result' && a.t > 1.5)) {
+        const bx = Math.round(a.x) - Math.round(BW / 2); g.globalAlpha = a.show;
+        let gv = 0;
+        if (v.combat && !a.down && P === 'fight') { const T = a.acts; let k = 0; while (k < T.length && T[k] <= fp) k++; const nx = T[k], pv = k ? T[k - 1] : 0; gv = nx == null ? 0 : Math.max(0, Math.min(1, (fp - pv) / Math.max(1e-6, nx - pv))); }
+        if (!v.combat) gv = P === 'result' ? 1 : P === 'fight' ? Math.max(0, Math.min(1, (p - 0.5) / 0.35)) : 0;   // 수행 의뢰: 수행 구간 진행도만큼 차오름
+        bar(bx, SURF - 112, BW, 4, gv, () => '#ffd23a');
+        bar(bx, SURF - 106, BW, 4, a.hp / a.maxHp, () => '#e8443a');
+        if (a.maxMp > 0) bar(bx, SURF - 100, BW, 4, a.mp / a.maxMp, () => '#3a8ee8');
+        g.globalAlpha = 1; } });
+    // 피해·회복 숫자: 대상 머리 위로 떠올랐다가 사라짐 (치명타는 크고 금색, 아군이 맞으면 붉게, 회복은 초록)
+    v.nums = v.nums.filter(n => (n.t += dt) < 1.1);
+    for (const n of v.nums) { const tx = n.e ? n.who.cx : n.who.x, ty = (n.e ? n.who.top : SURF - 118) - n.t * 22 - (n.crit ? 4 : 0); if (tx == null || ty == null) continue;
+      g.globalAlpha = Math.max(0, Math.min(1, (1.1 - n.t) * 2.2)); g.font = 'bold ' + (n.crit ? 15 : 12) + 'px "MaruBuri",sans-serif'; g.textAlign = 'center'; g.lineJoin = 'round'; g.lineWidth = 3; g.strokeStyle = '#120a06';
+      const txt = n.crit ? n.txt + '!' : n.txt; g.strokeText(txt, tx + n.ox, ty); g.fillStyle = n.heal ? '#9dffb0' : n.crit ? '#ffd95a' : n.e ? '#ffffff' : '#ff6b5b'; g.fillText(txt, tx + n.ox, ty); } g.globalAlpha = 1;
     v.sparks = v.sparks.filter(s => (s.life -= dt) > 0);
     for (const s of v.sparks) { s.y += s.vy * dt; g.globalAlpha = Math.min(1, s.life * 2); g.fillStyle = s.c; g.fillRect(Math.round(s.x), Math.round(s.y), 2, 2); } g.globalAlpha = 1;
     // 문구

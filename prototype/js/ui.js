@@ -24,12 +24,11 @@
     q('#popBack').onclick = e => { if (e.target.id === 'popBack') UI.close(); };
     // 메뉴
     // 하단 HUD 묶음(경영·옵션)은 마우스를 올리면 열림. 준비 중인 항목은 안내만
-    stage.ui.querySelectorAll('[data-act]').forEach(b => b.onclick = () => b.dataset.act === 'town' && hooks.town ? hooks.town() : toast(b.dataset.act === 'town' ? '마을 화면은 준비 중입니다.' : '요리하기는 준비 중입니다.', 'info'));
+    stage.ui.querySelectorAll('[data-act]').forEach(b => b.onclick = () => b.dataset.act === 'town' && hooks.town ? (root.Town && root.Town.active ? root.Town.close() : hooks.town()) : toast(b.dataset.act === 'town' ? '마을 화면은 준비 중입니다.' : '요리하기는 준비 중입니다.', 'info'));
     const shut = () => q('#menu').classList.remove('open');
     q('#mSave').onclick = () => { shut(); hooks.save(); toast('게임을 저장했습니다.', 'info'); };
     q('#mLoad').onclick = () => { shut(); hooks.load(); };
-    q('#mNew').onclick = () => { shut(); hooks.newGame(); };
-    q('#mReport').onclick = e => { UI.autoReport = !UI.autoReport; e.currentTarget.querySelector('i').textContent = UI.autoReport ? '켬' : '끔'; e.currentTarget.classList.toggle('off', !UI.autoReport); }; // 끔이면 아이콘에 붉은 X
+    q('#mReport').onclick = e => { UI.autoReport = !UI.autoReport; if (root.Snd) root.Snd.set('report', UI.autoReport); e.currentTarget.querySelector('i').textContent = UI.autoReport ? '켬' : '끔'; e.currentTarget.classList.toggle('off', !UI.autoReport); }; // 끔이면 아이콘에 붉은 X
     // 개발
     q('#bPromo').onclick = () => UI.open('promo');
     q('#devToggle').onclick = () => q('#dev').classList.toggle('open');
@@ -40,7 +39,7 @@
       if (e.key === 'Escape') { if (popup) UI.close(); }
       if ((e.key === ' ' || e.key === 'Enter') && Dlg.open && !popup) { e.preventDefault(); UI.advance(); }
     });
-    UI.autoReport = true;
+    UI.autoReport = root.Snd ? !!root.Snd.opt.report : true;
   };
   UI.setState = st => { s = st; openAdv = null; };
   const PAUSE_SVG = '<svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg>', PLAY_SVG = '<svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor"/></svg>';
@@ -53,6 +52,7 @@
 
   // ---------- 상태 표시 ----------
   UI.hud = function () {
+    { const sb = q('#mSellBtn'); if (sb) sb.classList.toggle('lock', !s.built['판매창구']); }   // 판매창구를 짓기 전에는 회색
     q('#hDate').textContent = Gm.dateLabel(s.week);
     q('#hGrade').style.backgroundImage = 'url(assets/ui/hud/badge_' + GR[s.grade] + '.png)'; q('#hGrade').title = '길드 등급 ' + GR[s.grade];
     q('#hGold').textContent = fmt(s.gold); q('#hGold').classList.toggle('neg', s.gold < 0);
@@ -63,7 +63,7 @@
       if (bar) { const d = (t - 50) / 50; bar.style.left = d >= 0 ? '50%' : (50 + d * 50) + '%'; bar.style.width = Math.abs(d) * 50 + '%'; bar.style.background = `hsl(${Math.round(t * 1.2)},62%,42%)`; }
       if (box) box.title = `신뢰도 ${Math.round(t)} · ${st + 1}단계 ${NAME[st]}\n의뢰 수 ${QN[st]}% · 보상·경험치 ${QR[st]}%`; }
     { const A = s.cfg.adv || {}, step = A.fameStep || 10, f = s.fame || 0, n = s.advs.filter(a => a.alive).length;   // 명성: 다음 모험가까지 막대 · 모험가: 인원 / 등급 상한
-      const CAP = A.capByGrade || [8, 12, 16, 20, 24, 28, 32], cap = CAP[s.grade] || 8, GL = 'FEDCBAS'[s.grade] || 'F', full = n >= cap;
+      const cap = Gm.advCap(s), GL = 'FEDCBAS'[s.grade] || 'F', full = n >= cap;
       const into = f - Math.floor(f / step) * step, left = Math.ceil((step - into) * 10) / 10;
       q('#hFame').textContent = Math.floor(f);
       const fb = q('#hFameBar'), fw = q('#hFameBarW'), fx = q('#hFameBox');
@@ -78,7 +78,14 @@
     const np = (s.proposals || []).length; q('#bParty').textContent = np ? '★' + np : ''; q('#bParty').hidden = !np; q('#bPromo').hidden = !np; q('#bPromo').textContent = `전직 제안 ${np}건`;
     if (popup) renderPopup();
   };
-  UI.weekBar = p => { q('#hWeekBar').style.width = (p * 100).toFixed(1) + '%'; };
+  // 주 게이지 끝에 시간대 아이콘이 붙어 함께 움직임: 1·2주(아침·낮)·3주(노을)는 태양, 4주(저녁)는 달. 배경 시간대(lobby_sky.js)와 같은 4주 주기
+  UI.weekBar = p => {
+    q('#hWeekBar').style.width = (p * 100).toFixed(1) + '%';
+    const ic = q('#hTime'); if (!ic) return;
+    const ph = ((s && s.week) || 0) % 4, key = ph === 3 ? 'moon' : 'sun';
+    if (ic.dataset.k !== key) { ic.dataset.k = key; ic.src = `assets/ui/hud/time_${key}.png`; }
+    ic.classList.toggle('dusk', ph === 2); ic.style.left = (p * 100).toFixed(1) + '%';
+  };
 
 
   // ---------- 로그박스 (채팅처럼 흐르는 기록 + 캐릭터 대화) ----------
@@ -88,7 +95,7 @@
     const box = q('#logBox'), ll = box.querySelector('.ll'), grip = box.querySelector('.lg');
     lb = { box, ll, grip, hov: 0, off: null };
     let tm = 0;
-    const on = () => { clearTimeout(tm); box.classList.add('show'); };
+    const on = () => { clearTimeout(tm); if (!box.classList.contains('show')) { box.classList.add('show'); ll.scrollTop = ll.scrollHeight; } };   // 마우스를 올려 펼칠 때는 가장 최근 대사가 보이는 맨 아래부터 (예전에는 맨 위 = 가장 오래된 줄이 보였음)
     const offS = () => { clearTimeout(tm); tm = setTimeout(() => { if (!box.classList.contains('drag')) { box.classList.remove('show'); ll.scrollTop = ll.scrollHeight; } }, 350); };
     box.addEventListener('mouseover', e => { if (e.target.closest('.ln, .lg, .ll')) on(); });
     box.addEventListener('mouseout', e => { if (!e.relatedTarget || !box.contains(e.relatedTarget) || !e.relatedTarget.closest('.ln, .lg, .ll')) offS(); });
@@ -119,9 +126,10 @@
   }
   function lbAdd(el) {
     if (!lb) return;
-    el._t = performance.now(); lb.ll.appendChild(el);
-    while (lb.ll.children.length > LOGMAX) lb.ll.firstChild.remove();
-    if (!lb.box.classList.contains('show')) lb.ll.scrollTop = lb.ll.scrollHeight;
+    const ll = lb.ll, atBottom = ll.scrollHeight - ll.scrollTop - ll.clientHeight < 12;   // 펼쳐서 위로 올려 읽는 중이면 그 자리를 지켜 줌
+    el._t = performance.now(); ll.appendChild(el);
+    while (ll.children.length > LOGMAX) ll.firstChild.remove();
+    if (!lb.box.classList.contains('show') || atBottom) ll.scrollTop = ll.scrollHeight;   // 아래에 있었다면 새 대사가 들어올 때마다 따라 올라감
   }
   UI.logLine = function (text, kind) { // 시스템 기록
     const el = document.createElement('div'); el.className = 'ln k-' + (kind || 'info'); el.textContent = text; lbAdd(el);
@@ -130,7 +138,8 @@
     if (!text) return;
     const el = document.createElement('div'); el.className = 'ln chat' + (who === 'lina' ? ' lina' : '');
     const b = document.createElement('b'); b.textContent = name || '손님';
-    el.append(b, document.createTextNode('“' + text + '”')); lbAdd(el);
+    const bt = document.createElement('span'); bt.className = 'bt'; bt.textContent = text;   // 따옴표 없음 (말풍선 모양이 대사임을 보여 줌)
+    el.append(b, bt); lbAdd(el);
   };
   UI.logClear = function () { if (lb) lb.ll.innerHTML = ''; };
 
@@ -147,14 +156,15 @@
     for (const L of logs) {
       UI.logLine(L.text, L.kind); // 로그박스로 흘려보냄 (알림은 전직 제안만 따로 띄움)
       if (L.kind === 'promo' && L.text.includes('제안합니다')) toast(L.text, L.kind);
-      if (L.kind === 'ledger' && UI.autoReport) UI.monthlyReport();
+      if (L.kind === 'ledger' && UI.autoReport) UI.open('ledger');   // 월말: 리나 브리핑 대신 장부 창을 보여 준다
       if (L.kind === 'promo' && L.text.includes('제안합니다')) { const nm = L.text.split(/[이가] \d차/)[0]; UI.say(UI.lines('promo_ready', { name: nm })); }
     }
   };
 
   // ---------- 팝업 틀 ----------
-  const TITLES = { sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '시설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증' };
+  const TITLES = { sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '시설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
+    if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (시설 → 판매창구)', 'info'); return; }
     popup = name; q('#popTitle').textContent = TITLES[name];
     q('#popBack').classList.add('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.toggle('on', b.dataset.pop === name));
     q('#popBody').innerHTML = ''; q('#popBody').dataset.g = ''; q('#popBody').dataset.p = name; renderPopup(); q('#popBody').scrollTop = 0;
@@ -172,6 +182,7 @@
     else if (popup === 'log') { const l0 = b.querySelector('.gl-list'), y = l0 ? l0.scrollTop : 0; b.innerHTML = logHtml(); const l1 = b.querySelector('.gl-list'); if (l1) l1.scrollTop = y; }   // 필터 줄은 고정, 목록만 스크롤 (다시 그려도 위치 유지)
     else if (popup === 'codex') b.innerHTML = codexHtml();
     else if (popup === 'sell') b.innerHTML = sellHtml();
+    else if (popup === 'opts') b.innerHTML = optsHtml();
   }
 
   // 소재 판매 창구 (docs/balance/economy_v1.md 6절, 시설 팝업 '판매하기'로 열기): 보관 소재를 직접 팖. 음식이 아닌 소재 먼저, 음식 소재는 "요리 재료"
@@ -224,7 +235,7 @@
       const C1 = Gm.CLASS1.map((name, i) => ({ name, st: 1, icon: `chr/chr_${['warrior', 'archer', 'mage', 'cleric', 'rogue'][i]}_m_front.png`, line: [i] }));
       const groups = [['1차 직업', C1], ['2차 직업', Gm.CLASS2.map(c => ({ name: c.name, st: 2, line: c.line, req: c.req }))], ['3차 직업', Gm.CLASS3.map(c => ({ name: c.name, st: 3, line: c.line, req: c.req, from: c.from, town: c.town }))]];
       var jobHtml = groups.map(([t, list]) => { const cs = list.map(c => { const on = c.st === 1 || !!disc[c.name] || s.advs.some(a => a.cls === c.name); n++; if (on) got++;
-        return `<div class="cdx-c ${on ? '' : 'off'}"><span class="ux-slot ${on ? '' : 'unk'} job" data-g="${c.st - 1}" ${on ? `data-jt="${esc(c.name)}"` : ''}>${c.icon ? img(c.icon) : `<b class="jl">${on ? esc(c.name.slice(0, 1)) : ''}</b>`}</span><em>${on ? esc(c.name) : '???'}</em></div>`; }).join('');
+        return `<div class="cdx-c ${on ? '' : 'off'}"><span class="ux-slot ${on ? '' : 'unk'} job" data-g="${c.st - 1}" ${on ? `data-jt="${esc(c.name)}"` : ''}>${c.icon ? `<i class="jface" style="${faceStyle({ core: c.line[0], id: 1 }, 70, 320, 36)}"></i>` : `<b class="jl">${on ? esc(c.name.slice(0, 1)) : ''}</b>`}</span><em>${on ? esc(c.name) : '???'}</em></div>`; }).join('');
         return `<div class="cdx-sub">${t}</div><div class="cdx-grid">${cs}</div>`; }).join('');
     }
     else if (codexTab === 3) byGrade(Gm.DISH.map(d => ({ name: d.name, grade: GR[d.g], icon: d.icon })), d => ({ on: !!s.dishes[d.name], inner: img(d.icon), attr: `data-dt="${esc(d.name)}"` }));
@@ -256,7 +267,7 @@
   function danger(T, g) {
     if (!T || !T.enemies || !T.enemies.length || !CBq || !CBq.ok) return { n: 0 };
     if (dangerCache[T.id]) return dangerCache[T.id];
-    const en = []; for (const e of T.enemies) for (let k = 0; k < e.count; k++) en.push({ hp: e.hp, atk: e.atk, name: e.name });
+    const en = []; for (const e of T.enemies) for (let k = 0; k < e.count; k++) en.push({ hp: e.hp, atk: e.atk, def: e.def || 0, name: e.name, boss: !!e.boss });
     let need = 3, rate = 0;
     for (let n = 1; n <= 3; n++) {
       let sum = 0; for (let c = 0; c < 5; c++) { const party = []; for (let k = 0; k < n; k++) party.push(stdUnit((c + k) % 5, g)); sum += CBq.predict(party, en, g, 1); }
@@ -284,7 +295,7 @@
       const sk = d.n ? `<span class="skulls" title="위험도">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}</span>` : '';
       const foe = d.n ? (intel ? (fb === 'up' ? '<i class="foe up" title="강한 무리">▲</i>' : fb === 'down' ? '<i class="foe down" title="약한 무리">▼</i>' : '') : '<i class="foe unk" title="정보실이 있으면 알 수 있음">?</i>') : '';
       cards += `<div class="qcard age${ageOf(q)}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b></div>
-        <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward)}G</span><button class="ux-btn danger sm" data-wd="${q.id}">떼기</button></div></div>`;
+        <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward)}G</span><button class="ux-btn danger sm" data-wd="${q.id}">취소</button></div></div>`;
     }
     if (!s.board.length) cards = '<div class="ux-empty qb-none">게시된 의뢰가 없습니다. 의뢰는 매달 초에 들어옵니다.</div>';
     b.innerHTML = top + `<div class="ux-h qb-h">게시된 의뢰 <small>${s.board.length} / ${cap}칸 · 카드에 마우스를 올리면 자세히 보입니다</small></div><div class="qb-grid">${cards}</div><div class="qtip" id="qTip"></div>`;
@@ -338,7 +349,7 @@
     if (k === 'tavern') return cur ? `월말 결산 때 들어옵니다${s.lastMonth ? ` (지난달 ${gG(s.lastMonth.tavern)})` : ''}` : (m.inTown != null ? `길드에 머문 모험가 <b>${m.inTown}명</b> 기준` : '내역 없음 (예전 기록)');
     if (k === 'subsidy') { const g = cur ? s.grade : (m.grade != null ? m.grade : s.grade); return `${cur ? '월말 결산 때 들어옵니다 · ' : ''}${GR[g]}급 길드 월 <b>${fmt(E.subsidy[g])}G</b>`; }
     if (k === 'build') { const b = m.builds || []; return b.length ? b.map(x => `${esc(FAC_LABEL[x.f] || x.f)} <b>${gG(-x.c)}</b>`).join('<br>') : '없음'; }
-    if (k === 'other') { const w = m.wd || []; return w.length ? w.map(x => `${x.name ? esc(x.name) : `${GR[x.g]}급 ${QTYPE_[x.type]} 의뢰`} 떼기 <b>${gG(-x.cost)}</b>`).join('<br>') : '없음'; }
+    if (k === 'other') { const w = m.wd || []; return w.length ? w.map(x => `${x.name ? esc(x.name) : `${GR[x.g]}급 ${QTYPE_[x.type]} 의뢰`} 취소 <b>${gG(-x.cost)}</b>`).join('<br>') : '없음'; }
     return '';
   }
   const QTYPE_ = Gm.QTYPE;
@@ -419,11 +430,38 @@
   function advStateHtml(a) { return a.state === 'quest' ? `<span class="st quest">의뢰 중 ${Math.max(0, a.until - s.week)}주</span>` : a.state === 'town' ? '<span class="st town">길드에 있음</span>' : a.state === 'injured' ? `<span class="st away">부상 회복 ${Math.max(0, a.until - s.week)}주</span>` : '<span class="st away">마을 밖</span>'; }
   // ---------- 모험가 팝업 (시안: 머리 / 장비 · 능력치 · 전투 수치 / 아래 탭) ----------
   const CLS_KEY = ['warrior', 'archer', 'mage', 'cleric', 'rogue'];
-  const FACE_AT = { warrior_m: [126, 154], warrior_f: [116, 123], archer_m: [128, 145], archer_f: [110, 124], mage_m: [144, 196], mage_f: [144, 173], cleric_m: [100, 145], cleric_f: [103, 131], rogue_m: [132, 159], rogue_f: [112, 133] };
+  const FACE_AT = { warrior_m: [132, 118], warrior_f: [161, 121], archer_m: [148, 110], archer_f: [152, 119], mage_m: [145, 137], mage_f: [158, 142], cleric_m: [128, 116], cleric_f: [143, 125], rogue_m: [132, 122], rogue_f: [147, 128] };   // 상세 창(104×120) 얼굴 위치 [x, y, 확대]
+  const FACE_LIST = { warrior_m: [141, 132, 0.5], warrior_f: [166, 128, 0.5], archer_m: [148, 102, 0.5], archer_f: [155, 129, 0.5], mage_m: [147, 152, 0.5], mage_f: [158, 140, 0.5], cleric_m: [128, 116, 0.5], cleric_f: [145, 115, 0.5], rogue_m: [132, 130, 0.5], rogue_f: [147, 125, 0.5] };   // 목록 원형(44px)
+  const FACE_SMALL = { warrior_m: [138, 129, 0.5], warrior_f: [164, 130, 0.5], archer_m: [150, 104, 0.5], archer_f: [152, 119, 0.5], mage_m: [147, 144, 0.5], mage_f: [158, 141, 0.5], cleric_m: [124, 119, 0.5], cleric_f: [144, 121, 0.5], rogue_m: [136, 128, 0.5], rogue_f: [147, 127, 0.5] };   // 작은 목록 원형(40px)
   function faceStyle(a, box, h, cy) {   // 로비 SD 정면 그림(높이 470)에서 얼굴 부분을 잘라 보여 줌
-    const k = CLS_KEY[a.core] + '_' + (a.id % 2 ? 'm' : 'f'), f = FACE_AT[k] || [128, 150], z = h / 470;
-    return `background-image:url(assets/chr/chr_${k}_front.png);background-size:auto ${h}px;background-position:${Math.round(box / 2 - f[0] * z)}px ${Math.round(cy - f[1] * z)}px`;
+    const k = CLS_KEY[a.core] + '_' + (a.id % 2 ? 'm' : 'f'), TB = box >= 100 ? FACE_AT : box >= 40 ? FACE_LIST : FACE_SMALL, f = TB[k] || FACE_AT[k] || [128, 150], z = h / 470 * (f[2] || 1);   // f = [얼굴 x, 얼굴 y, 확대(생략하면 1)]
+    return `background-image:url(assets/chr/chr_${k}_front.png);background-size:auto ${Math.round(h * (f[2] || 1))}px;background-position:${Math.round(box / 2 - f[0] * z)}px ${Math.round(cy - f[1] * z)}px`;
   }
+  // ---------- 설정 창: 소리 · 월말 장부 · 화면 효과 · 저장 ----------
+  function optsHtml() {
+    const o = root.Snd ? root.Snd.opt : { bgm: .6, mute: false, fx: true }, sw = (k, on, tx) => `<button class="ux-btn op-sw ${on ? 'on' : ''}" data-ocmd="${k}">${tx[on ? 0 : 1]}</button>`;
+    return `<div class="op-wrap">
+      <div class="op-sec"><h3>소리</h3>
+        <div class="op-row"><span class="op-nm">배경음악 음량</span><input type="range" class="op-rg" id="opBgm" min="0" max="100" value="${Math.round(o.bgm * 100)}"><b id="opBgmV">${Math.round(o.bgm * 100)}%</b></div>
+        <div class="op-row"><span class="op-nm">음소거</span>${sw('mute', o.mute, ['켜짐', '꺼짐'])}</div>
+      </div>
+      <div class="op-sec"><h3>화면</h3>
+        <div class="op-row"><span class="op-nm">화면 효과 (별가루 · 낙엽 · 쪽지 흔들림)</span>${sw('fx', o.fx, ['켜짐', '꺼짐'])}</div>
+        <div class="op-row"><span class="op-nm">월말 장부 자동 표시</span>${sw('report', UI.autoReport, ['켜짐', '꺼짐'])}</div>
+      </div>
+      <div class="op-sec"><h3>게임</h3>
+        <div class="op-row op-btns"><button class="ux-btn" data-ocmd="save">저장하기</button><button class="ux-btn" data-ocmd="load">불러오기</button></div>
+      </div></div>`;
+  }
+  document.addEventListener('input', e => { if (popup !== 'opts' || e.target.id !== 'opBgm') return; const v = +e.target.value; if (root.Snd) root.Snd.set('bgm', v / 100); q('#opBgmV').textContent = v + '%'; });
+  document.addEventListener('click', e => {
+    if (popup !== 'opts') return; const t = e.target.closest('[data-ocmd]'); if (!t) return; const c = t.dataset.ocmd, S = root.Snd;
+    if (c === 'mute' || c === 'fx') S.set(c, !S.opt[c]);
+    else if (c === 'report') { UI.autoReport = !UI.autoReport; S.set('report', UI.autoReport); const r = q('#mReport'); if (r) { r.querySelector('i').textContent = UI.autoReport ? '켬' : '끔'; r.classList.toggle('off', !UI.autoReport); } }
+    else if (c === 'save') { hooks.save(); toast('게임을 저장했습니다.', 'info'); }
+    else if (c === 'load') { UI.close(); hooks.load(); }
+    renderPopup();
+  });
   const stOf = a => a.state === 'quest' ? 'quest' : a.state === 'town' ? 'town' : a.state === 'injured' ? 'injured' : 'away';
   const ST_TXT = { quest: '의뢰 중', town: '길드에 있음', injured: '부상 회복', away: '마을 밖' };
   const stTag = a => { const k = stOf(a), w = Math.max(0, a.until - s.week); return `<span class="ux-tag ${k}">● ${ST_TXT[k]}${k === 'quest' || k === 'injured' ? ' ' + w + '주' : ''}</span>`; };
@@ -436,7 +474,7 @@
     if (openAdv == null || !list.some(a => a.id === openAdv)) openAdv = list[0] && list[0].id;
     const promo = new Set((s.proposals || []).map(p => p.id));
     let h = '<div class="av"><div class="av-list">';
-    for (const a of list) h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"><span class="ux-face" style="${faceStyle(a, 44, 230, 24)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}</span>
+    for (const a of list) h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}</span>
       <span><span class="nm">${a.name}</span><span class="sub">${a.cls} · ${ST_TXT[stOf(a)]}</span></span><span class="rt"><b>Lv ${a.lv}</b></span></button>`;
     const a = s.advs.find(x => x.id === openAdv);
     return h + '</div><div class="av-main">' + (a ? advDetail(a) : '<div class="ux-empty">모험가가 없습니다.</div>') + '</div><div class="qtip avtip" id="avTip"></div></div>';
@@ -445,7 +483,7 @@
   let avHover = null, avTimer = 0;
   function advTipHtml(a) {
     const k = stOf(a), w = Math.max(0, a.until - s.week), promo = (s.proposals || []).find(p => p.id === a.id);
-    let h = `<div class="t1"><span class="ux-face" style="${faceStyle(a, 36, 190, 20)};width:40px;height:40px"></span><b>${a.name}</b><span class="ux-muted">${a.cls} Lv ${a.lv}</span></div>`;
+    let h = `<div class="t1"><span class="ux-face" style="${faceStyle(a, 36, 190, 18)};width:40px;height:40px"></span><b>${a.name}</b><span class="ux-muted">${a.cls} Lv ${a.lv}</span></div>`;
     h += `<div class="st ${k}">● ${ST_TXT[k]}</div>`;
     if (k === 'quest') {
       const x = s.active.find(e => e.party.includes(a.id));
@@ -494,8 +532,9 @@
     const G = s.cfg.growth, cap = Gm.lvCapOf(s, a), need = G.lvA * Math.pow(a.lv, G.lvB), xp = a.lv >= cap ? 100 : Math.min(100, a.xp / need * 100);
     const path = a.cls1 === a.cls ? a.cls : `${a.cls1} → ${a.cls}`;
     // 머리
-    let h = `<div class="av-head"><div class="ux-portrait sm"><i style="${faceStyle(a, 104, 260, 58)}"></i></div><div class="who">
-      <div class="nm">${a.name} <i class="ux-grade" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)"></i><span class="cls">${STAGE[a.stage]} ${path}</span>${stTag(a)}<span class="gold av-wal" title="모험가 소지금 (식사·물약·장비 구매에 씀)"><i></i>${fmt(Math.round(a.wallet || 0))}G</span></div>
+    let h = `<div class="av-head"><div class="ux-portrait sm"><i style="${faceStyle(a, 104, 260, 60)}"></i></div><div class="who">
+      <div class="nm">${a.name} <i class="ux-grade" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)"></i><span class="cls">${STAGE[a.stage]} ${path}</span>${stTag(a)}<span class="gold av-wal" title="모험가 소지금 (식사·물약·장비 구매에 씀)"><em class="wl">소지금</em><i></i>${fmt(Math.round(a.wallet || 0))}G</span></div>
+      ${(() => { const CBH = root.GuildCombat ? root.GuildCombat.make(root.GAME_DATA) : null; if (!(CBH && CBH.ok)) return ''; const u = CBH.unit(a, i => Gm.finalStat(s, a, i), a.gear, 0); return `<div class="hm"><div class="vb hp"><span class="k">체력</span><i class="trk"><i></i></i><b>${Math.round(u.maxHp)}</b></div><div class="vb mp"><span class="k">마력</span><i class="trk"><i></i></i><b>${Math.round(u.maxMp)}</b></div></div>`; })()}
       <div class="lv"><b>Lv ${a.lv}</b><div class="ux-bar blue"><i style="width:${xp}%"></i></div><span>${a.lv >= cap ? '레벨 상한' : '다음 레벨까지 ' + fmt(need - a.xp)}</span></div></div></div>`;
     // 장비
     const CB_ = root.GuildCombat ? root.GuildCombat.make(root.GAME_DATA) : null, GE = s.cfg.gear;
@@ -532,8 +571,8 @@
     // 전투 수치 4개 (세부는 마우스 오버)
     if (CB_ && CB_.ok) {
       const u = CB_.unit(a, i => Gm.finalStat(s, a, i), a.gear, 0);
-      const more = `회피 ${Math.round(u.evade * 100)}% · 치명타 ${Math.round(u.crit * 100)}% · 마법방어 ${Math.round(u.mdef)} · ${['앞줄', '가운데', '뒷줄'][u.row]}`;
-      st += `<div class="cbs" title="${more}"><span>공격 <b>${Math.round(u.atk)}</b></span><span>방어 <b>${Math.round(u.def)}</b></span><span>체력 <b>${Math.round(u.maxHp)}</b></span><span>마력 <b>${Math.round(u.maxMp)}</b></span></div>`;
+      const more = `치명타 ${Math.round(u.crit * 1000) / 10}% · 공격 속도 +${Math.round((u.speed - 1) * 1000) / 10}% · 방어 ${Math.round(u.def)} · ${['앞줄', '가운데', '뒷줄'][u.row]}`;
+      st += `<div class="cbs" title="${more}"><span>공격 <b>${Math.round(u.atk)}</b></span><span>방어 <b>${Math.round(u.def)}</b></span></div>`;
     }
     st += '</div>';
     h += `<div class="av-body">${eq}${st}</div>`;
@@ -595,11 +634,11 @@
     if (!ps.length) return '<div class="ux-empty pm-none">지금은 전직 제안이 없습니다. 모험가가 조건을 채우면 리나가 매달 초에 알려 드려요.</div>';
     if (!ps.some(p => p.id === promoSel)) promoSel = ps[0].id;
     const list = ps.map(p => { const a = s.advs.find(x => x.id === p.id);
-      return `<button class="ux-row promo ${p.id === promoSel ? 'on' : ''}" data-psel="${a.id}"><span class="ux-face" style="${faceStyle(a, 44, 230, 24)}"><i class="star">★</i></span><span><span class="nm">${a.name}</span><span class="sub">${a.cls} · ${p.to}차 제안</span></span><span class="rt"><b>Lv ${a.lv}</b></span></button>`; }).join('');
+      return `<button class="ux-row promo ${p.id === promoSel ? 'on' : ''}" data-psel="${a.id}"><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="star">★</i></span><span><span class="nm">${a.name}</span><span class="sub">${a.cls} · ${p.to}차 제안</span></span><span class="rt"><b>Lv ${a.lv}</b></span></button>`; }).join('');
     const p = ps.find(x => x.id === promoSel), a = s.advs.find(x => x.id === p.id);
     const tier = Gm.attachTier(a), chance = Math.min(1, [0.40, 0.65, 0.90, 1.00][tier] * (p.to === 2 ? 1.2 : 0.9));
     // 머리
-    let h = `<div class="pm-top"><div class="pm-head"><div class="ux-portrait sm"><i style="${faceStyle(a, 104, 260, 58)}"></i></div><div class="who">
+    let h = `<div class="pm-top"><div class="pm-head"><div class="ux-portrait sm"><i style="${faceStyle(a, 104, 260, 60)}"></i></div><div class="who">
       <div class="nm">${a.name} ${badge(a.grade)}<span class="cls">${STAGE[a.stage]} ${a.cls} · Lv ${a.lv}</span><span class="ux-tag town">${p.to}차 전직 제안</span></div>
       <div class="pm-bar"><em>애착</em><div class="ux-bar"><i style="width:${Math.min(100, a.attach)}%"></i></div><span><b>${Math.round(a.attach)}</b> ${Gm.ATTACH_TITLE[tier]}</span></div>
       <div class="pm-bar"><em>수락 확률</em><div class="ux-bar blue"><i style="width:${chance * 100}%"></i></div><span><b>약 ${Math.round(chance * 100)}%</b></span></div></div></div>`;
@@ -652,7 +691,7 @@
     for (const f of all) {
       const g = Gm.FAC_COST[f] == null ? 0 : Gm.FAC_COST[f], cost = s.cfg.econ.buildCost[g], ready = !!FAC_READY[f];
       let st, grp;
-      if (s.built[f]) { st = '<span class="ux-tag town">● 운영 중</span>' + (f === '판매창구' ? ' <button class="ux-btn sm" data-opensell="1">판매하기</button>' : ''); grp = run; }
+      if (s.built[f]) { st = '<span class="ux-tag town">● 운영 중</span>'; grp = run; }
       else if (!ready) { st = '<span class="ux-tag fx-soon">준비 중</span>'; grp = lock; }
       else if (g > s.grade) { st = `<span class="fx-lock">${GR[g]}급부터</span>`; grp = lock; }
       else { st = `<button class="ux-btn sm" data-build="${f}" ${s.gold < cost ? 'disabled' : ''}>짓기 <b>${fmt(cost)}G</b></button>`; grp = can; }
@@ -681,7 +720,7 @@
   function gTipHtml(id) {
     const it = ITEMS_.find(i => i.id === id); if (!it) return '';
     const g = GR.indexOf(it.grade), kind = [SLOT_NAME[it.slot], GT_NAME[it.gtype]].filter(Boolean).join(' · ');
-    const big = it.slot === 'weapon' ? [['공격력', it.atk]] : it.slot === 'armor' ? [['방어', it.def], ['마법 방어', it.mdef]] : [];
+    const big = it.slot === 'weapon' ? [['공격력', it.atk]] : it.slot === 'armor' ? [['방어', it.def]] : [];
     const stats = Object.entries(it.stats || {}).filter(([, v]) => v).map(([k, v]) => `<span class="ux-tag">${ST5[+k]} +${v}</span>`).join('');
     const cb = [['공격력', 'atk'], ['방어', 'def'], ['마법 방어', 'mdef'], ['체력', 'hp'], ['마력', 'mp'], ['행운', 'luck']].filter(([n, k]) => it[k] && !big.some(b => b[0] === n)).map(([n, k]) => `<span>${n} <b>+${it[k]}</b></span>`).join('');
     const txt = it.tip || it.desc || '';   // 오버 메모가 원본, 비면 '설명'
