@@ -448,7 +448,7 @@
       <div class="row ux-muted">${Gm.STATS[k.line]} ${Math.round(Gm.finalStat(s, a, k.line))}</div>
       ${evo.length ? `<div class="sec">진화</div><div class="evs">${evo.join('')}</div>` : a.stage >= 3 || a.fin ? '<div class="row ux-muted">최종 형태</div>' : ''}`;
   }
-  function advStateHtml(a) { return a.state === 'quest' ? `<span class="st quest">의뢰 중 ${Math.max(0, a.until - s.week)}주</span>` : a.state === 'town' ? '<span class="st town">길드에 있음</span>' : a.state === 'injured' ? `<span class="st away">부상 회복 ${Math.max(0, a.until - s.week)}주</span>` : '<span class="st away">마을 밖</span>'; }
+  function advStateHtml(a) { return a.state === 'quest' ? `<span class="st quest">의뢰 중 ${a.until - s.week > 0 ? (a.until - s.week) + "주" : "· 이번 주 귀환"}</span>` : a.state === 'town' ? '<span class="st town">길드에 있음</span>' : a.state === 'injured' ? `<span class="st away">부상 회복 ${Math.max(0, a.until - s.week)}주</span>` : '<span class="st away">마을 밖</span>'; }
   // ---------- 모험가 팝업 (시안: 머리 / 장비 · 능력치 · 전투 수치 / 아래 탭) ----------
   const CLS_KEY = ['warrior', 'archer', 'mage', 'cleric', 'rogue'];
   const FACE_AT = { warrior_m: [132, 118], warrior_f: [161, 121], archer_m: [148, 110], archer_f: [152, 119], mage_m: [145, 137], mage_f: [158, 142], cleric_m: [128, 116], cleric_f: [143, 125], rogue_m: [132, 122], rogue_f: [147, 128] };   // 상세 창(104×120) 얼굴 위치 [x, y, 확대]
@@ -485,18 +485,22 @@
   });
   const stOf = a => a.state === 'quest' ? 'quest' : a.state === 'town' ? 'town' : a.state === 'injured' ? 'injured' : 'away';
   const ST_TXT = { quest: '의뢰 중', town: '길드에 있음', injured: '부상 회복', away: '마을 밖' };
-  const stTag = a => { const k = stOf(a), w = Math.max(0, a.until - s.week); return `<span class="ux-tag ${k}">● ${ST_TXT[k]}${k === 'quest' || k === 'injured' ? ' ' + w + '주' : ''}</span>`; };
+  const stTag = a => { const k = stOf(a), w = Math.max(0, a.until - s.week); return `<span class="ux-tag ${k}">● ${ST_TXT[k]}${k === 'quest' ? (w ? ' ' + w + '주' : ' · 이번 주 귀환') : k === 'injured' ? ' ' + w + '주' : ''}</span>`; };   // 2026-11-12: 남은 0주 → "이번 주 귀환"
   const ITEMS_ = ((root.GAME_DATA || {}).content || {}).items || [];
   const gearItem = (type, g) => ITEMS_.find(i => i.kind === 'gear' && i.gtype === type && i.grade === GR[g]) || null;
   let advTab = 'skill';   // 아래 탭: 'skill'(기본) | 'path' | 'trait' | 'career' — 항상 하나가 펼쳐져 있음
   let advAnimFor = null;   // 능력치 칸이 차오르는 움직임: 다른 모험가를 고르거나 팝업을 처음 열 때만
   function advsHtml() {
-    const list = s.advs.filter(a => a.alive).sort((x, y) => y.stage - x.stage || y.lv - x.lv || x.id - y.id);
+    // 2026-11-12 파티 색: 의뢰 중인 파티를 의뢰 순서대로 위에 묶고, 로비 발밑 원과 같은 색으로 카드를 물들임 (1인 의뢰 포함)
+    const pty = new Map(); (s.active || []).forEach((x, qi) => x.party.forEach((id, pi) => pty.set(id, { qi, pi, col: root.Director && root.Director.partyColor ? root.Director.partyColor(x.q.id) : null })));
+    const list = s.advs.filter(a => a.alive).sort((x, y) => { const px = pty.get(x.id), py = pty.get(y.id);
+      if (px && py) return px.qi - py.qi || px.pi - py.pi; if (px || py) return px ? -1 : 1;
+      return y.stage - x.stage || y.lv - x.lv || x.id - y.id; });
     if (openAdv == null || !list.some(a => a.id === openAdv)) openAdv = list[0] && list[0].id;
     const promo = new Set((s.proposals || []).map(p => p.id));
     let h = '<div class="av"><div class="av-list">';
-    for (const a of list) h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}</span>
-      <span><span class="nm">${a.name}</span><span class="sub">${a.cls} · ${ST_TXT[stOf(a)]}</span></span><span class="rt"><b>Lv ${a.lv}</b></span></button>`;
+    for (const a of list) { const pc = pty.get(a.id) && pty.get(a.id).col; h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${pc ? 'pty' : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"${pc ? ` style="--pc:${pc}"` : ''}><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}</span>
+      <span><span class="nm">${a.name}</span><span class="sub">${a.cls} · ${ST_TXT[stOf(a)]}</span></span><span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
     const a = s.advs.find(x => x.id === openAdv);
     return h + '</div><div class="av-main">' + (a ? advDetail(a) : '<div class="ux-empty">모험가가 없습니다.</div>') + '</div><div class="qtip avtip" id="avTip"></div></div>';
   }

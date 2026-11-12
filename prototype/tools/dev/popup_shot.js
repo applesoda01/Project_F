@@ -36,7 +36,7 @@ const flag = k => process.argv.includes('--' + k);
   const url = 'file://' + path.resolve(__dirname, '../../index.html') + (lab ? '?lab=' + lab : '');
   await p.goto(url); await p.waitForTimeout(lab ? 4500 : 3500);
   if (!lab) {
-    await p.evaluate(() => { const d = document.querySelector('#dlg'); if (d) d.click(); });   // 시작 대화 닫기
+    await p.evaluate(() => { const tl = document.getElementById('titleLay'); if (tl) tl.classList.remove('on'); const d = document.querySelector('#dlg'); for (let i = 0; i < 8 && d && d.classList.contains('open'); i++) window.UI.advance(); });   // 타이틀 화면·시작 대화 닫기 (2026-11-12: 타이틀이 생긴 뒤 캡처가 타이틀만 찍히던 문제)
     await p.evaluate(({ pop, weeks, grade, seed, setup }) => {
       const G = window.GuildGame, s = G.newGame(window.GuildSim.defaults(), seed), UI = window.UI;
       for (let i = 0; i < weeks; i++) { G.stepWeek(s); G.autoCook(s); }

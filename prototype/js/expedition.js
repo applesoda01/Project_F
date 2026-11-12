@@ -77,6 +77,8 @@
       const nm = (lead ? lead.name : '?') + (party.length > 1 ? ` 외 ${party.length - 1}` : '');
       const rate = x.rate != null ? x.rate : Math.round((x.p || 0) * 100), [rc, rt] = risk(rate);
       const r = document.createElement('div'); r.className = 'row' + (sel === e.id ? ' sel' : ''); r.dataset.id = e.id;
+      const pc = root.Director && root.Director.partyColor ? root.Director.partyColor(e.id) : null;   // 2026-11-12 파티 색 띠: 로비 발밑 원·모험가 목록과 같은 색
+      if (pc) { r.classList.add('pty'); r.style.setProperty('--pc', pc); }
       let ticks = ''; for (let w = 1; w < e.weeks; w++) ticks += `<b style="left:${w / e.weeks * 100}%"></b>`;
       r.innerHTML = `<div class="badge">${GR[q.g]}</div><div class="l1"><span class="nm">${nm}</span><span class="qn">${q.name || GR[q.g] + '급 ' + QTYPE[q.type] + ' 의뢰'}</span></div>
         <div class="l2"><div class="pb"><i style="width:${e.p * 100}%"></i>${ticks}</div><span class="left">${leftText(e)}</span><span class="risk ${rc}">${rt}</span></div>`;

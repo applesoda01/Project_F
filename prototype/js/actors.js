@@ -78,13 +78,14 @@
   const T = (ac, k, o) => ac.tasks.push(Object.assign({ k }, o || {}));
   // 2026-11-12 상태 문구 (명찰 위 작은 글씨) · 파티 발밑 원 (의뢰 수락 ~ 귀환 보고까지, 6색을 돌려 씀)
   const LAB = (ac, text) => T(ac, 'do', { fn: () => { ac.lab = text; } });
-  const PARTY_COL = ['#1D9E75', '#D85A30', '#378ADD', '#7F77DD', '#EF9F27', '#D4537E'];
+  const PARTY_COL = ['#1D9E75', '#EF9F27', '#378ADD', '#7F77DD', '#D4537E', '#639922'];   // 청록·호박·파랑·보라·분홍·초록 (2026-11-12: 주황은 부상 줄과, 초록은 청록과 헷갈려 순서 조정)
   D.pcol = new Map();   // 의뢰 id → 색 번호
   function partyColor(qid) {
     if (D.pcol.has(qid)) return D.pcol.get(qid);
     const used = new Set(D.pcol.values()); let c = PARTY_COL.findIndex((_, i) => !used.has(i)); if (c < 0) c = qid % PARTY_COL.length;
     D.pcol.set(qid, c); return c;
   }
+  D.partyColor = qid => PARTY_COL[partyColor(qid)];   // 모험가 팝업 목록 카드도 같은 색을 씀 (2026-11-12)
   const setParty = (ac, qid) => { ac.pq = qid; ac.pc = partyColor(qid); };
   const clearParty = (ac, qid) => { if (ac.pq !== qid) return; ac.pq = null; ac.pc = null; if (![...D.actors.values()].some(o => o.pq === qid)) D.pcol.delete(qid); };
   function standUp(ac) {
