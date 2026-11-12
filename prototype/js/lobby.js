@@ -203,13 +203,20 @@
   const hotOf = (s, F) => (F.open && s && s.built && s.built[F.id] ? F.open : F);   // 지은 문은 열린 그림
   const COUNTER_BOX = () => { const it = A.items.iso_counter; return [I.COUNTER_AT[0], I.COUNTER_AT[1], (it && it.w) || 320, (it && it.h) || 220]; };
   const glowA = t => .75 + .25 * Math.sin(t * 4);
-  function glowWrap(g, t, f) {   // 그림 모양을 따라 금빛 번짐 (그림자를 두 번 겹쳐 진하게)
-    return () => { g.save(); g.shadowColor = `rgba(255,214,90,${glowA(t).toFixed(3)})`; for (const bl of [4, 4, 10, 18, 30]) { g.shadowBlur = bl; f(); } g.restore(); };   // 가는 테두리(4) + 넓은 번짐(30)
+  // 그림 모양을 따라 금빛 번짐. 강하게(기본, 2026-11-12 사용자 요청): 7겹(가는 테두리 3 → 넓은 번짐 40) + 그림 자체를 15% 밝힘. 약하게(주점): 예전 5겹
+  const GLOW_STRONG = [3, 3, 6, 10, 16, 24, 40], GLOW_SOFT = [4, 4, 10, 18, 30];
+  function glowWrap(g, t, f, soft) {
+    return () => {
+      g.save(); g.shadowColor = `rgba(255,214,90,${soft ? glowA(t).toFixed(3) : (.85 + .15 * Math.sin(t * 4)).toFixed(3)})`;
+      for (const bl of soft ? GLOW_SOFT : GLOW_STRONG) { g.shadowBlur = bl; f(); }
+      g.restore();
+      if (!soft) { g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = .15; f(); g.restore(); }
+    };
   }
   function facGlow(g, s, id, t) {
     const F = FAC_HOT.find(x => x.id === id); if (!F) return;
     const H = hotOf(s, F), it = A.items[H.img];
-    if (it && it.img) { glowWrap(g, t, () => g.drawImage(it.img, H.at[0], H.at[1]))(); return; }   // 조각 모양을 따라 빛남
+    if (it && it.img) { glowWrap(g, t, () => g.drawImage(it.img, H.at[0], H.at[1]), id === '주점')(); return; }   // 주점만 약하게   // 조각 모양을 따라 빛남
     g.save(); g.lineJoin = 'round'; g.beginPath(); H.poly.forEach((p, k) => k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath();   // 조각을 못 읽으면 윤곽선
     g.shadowColor = `rgba(255,205,90,${glowA(t).toFixed(3)})`; g.shadowBlur = 18; g.strokeStyle = 'rgba(255,226,140,.9)'; g.lineWidth = 3; g.stroke();
     g.restore();
