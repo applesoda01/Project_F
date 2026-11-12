@@ -120,8 +120,8 @@ LTX로는 숨쉬기가 안 나와서 **시작 이미지를 후처리로 움직�
 | 마법사 남 | runD s7308 (좋음) | 묶음 05 — 11-13 한도로 실패 | 다음 날 |
 | 도적 여 | runB s7112 (망토가 크게 퍼짐) | 묶음 06 | 대기 |
 | 성직자 남 | runB s7106 (보통, 걷기에 가까움) | 묶음 07 (다음 날) | 대기 |
-| 마법사 여 | runB s7108, runD s7304·s7306 (모두 약함) | — | **runE s7400·7402·7404 생성 중** (11-13, 프롬프트 강화: "runs in place energetically, two clear running cycles, knees lift high, both feet briefly leave the ground", 부정에 small steps·walking 추가) |
-| 전사 여 | runB s7116 (약함) | — | **runE s7410·7412·7414 생성 중** (위와 같은 프롬프트) |
+| 마법사 여 | runB s7108, runD s7304·s7306 (모두 약함) | 묶음 08 (**runE s7404 채택**) | 다음 Gemini (11-13, 프롬프트 강화: "runs in place energetically, two clear running cycles, knees lift high, both feet briefly leave the ground", 부정에 small steps·walking 추가) |
+| 전사 여 | runB s7116 (약함) | 묶음 09 (**runE s7414 채택**) | 다음 Gemini |
 
 - **Gemini 결과 후처리 (2026-11-13 확정):** 결과는 1280×720, 24fps, 10초(240프레임). 배경이 순수 마젠타가 아니라 약 (236, 32, 220) → 테두리 중앙값을 배경색으로 쓰고 거리 d 기준 alpha = clip((d−45)/(120−45)) (예전 130/280 기준은 피부가 반투명해져 얼굴이 회색이 됨). 오른쪽 아래 [640:, 1080:] 워터마크 제거 → 처음 1초 뒤에서 같은 자세로 돌아오는 주기 P(16~60)와 시작점을 자동 탐색 → 첫 프레임(시작 이미지) 키로 배율 = 516/키 → 주기 안 가장 낮은 발을 y=787, 평균 중심을 x=320에 고정. 스크립트 `pp.py`(작업 공간). 결과: 작업 공간 `run_final/<직업>/run_NN.png, run.gif, sheet.png, run.json`.
 - **사용자 진행 방식:** 사용자는 자기 브라우저의 Gemini에서 생성. Claude는 번호마다 **시작 이미지·참고 영상을 이 대화에 SendUserFile로 올리고 프롬프트도 함께 붙여 줌**(경로에서 찾는 수고를 덜기 위함). 계정이 막히면 다른 계정으로 전환.
@@ -130,11 +130,13 @@ LTX로는 숨쉬기가 안 나와서 **시작 이미지를 후처리로 움직�
 - 시작 이미지 원본: 작업 공간 `/mnt/user-data/outputs/runstart/pf_run_start_<직업>_mag.png` (800×800, 몸 높이 약 515px). ComfyUI input에도 같은 이름.
 
 ### 공격
+- **후처리 스크립트:** `archive/art_source/sd_sprites/tools/attack_ltx_pp.py` (동작 구간 자동 탐지 → 16프레임). 전사 남 후보 대각 7702·내려찍기 7720·찌르기 7830도 처리함(작업 공간 `atk/final_more/`).
+- 11-13 밤 ComfyUI는 1건 3~4분(Qwen 편집 뒤 VRAM 여유 4GB). 예전 1분 20초.
 | 직업 | 상태 |
 | --- | --- |
 | 전사 남 | **가로 베기 7904 완료**: 16프레임 1024×880, 충돌 프레임 8·9·10, `attack_horizontal.json`, `warrior_m_attack_horizontal.zip` 전달. 후보: 대각 베기 7702, 상단 찌르기 7712(7프레임 정지 → 약 14프레임으로 줄이자는 안, 미실행), 내려찍기 7720, 찌르기 7830, 회전 7812, 백핸드 7820. 남은 문제: 중간 프레임 색 번짐, 검 번짐(1~2, 8~9) |
-| 전사 여 | 시작 이미지 `11_start_warrior_f_sword_padded_magenta.png` 완료. 가로·대각 베기·찌르기 × 시드 2 = 6건 **승인 대기** |
-| 궁수 여 | 시작 이미지 `12_start_archer_f_bow_padded_magenta.png` 완료. 활 쏘기(당김·놓음)·근접 휘두르기 × 시드 2 = 4건 **승인 대기**. 날아가는 화살은 따로 처리할 계획 |
+| 전사 여 | atkF(11-13 밤) 시험 완료: **가로 7952 · 대각 7960 · 찌르기 7970 채택**, 16프레임 처리(작업 공간 `atkF/final/`, 찌르기는 발 기준 x=400). 중간 프레임 치마 올리브빛 색번짐 |
+| 궁수 여 | atkF: **활 쏘기 7980 채택**(발사 7~9프레임, 화살은 게임에서 따로). 근접 휘두르기 7990·7992는 타격 효과·적이 그려져 탈락 → 부정어 보강해 재생성 |
 | 나머지 | Gemini 무기 든 시작 이미지 대기 (요청 묶음 `gemini_atk.zip` 전달됨). 도적은 단검(하나 vs 쌍 비교 후 결정), 성직자는 마법 시전(남은 기존 SD + 책) |
 
 ### 서 있기·앉기
