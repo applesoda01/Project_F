@@ -164,7 +164,7 @@
   };
 
   // ---------- 팝업 틀 ----------
-  const TITLES = { sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '시설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
+  const TITLES = { sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (시설 → 판매창구)', 'info'); return; }
     popup = name; q('#popTitle').textContent = TITLES[name];
@@ -695,7 +695,28 @@
   // 업그레이드 1단계 효과 (2026-11-12, docs/design/popup_fac.md 6장)
   const FAC_UP = { 게시판: '의뢰 기한 +1주', 접수대: '리나 응대 −0.5초', 주점: '음식·술 1개당 +5G', 판매창구: '소재 1개당 +3G', 관리소: '전직 수락 확률 +10%p' };   // 지금 게임에 실제 효과가 있는 시설
   const FAC_LABEL = { 게시판: '의뢰 게시판', 주점: '주점·식당', 판매창구: '소재 판매 창구', 관리소: '모험가 관리소', 집무실: '길드 마스터 집무실' };
+  // 건설 메뉴 (2026-11-12 C단계, docs/design/guild_interior.md 10-4): 시설 / 장식 / 테이블 탭. 장식·테이블은 고르면 로비 배치 모드
+  let facTab = 'fac';
   function facHtml() {
+    const DE = Gm.DECO, nT = Gm.placedN(s, 'table'), tT = (DE.find(d => d.id === 'table') || {}).max || 4;
+    const nD = DE.filter(d => d.id !== 'table' && Gm.placedN(s, d.id)).length, tD = DE.filter(d => d.id !== 'table').length;
+    const tabs = [['fac', '시설', ''], ['deco', '장식', `${nD}/${tD}`], ['table', '테이블', `${nT}/${tT}`]];
+    return `<div class="ux-tabs bm-tabs">${tabs.map(([k, n, c]) => `<button data-ftab="${k}" class="${facTab === k ? 'on' : ''}">${n}${c ? `<span class="cnt">${c}</span>` : ''}</button>`).join('')}</div>` + (facTab === 'fac' ? facListHtml() : decoListHtml(facTab));
+  }
+  const DECO_ICON = id => id === 'table' ? 'assets/lobby_iso/table.png' : `assets/deco/${(Gm.DECO_BY[id] || {}).img}.png`;
+  const DECO_WHERE = { floor: '바닥', wall: '벽', fire: '벽 (벽난로 자리만)', table: '바닥 3칸' };
+  function decoListHtml(tab) {
+    const rows = Gm.DECO.filter(d => (tab === 'table') === (d.id === 'table')).map(d => {
+      const n = Gm.placedN(s, d.id), full = n >= d.max, poor = s.gold < d.price;
+      const placed = s.place.items.filter(it => it.id === d.id);
+      const st = full ? (d.max === 1 ? `<button class="ux-btn sm" data-pmove="${placed[0].uid}">옮기기</button>` : `<span class="ux-tag town">${n}/${d.max} 모두 놓음</span>`)
+        : `<button class="ux-btn sm" data-place="${d.id}" ${poor ? 'disabled' : ''}>놓기 <b>${fmt(d.price)}G</b></button>`;
+      return `<div class="fx-row bm-row ${n ? 'on' : ''} ${!full && !poor ? 'glow' : ''}"><i class="bm-ic" style="background-image:url(${DECO_ICON(d.id)})"></i><b class="nm">${d.name}${d.max > 1 ? ` <small>${n}/${d.max}</small>` : ''}</b><span class="fx">${d.fx || d.desc || ''} <em class="fx-up">${DECO_WHERE[d.kind] || ''}</em></span><span class="st">${st}</span></div>`;
+    });
+    const note = tab === 'table' ? '테이블 1세트에 2명이 앉습니다. 놓은 테이블을 로비에서 누르면 옮기거나 치울 수 있습니다.' : '종류마다 1개씩 놓을 수 있습니다. 장식 효과는 다음 작업에서 연결합니다 (지금은 배치만).';
+    return `<div class="fx-list"><p class="muted small bm-note">${note} 옮기기는 무료, 치우면 돈은 돌려받지 못합니다.</p>${rows.join('')}</div>`;
+  }
+  function facListHtml() {
     const all = ['게시판', '접수대', '주점', '판매창구'].concat(FACS), run = [], can = [], lock = [];
     for (const f of all) {
       const g = Gm.FAC_COST[f] == null ? 0 : Gm.FAC_COST[f], cost = Gm.facCost(s, f), ready = !!FAC_READY[f];
@@ -894,11 +915,87 @@
     if (!any) h += '<p class="ux-muted gl-none">해당하는 기록이 없습니다.</p>';
     return h + '</div></div>';
   }
+  // ---------- 로비 배치 모드 (2026-11-12 C단계) ----------
+  // 고르면 게임을 멈추고 로비에 칸 표시(초록 = 놓을 수 있음, 빨강 = 막힘). 클릭 = 놓기, 우클릭·Esc·취소 = 그만두기
+  // 배치 모드가 아닐 때 놓인 물건을 누르면 작은 메뉴(옮기기 · 치우기)
+  let PM = null, pmSp = 1, pmLay = null, pmBar = null, pmMenu = null;
+  const pmPt = e => { const p = stage.toGame(e.clientX, e.clientY); return [p.x, p.y]; };
+  function pmEls() {
+    if (pmLay) return;
+    pmLay = document.createElement('div'); pmLay.id = 'placeLay'; stage.ui.appendChild(pmLay);
+    pmBar = document.createElement('div'); pmBar.id = 'placeBar'; stage.ui.appendChild(pmBar);
+    pmMenu = document.createElement('div'); pmMenu.id = 'placeMenu'; stage.ui.appendChild(pmMenu);
+    pmLay.addEventListener('pointermove', e => pmHover(pmPt(e)));
+    pmLay.addEventListener('click', e => { pmHover(pmPt(e)); pmDrop(); });
+    pmLay.addEventListener('contextmenu', e => { e.preventDefault(); UI.placeEnd(true); });
+    pmBar.addEventListener('click', e => { if (e.target.closest('[data-pmx]')) UI.placeEnd(true); });
+    root.addEventListener('keydown', e => { if (e.key === 'Escape') { if (PM) { e.stopPropagation(); UI.placeEnd(true); } else if (pmMenu.classList.contains('on')) pmMenuClose(); } }, true);
+    stage.canvas.addEventListener('click', e => pmItemClick(pmPt(e)));
+    pmMenu.addEventListener('click', e => {
+      const b = e.target.closest('[data-pm]'); if (!b) return;
+      const it = s.place.items.find(x => x.uid === +pmMenu.dataset.uid); if (!it) { pmMenuClose(); return; }
+      if (b.dataset.pm === 'move') { pmMenuClose(); UI.placeStart(it.id, it.uid); }
+      else if (b.dataset.pm === 'del') {
+        if (!b.classList.contains('sure')) { b.classList.add('sure'); b.innerHTML = '정말 치울까요? <small>(환불 없음)</small>'; return; }
+        Gm.placeDestroy(s, it.uid); pmMenuClose(); hooks.changed(); toast(`${(Gm.DECO_BY[it.id] || {}).name}을(를) 치웠습니다. 다시 놓으려면 새로 사야 합니다.`, 'info');
+      } else pmMenuClose();
+    });
+  }
+  const pmCanBuy = d => Gm.placedN(s, d.id) < d.max && s.gold >= d.price;
+  UI.placeStart = function (id, uid) {
+    const d = Gm.DECO_BY[id]; if (!d) return;
+    pmEls(); pmMenuClose();
+    if (uid == null && !pmCanBuy(d)) { toast(Gm.placedN(s, id) >= d.max ? `${d.name}은(는) ${d.max}개까지 놓을 수 있습니다.` : `금고가 부족합니다. (${fmt(d.price)}G)`, 'warn'); return; }
+    if (popup) UI.close();
+    if (!PM) pmSp = curSp;
+    PM = { id, uid: uid == null ? null : uid, at: null, ok: false };
+    hooks.setSpeed && hooks.setSpeed(0);
+    root.Lobby.ghostUid = PM.uid; root.Lobby.overlay = (g, list) => { if (PM) root.Lobby.drawPlace(g, s, list, PM); };
+    pmLay.classList.add('on'); pmBar.classList.add('on');
+    pmBar.innerHTML = `<b>${d.name}</b> ${PM.uid != null ? '옮기기 · 무료' : `놓기 · ${fmt(d.price)}G`}<span class="pb-hint">초록 칸을 누르세요 · 우클릭/Esc 취소</span><button class="ux-btn sm" data-pmx>취소</button>`;
+  };
+  UI.placeEnd = function (cancel) {
+    if (!PM) return;
+    PM = null; root.Lobby.ghostUid = null; root.Lobby.overlay = null;
+    pmLay.classList.remove('on'); pmBar.classList.remove('on');
+    hooks.setSpeed && hooks.setSpeed(pmSp);
+  };
+  function pmHover(pt) {
+    if (!PM) return;
+    const at = root.Lobby.pick(PM.id, pt[0], pt[1]);
+    PM.at = at; PM.ok = !!at && Gm.placeOk(s, PM.id, at, PM.uid == null ? undefined : PM.uid);
+    pmLay.style.cursor = at ? (PM.ok ? 'pointer' : 'not-allowed') : 'default';
+  }
+  function pmDrop() {
+    if (!PM || !PM.at) return;
+    const d = Gm.DECO_BY[PM.id];
+    if (!PM.ok) { toast('여기에는 놓을 수 없습니다.', 'warn'); return; }
+    if (PM.uid != null) { Gm.placeMove(s, PM.uid, PM.at); UI.placeEnd(false); hooks.changed(); return; }
+    if (!Gm.placeBuy(s, PM.id, PM.at)) { toast('놓지 못했습니다.', 'warn'); return; }
+    hooks.changed();
+    if (d.max > 1 && pmCanBuy(d)) { PM.at = null; PM.ok = false; UI.placeStart(PM.id, null); return; }   // 테이블은 이어서 더 놓을 수 있게
+    UI.placeEnd(false);
+  }
+  function pmItemClick(pt) {
+    if (PM || popup || (root.Town && root.Town.active) || Dlg.open) return;
+    const it = root.Lobby.hitItem(s, pt[0], pt[1]); if (!it) { pmMenuClose(); return; }
+    const d = Gm.DECO_BY[it.id], o = root.Lobby.placedDrawables(null, it).reduce((a, b) => (b.box && (!a || b.box[1] < a.box[1]) ? b : a), null);
+    const bx = o ? o.box : [pt[0], pt[1], 0, 0];
+    pmMenu.dataset.uid = it.uid;
+    pmMenu.innerHTML = `<b class="pm-nm">${d.name}</b><button class="ux-btn sm" data-pm="move">옮기기</button><button class="ux-btn sm danger" data-pm="del">치우기</button><button class="ux-btn sm ghost" data-pm="x">닫기</button>`;
+    pmMenu.style.left = Math.round(bx[0] + bx[2] / 2) + 'px'; pmMenu.style.top = Math.max(110, Math.round(bx[1] - 8)) + 'px';
+    pmMenu.classList.add('on');
+  }
+  function pmMenuClose() { if (pmMenu) { pmMenu.classList.remove('on'); pmMenu.dataset.uid = ''; } }
+
   stagePopClicks();
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
-      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf]'); if (!t) return;
+      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove]'); if (!t) return;
+      if (t.dataset.ftab) { facTab = t.dataset.ftab; renderPopup(); return; }
+      if (t.dataset.place) { UI.placeStart(t.dataset.place, null); return; }
+      if (t.dataset.pmove) { const it = s.place.items.find(x => x.uid === +t.dataset.pmove); if (it) UI.placeStart(it.id, it.uid); return; }
       if (t.dataset.opensell) { UI.open('sell'); return; }
       if (t.dataset.ssel) { sellSel = t.dataset.ssel; renderPopup(); return; }
       if (t.dataset.sone) { sellDo([t.dataset.sone], false); renderPopup(); return; }

@@ -568,3 +568,20 @@ span.kslot{cursor:default}
 .ux-slot .jface{display:block;width:100%;height:100%;border-radius:9px;background-repeat:no-repeat}
 .ux-slot.unk .jface{filter:brightness(0) sepia(1) saturate(3) hue-rotate(-12deg) brightness(.42);opacity:.72}
 .av-wal .wl{font-style:normal;font-size:.8em;font-weight:600;color:var(--ux-muted);margin-right:6px}
+
+/* 건설 메뉴 · 로비 배치 모드 (2026-11-12 C단계, docs/design/guild_interior.md 10-4) */
+.bm-tabs{margin-bottom:10px}
+.bm-note{margin:4px 2px 10px}
+.fx-row .bm-ic{width:36px;height:36px;background:center/contain no-repeat;display:block}
+.fx-row .nm small{font-weight:600;color:var(--ux-muted);font-size:14px}
+#placeLay{position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:40;display:none}
+#placeLay.on{display:block}
+#placeBar{position:absolute;left:50%;top:118px;transform:translateX(-50%);z-index:41;display:none;align-items:center;gap:14px;padding:10px 14px 10px 22px;border-radius:14px;background:linear-gradient(#fffaf0,#f3e3c1);border:2px solid var(--ux-wood2);box-shadow:0 8px 22px rgba(40,22,10,.35);font-size:19px;color:var(--ux-ink);white-space:nowrap}
+#placeBar.on{display:flex}
+#placeBar .pb-hint{font-size:15px;color:var(--ux-muted)}
+#placeMenu{position:absolute;z-index:39;display:none;transform:translate(-50%,-100%);align-items:center;gap:8px;padding:8px 10px 8px 14px;border-radius:12px;background:linear-gradient(#fffaf0,#f3e3c1);border:2px solid var(--ux-wood2);box-shadow:0 6px 18px rgba(40,22,10,.32);white-space:nowrap}
+#placeMenu.on{display:flex}
+#placeMenu .pm-nm{font-size:16px;color:var(--ux-ink);margin-right:4px}
+#placeMenu .ux-btn.ghost{background:transparent;border-color:transparent;color:var(--ux-muted)}
+#placeMenu .ux-btn.sure{animation:pm-sure .25s}
+@keyframes pm-sure{50%{transform:scale(1.06)}}

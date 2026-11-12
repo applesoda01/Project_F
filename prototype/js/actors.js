@@ -27,9 +27,28 @@
   // ---------- 좌석 ----------
   D.layout = function (nTables) { // Lobby가 놓인 테이블 목록(또는 개수)을 알려 준다 (탁자 하나에 2석). 2026-11-12: 자유 배치라 목록
     const old = D.seats; D.seats = [];
+    const same = (a, b) => a && b && a.cell[0] === b.cell[0] && a.cell[1] === b.cell[1] && a.side === b.side;
+    const map = new Map();   // 예전 자리 → 그대로 남은 새 자리
     for (const se of I.seatsFor(nTables)) {
-      const inf = I.seatInfo(se), prev = old.find(o => o.id === se.id);
+      const inf = I.seatInfo(se), prev = old.find(o => same(o, se));
       se.z = inf.ay + 1; se.ap = pt(P(se.cell[0] + .5, se.cell[1] + 3.2)); se.by = prev ? prev.by : null; D.seats.push(se);
+      if (prev) map.set(prev, se);
+    }
+    // 2026-11-12 배치 모드: 테이블을 옮기거나 치우면 그 자리에 앉아 있던(가던) 모험가는 일어나 다른 자리를 찾음
+    for (const ac of D.actors.values()) {
+      const used = [ac.seat, ...ac.tasks.map(k => k.seat), ac.sp && ac.sp.seat].filter(Boolean);
+      if (!used.some(x => old.includes(x))) continue;
+      if (used.every(x => !old.includes(x) || map.has(x))) {   // 자리가 그대로면 새 자리 객체로만 바꿔 끼움
+        if (ac.seat) ac.seat = map.get(ac.seat) || ac.seat;
+        if (ac.sp && ac.sp.seat) ac.sp.seat = map.get(ac.sp.seat) || ac.sp.seat;
+        ac.tasks.forEach(k => { if (k.seat) k.seat = map.get(k.seat) || k.seat; });
+        continue;
+      }
+      if (ac.seat && map.has(ac.seat)) map.get(ac.seat).by = null;
+      const back = ac.seat && ac.pose === 'sit' ? ac.seat.ap : null;
+      ac.seat = null; ac.sp = null; ac.pose = 'stand'; ac.zMin = null; ac.tasks = [];
+      if (back) { ac.x = back.x; ac.y = back.y; }
+      settle(ac);
     }
   };
   function freeSeat(ac) { const fr = D.seats.filter(s => !s.by); if (!fr.length) return null; const s = fr[(ac.id * 7) % fr.length]; s.by = ac.id; return s; }

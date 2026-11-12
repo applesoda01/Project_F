@@ -168,13 +168,13 @@
   function floorImg(g, key, gx, gy) { // 바닥 칸 (gx,gy) 위의 가구. 2배 크기로 저장된 그림을 0.5배로, 칸 가운데·앞 꼭짓점에 놓음
     const it = A.items[key]; if (!it || !it.img) return { z: -1e9, f: () => {} };
     const a = I.P(gx + .5, gy + .5), b = I.P(gx + 1, gy + 1), w = it.img.width / 2, h = it.img.height / 2;
-    return { z: b[1], f: () => { g.drawImage(it.img, a[0] - w / 2, b[1] - h, w, h); } };
+    return { z: b[1], box: [a[0] - w / 2, b[1] - h, w, h], f: () => { g.drawImage(it.img, a[0] - w / 2, b[1] - h, w, h); } };
   }
   // 놓인 물건 하나를 그리는 조각들 (테이블 세트 = 의자 2 + 테이블, 바닥 장식, 벽 장식, 벽난로)
   function wallImg(g, key, wall, i, onFloor) {   // 벽 칸 i 의 가운데에 붙임. 그림은 왼쪽 벽 기준 → 오른쪽 벽이면 좌우반전
     const it = A.items[key]; if (!it || !it.img) return { z: -1e9, f: () => {} };
     const a = wall === 'L' ? I.P(0, i + .5) : I.P(i + .5, 0), w = it.img.width / 2, h = it.img.height / 2, lift = onFloor ? -6 : 70;
-    return { z: a[1] - (onFloor ? 0 : 400), f: () => { g.save(); g.translate(a[0], a[1] - lift); if (wall === 'R') g.scale(-1, 1); g.drawImage(it.img, -w / 2, -h, w, h); g.restore(); } };
+    return { z: a[1] - (onFloor ? 0 : 400), box: [a[0] - w / 2, a[1] - lift - h, w, h], f: () => { g.save(); g.translate(a[0], a[1] - lift); if (wall === 'R') g.scale(-1, 1); g.drawImage(it.img, -w / 2, -h, w, h); g.restore(); } };
   }
   function placedDrawables(g, it) {
     const d = (root.GuildGame.DECO_BY || {})[it.id]; if (!d) return [];
@@ -187,7 +187,61 @@
     g.beginPath(); g.ellipse(c[0], c[1] + 8, 52, 24, 0, 0, 7); g.stroke(); g.restore();
   }
 
-  const Lobby = { SLOTS, FILL, TABLES, Board, BT, layout, floorImg, wallImg, placedDrawables, ghostUid: null, overlay: null };
+  // ---------- 배치 모드 (2026-11-12 C단계, docs/design/guild_interior.md 10-1) ----------
+  // 칸 모양: 바닥 칸 (x,y) 네 꼭짓점, 벽 칸 i 는 바닥 선에서 위로 WALL_H 만큼 세운 사각형
+  const WALL_H = 230;
+  const cellPoly = (x, y) => [I.P(x, y), I.P(x + 1, y), I.P(x + 1, y + 1), I.P(x, y + 1)];
+  const wallPoly = (w, i) => { const a = w === 'L' ? I.P(0, i) : I.P(i, 0), b = w === 'L' ? I.P(0, i + 1) : I.P(i + 1, 0); return [[a[0], a[1] - 40], [b[0], b[1] - 40], [b[0], b[1] - 40 - WALL_H], [a[0], a[1] - 40 - WALL_H]]; };
+  function inPoly(pt, poly) { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) c = !c; } return c; }
+  // 화면 좌표 → 놓을 자리. 바닥 물건은 바닥 칸, 벽 물건은 가까운 벽 칸
+  function pick(id, x, y) {
+    const d = root.GuildGame.DECO_BY[id]; if (!d) return null;
+    if (d.kind === 'wall' || d.kind === 'fire') {
+      for (const w of ['L', 'R']) for (let i = 0; i < 14; i++) if (inPoly([x, y], wallPoly(w, i))) return { wall: w, i };
+      return null;
+    }
+    for (let gy = 0; gy < 14; gy++) for (let gx = 0; gx < 14; gx++) if (inPoly([x, y], cellPoly(gx, gy))) return { gx, gy };
+    return null;
+  }
+  // 놓인 물건 중 화면 (x,y)를 덮는 가장 앞 물건
+  function hitItem(s, x, y) {
+    let best = null, bz = -1e9;
+    for (const it of (s.place ? s.place.items : [])) for (const o of placedDrawables(null, it)) {
+      const b = o.box; if (b && x >= b[0] && x <= b[0] + b[2] && y >= b[1] && y <= b[1] + b[3] && o.z > bz) { bz = o.z; best = it; }
+    }
+    return best;
+  }
+  const poly = (g, P, fill, line) => { g.beginPath(); P.forEach((p, k) => k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath(); g.fillStyle = fill; g.fill(); if (line) { g.strokeStyle = line; g.lineWidth = 1; g.stroke(); } };
+  // pm: { id, uid(옮길 때), at(놓을 자리), ok }. 칸 표시는 맨 아래, 미리보기는 앞뒤 정렬 묶음에 끼움
+  function drawPlace(g, s, list, pm) {
+    const Gm = root.GuildGame, d = Gm.DECO_BY[pm.id], G = Gm.lobbyGrid(); if (!d) return;
+    const used = new Set(); for (const it of s.place.items) if (it.uid !== pm.uid) Gm.cellsOf(it.id, it).forEach(c => used.add(c));
+    g.save();
+    if (d.kind === 'wall' || d.kind === 'fire') {
+      for (const w of ['L', 'R']) for (let i = 0; i < 14; i++) {
+        const v = (w === 'L' ? G.wallL : G.wallR)[i], free = (d.kind === 'fire' ? v === 2 : v === 0) && !used.has(w + i);
+        if (v === 1 && !free) continue;   // 처음부터 막힌 벽 칸은 표시하지 않음 (창문·문 등)
+        poly(g, wallPoly(w, i), free ? 'rgba(80,200,90,.28)' : 'rgba(220,60,50,.28)', free ? 'rgba(80,200,90,.7)' : 'rgba(220,60,50,.6)');
+      }
+    } else {
+      for (let y = 0; y < 14; y++) for (let x = 0; x < 14; x++) {
+        const free = G.floor[y][x] === 0 && !used.has(x + ',' + y);
+        poly(g, cellPoly(x, y), free ? 'rgba(80,200,90,.22)' : 'rgba(220,60,50,.22)', free ? 'rgba(80,200,90,.5)' : 'rgba(220,60,50,.35)');
+      }
+    }
+    if (pm.at && d.kind !== 'wall' && d.kind !== 'fire') for (const c of Gm.cellsOf(pm.id, pm.at)) {   // 차지할 칸 테두리
+      const [x, y] = c.split(',').map(Number); if (x < 0 || y < 0 || x > 13 || y > 13) continue;
+      poly(g, cellPoly(x, y), pm.ok ? 'rgba(80,200,90,.45)' : 'rgba(220,60,50,.5)', pm.ok ? '#3fbf55' : '#d8483c');
+    }
+    g.restore();
+    if (!pm.at) return;
+    for (const o of placedDrawables(g, Object.assign({ id: pm.id }, pm.at))) {
+      const f = o.f; o.f = () => { g.save(); g.globalAlpha = pm.ok ? 0.75 : 0.4; if (!pm.ok) g.filter = 'sepia(1) saturate(4) hue-rotate(-40deg)'; f(); g.restore(); };
+      list.push(o);
+    }
+  }
+
+  const Lobby = { SLOTS, FILL, TABLES, Board, BT, layout, floorImg, wallImg, placedDrawables, pick, hitItem, drawPlace, ghostUid: null, overlay: null };
   Lobby.update = function (s, dt) {
     const tl = tablesOf(s), key = JSON.stringify(tl);
     if (key !== lastTables) { lastTables = key; root.Director.layout(tl); }
