@@ -124,6 +124,9 @@
 .qcard .r1 b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .qcard .r2{display:flex;align-items:center;gap:5px}
 .qcard .r2 .ux-btn{margin-left:auto;white-space:nowrap;padding:2px 9px;font-size:14px}
+/* 시설 업그레이드 효과 문구 (2026-11-12) */
+.fx-row .fx .fx-up{font-style:normal;font-size:.9em;color:#8a6a3a;margin-left:4px}
+.fx-row .fx .fx-up.on{color:#3f7a3a;font-weight:700}
 /* 의뢰 기한 막대 (2026-11-12): 카드 아래 가장자리, 남은 기한만큼. 4분의 1 이하면 빨강 */
 .qcard .qdl{position:absolute;left:8px;right:8px;bottom:4px;height:4px;border-radius:2px;background:rgba(90,58,34,.18);overflow:hidden}
 .qcard .qdl i{display:block;height:100%;border-radius:2px;background:#c9a24a}

@@ -32,7 +32,7 @@
   function newGame(cfg, seed) {
     const s = {
       cfg, seed: seed >>> 0, rngState: seed >>> 0,
-      expireV: 1, week: 0, grade: 0, gold: cfg.econ.startGold, trust: 50, fame: 0, pop: cfg.town.startPop,
+      expireV: 1, up: {}, week: 0, grade: 0, gold: cfg.econ.startGold, trust: 50, fame: 0, pop: cfg.town.startPop,
       built: { 게시판: true, 접수대: true, 주점: true, 판매창구: true }, eff: {}, meals: [0, 0, 0, 0, 0, 0, 0],
       filter: [4, 0, 0, 0, 0, 0, 0], filterV: 2, // 게시판 칸 배분: 등급별 비중 0(없음)·1(적게)·2(보통)·4(우선) (docs/design/popup_board.md)
       advs: [], board: [], active: [], nextId: 1, log: [],
@@ -218,7 +218,7 @@
     const p = s.proposals[pi]; s.proposals.splice(pi, 1);
     const a = s.advs.find(x => x.id === id); if (!a || !a.alive) return null;
     if (!cls) { a.promoCool = s.week + 12; log(s, `${a.name}의 전직 제안을 보류했습니다. (3개월 뒤 다시 제안)`, 'promo', { who: [a.name] }); return { held: true }; }
-    const base = [0.40, 0.65, 0.90, 1.00][attachTier(a)], chance = Math.min(1, base * (p.to === 2 ? 1.2 : 0.9));
+    const base = [0.40, 0.65, 0.90, 1.00][attachTier(a)], chance = Math.min(1, base * (p.to === 2 ? 1.2 : 0.9) + (upg(s, '관리소') ? (s.cfg.promo.upAccept || 0.1) : 0));   // 관리소 업그레이드 +10%p
     if (s.R() > chance) {
       a.promoCool = s.week + 12; a.career.push({ week: s.week, text: `${cls} 전직 제안을 거절` });
       log(s, `${J(a.name, '이', '가')} ${cls} 전직을 거절했습니다. (수락 확률 ${Math.round(chance * 100)}%, 3개월 뒤 다시 제안)`, 'promo', { who: [a.name] });
@@ -239,7 +239,7 @@
   // 예전 저장 데이터 보정
   function migrate(s) {
     s.proposals = s.proposals || []; s.discovered = s.discovered || {}; s.knownMats = s.knownMats || {}; s.seenMons = s.seenMons || {}; if (s.fame == null) s.fame = 0;
-    s.mats = s.mats || {};
+    s.mats = s.mats || {}; s.up = s.up || {};
     if (!s.expireV) { s.expireV = 1; for (const q of s.board || []) q.posted = s.week; }   // 2026-11-12 의뢰 기한 도입 전 저장: 게시판 의뢰가 한꺼번에 만료되지 않게 기한을 새로 시작
     if (!s.dishes) { s.dishes = {}; for (let g = 0; g < 7; g++) DISH.filter(d => d.g === g).slice(0, s.meals[g] || 0).forEach(d => { s.dishes[d.name] = s.week; }); }   // 예전 저장: 등급별 해금 수 → 앞에서부터 그만큼 발견한 것으로
     syncMeals(s);
@@ -272,7 +272,7 @@
   // 새 등급이 열리면 그 등급만 "우선"(4), 기존 등급 값은 그대로
   function openGrades(s, g0) { for (let g = g0 + 1; g <= s.grade; g++) s.filter[g] = FILTER_W[3]; }
   // 의뢰 기한 (2026-11-12, docs/design/popup_board.md 10장): 게시 후 expireWeeks 주 동안 아무도 받지 않으면 사라지고 신뢰도 하락
-  const expireWeeks = s => s.cfg.quest.expireWeeks || 4;
+  const expireWeeks = s => (s.cfg.quest.expireWeeks || 4) + (upg(s, '게시판') ? (s.cfg.quest.upBoardWeeks || 1) : 0);   // 게시판 업그레이드 +1주
   function expireQuests(s) {
     const W = expireWeeks(s), dt = s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1;
     for (let i = s.board.length - 1; i >= 0; i--) {
@@ -382,7 +382,7 @@
         let eaters = 0; const dish = dishFor(s, q), ate = new Set();
         if (dish) for (const m of party) {
           const price = Q.reward[dish.g] * E.mealPriceRate;
-          if (m.wallet >= price && s.R() < E.mealBuyRate[m.spend]) { m.wallet -= price; const inc = price * E.mealMargin; s.gold += inc; s.month.meal += inc; eaters++; ate.add(m.id); const md = s.month.dishes = s.month.dishes || {}; md[dish.name] = (md[dish.name] || 0) + 1; }
+          if (m.wallet >= price && s.R() < E.mealBuyRate[m.spend]) { m.wallet -= price; const inc = price * E.mealMargin + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += inc; s.month.meal += inc; eaters++; ate.add(m.id); const md = s.month.dishes = s.month.dishes || {}; md[dish.name] = (md[dish.name] || 0) + 1; }
         }
         // 식사 효과 (C안): ① 발견한 요리 하나당 +2% (비전투 성공 확률·전투 공격력, 먹은 비율만큼) ② 먹은 요리의 능력치 +n% (먹은 사람만)
         const mealB = dish ? (eaters / party.length) * E.mealPerDish * Object.keys(s.dishes).length : 0;
@@ -407,6 +407,9 @@
         break;
       }
     }
+    // 술 (2026-11-12): 이번 주 마을에 남은 모험가가 씀씀이 성향별 확률(식사와 같은 econ.mealBuyRate)로 1잔. 길드 마진 econ.drinkMargin[길드 등급]
+    const DM = E.drinkMargin || [2, 3, 4, 5, 6, 7, 8]; s.drinks = [];
+    for (const a of s.advs) if (a.alive && a.state === 'town' && s.R() < E.mealBuyRate[a.spend]) { const m = (DM[s.grade] || DM[0]) + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += m; s.month.tavern += m; s.month.drinks = (s.month.drinks || 0) + 1; s.drinks.push(a.id); }
   }
 
   function returns(s) {
@@ -430,13 +433,13 @@
           if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
           tryGradeUp(s, a);
         }
-        s.trust = Math.min(100, s.trust + (q.trustS != null ? q.trustS : 0.3));
+        s.trust = Math.min(100, s.trust + (q.trustS != null ? q.trustS : s.cfg.quest.trustSucc));
         s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + (q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g]));
         // 소재 획득: 편집기 보상표 확률대로 (요리는 이제 식당에서 조합으로만 발견 — 예전 '토벌·사냥 성공 시 50% 해금'은 없앰)
         dropMats(s, q);
         log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 성공했습니다. 길드 수입 ${Math.round(fee + resale)}G.`, 'success', { who: party.map(x => x.name) });
       } else {
-        s.stats.fail++; s.trust = Math.max(0, s.trust - (q.trustF != null ? q.trustF : 0.6)); s.fame = Math.max(0, (s.fame || 0) - (q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g]));
+        s.stats.fail++; s.trust = Math.max(0, s.trust - (q.trustF != null ? q.trustF : s.cfg.quest.trustFail)); s.fame = Math.max(0, (s.fame || 0) - (q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g]));
         for (const a of party) gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate);
         log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 실패했습니다.`, 'fail', { who: party.map(x => x.name) });
       }
@@ -459,8 +462,7 @@
     const E = s.cfg.econ, A = s.cfg.adv, T = s.cfg.town, GE = s.cfg.gear;
     s.gold += E.subsidy[s.grade]; s.month.subsidy += E.subsidy[s.grade];
     const inTown = s.advs.filter(a => a.alive && a.state !== 'quest').length;
-    const tav = inTown * WPM * 0.5 * E.tavernPerAdvWeek * Math.pow(E.tavernGradeMult, s.grade);
-    s.gold += tav; s.month.tavern += tav; s.month.inTown = inTown;
+    s.month.inTown = inTown;   // 주점 매출은 2026-11-12부터 매주 술 1잔 단위 (departures 끝)
     let up = 0; for (const f of Object.keys(s.built)) up += (FAC_COST[f] != null ? E.buildCost[FAC_COST[f]] : 0) * E.upkeepRate;
     s.gold -= up; s.month.upkeep -= up;
     const residents = s.advs.filter(a => a.alive && a.attach >= 100).length;
@@ -484,12 +486,24 @@
     log(s, `${dateLabel(s.week)} 결산: 운영 순이익 ${Math.round(net)}G (의뢰 ${s.month.quests}건, 성공 ${s.month.success}건)`, 'ledger', { net: Math.round(net), nq: s.month.quests, nok: s.month.success });
     s.month = blankLedger();
   }
-  const FAC_COST = { 게시판: null, 접수대: null, 주점: null, 판매창구: null, 관리소: 1, 집무실: 1, 훈련장: 2, 창고: 2, 추모실: 2, 정보실: 3, 의무실: 3, 도서관: 3, 해체장: 4, 휴게실: 5, '명예의 전당': 5 };
+  const FAC_COST = { 게시판: null, 접수대: null, 주점: null, 판매창구: null, 관리소: 1, 집무실: 0, 훈련장: 2, 창고: 2, 추모실: 2, 정보실: 3, 의무실: 3, 도서관: 3, 해체장: 4, 휴게실: 5, '명예의 전당': 5 };
 
+  // 건설비: 등급별 기본값, 집무실만 따로 (2026-11-12: F급 1,000G)
+  const facCost = (s, f) => f === '집무실' ? (s.cfg.econ.officeCost || 1000) : s.cfg.econ.buildCost[FAC_COST[f] || 0];
+  // 시설 업그레이드 1단계 (2026-11-12, docs/design/popup_fac.md 6장): 지은 시설만, 금전만. 효과는 각 규칙에서 upg(s, 시설)로 확인
+  const UPG = ['게시판', '접수대', '주점', '판매창구', '관리소'];
+  const upg = (s, f) => !!(s.up && s.up[f]);
+  const upgCost = (s, f) => (s.cfg.econ.upgradeCost || [500, 1000])[FAC_COST[f] || 0];
+  function upgrade(s, f) {
+    if (!UPG.includes(f) || !s.built[f] || upg(s, f)) return false;
+    const c = upgCost(s, f); if (s.gold < c) { log(s, `${f} 업그레이드 비용 ${c}G가 부족합니다.`, 'sys'); return false; }
+    s.up = s.up || {}; s.up[f] = { at: s.week }; s.gold -= c; s.month.build = (s.month.build || 0) - c; (s.month.builds = s.month.builds || []).push({ f: f + ' 업그레이드', c });
+    log(s, `${J(f, '을', '를')} 업그레이드했습니다. (${c}G)`, 'build'); return true;
+  }
   function build(s, f) {
     const g = FAC_COST[f]; if (g == null || s.built[f]) return false;
     if (g > s.grade) { log(s, `${J(f, '은', '는')} ${GR[g]}급 길드부터 지을 수 있습니다.`, 'sys'); return false; }
-    const c = s.cfg.econ.buildCost[g]; if (s.gold < c) { log(s, `${f} 건설비 ${c}G가 부족합니다.`, 'sys'); return false; }
+    const c = facCost(s, f); if (s.gold < c) { log(s, `${f} 건설비 ${c}G가 부족합니다.`, 'sys'); return false; }
     s.gold -= c; s.month.build = (s.month.build || 0) - c; (s.month.builds = s.month.builds || []).push({ f, c }); s.built[f] = true; log(s, `${J(f, '을', '를')} 지었습니다. (${c}G)`, 'build'); return true;
   }
 
@@ -503,6 +517,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { expireWeeks, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

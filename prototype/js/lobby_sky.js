@@ -52,11 +52,19 @@
     const need = ['sky_room', 'sky_cloud', 'iso_bg', 'iso_bg_open'].concat(SEAS.flatMap(k => ['sky_o_', 'sky_sk_', 'sky_lp_', 'sky_glw_'].map(p => p + k)));
     if (!root.SKY_DATA || need.some(k => !img(k))) { S.ready = false; return false; }
     S.oc = cvs(); S.oc2 = cvs(); S.cl = cvs(); S.sk = cvs(); S.pc = cvs(); S.tc = document.createElement('canvas'); S.lp = document.createElement('canvas');
-    S.int = [0, 1].map(o => { const c = cvs(), x = c.getContext('2d'); x.drawImage(img(o ? 'iso_bg_open' : 'iso_bg'), 0, 0); x.globalCompositeOperation = 'destination-in'; x.drawImage(img('sky_room'), 0, 0); return c; });
+    // 건물 안 4가지 (2026-11-12): 닫힌 배경 위에 지은 시설 쪽 문만 열린 배경에서 잘라 덧그림. 0 = 둘 다 닫힘, 1 = 왼쪽(집무실), 2 = 오른쪽(관리소), 3 = 둘 다
+    S.int = [0, 1, 2, 3].map(m => { const c = cvs(), x = c.getContext('2d'); drawDoors(x, m); x.globalCompositeOperation = 'destination-in'; x.drawImage(img('sky_room'), 0, 0); return c; });
     genStars(2800); S.ready = true; return true;
   }
 
   // ---------- 바깥 그림 한 장 만들기 (흔들림 → 시간대 색 → 랜턴 → 건물 안) ----------
+  // 문 영역 (bg.jpg 와 bg_open.jpg 를 비교해 찾은 값, 1920×1080 기준): 두 문은 x 965 의 기둥에서 나뉨
+  const DOOR_L = [810, 180, 155, 268], DOOR_R = [965, 180, 152, 268];
+  function drawDoors(x, m) {
+    x.drawImage(img('iso_bg'), 0, 0);
+    for (const [bit, r] of [[1, DOOR_L], [2, DOOR_R]]) if (m & bit) x.drawImage(img('iso_bg_open'), r[0], r[1], r[2], r[3], r[0], r[1], r[2], r[3]);
+  }
+  const doorMask = s => (s && s.built ? (s.built['집무실'] ? 1 : 0) | (s.built['관리소'] ? 2 : 0) : 0);   // 문은 길드 등급이 아니라 해당 시설을 지으면 열림 (2026-11-12)
   function renderOutdoor(c, k, st, door, sway) {
     const g = c.getContext('2d'), O = img('sky_o_' + k), T = S.T;
     g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.drawImage(O, 0, 0);
@@ -227,14 +235,14 @@
 
   // ---------- 그리기 ----------
   const forced = (() => { const m = /[?&]sky=(day|autumn|winter|rain)(?::(\d))?/.exec(location.search); return m ? { key: m[1], phase: m[2] != null ? +m[2] : 1 } : null; })();
-  const Sky = { ready: () => S.ready, forced, state: S, calendar, phase };   // calendar·phase 는 마을(town_season.js)도 같은 달력으로 씀
+  const Sky = { ready: () => S.ready, forced, state: S, calendar, phase, drawDoors, doorMask };   // calendar·phase 는 마을(town_season.js)도 같은 달력으로 씀
   // s: 게임 상태, t: 경과 초, opt: { weekFrac(0~1), still, door }
   Sky.draw = function (g, s, t, opt) {
     if (!prepare()) return false;
     opt = opt || {};
     let dt = S.lastT == null ? 0 : Math.min(.1, Math.max(0, t - S.lastT)); S.lastT = t; if (opt.still) dt = 0;
     S.T += dt;
-    const cal = forced || calendar(s), key = cal.key, door = s.grade >= 1 ? 1 : 0;
+    const cal = forced || calendar(s), key = cal.key, door = doorMask(s);
     const wf = forced ? 0.6 : (opt.weekFrac == null ? 0.5 : opt.weekFrac), st = phase(cal.phase + wf), sway = !opt.still;
     if (S.key !== key) { if (S.key) { S.from = S.key; S.xf = 0; } S.key = key; initParts(key); }
     if (S.from) { S.xf += dt / 4; if (S.xf >= 1) { S.from = null; S.xf = 0; } }   // 계절이 바뀔 때 약 4초 섞음

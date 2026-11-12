@@ -7,6 +7,8 @@ quest,perMonth,5,기본 월 유입량
 quest,boardCap,18|18|18|18|18|18|18,게시판 최대 칸 (2026-11-12 프로토타입: 처음부터 18칸)
 quest,expireWeeks,4,게시 후 만료까지 주 (아무도 받지 않으면 사라짐)
 quest,trustExpire,1,의뢰 만료 시 신뢰도 하락
+quest,trustSucc,1,의뢰 성공 시 신뢰도 상승 (2026-11-12 정수화, 예전 0.3)
+quest,trustFail,2,의뢰 실패 시 신뢰도 하락 (2026-11-12 정수화, 예전 0.6)
 quest,partyAssist,0.25,파티원 보조 계수
 quest,deathBase,0.01|0.01|0.03|0.03|0.05|0.05|0.08,
 quest,subGrowth,0.2,성공 시 유형 능력치 성장
@@ -38,6 +40,13 @@ econ,feePerInfo,0.02,
 econ,subsidy,300|500|800|1200|2000|3000|4500,
 econ,buildCost,0|2000|4000|8000|15000|30000|0,
 econ,upkeepRate,0,
+econ,officeCost,1000,길드 마스터 집무실 건설비 (2026-11-12: E급 → F급, 2,000 → 1,000G)
+econ,upgradeCost,500|1000|2000|4000|8000|15000|30000,시설 업그레이드 비용 (시설 등급별. 2026-11-12 프로토타입: F 500·E 1,000 확정, D 이상 가안)
+econ,upMargin,5,주점·식당 업그레이드: 음식·술 1개당 길드 마진 +G
+econ,upSell,3,소재 판매 창구 업그레이드: 소재 1개당 판매가 +G
+quest,upBoardWeeks,1,의뢰 게시판 업그레이드: 의뢰 기한 +주
+promo,upAccept,0.1,모험가 관리소 업그레이드: 전직 수락 확률 +(0.1 = 10%p)
+econ,drinkMargin,2|3|4|5|6|7|8,술 1잔 길드 마진 (길드 등급별, 2026-11-12 F·E 확정·D 이상 가안). 마실 확률은 mealBuyRate
 econ,tavernPerAdvWeek,4,
 econ,tavernGradeMult,1.6,
 econ,effectOpen,0,시설 효과 개방 (0 = 끔: 프로토타입 게임에 없음. 시뮬레이터만 쓰던 기능)
@@ -65,8 +74,8 @@ promo,battleDeathWin,0.01,
 promo,battleDeathLoss,0.03,
 promo,raidMonths,8|6|5|4|3,
 promo,sCandidates,2,
-fame,succ,0.4|0.8|1.2|1.6|2|2.4|3,의뢰 성공 시 등급별 상승
-fame,fail,0.6|1.2|1.8|2.4|3|3.6|4.5,의뢰 실패 시 등급별 하락 (등급이 높을수록 크게)
+fame,succ,1|2|3|4|5|6|8,의뢰 성공 시 등급별 상승 (2026-11-12 정수화. F·E 확정, D 이상 가안)
+fame,fail,1|2|3|4|5|6|8,의뢰 실패 시 등급별 하락 (2026-11-12 정수화. F·E 확정, D 이상 가안)
 fame,gradeUp,0|25|50|75|100|125|150,길드 승급 시 상승
 fame,maxBonus,0.6,"명성 보정 = 1 + 0.6 × min(1, 명성/500) → 최대 1.6배 (명성 도입 전 S급 보정과 같음)"
 fame,full,500,

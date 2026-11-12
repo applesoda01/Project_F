@@ -186,7 +186,11 @@
     Board.sync(s, cap);
     // 1~3 벽·바닥·게시판
     // 접수대를 오려 낸 배경 (E급부터 문이 열린 그림). 계절·시간대 모듈이 준비되면 바깥을 계절에 맞춰 그리고, 없으면 일반 낮 그림 한 장
-    if (!(root.LobbySky && root.LobbySky.draw(g, s, t, opt))) A.draw(g, s.grade >= 1 ? 'iso_bg_open' : 'iso_bg', 0, 0);
+    if (!(root.LobbySky && root.LobbySky.draw(g, s, t, opt))) {   // 계절 모듈이 준비 전이면 배경 한 장 + 지은 시설 쪽 문만 열림 (2026-11-12)
+      A.draw(g, 'iso_bg', 0, 0);
+      const op = A.items.iso_bg_open, m = (s.built['집무실'] ? 1 : 0) | (s.built['관리소'] ? 2 : 0);
+      if (op && op.img && m) for (const [bit, r] of [[1, [810, 180, 155, 268]], [2, [965, 180, 152, 268]]]) if (m & bit) g.drawImage(op.img, r[0] * op.img.width / 1920, r[1] * op.img.height / 1080, r[2] * op.img.width / 1920, r[3] * op.img.height / 1080, r[0], r[1], r[2], r[3]);
+    }
     // 4 의뢰서
     const usedSlots = new Set([...Board.notes.values()].map(n => n.slot));
     for (let i = 0; i < Math.min(cap, SLOTS.length); i++) if (!usedSlots.has(FILL[i])) drawEmptySlot(g, SLOTS[FILL[i]]);

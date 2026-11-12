@@ -190,7 +190,7 @@
   // 소재 판매 창구 (docs/balance/economy_v1.md 6절, 시설 팝업 '판매하기'로 열기): 보관 소재를 직접 팖. 음식이 아닌 소재 먼저, 음식 소재는 "요리 재료"
   const SELL_P = [6, 9, 12, 30, 36, 48, 90];
   let sellSel = null;
-  const sellPrice = m => m.price || SELL_P[Math.max(0, GR.indexOf(m.grade))];
+  const sellPrice = m => (m.price || SELL_P[Math.max(0, GR.indexOf(m.grade))]) + (Gm.upg(s, '판매창구') ? (s.cfg.econ.upSell || 3) : 0);   // 판매 창구 업그레이드 +3G (2026-11-12)
   function sellDo(ids, all) { let n = 0, g = 0; for (const id of ids) { const m = MATS[id], k = all ? (s.mats[id] || 0) : Math.min(1, s.mats[id] || 0); if (!m || !k) continue; s.mats[id] -= k; n += k; g += k * sellPrice(m); }
     if (!n) return; s.gold += g; s.month.sell = (s.month.sell || 0) + g; s.month.resale += g;   // 장부: '소재 판매 차익' 줄에 합침
     Gm.log(s, `소재 ${n}개를 팔아 ${g}G를 받았습니다.`, 'guild'); UI.hud && UI.hud(); }
@@ -331,7 +331,7 @@
     const rw = (T.rewards || []).filter(r => MATS[r.m]);
     h += `<div class="sec">보상</div><div class="rw"><span class="gold big"><i></i>${fmt(q.reward)}G</span>${rw.map(r => { const m = MATS[r.m], known = !!(s.knownMats || {})[r.m];   // 모르는 소재: 실루엣 + ? (이름은 ???)
       return `<span class="mat ${r.role === '주' ? 'main' : ''}" title="${known ? esc(m.name) : '???'}"><span class="ux-slot${known ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${known || m.icon ? matImg(m) : ''}</span><em>${r.p}%</em></span>`; }).join('')}</div>`;
-    const fs = q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g], ff = q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g], ts = q.trustS != null ? q.trustS : 0.3, tf = q.trustF != null ? q.trustF : 0.6;
+    const fs = q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g], ff = q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g], ts = q.trustS != null ? q.trustS : s.cfg.quest.trustSucc, tf = q.trustF != null ? q.trustF : s.cfg.quest.trustFail;
     h += `<div class="foot"><span>성공 명성 <b class="ux-plus">+${fs}</b> · 신뢰 <b class="ux-plus">+${ts}</b></span><span>실패 명성 <b class="ux-minus">−${ff}</b> · 신뢰 <b class="ux-minus">−${tf}</b></span></div>`;
     { const left = Gm.expireWeeks(s) - (s.week - q.posted);
       h += `<div class="foot muted">기한 ${left}주 남음 (지나면 사라지고 신뢰도 −${s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1}) · 떼면 ${fmt(Math.round(q.reward * 0.10))}G, 신뢰도 −2</div>`; }
@@ -643,7 +643,7 @@
     const list = ps.map(p => { const a = s.advs.find(x => x.id === p.id);
       return `<button class="ux-row promo ${p.id === promoSel ? 'on' : ''}" data-psel="${a.id}"><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="star">★</i></span><span><span class="nm">${a.name}</span><span class="sub">${a.cls} · ${p.to}차 제안</span></span><span class="rt"><b>Lv ${a.lv}</b></span></button>`; }).join('');
     const p = ps.find(x => x.id === promoSel), a = s.advs.find(x => x.id === p.id);
-    const tier = Gm.attachTier(a), chance = Math.min(1, [0.40, 0.65, 0.90, 1.00][tier] * (p.to === 2 ? 1.2 : 0.9));
+    const tier = Gm.attachTier(a), chance = Math.min(1, [0.40, 0.65, 0.90, 1.00][tier] * (p.to === 2 ? 1.2 : 0.9) + (Gm.upg(s, '관리소') ? (s.cfg.promo.upAccept || 0.1) : 0));   // game_core decidePromotion 과 같은 식
     // 머리
     let h = `<div class="pm-top"><div class="pm-head"><div class="ux-portrait sm"><i style="${faceStyle(a, 104, 260, 60)}"></i></div><div class="who">
       <div class="nm">${a.name} ${badge(a.grade)}<span class="cls">${STAGE[a.stage]} ${a.cls} · Lv ${a.lv}</span><span class="ux-tag town">${p.to}차 전직 제안</span></div>
@@ -687,22 +687,27 @@
     게시판: '의뢰가 붙는 곳. 길드 등급이 오를수록 칸이 늘어납니다.', 접수대: '모험가가 의뢰를 받아 가고 결과를 보고합니다.',
     주점: '출발 전 식사로 능력치가 오르고, 식사 수입이 들어옵니다.', 판매창구: '의뢰에서 얻은 소재를 되팔아 수입을 얻습니다.',
     관리소: '2차 전직을 할 수 있게 됩니다.', 의무실: '부상 회복이 빨라지고, 사망 확률이 줄어듭니다.',
-    집무실: '스토리·귀빈 의뢰를 받고 길드 운영을 설정합니다.', 훈련장: '힘·민첩·기교를 훈련합니다. D → C 승급 조건.', 창고: '소재를 보관합니다.',
+    집무실: '메인·서브 퀘스트에 모험가를 지명합니다. (메인·서브 퀘스트는 아직 게임에 없음)', 훈련장: '힘·민첩·기교를 훈련합니다. D → C 승급 조건.', 창고: '소재를 보관합니다.',
     추모실: '떠난 모험가와 가문의 기록을 남깁니다.', 정보실: '중계료가 오르고, 예상 성공률이 정확해집니다.', 도서관: '지력·정신을 훈련합니다.',
     해체장: '원재료를 가공해 상위 레시피를 엽니다. B → A 승급 조건.', 휴게실: '모험가의 애착이 더 빨리 오릅니다.', '명예의 전당': '명성이 오르고 3차 직업 모험가를 기록합니다. A → S 승급 조건.'
   };
-  const FAC_READY = { 게시판: 1, 접수대: 1, 주점: 1, 판매창구: 1, 관리소: 1, 의무실: 1 };   // 지금 게임에 실제 효과가 있는 시설
+  const FAC_READY = { 게시판: 1, 접수대: 1, 주점: 1, 판매창구: 1, 관리소: 1, 의무실: 1, 집무실: 1 };   // 집무실: 2026-11-12 F급으로 지을 수 있게 (지명 기능은 퀘스트 구현 때)
+  // 업그레이드 1단계 효과 (2026-11-12, docs/design/popup_fac.md 6장)
+  const FAC_UP = { 게시판: '의뢰 기한 +1주', 접수대: '리나 응대 −0.5초', 주점: '음식·술 1개당 +5G', 판매창구: '소재 1개당 +3G', 관리소: '전직 수락 확률 +10%p' };   // 지금 게임에 실제 효과가 있는 시설
   const FAC_LABEL = { 게시판: '의뢰 게시판', 주점: '주점·식당', 판매창구: '소재 판매 창구', 관리소: '모험가 관리소', 집무실: '길드 마스터 집무실' };
   function facHtml() {
     const all = ['게시판', '접수대', '주점', '판매창구'].concat(FACS), run = [], can = [], lock = [];
     for (const f of all) {
-      const g = Gm.FAC_COST[f] == null ? 0 : Gm.FAC_COST[f], cost = s.cfg.econ.buildCost[g], ready = !!FAC_READY[f];
+      const g = Gm.FAC_COST[f] == null ? 0 : Gm.FAC_COST[f], cost = Gm.facCost(s, f), ready = !!FAC_READY[f];
       let st, grp;
-      if (s.built[f]) { st = '<span class="ux-tag town">● 운영 중</span>'; grp = run; }
+      if (s.built[f]) {
+        grp = run; st = '<span class="ux-tag town">● 운영 중</span>';
+        if (FAC_UP[f]) { const uc = Gm.upgCost(s, f); st = Gm.upg(s, f) ? `<span class="ux-tag town" title="${FAC_UP[f]}">★ 업그레이드 완료</span>` : `<button class="ux-btn sm" data-upg="${f}" title="${FAC_UP[f]}" ${s.gold < uc ? 'disabled' : ''}>업그레이드 <b>${fmt(uc)}G</b></button>`; }
+      }
       else if (!ready) { st = '<span class="ux-tag fx-soon">준비 중</span>'; grp = lock; }
       else if (g > s.grade) { st = `<span class="fx-lock">${GR[g]}급부터</span>`; grp = lock; }
       else { st = `<button class="ux-btn sm" data-build="${f}" ${s.gold < cost ? 'disabled' : ''}>짓기 <b>${fmt(cost)}G</b></button>`; grp = can; }
-      grp.push(`<div class="fx-row ${s.built[f] ? 'on' : ''} ${grp === lock ? 'off' : ''} ${grp === can && s.gold >= cost ? 'glow' : ''}">${badge(g)}<b class="nm">${FAC_LABEL[f] || f}</b><span class="fx ${ready ? '' : 'soon'}">${FAC_FX[f] || ''}</span><span class="st">${st}</span></div>`);
+      grp.push(`<div class="fx-row ${s.built[f] ? 'on' : ''} ${grp === lock ? 'off' : ''} ${grp === can && s.gold >= cost ? 'glow' : ''}">${badge(g)}<b class="nm">${FAC_LABEL[f] || f}</b><span class="fx ${ready ? '' : 'soon'}">${FAC_FX[f] || ''}${FAC_UP[f] && s.built[f] ? ` <em class="fx-up${Gm.upg(s, f) ? ' on' : ''}">${Gm.upg(s, f) ? '적용 중' : '업그레이드'}: ${FAC_UP[f]}</em>` : ''}</span><span class="st">${st}</span></div>`);
     }
     const sec = (t, rows) => rows.length ? `<div class="ux-h">${t} <small>${rows.length}</small></div>${rows.join('')}` : '';
     return `<div class="fx-list">${sec('운영 중', run)}${sec('지을 수 있음', can)}${sec('잠김 · 준비 중', lock)}</div>`;
@@ -893,7 +898,7 @@
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
-      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf]'); if (!t) return;
+      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf]'); if (!t) return;
       if (t.dataset.opensell) { UI.open('sell'); return; }
       if (t.dataset.ssel) { sellSel = t.dataset.ssel; renderPopup(); return; }
       if (t.dataset.sone) { sellDo([t.dataset.sone], false); renderPopup(); return; }
@@ -913,6 +918,7 @@
       if (t.dataset.atab) { advTab = t.dataset.atab; renderPopup(); return; }
       if (t.dataset.ctab) { codexTab = +t.dataset.ctab; renderPopup(); return; }
       if (t.dataset.build) { Gm.build(s, t.dataset.build); hooks.changed(); }
+      if (t.dataset.upg) { Gm.upgrade(s, t.dataset.upg); hooks.changed(); }
       else if (t.dataset.promo) decide(+t.dataset.promo, t.dataset.cls);
       else if (t.dataset.hold) decide(+t.dataset.hold, null);
       else if (t.dataset.adv) { openAdv = +t.dataset.adv; renderPopup(); }

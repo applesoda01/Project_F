@@ -86,6 +86,8 @@
     T(ac, 'do', { fn: () => freeWin(win, ac) });
   }
 
+  // 리나 응대 시간 (2026-11-12): 출발·귀환·식사·술 주문 모두 1.5초 (첫 방문 인사는 1.6초 그대로). 접수대 업그레이드 −0.5초는 구현 예정
+  const SERVE = 1.5;
   // ---------- 주간 변화 → 대본 (M2-7) ----------
   D.snap = function (s) {
     return { active: new Map(s.active.map(x => [x.q.id, x])), board: new Set(s.board.map(q => q.id)),
@@ -112,6 +114,7 @@
     for (const w in D.winUse) D.winUse[w] = [];
   };
   D.onWeek = function (before, s, Board) {
+    const SV = Math.max(0.5, SERVE - (root.GuildGame && root.GuildGame.upg && root.GuildGame.upg(s, '접수대') ? 0.5 : 0));   // 접수대 업그레이드: 응대 −0.5초
     D.flush();
     const after = D.snap(s), busy = new Set(), find = id => s.advs.find(a => a.id === id);
     // 1) 귀환
@@ -122,7 +125,7 @@
       party.forEach((a, i) => {
         busy.add(a.id); const ac = actor(a, EXIT);
         T(ac, 'wait', { t: i * 0.5 }); enter(ac);
-        if (i === 0) visitWindow(ac, ok ? 'sale' : 'quest', { mode: ok ? 'happy' : 'talk', text: Speech.lina(ok ? 'lina_success' : 'lina_fail'), dur: 1.6 }, Speech.line(a, ok ? 'success' : 'fail'));
+        if (i === 0) visitWindow(ac, ok ? 'sale' : 'quest', { mode: ok ? 'happy' : 'talk', text: Speech.lina(ok ? 'lina_success' : 'lina_fail'), dur: SV }, Speech.line(a, ok ? 'success' : 'fail'));
         else visitWindow(ac, ok ? 'sale' : 'quest', null, i === 1 ? Speech.line(a, ok ? 'success' : 'fail') : null);
       });
     }
@@ -135,8 +138,8 @@
         const had = D.actors.has(a.id), ac = actor(a, EXIT);
         if (!had) { T(ac, 'wait', { t: i * 0.5 }); enter(ac); } // 이번 주에 마을에 와서 바로 떠나는 경우: 입구에서 들어옴
         busy.add(a.id);
-        if (x.ate && i < x.ate) visitWindow(ac, 'meal', i === 0 ? { mode: 'talk', text: Speech.lina('lina_meal'), dur: 1.3 } : null, Speech.line(a, 'meal'));
-        if (i === 0) visitWindow(ac, 'quest', { mode: 'paper', text: Speech.lina('lina_depart'), dur: 1.7, onStart: () => Board.take(qid) }, Speech.line(a, 'accept'));
+        if (x.ate && i < x.ate) visitWindow(ac, 'meal', i === 0 ? { mode: 'talk', text: Speech.lina('lina_meal'), dur: SV } : null, Speech.line(a, 'meal'));
+        if (i === 0) visitWindow(ac, 'quest', { mode: 'paper', text: Speech.lina('lina_depart'), dur: SV, onStart: () => Board.take(qid) }, Speech.line(a, 'accept'));
         else T(ac, 'wait', { t: 1.2 });
         T(ac, 'say', { text: i === 0 ? Speech.line(a, 'depart') : '' });
         leave(ac);
@@ -155,6 +158,11 @@
       const ac = actor(a, EXIT); T(ac, 'wait', { t: Math.random() * 2 }); enter(ac);
       if (!before.adv.has(a.id)) visitWindow(ac, 'quest', { mode: 'wave', text: Speech.lina('lina_first'), dur: 1.6 }, Speech.line(a, 'first'));
       settle(ac);
+    }
+    // 4-1) 술 주문 (2026-11-12): 규칙(game_core.js)이 이번 주에 술을 산 모험가(s.drinks)만 식당 창구에서 주문 → 화면과 주점 수입이 일치
+    for (const id of s.drinks || []) {
+      const a = find(id), ac = D.actors.get(id); if (!a || !ac || busy.has(id) || ac.tasks.some(t => t.k === 'remove')) continue;
+      T(ac, 'wait', { t: 1 + Math.random() * 6 }); visitWindow(ac, 'meal', { mode: 'talk', text: Speech.lina('lina_drink'), dur: SV }, Speech.line(a, 'drink')); settle(ac);
     }
     // 5) 떠남 (마을 밖으로)
     for (const [id, ac] of D.actors) {
@@ -225,17 +233,16 @@
         }
         else if (k.k === 'do') { ac.tasks.shift(); k.fn(); }
         else if (k.k === 'lina') {
-          if (!k.sent) { k.sent = true; say(ac, k.line, 1.6); Lina.request(Object.assign({}, k.job, { done: () => { k.ok = true; } })); }
+          if (!k.sent) { k.sent = true; say(ac, k.line, 1.6); Lina.request(Object.assign({}, k.job, { who: ac.id, done: () => { k.ok = true; } })); }
           if (k.ok) ac.tasks.shift(); else budget = 0;
         } else if (k.k === 'remove') { release(ac); D.actors.delete(id); budget = 0; }
       }
       if (ac.bubble && D.t > ac.bubble.until) ac.bubble = null;
       if (!ac.tasks.length && D.t > ac.chatAt) { ac.chatAt = D.t + 10 + Math.random() * 14; if (Math.random() < 0.45) say(ac, Speech.line(ac.a, 'chat'), 2.2); }
-      // 한가할 때의 행동: 가끔 식당 창구에서 음료를 시키고 자리로 돌아감 (규칙의 '주점 수입'을 화면에 보여 주는 장식 행동)
+      // 한가할 때의 행동: 가끔 자리를 옮김. 술 주문은 2026-11-12부터 규칙이 정한 사람만 (위 4-1)
       if (!ac.tasks.length && D.t > (ac.idleAt || (ac.idleAt = D.t + 14 + Math.random() * 20))) {
         ac.idleAt = D.t + 22 + Math.random() * 26;
-        if (Math.random() < 0.5 && !Lina.job && Lina.queue.length === 0) { visitWindow(ac, 'meal', { mode: 'talk', text: Speech.lina('lina_drink'), dur: 1.1 }, Speech.line(ac.a, 'drink')); settle(ac); }
-        else if (ac.loiter != null && Math.random() < 0.6) { release(ac); settle(ac); }
+        if (ac.loiter != null && Math.random() < 0.6) { release(ac); settle(ac); }
       }
     }
   };
@@ -329,10 +336,20 @@
     if (!dark) g.strokeText(lv, tx2, ty + NP.ldy); g.fillStyle = dark ? '#9a6228' : NP.lvColor; g.fillText(lv, tx2, ty + NP.ldy);
     g.restore(); return (headY(ac) - y0) + 8 + NP.bubbleGap;   // 말풍선 꼬리 끝이 명찰 위 8px 에 오도록
   }
+  // 리나 응대 진행 막대 (2026-11-12): 응대받는 모험가 머리(명찰) 위에 노란 막대가 0 → 가득 차면 응대 끝. 모험가 막대(게이지 노랑)와 같은 색
+  function serveBar(g, ac, up) {
+    const j = Lina.job; if (!j || j.who !== ac.id || !j.started) return 0;
+    const p = Math.max(0, Math.min(1, (j.t || 0) / (j.dur || 1.5))), W = 64, H = 7, x = ac.x - W / 2, y = headY(ac) - up - H + 4;
+    g.save(); g.fillStyle = 'rgba(46,32,18,.85)'; g.beginPath(); g.roundRect(x - 2, y - 2, W + 4, H + 4, 4); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(x, y, W, H);
+    g.fillStyle = '#f2c94c'; g.fillRect(x, y, W * p, H); g.restore();
+    return H + 8;
+  }
   D.bubbles = function (g) {
     for (const ac of D.actors.values()) {
       const G = ac.gl; if (G) { ac.x += G.x; ac.y += G.y; }
-      const up = plate(g, ac);   // 명찰이 있으면 말풍선은 그 위로
+      let up = plate(g, ac);   // 명찰이 있으면 말풍선은 그 위로
+      up += serveBar(g, ac, up);   // 리나에게 응대받는 중이면 명찰 위에 노란 진행 막대
       if (ac.bubble) bubble(g, ac.x, headY(ac) - up, ac.bubble.text, false, D.t - (ac.bubble.t0 == null ? D.t - 1 : ac.bubble.t0), ac.bubble.until - D.t);
       if (G) { ac.x -= G.x; ac.y -= G.y; }
     }

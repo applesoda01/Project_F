@@ -137,7 +137,7 @@ GEAR_TYPES = {'sword': 'weapon', 'bow': 'weapon', 'staff': 'weapon', 'mace': 'we
 REGIONS = ['forest', 'grass', 'desert', 'town']
 TALK_KEYS = ['appear', 'accept', 'hold', 'success', 'fail']
 ROLES = ['주', '부', '복원', '기타']
-TRUST_S, TRUST_F = 0.3, 0.6                                       # game_core.js 에 고정된 값
+TRUST_S, TRUST_F = balance['quest'].get('trustSucc', 1), balance['quest'].get('trustFail', 2)   # 2026-11-12: balance.csv quest.trustSucc·trustFail (예전 코드 고정값 0.3·0.6)
 hround = lambda x, nd=0: math.floor(x * 10 ** nd + 0.5) / 10 ** nd if nd else int(math.floor(x + 0.5))   # JS Math.round 와 같은 반올림
 
 def dur_calc(rules, gi, d, n=None):

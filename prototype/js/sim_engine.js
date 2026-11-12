@@ -18,6 +18,8 @@
         boardCap: [18, 18, 18, 18, 18, 18, 18],   // 2026-11-12 프로토타입: 처음부터 18칸
         expireWeeks: 4,                            // 게시 후 만료까지 주
         trustExpire: 1,                            // 만료 시 신뢰도 하락
+        trustSucc: 1, trustFail: 2,
+        upBoardWeeks: 1,                           // 게시판 업그레이드: 의뢰 기한 +주                // 의뢰 성공·실패 시 신뢰도 (2026-11-12 정수화, 예전 0.3·0.6)
         partyAssist: 0.25,                         // 파티원 보조 계수
         deathBase: [0.01, 0.01, 0.03, 0.03, 0.05, 0.05, 0.08],
         subGrowth: 0.2,                            // 성공 시 유형 능력치 성장
@@ -50,6 +52,10 @@
         effectCost: [0.10, 0.20, 0.35],
         effectOpen: 0,                             // 시설 효과 개방 (0 = 끔. 2026-11-12: 프로토타입 게임에는 없으므로 시뮬레이터도 끔)
         mealPriceRate: 0.15, mealMargin: 0.60, mealBuyRate: [0.30, 0.60, 0.90],
+        officeCost: 1000,                          // 집무실 건설비 (2026-11-12, F급)
+        upgradeCost: [500, 1000, 2000, 4000, 8000, 15000, 30000],   // 시설 업그레이드 비용 (시설 등급별)
+        upMargin: 5, upSell: 3,                    // 주점 업그레이드 마진 +G, 판매 창구 업그레이드 소재 +G
+        drinkMargin: [2, 3, 4, 5, 6, 7, 8],        // 술 1잔 길드 마진 (2026-11-12, F·E 확정, D 이상 가안). 확률은 mealBuyRate
         mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02
       },
       gear: {
@@ -60,14 +66,15 @@
       },
       promo: {
         N: [2, 3, 3, 4, 4, 5],
+        upAccept: 0.1,                             // 관리소 업그레이드: 전직 수락 확률 +10%p (2026-11-12)
         bossRefillWeeks: 6,
         invasionScale: 16, raidScale: 4, battleK: 6, battleDeathWin: 0.01, battleDeathLoss: 0.03,
         raidMonths: [8, 6, 5, 4, 3],
         sCandidates: 2
       },
       fame: {                                    // 명성 [가안]: 높을수록 모험가가 많이 찾아옴 (방문 수 = 기본 × 신뢰도 보정 × 명성 보정)
-        succ: [0.4, 0.8, 1.2, 1.6, 2, 2.4, 3],    // 의뢰 성공 시 등급별 상승
-        fail: [0.6, 1.2, 1.8, 2.4, 3, 3.6, 4.5],  // 의뢰 실패 시 등급별 하락 (등급이 높을수록 크게)
+        succ: [1, 2, 3, 4, 5, 6, 8],              // 의뢰 성공 시 등급별 상승 (2026-11-12 정수화, D 이상 가안)
+        fail: [1, 2, 3, 4, 5, 6, 8],              // 의뢰 실패 시 등급별 하락 (2026-11-12 정수화, D 이상 가안)
         gradeUp: [0, 25, 50, 75, 100, 125, 150],  // 길드 승급 시 상승
         maxBonus: 0.6, full: 500, cap: 1000       // 명성 보정 = 1 + 0.6 × min(1, 명성/500) → 최대 1.6배 (명성 도입 전 S급 보정과 같음)
       },
@@ -387,11 +394,11 @@
           if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
           tryGradeUp(a);
         }
-        s.trust = Math.min(100, s.trust + (q.T ? q.T.trustS : 0.3));
+        s.trust = Math.min(100, s.trust + (q.T && q.T.trustS != null ? q.T.trustS : Q.trustSucc));
         s.fame = Math.min(cfg.fame.cap, s.fame + (q.T ? q.T.fameS : cfg.fame.succ[q.g]));
       } else {
         s.st.qFail++;
-        s.trust = Math.max(0, s.trust - (q.T ? q.T.trustF : 0.6));
+        s.trust = Math.max(0, s.trust - (q.T && q.T.trustF != null ? q.T.trustF : Q.trustFail));
         s.fame = Math.max(0, s.fame - (q.T ? q.T.fameF : cfg.fame.fail[q.g]));
         for (const a of party) {
           gainXp(a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate);
@@ -427,6 +434,9 @@
           }
         }
       }
+      // 술 (2026-11-12, 게임 departures 끝과 같은 규칙): 이번 주 마을에 남은 모험가가 씀씀이 성향별 확률로 1잔, 길드 마진 econ.drinkMargin[등급]
+      const DM = E.drinkMargin || [2, 3, 4, 5, 6, 7, 8];
+      for (const a of idle) if (a.alive && a.busy === 0 && R() < E.mealBuyRate[a.spend]) { const m = DM[s.grade] || DM[0]; s.gold += m; s.op += m; }
     }
 
     function bestParty(pool, q, n) {
@@ -539,9 +549,7 @@
     function monthly() {
       // 수입
       s.gold += E.subsidy[s.grade]; s.op += E.subsidy[s.grade];
-      const inTown = s.advs.filter(a => a.alive && a.busy === 0).length;
-      const tav = inTown * WPM * 0.5 * E.tavernPerAdvWeek * Math.pow(E.tavernGradeMult, s.grade) * (1 + 0.15 * Math.min(1, effN('주점')));
-      s.gold += tav; s.op += tav;
+      // 주점 매출은 2026-11-12부터 매주 술 1잔 단위 (adventurersChoose 끝)
       // 유지비
       let up = 0; for (const [f, g] of FAC) if (has(f)) up += E.buildCost[g] * E.upkeepRate;
       s.gold -= up; s.op -= up;
