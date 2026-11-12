@@ -40,6 +40,7 @@
       if ((e.key === ' ' || e.key === 'Enter') && Dlg.open && !popup) { e.preventDefault(); UI.advance(); }
     });
     UI.autoReport = root.Snd ? !!root.Snd.opt.report : true;
+    pmEls();   // 로비 롤오버·물건 메뉴·배치 모드 요소를 처음부터 붙임 (2026-11-12)
   };
   UI.setState = st => { s = st; openAdv = null; };
   const PAUSE_SVG = '<svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg>', PLAY_SVG = '<svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor"/></svg>';
@@ -918,7 +919,7 @@
   // ---------- 로비 배치 모드 (2026-11-12 C단계) ----------
   // 고르면 게임을 멈추고 로비에 칸 표시(초록 = 놓을 수 있음, 빨강 = 막힘). 클릭 = 놓기, 우클릭·Esc·취소 = 그만두기
   // 배치 모드가 아닐 때 놓인 물건을 누르면 작은 메뉴(옮기기 · 치우기)
-  let PM = null, pmSp = 1, pmLay = null, pmBar = null, pmMenu = null;
+  let PM = null, pmSp = 1, pmLay = null, pmBar = null, pmMenu = null, pmTip = null;
   const pmPt = e => { const p = stage.toGame(e.clientX, e.clientY); return [p.x, p.y]; };
   function pmEls() {
     if (pmLay) return;
@@ -931,6 +932,9 @@
     pmBar.addEventListener('click', e => { if (e.target.closest('[data-pmx]')) UI.placeEnd(true); });
     root.addEventListener('keydown', e => { if (e.key === 'Escape') { if (PM) { e.stopPropagation(); UI.placeEnd(true); } else if (pmMenu.classList.contains('on')) pmMenuClose(); } }, true);
     stage.canvas.addEventListener('click', e => pmItemClick(pmPt(e)));
+    pmTip = document.createElement('div'); pmTip.id = 'hoverTip'; stage.ui.appendChild(pmTip);
+    stage.canvas.addEventListener('mousemove', e => hoverAt(pmPt(e)));
+    stage.canvas.addEventListener('mouseleave', () => hoverAt(null));
     pmMenu.addEventListener('click', e => {
       const b = e.target.closest('[data-pm]'); if (!b) return;
       const it = s.place.items.find(x => x.uid === +pmMenu.dataset.uid); if (!it) { pmMenuClose(); return; }
@@ -976,9 +980,34 @@
     if (d.max > 1 && pmCanBuy(d)) { PM.at = null; PM.ok = false; UI.placeStart(PM.id, null); return; }   // 테이블은 이어서 더 놓을 수 있게
     UI.placeEnd(false);
   }
+  // 롤오버 (2026-11-12): 놓인 물건·시설 위에서 금빛 테두리 + 손가락 커서, 시설은 이름 툴팁 (짓지 않은 시설은 짓기 비용)
+  const FAC_NAME = { 게시판: '의뢰 게시판', 접수대: '접수대', 주점: '주점', 판매창구: '판매 창구', 집무실: '집무실', 관리소: '모험가 관리소' };
+  const lobbyIdle = () => !(PM || popup || (root.Town && root.Town.active) || Dlg.open || (root.LinaMenu && root.LinaMenu.open));
+  function hoverAt(pt) {
+    const L = root.Lobby; if (!L) return;
+    let h = pt && lobbyIdle() ? L.hitAt(s, pt[0], pt[1]) : null;
+    if (pmMenu && pmMenu.classList.contains('on')) h = { kind: 'item', uid: +pmMenu.dataset.uid };   // 메뉴가 떠 있는 동안은 그 물건만
+    L.hover = h; stage.canvas.style.cursor = h && pt ? 'pointer' : '';
+    if (!pmTip) return;
+    if (h && h.kind === 'fac' && pt) {
+      const f = h.id, built = !!s.built[f];
+      pmTip.innerHTML = `<b>${FAC_NAME[f] || f}</b>${built ? '' : ` · 짓기 ${fmt(Gm.facCost(s, f))}G`}`;
+      pmTip.style.left = Math.round(pt[0] + 18) + 'px'; pmTip.style.top = Math.round(pt[1] + 22) + 'px'; pmTip.classList.add('on');
+    } else pmTip.classList.remove('on');
+  }
+  function facClick(f) {
+    if (f === '접수대') { if (root.LinaMenu && !root.LinaMenu.blocked()) root.LinaMenu.toggle(); return; }   // 접수대 = 리나 메뉴 (길드 화면에서만)
+    if (f === '게시판') { UI.open('board'); return; }
+    if (f === '주점' && s.built['주점']) { UI.open('meals'); return; }
+    if (f === '판매창구' && s.built['판매창구']) { UI.open('sell'); return; }
+    facTab = 'fac'; UI.open('fac');   // 문(집무실·관리소)·짓지 않은 시설 → 건설 메뉴 시설 탭
+  }
   function pmItemClick(pt) {
     if (PM || popup || (root.Town && root.Town.active) || Dlg.open) return;
-    const it = root.Lobby.hitItem(s, pt[0], pt[1]); if (!it) { pmMenuClose(); return; }
+    if (root.LinaMenu && root.LinaMenu.open) { root.LinaMenu.close(); return; }   // 리나 메뉴가 떠 있으면 바닥을 눌러 닫기
+    const h = root.Lobby.hitAt(s, pt[0], pt[1]);
+    if (h && h.kind === 'fac') { pmMenuClose(); hoverAt(null); facClick(h.id); return; }
+    const it = h && h.it; if (!it) { pmMenuClose(); return; }
     const d = Gm.DECO_BY[it.id], o = root.Lobby.placedDrawables(null, it).reduce((a, b) => (b.box && (!a || b.box[1] < a.box[1]) ? b : a), null);
     const bx = o ? o.box : [pt[0], pt[1], 0, 0];
     pmMenu.dataset.uid = it.uid;
@@ -988,7 +1017,7 @@
     pmMenu.style.top = Math.round(above ? bx[1] - 8 : bx[1] + bx[3] + 8) + 'px'; pmMenu.classList.toggle('below', !above);
     pmMenu.classList.add('on');
   }
-  function pmMenuClose() { if (pmMenu) { pmMenu.classList.remove('on'); pmMenu.dataset.uid = ''; } }
+  function pmMenuClose() { if (pmMenu) { pmMenu.classList.remove('on'); pmMenu.dataset.uid = ''; } if (root.Lobby && root.Lobby.hover && root.Lobby.hover.kind === 'item') root.Lobby.hover = null; }
 
   stagePopClicks();
   function stagePopClicks() {

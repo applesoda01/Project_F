@@ -88,8 +88,26 @@
       x.globalCompositeOperation = 'destination-in'; x.drawImage(lp, 0, 0);
       g.globalAlpha = st.ll; g.drawImage(tc, bb[0], bb[1]); g.globalAlpha = 1;
       const gb = D().glow[k]; g.globalCompositeOperation = 'screen'; g.globalAlpha = Math.min(1, st.ll * st.gk); g.drawImage(img('sky_glw_' + k), gb[0], gb[1]); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+      lampLight(g, bb, st.ll * (k === 'rain' ? 0.85 : 1));
     }
     g.drawImage(S.int[door], 0, 0);   // 건물 안은 원본 그대로 (색·흔들림 없음)
+  }
+
+  // 가로등 불빛 (2026-11-12): 등 둘레 큰 빛 번짐 + 바닥 빛 웅덩이 + 촛불처럼 약한 일렁임. 건물 안은 뒤에 원본으로 덮이므로 바깥에만 보임
+  const LAMP = { r: 175, a: .58, poolDy: 112, poolRx: 185, poolRy: 66, poolA: .55, flick: .08 };
+  function lampLight(g, bb, k) {
+    if (k <= .01) return;
+    const cx = (bb[0] + bb[2]) / 2, cy = (bb[1] + bb[3]) / 2 + 6, T = S.T;
+    const f = 1 + LAMP.flick * (Math.sin(T * 7.3) * .6 + Math.sin(T * 13.1 + 1.7) * .4), a = k * f;
+    g.save(); g.globalCompositeOperation = 'lighter';
+    let gr = g.createRadialGradient(cx, cy, 6, cx, cy, LAMP.r);
+    gr.addColorStop(0, `rgba(255,200,110,${(LAMP.a * a).toFixed(3)})`); gr.addColorStop(.35, `rgba(255,160,70,${(LAMP.a * .45 * a).toFixed(3)})`); gr.addColorStop(1, 'rgba(255,140,50,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, LAMP.r, 0, 6.2832); g.fill();
+    const py = cy + LAMP.poolDy; g.translate(cx, py); g.scale(1, LAMP.poolRy / LAMP.poolRx);
+    gr = g.createRadialGradient(0, 0, 4, 0, 0, LAMP.poolRx);
+    gr.addColorStop(0, `rgba(255,190,100,${(LAMP.poolA * a).toFixed(3)})`); gr.addColorStop(.5, `rgba(255,160,80,${(LAMP.poolA * .4 * a).toFixed(3)})`); gr.addColorStop(1, 'rgba(255,150,60,0)');
+    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, LAMP.poolRx, 0, 6.2832); g.fill();
+    g.restore();
   }
 
   // ---------- 별 ----------

@@ -187,6 +187,35 @@
     g.beginPath(); g.ellipse(c[0], c[1] + 8, 52, 24, 0, 0, 7); g.stroke(); g.restore();
   }
 
+  // ---------- 롤오버 빛 · 시설 클릭 영역 (2026-11-12, docs/design/guild_interior.md 10-8) ----------
+  // 배경 그림에 그려진 시설은 윤곽선(화면 1920×1080 좌표)으로, 따로 그리는 접수대·놓인 물건은 그림 모양(그림자 번짐)으로 빛남
+  const FAC_HOT = [
+    { id: '게시판', poly: [[505, 360], [752, 258], [777, 262], [778, 420], [530, 532], [505, 526]] },
+    { id: '주점', poly: [[250, 575], [340, 535], [495, 478], [530, 495], [565, 558], [568, 575], [567, 645], [340, 750], [305, 752], [248, 710]] },
+    { id: '판매창구', poly: [[1177, 815], [1235, 780], [1280, 742], [1320, 738], [1340, 748], [1395, 748], [1412, 790], [1408, 845], [1330, 888], [1245, 918], [1180, 885]] },
+    { id: '집무실', poly: [[828, 415], [828, 265], [845, 225], [875, 203], [905, 205], [930, 225], [945, 260], [945, 400]] },
+    { id: '관리소', poly: [[995, 400], [995, 255], [1012, 222], [1045, 203], [1075, 208], [1095, 235], [1100, 265], [1100, 420]] }
+  ];
+  const COUNTER_BOX = () => { const it = A.items.iso_counter; return [I.COUNTER_AT[0], I.COUNTER_AT[1], (it && it.w) || 320, (it && it.h) || 220]; };
+  const glowA = t => .75 + .25 * Math.sin(t * 4);
+  function glowWrap(g, t, f) {   // 그림 모양을 따라 금빛 번짐 (그림자를 두 번 겹쳐 진하게)
+    return () => { g.save(); g.shadowColor = `rgba(255,214,90,${glowA(t).toFixed(3)})`; for (const bl of [4, 4, 10, 18, 30]) { g.shadowBlur = bl; f(); } g.restore(); };   // 가는 테두리(4) + 넓은 번짐(30)
+  }
+  function facGlow(g, id, t) {
+    const F = FAC_HOT.find(x => x.id === id); if (!F) return;
+    g.save(); g.lineJoin = 'round'; g.beginPath(); F.poly.forEach((p, k) => k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath();
+    g.fillStyle = 'rgba(255,230,150,.10)'; g.fill();
+    g.shadowColor = `rgba(255,205,90,${glowA(t).toFixed(3)})`; g.shadowBlur = 18; g.strokeStyle = `rgba(255,226,140,${(.7 + .3 * glowA(t)).toFixed(3)})`; g.lineWidth = 3; g.stroke(); g.stroke();
+    g.restore();
+  }
+  // 화면 (x,y)에 있는 것: 놓인 물건(가장 앞) → 접수대 → 배경 시설 순
+  function hitAt(s, x, y) {
+    const it = hitItem(s, x, y); if (it) return { kind: 'item', uid: it.uid, it };
+    const b = COUNTER_BOX(); if (x >= b[0] + 20 && x <= b[0] + b[2] - 10 && y >= b[1] + 30 && y <= b[1] + b[3]) return { kind: 'fac', id: '접수대' };
+    for (const F of FAC_HOT) if (inPoly([x, y], F.poly)) return { kind: 'fac', id: F.id };
+    return null;
+  }
+
   // ---------- 배치 모드 (2026-11-12 C단계, docs/design/guild_interior.md 10-1) ----------
   // 칸 모양: 바닥 칸 (x,y) 네 꼭짓점, 벽 칸 i 는 바닥 선에서 위로 WALL_H 만큼 세운 사각형
   const WALL_H = 170, WALL_UP = 55;   // 벽 장식이 붙는 높이대(바닥선 위 55~225)만 칠함
@@ -241,7 +270,7 @@
     }
   }
 
-  const Lobby = { SLOTS, FILL, TABLES, Board, BT, layout, floorImg, wallImg, placedDrawables, pick, hitItem, drawPlace, ghostUid: null, overlay: null };
+  const Lobby = { SLOTS, FILL, TABLES, Board, BT, layout, floorImg, wallImg, placedDrawables, pick, hitItem, hitAt, FAC_HOT, drawPlace, ghostUid: null, overlay: null, hover: null };
   Lobby.update = function (s, dt) {
     const tl = tablesOf(s), key = JSON.stringify(tl);
     if (key !== lastTables) { lastTables = key; root.Director.layout(tl); }
@@ -262,17 +291,20 @@
     const usedSlots = new Set([...Board.notes.values()].map(n => n.slot));
     for (let i = 0; i < Math.min(cap, SLOTS.length); i++) if (!usedSlots.has(FILL[i])) drawEmptySlot(g, SLOTS[FILL[i]]);
     for (const n of [...Board.notes.values()].sort((a, b) => (a.st === 'taken') - (b.st === 'taken'))) if (n.st !== 'taken') drawNote(g, n, opt.still ? 0 : t);
+    if (Lobby.hover && Lobby.hover.kind === 'fac' && Lobby.hover.id !== '접수대') facGlow(g, Lobby.hover.id, t);   // 롤오버: 배경 시설 윤곽선 (모험가보다 뒤)
     // 5 리나
     root.Lina.draw(g);
     // 6 접수대 (리나 앞)
-    A.draw(g, 'iso_counter', I.COUNTER_AT[0], I.COUNTER_AT[1]);
+    if (Lobby.hover && Lobby.hover.kind === 'fac' && Lobby.hover.id === '접수대') glowWrap(g, t, () => A.draw(g, 'iso_counter', I.COUNTER_AT[0], I.COUNTER_AT[1]))();
+    else A.draw(g, 'iso_counter', I.COUNTER_AT[0], I.COUNTER_AT[1]);
     // 떼어 낸 쪽지는 리나 손으로 날아가므로 카운터보다 앞에 그림
     for (const n of Board.notes.values()) if (n.st === 'taken') drawNote(g, n, t);
     // 8 앞뒤 정렬 묶음
     const list = root.Director.drawables(g, t);
     for (const it of (s.place ? s.place.items : [])) {
       if (Lobby.ghostUid === it.uid) continue;   // 옮기는 중인 물건은 배치 모드가 따로 그림
-      for (const o of placedDrawables(g, it)) list.push(o);
+      const hv = Lobby.hover && Lobby.hover.kind === 'item' && Lobby.hover.uid === it.uid;
+      for (const o of placedDrawables(g, it)) { if (hv) o.f = glowWrap(g, t, o.f); list.push(o); }
     }
     if (Lobby.overlay) Lobby.overlay(g, list);   // 배치 모드(격자·미리보기) — ui.js
         list.sort((a, b) => a.z - b.z).forEach(o => o.f());
