@@ -19,20 +19,20 @@
 - [x] ~~시작 연출(암전) → 프롤로그 영상(`prologue_FINAL.mp4`, 건너뛰기 가능) → 길드~~ (2026-11-11) · 영상 파일은 `prototype/assets/prologue/`에 넣어야 재생됨(없으면 `docs/video/` → 없으면 바로 길드)
 - [x] ~~게임 안 옵션 메뉴에서 '새 게임' 삭제~~ (2026-11-11, HUD 메뉴·설정 창 모두)
 
-## 0-3. 폴더 정리 (2026-11-12 접수 · 윤석 님이 직접 이동, Claude는 이동 후 경로 수정)
+## 0-3. 폴더 정리 (2026-11-12 접수 · 같은 날 윤석 님이 이동, Claude가 경로·문서 수정 · 대부분 완료)
 
-목표 구조 (윤석 님): `Project_F` 루트에는 **docs · archive**(와 `.git` 등 필수 파일)만 두고, 게임에 필요한 자료는 모두 **prototype 안**으로 모은다.
-Claude는 파일 이동·삭제를 할 수 없어서, 윤석 님이 탐색기에서 옮기신 뒤 코드·문서의 경로를 Claude가 고친다.
+결과 구조: `Project_F` 루트에는 **docs · archive · prototype · .github**(와 `.git`·`.gitignore`·`.gitattributes`·`README.md`)만 둔다. 게임에 필요한 자료(`data`·`sim`·`tools`·`voice`)는 모두 `prototype/` 안.
 
-- [ ] `tools/` → `prototype/tools/`로 합치기 (현재 `prototype/tools/`의 미리보기·편집기 4개와 같은 폴더로) `미착수`
-- [ ] `data/` → `prototype/data/` (balance.csv, collegium_data.json 등) `미착수`
-- [ ] `sim/` → `prototype/sim/` (시뮬레이터) `미착수`
-- [ ] `tools/lina_blink/frames` (PNG 125장, 약 43MB) → `archive/` (게임이 읽지 않는지 확인 후) `미착수`
-- [ ] `docs/tools/` 옛 조절기 HTML(속도바 v1~v5 등) → `archive/`, 최신본만 `prototype/tools/` `미착수`
-- [ ] `prototype/tools/town_editor-1.html` 삭제 (`town_editor.html`과 같은 크기의 임시 파일) `미착수`
-- [ ] 루트의 `art_source` · `voice` · `presentations` · `옮길파일_workflows`는 prototype으로 옮길지 archive로 보낼지 `결정필요` (원본 이미지·음성·발표 자료 성격)
-- [ ] 이동 후 Claude가 할 일: `data_build.py`·`gate1_check.js`·`sim_engine.js`의 상대 경로, 루트 `README.md`·`prototype/README.md`·`docs/README.md`·`tools/*/README.md`의 경로, `docs/design/title_screen.md` 등 문서 안 경로, `.gitignore`, GitHub Actions(옮길파일_workflows) 수정 `미착수`
-- 주의: 이동 전에 GitHub Desktop 변경 사항을 한 번 커밋해 두면 문제가 생겼을 때 되돌릴 수 있다.
+- [x] `tools/` · `data/` · `sim/` → `prototype/` 로 이동 (2026-11-12)
+- [x] 이동 후 경로 수정: `data_build.py`·`gate1_check.js`·`bundle_preview.py`·`popup_shot.js`·`promo_test.js`·`cook_balance.html`, `.gitignore`, 워크플로 2개, README 7개, `docs` 현재 문서 9개 (옛 기록 `history/`·`decisions.md`는 당시 경로 그대로 둠)
+- [x] 워크플로 yml 2개를 `.github/workflows/` 로 이동 → 푸시 후 Actions 동작 확인 필요
+- [x] `art_source` · `presentations` → `archive/`, `voice` → `prototype/voice` (2026-11-12)
+- [x] `tools/lina_blink/frames`(약 43MB) 정리, `-1` 중복 파일(`main-1.js`·`ui-1.js`·`town_layout-1.js`·`town_houses-1.csv`·`town_editor-1.html`) 삭제
+- [x] 안 쓰는 옛 그림(옛 평면 로비·접수원 시트·앉기 시트·옛 가구·장식 등 약 30MB) → `archive/assets/` 로 이동, `manifest.js` 등록 항목 제거
+- [ ] **게임을 열어 확인**: 로비·마을이 정상이고 로딩이 "리소스 N / N"으로 끝나는지 (manifest 정리 후 미확인)
+- [ ] `docs/tools/` 옛 조절기 HTML(속도바 v1~v6 등)·`docs/art/town_ref` 시안 정리 — 어느 것이 최신인지 판단 필요 `보류`
+- [ ] 프롤로그 영상을 `prototype/assets/prologue/prologue_FINAL.mp4` 로 복사 (지금은 `docs/video/` 에만 있어, GitHub Pages 배포본에서는 영상이 건너뛰어짐. 66MB라 Git LFS 확인 필요)
+- 참고: 이동 전에 GitHub Desktop 변경 사항을 한 번 커밋해 두면 문제가 생겼을 때 되돌릴 수 있다.
 
 ## 0-1. 내일 작업 예정 (2026-11-12 · 윤석 님이 두서없이 말씀하시는 대로 접수 중)
 

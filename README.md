@@ -26,10 +26,9 @@
 | [prototype/data](prototype/data) | **게임 데이터 CSV** — 밸런스 수치, 대화·말풍선 대사, 의뢰 종류, 이름, 요리, 스킬. 외부 작업자는 여기만 고침 |
 | [prototype](prototype) | 2차 프로토타입 (HTML·JS, 유니티 이식 전 검증용) |
 | [prototype/sim](prototype/sim) | 밸런스 시뮬레이터와 비교 스크립트 |
-| [art_source](art_source) | 그림 원본 보관 (전신 일러스트, 걷기 시트 원본, 업스케일본). 게임은 읽지 않음 |
 | [prototype/tools](prototype/tools) | 업스케일, 미리보기 묶기 등 작업 도구 |
-| [archive](archive) | 1차 프로토타입 (관문 1 통과본) |
-| [presentations](presentations) | 기획 공유 PPT |
+| [archive](archive) | 보관 — 1차 프로토타입(관문 1 통과본), 그림 원본(`art_source`), 기획 공유 PPT(`presentations`), 안 쓰는 옛 그림(`assets`). 게임은 읽지 않음 |
+| [prototype/voice](prototype/voice) | 음성 자료 |
 
 ## 원칙
 

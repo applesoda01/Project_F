@@ -27,17 +27,15 @@
 
 | 구분 | 파일 | 크기 (화면 기준) | 비고 |
 | --- | --- | --- | --- |
-| 로비 | `lobby/lobby_wall.png` | 1920×1080 | 지금은 벽·바닥·게시판 한 장 |
-| | `lobby/lobby_counter.png` | 1920×178 | y=428에 놓음 |
+| 로비 (아이소메트릭) | `lobby_iso/bg.jpg`·`bg_open.jpg`·`counter.webp`·`table.png`·`chair_l·r.png`, 리나 5종 `lina_*.webp`, 모험가 `chr/<직업>_<성별>_walk·idle·sit.webp` | 1920×1080 등 | 실제 크기는 `js/manifest.js` 참고. 옛 평면 로비(`lobby/`)는 2026-11-12 `archive/assets/`로 이동 |
 | 의뢰서 | `quest/quest_paper_0~2.png` | 84×110 | 반듯함·찢김·말림, 핀 포함 (시안 확정) |
 | | `quest/quest_stamp_0~4.png` | 44×44 | 토벌·사냥채집·조사·호위구호·탐사, 갈색 잉크 |
 | | `quest/quest_seal.png` | 30×30 | 등급 색·글자는 코드 (F 회색 E 초록 D 파랑 C 보라 B 주황 A 빨강 S 금색) |
-| 가구 | `furniture/table_lv1~2.png` | 320×200 | 발밑 기준 |
-| | `furniture/chair_lv1~2_front·back.png` | 96×128 | |
+| 가구 | `lobby_iso/table.png`, `chair_l·r.png` | 200×169, 138×202 | 옛 `furniture/` 그림은 `archive/assets/`로 이동 |
 | 모험가 정지 | `chr/chr_<직업>_<성별>_<front·back>.png` | 136×250 | 직업 warrior·archer·mage·cleric·rogue, 성별 m·f |
 | 모험가 걷기 | `chr/chr_<직업>_<성별>_walk.png` (+ .json) | 시트 | 아래 표 |
 | 전직 후 | `chr/chr_<직업키>_<성별>_<front·back>.png` | 136×250 | 없으면 1차 그림 + 직업 표식. 직업 키는 아래 |
-| 리나(접수원) | `npc/receptionist_idle_blink.png` + `receptionist_greet_a·guide_a·guide_b·read_a·read_b.png` (+ `receptionist.json`) | 시트 | 아래 '접수원' 표. 예전 컷아웃 리그(`lina_*`)는 쓰지 않음 |
+| 리나(접수원) | `lobby_iso/lina_idle·greet·guide·paper·thanks.webp` | 2304×1152 | 옛 접수원 시트(`npc/receptionist_*`)는 `archive/assets/`로 이동 |
 | 리나 메뉴 | `ui/lina_menu/btn_normal·locked·mainquest·hover·selected.png` | 340×84 (파일 680×168) | 명패 5종. 글자·아이콘은 코드(임시 SVG). 수치는 `js/lina_menu.js` 의 P |
 | 리나 초상 | `npc/lina_face_smile·serious·laugh·worried·awkward·surprised.png` | 340×640 | 대화창 상반신 |
 
