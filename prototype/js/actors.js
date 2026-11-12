@@ -76,6 +76,17 @@
     return ac;
   }
   const T = (ac, k, o) => ac.tasks.push(Object.assign({ k }, o || {}));
+  // 2026-11-12 상태 문구 (명찰 위 작은 글씨) · 파티 발밑 원 (의뢰 수락 ~ 귀환 보고까지, 6색을 돌려 씀)
+  const LAB = (ac, text) => T(ac, 'do', { fn: () => { ac.lab = text; } });
+  const PARTY_COL = ['#1D9E75', '#D85A30', '#378ADD', '#7F77DD', '#EF9F27', '#D4537E'];
+  D.pcol = new Map();   // 의뢰 id → 색 번호
+  function partyColor(qid) {
+    if (D.pcol.has(qid)) return D.pcol.get(qid);
+    const used = new Set(D.pcol.values()); let c = PARTY_COL.findIndex((_, i) => !used.has(i)); if (c < 0) c = qid % PARTY_COL.length;
+    D.pcol.set(qid, c); return c;
+  }
+  const setParty = (ac, qid) => { ac.pq = qid; ac.pc = partyColor(qid); };
+  const clearParty = (ac, qid) => { if (ac.pq !== qid) return; ac.pq = null; ac.pc = null; if (![...D.actors.values()].some(o => o.pq === qid)) D.pcol.delete(qid); };
   function standUp(ac) {
     if (ac.pose === 'sit' || ac.loiter != null) {
       const ap = ac.seat ? ac.seat.ap : null, sp = ac.sp; release(ac); ac.pose = 'stand'; ac.sp = null;
@@ -88,13 +99,13 @@
   function settle(ac) { // 앉을 자리 → 서성일 자리 → 없으면 나감
     T(ac, 'do', { fn: () => {
       const s = freeSeat(ac);
-      if (s) { ac.tasks.unshift({ k: 'walk', to: s.ap }, ...(sheet(ac, 'sit') ? [{ k: 'walk', to: standPos(ac, s), zMin: s.z }] : []), { k: 'sit', seat: s }); return; }
+      if (s) { ac.lab = '휴식 중'; ac.tasks.unshift({ k: 'walk', to: s.ap }, ...(sheet(ac, 'sit') ? [{ k: 'walk', to: standPos(ac, s), zMin: s.z }] : []), { k: 'sit', seat: s }); return; }
       const li = LOITER.findIndex(l => !l.by);
-      if (li >= 0) { LOITER[li].by = ac.id; ac.loiter = li; ac.tasks.unshift({ k: 'walk', to: LOITER[li] }); return; }
-      ac.tasks.unshift({ k: 'walk', to: EXIT }, { k: 'remove' });
+      if (li >= 0) { ac.lab = '구경 중'; LOITER[li].by = ac.id; ac.loiter = li; ac.tasks.unshift({ k: 'walk', to: LOITER[li] }); return; }
+      ac.lab = '떠나는 중'; ac.tasks.unshift({ k: 'walk', to: EXIT }, { k: 'remove' });
     } });
   }
-  function leave(ac) { T(ac, 'do', { fn: () => { standUp(ac); ac.tasks.push({ k: 'walk', to: INSIDE }, { k: 'walk', to: EXIT }, { k: 'remove' }); } }); }
+  function leave(ac, lab) { T(ac, 'do', { fn: () => { ac.lab = lab || (ac.lab === '출발' ? '출발' : '떠나는 중'); standUp(ac); ac.tasks.push({ k: 'walk', to: INSIDE }, { k: 'walk', to: EXIT }, { k: 'remove' }); } }); }
   function enter(ac) { T(ac, 'walk', { to: INSIDE }); }
   function visitWindow(ac, win, job, line) { // 창구로 가서 리나에게 응대를 받음
     let spot;
@@ -135,6 +146,7 @@
   D.onWeek = function (before, s, Board) {
     const SV = Math.max(0.5, SERVE - (root.GuildGame && root.GuildGame.upg && root.GuildGame.upg(s, '접수대') ? 0.5 : 0));   // 접수대 업그레이드: 응대 −0.5초
     D.flush();
+    for (const q of [...D.pcol.keys()]) if (!before.active.has(q) && !s.active.some(x => x.q.id === q) && ![...D.actors.values()].some(o => o.pq === q)) D.pcol.delete(q);   // 끝난 파티 색 반납 (이번 주에 돌아오는 파티는 같은 색 유지)
     const after = D.snap(s), busy = new Set(), find = id => s.advs.find(a => a.id === id);
     // 1) 귀환
     for (const [qid, x] of before.active) {
@@ -143,9 +155,11 @@
       const ok = party.some(a => (before.adv.get(a.id) || {}).done < a.done);
       party.forEach((a, i) => {
         busy.add(a.id); const ac = actor(a, EXIT);
-        T(ac, 'wait', { t: i * 0.5 }); enter(ac);
+        setParty(ac, qid); ac.lab = '귀환 중';
+        T(ac, 'wait', { t: i * 0.5 }); enter(ac); LAB(ac, '보고 중');
         if (i === 0) visitWindow(ac, ok ? 'sale' : 'quest', { mode: ok ? 'happy' : 'talk', text: Speech.lina(ok ? 'lina_success' : 'lina_fail'), dur: SV }, Speech.line(a, ok ? 'success' : 'fail'));
         else visitWindow(ac, ok ? 'sale' : 'quest', null, i === 1 ? Speech.line(a, ok ? 'success' : 'fail') : null);
+        T(ac, 'do', { fn: () => clearParty(ac, qid) });   // 보고가 끝나면 파티 원을 지움
       });
     }
     // 2) 출발 (새로 생긴 진행 의뢰)
@@ -155,13 +169,16 @@
       const party = x.party.map(find).filter(Boolean);
       party.forEach((a, i) => {
         const had = D.actors.has(a.id), ac = actor(a, EXIT);
+        setParty(ac, qid); if (!had) ac.lab = '도착';
         if (!had) { T(ac, 'wait', { t: i * 0.5 }); enter(ac); } // 이번 주에 마을에 와서 바로 떠나는 경우: 입구에서 들어옴
         busy.add(a.id);
+        if (x.ate && i < x.ate) { LAB(ac, '식사 중'); }
         if (x.ate && i < x.ate) visitWindow(ac, 'meal', i === 0 ? { mode: 'talk', text: Speech.lina('lina_meal'), dur: SV } : null, Speech.line(a, 'meal'));
+        LAB(ac, i === 0 ? '의뢰 수주 중' : '출발 준비');
         if (i === 0) visitWindow(ac, 'quest', { mode: 'paper', text: Speech.lina('lina_depart'), dur: SV, onStart: () => Board.take(qid) }, Speech.line(a, 'accept'));
         else T(ac, 'wait', { t: 1.2 });
         T(ac, 'say', { text: i === 0 ? Speech.line(a, 'depart') : '' });
-        leave(ac);
+        leave(ac, '출발');
       });
     }
     // 3) 귀환한 사람의 마무리 (다시 떠나지 않은 경우)
@@ -174,14 +191,15 @@
     // 4) 방문·첫 방문
     for (const a of s.advs) {
       if (busy.has(a.id) || !a.alive || a.state !== 'town' || D.actors.has(a.id)) continue;
-      const ac = actor(a, EXIT); T(ac, 'wait', { t: Math.random() * 2 }); enter(ac);
+      const ac = actor(a, EXIT); ac.lab = '도착'; T(ac, 'wait', { t: Math.random() * 2 }); enter(ac);
+      if (!before.adv.has(a.id)) LAB(ac, '등록 중');
       if (!before.adv.has(a.id)) visitWindow(ac, 'quest', { mode: 'wave', text: Speech.lina('lina_first'), dur: 1.6 }, Speech.line(a, 'first'));
       settle(ac);
     }
     // 4-1) 술 주문 (2026-11-12): 규칙(game_core.js)이 이번 주에 술을 산 모험가(s.drinks)만 식당 창구에서 주문 → 화면과 주점 수입이 일치
     for (const id of s.drinks || []) {
       const a = find(id), ac = D.actors.get(id); if (!a || !ac || busy.has(id) || ac.tasks.some(t => t.k === 'remove')) continue;
-      T(ac, 'wait', { t: 1 + Math.random() * 6 }); visitWindow(ac, 'meal', { mode: 'talk', text: Speech.lina('lina_drink'), dur: SV }, Speech.line(a, 'drink')); settle(ac);
+      T(ac, 'wait', { t: 1 + Math.random() * 6 }); LAB(ac, '주문 중'); visitWindow(ac, 'meal', { mode: 'talk', text: Speech.lina('lina_drink'), dur: SV }, Speech.line(a, 'drink')); settle(ac);
     }
     // 5) 떠남 (마을 밖으로)
     for (const [id, ac] of D.actors) {
@@ -202,7 +220,7 @@
   D.init = function (s) {
     for (const a of s.advs) if (a.alive && a.state === 'town') {
       const ac = actor(a, INSIDE); const st = freeSeat(ac);
-      if (st) { const sp0 = standPos(ac, st); ac.seat = st; ac.x = sp0.x; ac.y = sp0.y; ac.pose = 'sit'; startSit(ac, st, 'idle'); } else settle(ac);
+      if (st) { const sp0 = standPos(ac, st); ac.seat = st; ac.x = sp0.x; ac.y = sp0.y; ac.pose = 'sit'; ac.lab = '휴식 중'; startSit(ac, st, 'idle'); } else settle(ac);
     }
   };
 
@@ -218,7 +236,7 @@
     return true;
   };
   D.celebrate = function (id) { const ac = D.actors.get(id); if (ac) { ac.fx = D.t + 2.4; say(ac, '힘이 넘친다…!', 2.4); } };
-  D.reset = function (s) { D.actors.clear(); for (const st of D.seats) st.by = null; for (const l of LOITER) l.by = null; for (const w in D.winUse) D.winUse[w] = []; D.init(s); };
+  D.reset = function (s) { D.actors.clear(); D.pcol.clear(); for (const st of D.seats) st.by = null; for (const l of LOITER) l.by = null; for (const w in D.winUse) D.winUse[w] = []; D.init(s); };
   function say(ac, text, dur) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text, null, ac.a); } }   // 얼굴·직업 표시용으로 모험가를 함께 넘김
 
   // ---------- 매 프레임 ----------
@@ -280,6 +298,10 @@
           else if (idleImg) { const f = Math.floor(D.t * IDLE_FPS + ac.id * 5) % IDLE_FRAMES; I.frame(g, idleImg, I.SH.idle, f % 12, Math.floor(f / 12), ac.x, ac.y, false, al); }
           else if (walkImg) I.frame(g, walkImg, I.SH.walk, 0, 0, ac.x, ac.y, false, al);   // 서 있기 시트가 없는 캐릭터(남 전사)
         };
+        if (ac.pc != null) {   // 파티 발밑 원 (C안): 같은 의뢰를 가는 모험가끼리 같은 색
+          const fx = ac.sp ? ac.sp.ax : ac.x, fy = ac.sp ? ac.sp.ay : ac.y, col = PARTY_COL[ac.pc];
+          g.save(); g.beginPath(); g.ellipse(fx, fy - 2, 36, 14, 0, 0, 6.283); g.globalAlpha = .38; g.fillStyle = col; g.fill(); g.globalAlpha = .95; g.lineWidth = 3; g.strokeStyle = col; g.stroke(); g.restore();
+        }
         const XF = 0.16;   // 앉기 그림 ↔ 서기 그림이 바뀔 때 겹쳐 보여 주는 시간(초): 모션이 툭 튀지 않게
         if (ac.sp && sitImg) { // 앉기·대기·일어서기
           const sp = ac.sp, n = sitN(ac); let fi;
@@ -353,7 +375,12 @@
     if (!dark) g.strokeText(nm, tx1, ty + NP.ndy); g.fillStyle = dark ? '#3a2616' : NP.nameColor; g.fillText(nm, tx1, ty + NP.ndy);
     g.font = `700 ${NP.lfs}px ${FF}`;
     if (!dark) g.strokeText(lv, tx2, ty + NP.ldy); g.fillStyle = dark ? '#9a6228' : NP.lvColor; g.fillText(lv, tx2, ty + NP.ldy);
-    g.restore(); return (headY(ac) - y0) + 8 + NP.bubbleGap;   // 말풍선 꼬리 끝이 명찰 위 8px 에 오도록
+    let extra = 0;
+    if (ac.lab) {   // 상태 문구 (2026-11-12): 명찰 바로 위 작은 글씨
+      g.font = `700 14px ${FF}`; g.textAlign = 'center'; g.lineWidth = 3.5; g.strokeStyle = NP.outline;
+      const sy = y0 - 9; g.strokeText(ac.lab, ac.x + NP.dx, sy); g.fillStyle = '#f1dfb8'; g.fillText(ac.lab, ac.x + NP.dx, sy); extra = 18;
+    }
+    g.restore(); return (headY(ac) - y0) + 8 + NP.bubbleGap + extra;   // 말풍선 꼬리 끝이 명찰 위 8px 에 오도록
   }
   // 리나 응대 진행 막대 (2026-11-12): 응대받는 모험가 머리(명찰) 위에 노란 막대가 0 → 가득 차면 응대 끝. 모험가 막대(게이지 노랑)와 같은 색
   function serveBar(g, ac, up) {
