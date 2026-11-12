@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """data/*.csv + data/collegium_data.json → prototype/js/data_gen.js (게임·시뮬레이터가 함께 읽는 데이터 파일)
 
-    python tools/data_build.py          # 검사 후 생성
-    python tools/data_build.py --check  # 검사만 (파일을 만들지 않음)
+    python prototype/tools/data_build.py          # 검사 후 생성
+    python prototype/tools/data_build.py --check  # 검사만 (파일을 만들지 않음)
 
 검사에서 오류가 하나라도 나오면 파일을 만들지 않고 종료 코드 1로 끝난다. 경고는 알려 주기만 한다.
 collegium_data.json 은 소재 편집기(tools/material_editor)가 저장하는 파일이다. 없으면 건너뛴다.
@@ -11,7 +11,7 @@ import csv, json, math, os, re, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'data')
-OUT = os.path.join(ROOT, 'prototype', 'js', 'data_gen.js')
+OUT = os.path.join(ROOT, 'js', 'data_gen.js')
 SCHEMA = json.load(open(os.path.join(ROOT, 'tools', 'balance_schema.json'), encoding='utf-8'))
 
 GRADES = ['F', 'E', 'D', 'C', 'B', 'A', 'S']
@@ -351,7 +351,7 @@ print(f'검사 통과: 밸런스 {len(seen)}항목, 의뢰 종류 {len(qtypes)},
 if '--check' in sys.argv: sys.exit(0)
 body = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
 with open(OUT, 'w', encoding='utf-8', newline='\n') as fp:
-    fp.write('/* 자동 생성 파일 — 직접 고치지 마세요.\n   data/*.csv · data/collegium_data.json 을 고친 뒤 `python tools/data_build.py` 로 다시 만듭니다. */\n')
+    fp.write('/* 자동 생성 파일 — 직접 고치지 마세요.\n   data/*.csv · data/collegium_data.json 을 고친 뒤 `python prototype/tools/data_build.py` 로 다시 만듭니다. */\n')
     fp.write('(function (root) {\n  var D = ' + body + ';\n')
     fp.write("  if (typeof module !== 'undefined' && module.exports) module.exports = D;\n  if (root) root.GAME_DATA = D;\n")
     fp.write("})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));\n")
@@ -360,7 +360,7 @@ print('만듦:', os.path.relpath(OUT, ROOT))
 # 아이콘을 게임 폴더로 복사: data/icons/*.png → prototype/assets/icons/ (배포는 prototype 폴더만 올라가므로)
 if content is not None:
     import shutil
-    src_dir, dst_dir = os.path.join(ROOT, 'data'), os.path.join(ROOT, 'prototype', 'assets')
+    src_dir, dst_dir = os.path.join(ROOT, 'data'), os.path.join(ROOT, 'assets')
     n_copy = n_miss = 0
     for o in content['materials'] + content['items']:
         rel = o.get('icon') or ''

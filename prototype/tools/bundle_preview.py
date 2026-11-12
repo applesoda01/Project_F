@@ -1,9 +1,9 @@
-# 프로토타입을 그림·코드까지 한 파일(dist/guild_preview.html)로 묶는다. 사용: python tools/bundle_preview.py
+# 프로토타입을 그림·코드까지 한 파일(dist/guild_preview.html)로 묶는다. 사용: python prototype/tools/bundle_preview.py
 import re,base64,io,os,json
 from PIL import Image
 import sys
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-B=os.path.join(ROOT,'prototype')+os.sep
+B=ROOT+os.sep
 html=open(B+'index.html',encoding='utf-8').read();inline={}
 for root,_,fs in os.walk(B+'assets'):
   for f in fs:

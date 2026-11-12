@@ -10,7 +10,7 @@
 
 1. `prototype/index.html`을 브라우저(크롬 권장)로 엽니다. 설치나 서버가 필요 없습니다.
 2. 왼쪽 아래 **개발** 버튼에 시간 건너뛰기, 등급 올리기, 전직 시험, 걷기 시연, 관문 1 검증이 있습니다.
-3. 한 파일로 묶은 미리보기가 필요하면 `python tools/bundle_preview.py` → `dist/guild_preview.html` (저장소에는 올리지 않음)
+3. 한 파일로 묶은 미리보기가 필요하면 `python prototype/tools/bundle_preview.py` → `prototype/dist/guild_preview.html` (저장소에는 올리지 않음)
 
 ## 폴더 안내
 
@@ -23,16 +23,16 @@
 | [docs/balance](docs/balance) | 시뮬레이터 결과와 관문 검증 기록 |
 | [docs/decisions.md](docs/decisions.md) | 결정 기록 (날짜·이유) |
 | [docs/history](docs/history) | 인수인계 메모 |
-| [data](data) | **게임 데이터 CSV** — 밸런스 수치, 대화·말풍선 대사, 의뢰 종류, 이름, 요리, 스킬. 외부 작업자는 여기만 고침 |
+| [prototype/data](prototype/data) | **게임 데이터 CSV** — 밸런스 수치, 대화·말풍선 대사, 의뢰 종류, 이름, 요리, 스킬. 외부 작업자는 여기만 고침 |
 | [prototype](prototype) | 2차 프로토타입 (HTML·JS, 유니티 이식 전 검증용) |
-| [sim](sim) | 밸런스 시뮬레이터와 비교 스크립트 |
+| [prototype/sim](prototype/sim) | 밸런스 시뮬레이터와 비교 스크립트 |
 | [art_source](art_source) | 그림 원본 보관 (전신 일러스트, 걷기 시트 원본, 업스케일본). 게임은 읽지 않음 |
-| [tools](tools) | 업스케일, 미리보기 묶기 등 작업 도구 |
+| [prototype/tools](prototype/tools) | 업스케일, 미리보기 묶기 등 작업 도구 |
 | [archive](archive) | 1차 프로토타입 (관문 1 통과본) |
 | [presentations](presentations) | 기획 공유 PPT |
 
 ## 원칙
 
-- **규칙의 기준은 문서**입니다. 규칙을 바꿀 때는 기획서(`docs/design`)·게임 규칙(`prototype/js/game_core.js`)·시뮬레이터(`sim/sim_engine.js`)를 함께 고치고, `docs/decisions.md`와 `docs/balance`에 남깁니다.
+- **규칙의 기준은 문서**입니다. 규칙을 바꿀 때는 기획서(`docs/design`)·게임 규칙(`prototype/js/game_core.js`)·시뮬레이터(`prototype/sim/sim_engine.js`)를 함께 고치고, `docs/decisions.md`와 `docs/balance`에 남깁니다.
 - 규칙(`game_core.js`)과 화면은 분리합니다. 규칙 파일은 유니티 C#으로 1:1 이식합니다.
 - 그림은 정해진 파일 이름으로 바꿔 넣기만 하면 반영됩니다 → [docs/art/asset_rules.md](docs/art/asset_rules.md)

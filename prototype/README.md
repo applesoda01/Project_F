@@ -6,7 +6,7 @@
 | --- | --- |
 | `js/game_core.js` | **게임 규칙** (화면과 분리, 유니티 C# 이식 대상) |
 | `js/sim_engine.js` | 시뮬레이터 기본값(`defaults()`)을 게임도 같이 씀. 원본은 `sim/sim_engine.js`와 동일하게 유지 |
-| `js/data_gen.js` | **자동 생성** 게임 데이터 (밸런스·대사·의뢰 종류·이름·요리·스킬). `data/*.csv`를 고친 뒤 `python tools/data_build.py` |
+| `js/data_gen.js` | **자동 생성** 게임 데이터 (밸런스·대사·의뢰 종류·이름·요리·스킬). `data/*.csv`를 고친 뒤 `python prototype/tools/data_build.py` |
 | `js/manifest.js` · `js/assets.js` | 리소스 목록과 로더 (M2-1) |
 | `js/stage.js` | 1920×1080 화면 구조 (M2-2) |
 | `js/lobby.js` | 로비 그리기·게시판 (M2-3·M2-4) |

@@ -1,4 +1,4 @@
-const S=require('../../prototype/js/sim_engine.js'),G=require('../../prototype/js/game_core.js');
+const S=require('../../js/sim_engine.js'),G=require('../../js/game_core.js');
 const yrs=[],cnt=[],acc=[];let props=0,accepted=0;
 for(let seed=0;seed<40;seed++){const s=G.newGame(S.defaults(),9000+seed);let first=null;
  for(let w=0;w<48*10;w++){

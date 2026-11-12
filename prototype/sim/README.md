@@ -9,8 +9,8 @@
 | `scripts/promo_test.js` | 게임 규칙으로 전직 시점 측정 (자동 승인 봇 40판) |
 
 ```
-node sim/scripts/fame_cmp.js sim/sim_engine.js
-node sim/scripts/long_cmp.js sim/sim_engine.js
+node prototype/sim/scripts/fame_cmp.js prototype/sim/sim_engine.js
+node prototype/sim/scripts/long_cmp.js prototype/sim/sim_engine.js
 cd sim/scripts && node promo_test.js
 ```
 

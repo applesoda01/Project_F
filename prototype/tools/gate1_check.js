@@ -1,10 +1,10 @@
 // 관문 1 검증 (명령줄판): 게임 규칙과 시뮬레이터를 각각 100판씩 1년 돌려 비교한다.
 // 게임 안 개발 패널의 "관문 1 검증"과 같은 계산. 깃허브 자동 검사에서도 쓴다.
-//   node tools/gate1_check.js            → 표 출력, 기준을 벗어나면 종료 코드 1
-//   node tools/gate1_check.js --md out   → 결과를 마크다운 파일로도 저장
+//   node prototype/tools/gate1_check.js            → 표 출력, 기준을 벗어나면 종료 코드 1
+//   node prototype/tools/gate1_check.js --md out   → 결과를 마크다운 파일로도 저장
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm');
-const JS = path.join(__dirname, '..', 'prototype', 'js');
+const JS = path.join(__dirname, '..', 'js');
 const ctx = { console, Math, JSON, Date }; ctx.window = ctx; vm.createContext(ctx);
 for (const f of ['data_gen.js', 'combat.js', 'sim_engine.js', 'game_core.js']) vm.runInContext(fs.readFileSync(path.join(JS, f), 'utf8'), ctx, { filename: f });
 const Sim = ctx.GuildSim, Gm = ctx.GuildGame, N = 100;

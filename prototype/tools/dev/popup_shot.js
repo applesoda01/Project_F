@@ -1,10 +1,10 @@
 // 팝업 시안 캡처 도구 (Claude 작업 공간용, Playwright 필요)
 // 게임(prototype/index.html)을 띄워 상태를 만든 뒤 팝업을 열고, 필요하면 마우스를 올려 오버 창까지 캡처한다.
 //
-//   node tools/dev/popup_shot.js --pop=ledger --weeks=58 --out=/tmp/ledger.png
-//   node tools/dev/popup_shot.js --pop=advs --weeks=60 --grade=1 --hover="#popBody .ux-row[data-adv]" --out=/tmp/advs_tip.png
-//   node tools/dev/popup_shot.js --lab=kitchen --out=/tmp/kitchen.png              (식당 시험 상태로 바로 열기)
-//   node tools/dev/popup_shot.js --pop=fac --setup="s.gold=5000; G.build(s,'관리소');" --out=/tmp/fac.png
+//   node prototype/tools/dev/popup_shot.js --pop=ledger --weeks=58 --out=/tmp/ledger.png
+//   node prototype/tools/dev/popup_shot.js --pop=advs --weeks=60 --grade=1 --hover="#popBody .ux-row[data-adv]" --out=/tmp/advs_tip.png
+//   node prototype/tools/dev/popup_shot.js --lab=kitchen --out=/tmp/kitchen.png              (식당 시험 상태로 바로 열기)
+//   node prototype/tools/dev/popup_shot.js --pop=fac --setup="s.gold=5000; G.build(s,'관리소');" --out=/tmp/fac.png
 //
 // 옵션
 //   --pop=이름     board · advs · fac · meals · ledger · log · codex · promo · sell (UI.open 이름)
@@ -33,7 +33,7 @@ const flag = k => process.argv.includes('--' + k);
   const lab = arg('lab'), pop = arg('pop'), weeks = +(arg('weeks') || 20), grade = arg('grade'), seed = +(arg('seed') || 77);
   const b = await chromium.launch(flag('nobars') ? {} : { ignoreDefaultArgs: ['--hide-scrollbars'] }), p = await b.newPage({ viewport: { width: vw, height: vh }, deviceScaleFactor: +(arg('dsf') || 1) });   // 기본: 실제 게임처럼 스크롤 막대를 보이게 찍음
   const errs = []; p.on('pageerror', e => errs.push(e.message));
-  const url = 'file://' + path.resolve(__dirname, '../../prototype/index.html') + (lab ? '?lab=' + lab : '');
+  const url = 'file://' + path.resolve(__dirname, '../../index.html') + (lab ? '?lab=' + lab : '');
   await p.goto(url); await p.waitForTimeout(lab ? 4500 : 3500);
   if (!lab) {
     await p.evaluate(() => { const d = document.querySelector('#dlg'); if (d) d.click(); });   // 시작 대화 닫기

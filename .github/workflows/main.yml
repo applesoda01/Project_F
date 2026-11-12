@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: '20'
       - name: CSV 검사·데이터 만들기
-        run: python tools/data_build.py
+        run: python prototype/tools/data_build.py
       - name: data_gen.js 가 바뀌었으면 자동 커밋
         run: |
           if ! git diff --quiet -- prototype/js/data_gen.js; then
@@ -41,7 +41,7 @@ jobs:
           fi
       - name: 관문 1 검증
         run: |
-          node tools/gate1_check.js --md gate1.md || echo '::warning::관문 1 기준을 벗어났습니다. 밸런스 값을 확인해 주세요.'
+          node prototype/tools/gate1_check.js --md gate1.md || echo '::warning::관문 1 기준을 벗어났습니다. 밸런스 값을 확인해 주세요.'
           cat gate1.md >> "$GITHUB_STEP_SUMMARY"
       - name: 최신 빌드 압축 파일 (Actions 화면에서 받기)
         uses: actions/upload-artifact@v4
