@@ -219,7 +219,7 @@
   };
   D.celebrate = function (id) { const ac = D.actors.get(id); if (ac) { ac.fx = D.t + 2.4; say(ac, '힘이 넘친다…!', 2.4); } };
   D.reset = function (s) { D.actors.clear(); for (const st of D.seats) st.by = null; for (const l of LOITER) l.by = null; for (const w in D.winUse) D.winUse[w] = []; D.init(s); };
-  function say(ac, text, dur) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text); } }
+  function say(ac, text, dur) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text, null, ac.a); } }   // 얼굴·직업 표시용으로 모험가를 함께 넘김
 
   // ---------- 매 프레임 ----------
   D.update = function (dt) {

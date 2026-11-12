@@ -292,7 +292,8 @@
     nextBub -= dt;
     if (nextBub <= 0) {   // 말풍선: 거주 모험가가 있으면 그 사람을 따라다님, 없으면 예전처럼 정해진 자리
       const rs = [...res.values()], who = rs.length ? rs[Math.floor(Math.random() * rs.length)] : null, p = RUMOR[Math.floor(Math.random() * RUMOR.length)];
-      bub = { who, x: px(p[0], p[1]), y: py(p[0], p[1]) - 34, t: 4, text: LINES[Math.floor(Math.random() * LINES.length)] }; nextBub = 6 + Math.random() * 5; }
+      bub = { who, x: px(p[0], p[1]), y: py(p[0], p[1]) - 34, t: 4, text: LINES[Math.floor(Math.random() * LINES.length)] }; nextBub = 6 + Math.random() * 5;
+      if (who && who.a && root.UI && root.UI.chat) root.UI.chat(who.a.name, bub.text, null, who.a); }   // 2026-11-12: 마을 말풍선도 채팅 로그에 (얼굴·직업)
     if (bub && bub.who) { if (res.get(bub.who.a.id) === bub.who) { bub.x = bub.who.x; bub.y = bub.who.y - 96; } else bub = null; }
     if (bub) { bub.t -= dt; if (bub.t <= 0) bub = null; }
     skyUpdate(dt, mouse);
@@ -339,6 +340,11 @@
     }
     if (bub) {
       if (root.Director && root.Director.drawBubble) root.Director.drawBubble(g, bub.x, bub.y + 36, bub.text, 4 - bub.t, bub.t);   // 길드와 같은 말풍선
+      if (bub.who && bub.who.a) {   // 말풍선 위 이름표: 이름 · 직업 (2026-11-12)
+        const A2 = bub.who.a, txt = `${A2.name} · ${A2.cls}`, ty = bub.y + 36 - 22 - 54 - 8, al = Math.min(1, (4 - bub.t) / .2, bub.t / .25);
+        g.save(); g.globalAlpha = Math.max(0, al); g.font = '700 17px "Malgun Gothic",sans-serif'; const w = g.measureText(txt).width + 16, x0 = Math.max(12, Math.min(1908 - w, bub.x - 34));
+        g.fillStyle = 'rgba(34,22,13,.82)'; g.beginPath(); g.roundRect(x0, ty - 24, w, 24, 8); g.fill(); g.fillStyle = '#fbf1dc'; g.textBaseline = 'middle'; g.fillText(txt, x0 + 8, ty - 11); g.restore();
+      }
       /* [보관] 예전 마을 말풍선
       g.font = '600 20px "Malgun Gothic",sans-serif'; const w = g.measureText(bub.text).width + 30, a = Math.min(1, bub.t * 2);
       g.globalAlpha = a; g.fillStyle = '#fff8e8'; g.strokeStyle = '#5a3a22'; g.lineWidth = 3;

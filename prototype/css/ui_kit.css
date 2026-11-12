@@ -617,3 +617,19 @@ span.kslot{cursor:default}
 #placeMenu .pm-ic.done i{filter:none;opacity:.9}
 #placeMenu .pm-ics{margin-top:4px}
 #placeMenu.fac .pm-tip{margin-top:4px}
+
+/* ---------- 채팅 로그 개선 (2026-11-12): 시스템 기록 꼬리표 · 대화 줄 얼굴/이름/직업 ---------- */
+#logBox .ln .tag{display:inline-block;margin-right:6px;padding:1px 7px;border-radius:6px;font-size:13px;font-style:normal;font-weight:700;line-height:1.35;vertical-align:2px;text-shadow:none}
+#logBox .ln .tag.t-go{background:#9FE1CB;color:#04342C}
+#logBox .ln .tag.t-ok{background:#C0DD97;color:#173404}
+#logBox .ln .tag.t-bad{background:#F7C1C1;color:#501313}
+#logBox .ln .tag.t-new{background:#CECBF6;color:#26215C}
+#logBox .ln .tag.t-gold{background:#FAC775;color:#412402}
+#logBox .ln .tag.t-gray{background:#D3D1C7;color:#2C2C2A}
+#logBox .ln.chat .hd{display:flex;align-items:center;gap:6px;margin:0 0 3px 4px}
+#logBox .ln.chat .hd .cf{flex:none;width:30px;height:30px;border-radius:50%;background-color:#efe2cf;background-repeat:no-repeat;border:2px solid rgba(46,32,18,.85);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+#logBox .ln.chat .hd .cf.none{display:none}
+#logBox .ln.chat .hd b{display:inline;margin:0}
+#logBox .ln.chat .hd em{font-size:14px;font-style:normal;font-weight:700;color:#e9d9b8;text-shadow:-1px 0 #2e2012,1px 0 #2e2012,0 -1px #2e2012,0 1px #2e2012}
+#logBox .ln.chat:not(.dim) .hd.link{pointer-events:auto;cursor:pointer}
+#logBox .ln.chat .hd.link:hover b{text-decoration:underline}

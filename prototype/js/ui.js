@@ -134,15 +134,28 @@
     while (ll.children.length > LOGMAX) ll.firstChild.remove();
     if (!lb.box.classList.contains('show') || atBottom) ll.scrollTop = ll.scrollHeight;   // 아래에 있었다면 새 대사가 들어올 때마다 따라 올라감
   }
+  // 2026-11-12 채팅 로그 개선: 시스템 기록 앞에 종류 꼬리표, 대화 줄에 얼굴 · 이름 · 직업 Lv (이름·얼굴을 누르면 모험가 정보)
+  const LOG_TAG = { depart: ['출발', 't-go'], success: ['성공', 't-ok'], fail: ['실패', 't-bad'], injury: ['부상', 't-bad'], death: ['사망', 't-bad'], arrive: ['도착', 't-new'], leave: ['떠남', 't-gray'],
+    ledger: ['결산', 't-gold'], build: ['건설', 't-gray'], unlock: ['발견', 't-gold'], grow: ['성장', 't-ok'], promo: ['전직', 't-new'], expire: ['기한', 't-gray'], withdraw: ['취소', 't-gray'] };
   UI.logLine = function (text, kind) { // 시스템 기록
-    const el = document.createElement('div'); el.className = 'ln k-' + (kind || 'info'); el.textContent = text; lbAdd(el);
+    const el = document.createElement('div'); el.className = 'ln k-' + (kind || 'info');
+    const tg = LOG_TAG[kind]; if (tg) { const i = document.createElement('i'); i.className = 'tag ' + tg[1]; i.textContent = tg[0]; el.append(i); }
+    const sp = document.createElement('span'); sp.textContent = text; el.append(sp); lbAdd(el);
   };
-  UI.chat = function (name, text, who) { // 캐릭터 대화 (말풍선·리나 대사)
+  UI.chat = function (name, text, who, a) { // 캐릭터 대화 (말풍선·리나 대사). a: 말한 모험가 (얼굴·직업 표시)
     if (!text) return;
     const el = document.createElement('div'); el.className = 'ln chat' + (who === 'lina' ? ' lina' : '');
+    const hd = document.createElement('div'); hd.className = 'hd';
+    const fc = document.createElement('span'); fc.className = 'cf';
+    if (a) fc.setAttribute('style', faceStyle(a, 30, 156, 15));
+    else if (who === 'lina') fc.setAttribute('style', 'background-image:url(assets/npc/lina_face_smile.png);background-size:auto 200px;background-position:-36px -35px');
+    else fc.classList.add('none');
     const b = document.createElement('b'); b.textContent = name || '손님';
+    const sub = document.createElement('em'); sub.textContent = a ? `${a.cls} Lv${a.lv}` : who === 'lina' ? '접수원' : '';
+    hd.append(fc, b); if (sub.textContent) hd.append(sub);
+    if (a) { hd.classList.add('link'); hd.title = `${name} 정보 보기`; hd.addEventListener('click', () => { if (!s.advs.some(x => x.id === a.id && x.alive)) return; openAdv = a.id; UI.open('advs'); }); }
     const bt = document.createElement('span'); bt.className = 'bt'; bt.textContent = text;   // 따옴표 없음 (말풍선 모양이 대사임을 보여 줌)
-    el.append(b, bt); lbAdd(el);
+    el.append(hd, bt); lbAdd(el);
   };
   UI.logClear = function () { if (lb) lb.ll.innerHTML = ''; };
 

@@ -24,7 +24,7 @@
     anim: null, lastGroup: null, idleT: 0, nextIdle: rnd(4, 8), blink: null, blinkAt: rnd(2.5, 5.5), wasChat: false };
 
   Lina.request = function (job) { Lina.queue.push(job); };
-  Lina.say = function (text, dur) { Lina.bubble = { text, until: Lina.t + (dur || 2.2), t0: Lina.t }; };
+  Lina.say = function (text, dur) { Lina.bubble = { text, until: Lina.t + (dur || 2.2), t0: Lina.t }; if (text && root.UI && root.UI.chat) root.UI.chat('리나', text, 'lina'); };   // 2026-11-12: 리나 말풍선도 채팅 로그에 (얼굴과 함께)
   Lina.play = function (group, force) {
     if (!force && Lina.anim) return;
     const v = GROUPS[group][Math.floor(Math.random() * GROUPS[group].length)];
