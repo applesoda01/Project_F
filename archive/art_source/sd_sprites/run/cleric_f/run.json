@@ -1,0 +1,16 @@
+{
+ "name": "run",
+ "source": "03_cleric_f_gemini_8a5b0fd5.mp4",
+ "frames": 19,
+ "source_start_frame": 75,
+ "fps": 24,
+ "canvas": [
+  640,
+  800
+ ],
+ "feet_y": 787,
+ "center_x": 320,
+ "standing_height_px": 516,
+ "scale_video_to_game": 1.157,
+ "loop_error": 1.34
+}
