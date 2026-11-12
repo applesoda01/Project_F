@@ -114,7 +114,7 @@
 .qb-g .seg button.on{color:#fff3d6;background:linear-gradient(#8a5d36,#5a3a22)}
 .qb-g .seg button.none.on{background:linear-gradient(#9b8b78,#7a6a58)}
 .qb-h{margin-top:4px}
-.qb-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.qb-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}   /* 2026-11-12: 긴 이름이 칸을 밀지 않게 (minmax 0) */
 .qb-none{grid-column:1/-1}
 /* 의뢰 카드: 쪽지. 오래 게시될수록 바램 */
 .qcard{position:relative;height:72px;box-sizing:border-box;padding:7px 10px 6px;border-radius:8px;cursor:default;
@@ -133,6 +133,7 @@
 .qcard.age2::after{content:"";position:absolute;right:-1px;top:-1px;width:18px;height:18px;background:linear-gradient(225deg,#cbb27c 0 50%,#f6e8c8 50%);border-bottom-left-radius:4px;box-shadow:-1px 1px 2px rgba(60,36,16,.25)}
 .skulls{display:inline-flex;gap:1px}
 .sk{width:15px;height:15px;fill:#4a2e1e}.sk.off{fill:rgba(90,58,34,.18)}
+.skulls .sk{width:15px;height:15px;display:block}   /* 2026-11-12: 아래쪽 다른 .sk(폭 68px) 규칙과 이름이 겹쳐 해골이 커지던 문제 → 해골만 다시 지정 */
 .foe{font-style:normal;font-size:13px;font-weight:700;width:18px;height:18px;border-radius:50%;display:inline-grid;place-items:center;line-height:1}
 .foe.up{color:#fff;background:#c0453a}.foe.down{color:#fff;background:#4f8a3c}.foe.unk{color:var(--ux-muted);background:#e6d8bb}
 .gold{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:15px;color:#7a5512}
