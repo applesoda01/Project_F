@@ -115,5 +115,6 @@
 "combat.speedPerSkill": 0,
 "combat.skillRate": 0,
 "combat.skillMp": 5,
-"combat.groupMax": 7
+"combat.groupMax": 7,
+"quest.x2Rate": 0, "deco.attach": 0, "deco.trust": 0, "deco.mat": 0, "deco.fame": 0, "deco.gold": 0, "deco.xp": 0, "deco.injury": 0, "deco.x2PerMonth": 0
 }

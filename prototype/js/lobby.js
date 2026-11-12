@@ -189,9 +189,9 @@
 
   // ---------- 배치 모드 (2026-11-12 C단계, docs/design/guild_interior.md 10-1) ----------
   // 칸 모양: 바닥 칸 (x,y) 네 꼭짓점, 벽 칸 i 는 바닥 선에서 위로 WALL_H 만큼 세운 사각형
-  const WALL_H = 230;
+  const WALL_H = 170, WALL_UP = 55;   // 벽 장식이 붙는 높이대(바닥선 위 55~225)만 칠함
   const cellPoly = (x, y) => [I.P(x, y), I.P(x + 1, y), I.P(x + 1, y + 1), I.P(x, y + 1)];
-  const wallPoly = (w, i) => { const a = w === 'L' ? I.P(0, i) : I.P(i, 0), b = w === 'L' ? I.P(0, i + 1) : I.P(i + 1, 0); return [[a[0], a[1] - 40], [b[0], b[1] - 40], [b[0], b[1] - 40 - WALL_H], [a[0], a[1] - 40 - WALL_H]]; };
+  const wallPoly = (w, i) => { const a = w === 'L' ? I.P(0, i) : I.P(i, 0), b = w === 'L' ? I.P(0, i + 1) : I.P(i + 1, 0); return [[a[0], a[1] - WALL_UP], [b[0], b[1] - WALL_UP], [b[0], b[1] - WALL_UP - WALL_H], [a[0], a[1] - WALL_UP - WALL_H]]; };
   function inPoly(pt, poly) { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) c = !c; } return c; }
   // 화면 좌표 → 놓을 자리. 바닥 물건은 바닥 칸, 벽 물건은 가까운 벽 칸
   function pick(id, x, y) {
@@ -236,7 +236,7 @@
     g.restore();
     if (!pm.at) return;
     for (const o of placedDrawables(g, Object.assign({ id: pm.id }, pm.at))) {
-      const f = o.f; o.f = () => { g.save(); g.globalAlpha = pm.ok ? 0.75 : 0.4; if (!pm.ok) g.filter = 'sepia(1) saturate(4) hue-rotate(-40deg)'; f(); g.restore(); };
+      const f = o.f; o.f = () => { g.save(); g.globalAlpha = pm.ok ? 0.85 : 0.6; if (!pm.ok) g.filter = 'grayscale(1) sepia(1) saturate(6) hue-rotate(-50deg) brightness(.9)'; f(); g.restore(); };
       list.push(o);
     }
   }

@@ -299,8 +299,8 @@
       const T = QT[q.tid], d = danger(T, q.g), fb = foeBand(q), intel = !!s.built['정보실'];
       const sk = d.n ? `<span class="skulls" title="위험도">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}</span>` : '';
       const foe = d.n ? (intel ? (fb === 'up' ? '<i class="foe up" title="강한 무리">▲</i>' : fb === 'down' ? '<i class="foe down" title="약한 무리">▼</i>' : '') : '<i class="foe unk" title="정보실이 있으면 알 수 있음">?</i>') : '';
-      cards += `<div class="qcard age${ageOf(q)}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b></div>
-        <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward)}G</span><button class="ux-btn danger sm" data-wd="${q.id}">취소</button></div>
+      cards += `<div class="qcard age${ageOf(q)}${q.x2 ? ' x2' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}</div>
+        <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><button class="ux-btn danger sm" data-wd="${q.id}">취소</button></div>
         <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
     }
     if (!s.board.length) cards = '<div class="ux-empty qb-none">게시된 의뢰가 없습니다. 의뢰는 매주 들어옵니다.</div>';
@@ -329,7 +329,7 @@
       h += `<div class="row">${intel ? (fb === 'up' ? '<i class="foe up">▲</i> 이번 무리는 평소보다 <b>강합니다</b>' : fb === 'down' ? '<i class="foe down">▼</i> 이번 무리는 평소보다 <b>약합니다</b>' : '이번 무리는 평소 수준입니다') : '<i class="foe unk">?</i> 정보실이 있으면 이번 무리의 강약을 알 수 있습니다'}</div>`;
     } else h += `<div class="sec">요구 능력치 <small>비전투 의뢰</small></div><div class="row">${q.req.map(k => `<span class="ux-tag">${Gm.STATS[k]} ${Math.round(q.r)}</span>`).join(' ')}</div>`;
     const rw = (T.rewards || []).filter(r => MATS[r.m]);
-    h += `<div class="sec">보상</div><div class="rw"><span class="gold big"><i></i>${fmt(q.reward)}G</span>${rw.map(r => { const m = MATS[r.m], known = !!(s.knownMats || {})[r.m];   // 모르는 소재: 실루엣 + ? (이름은 ???)
+    h += `<div class="sec">보상</div><div class="rw"><span class="gold big"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G${q.x2 ? ' <em class="qx2">×2</em>' : ''}</span>${rw.map(r => { const m = MATS[r.m], known = !!(s.knownMats || {})[r.m];   // 모르는 소재: 실루엣 + ? (이름은 ???)
       return `<span class="mat ${r.role === '주' ? 'main' : ''}" title="${known ? esc(m.name) : '???'}"><span class="ux-slot${known ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${known || m.icon ? matImg(m) : ''}</span><em>${r.p}%</em></span>`; }).join('')}</div>`;
     const fs = q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g], ff = q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g], ts = q.trustS != null ? q.trustS : s.cfg.quest.trustSucc, tf = q.trustF != null ? q.trustF : s.cfg.quest.trustFail;
     h += `<div class="foot"><span>성공 명성 <b class="ux-plus">+${fs}</b> · 신뢰 <b class="ux-plus">+${ts}</b></span><span>실패 명성 <b class="ux-minus">−${ff}</b> · 신뢰 <b class="ux-minus">−${tf}</b></span></div>`;
@@ -711,9 +711,9 @@
       const placed = s.place.items.filter(it => it.id === d.id);
       const st = full ? (d.max === 1 ? `<button class="ux-btn sm" data-pmove="${placed[0].uid}">옮기기</button>` : `<span class="ux-tag town">${n}/${d.max} 모두 놓음</span>`)
         : `<button class="ux-btn sm" data-place="${d.id}" ${poor ? 'disabled' : ''}>놓기 <b>${fmt(d.price)}G</b></button>`;
-      return `<div class="fx-row bm-row ${n ? 'on' : ''} ${!full && !poor ? 'glow' : ''}"><i class="bm-ic" style="background-image:url(${DECO_ICON(d.id)})"></i><b class="nm">${d.name}${d.max > 1 ? ` <small>${n}/${d.max}</small>` : ''}</b><span class="fx">${d.fx || d.desc || ''} <em class="fx-up">${DECO_WHERE[d.kind] || ''}</em></span><span class="st">${st}</span></div>`;
+      return `<div class="fx-row bm-row ${n ? 'on' : ''} ${!full && !poor ? 'glow' : ''}"><i class="bm-ic" style="background-image:url(${DECO_ICON(d.id)})"></i><b class="nm">${d.name}${d.max > 1 ? ` <small>${n}/${d.max}</small>` : ''}</b><span class="fx">${d.fx || d.desc || ''} <em class="fx-up${n && d.id !== 'table' ? ' on' : ''}">${n && d.id !== 'table' ? '적용 중 · ' : ''}${DECO_WHERE[d.kind] || ''}</em></span><span class="st">${st}</span></div>`;
     });
-    const note = tab === 'table' ? '테이블 1세트에 2명이 앉습니다. 놓은 테이블을 로비에서 누르면 옮기거나 치울 수 있습니다.' : '종류마다 1개씩 놓을 수 있습니다. 장식 효과는 다음 작업에서 연결합니다 (지금은 배치만).';
+    const note = tab === 'table' ? `테이블 1세트에 2명이 앉고, 앉은 모험가만 출발 전 식사를 주문합니다 (지금 ${Gm.seatsOf(s)}석 · 한 주에 ${Gm.seatsOf(s)}명까지). 놓은 테이블을 로비에서 누르면 옮기거나 치울 수 있습니다.` : '종류마다 1개씩 놓을 수 있고, 놓아 두는 동안 효과가 적용됩니다. 놓은 장식은 로비에서 눌러 옮기거나 치울 수 있습니다.';
     return `<div class="fx-list"><p class="muted small bm-note">${note} 옮기기는 무료, 치우면 돈은 돌려받지 못합니다.</p>${rows.join('')}</div>`;
   }
   function facListHtml() {
@@ -983,7 +983,9 @@
     const bx = o ? o.box : [pt[0], pt[1], 0, 0];
     pmMenu.dataset.uid = it.uid;
     pmMenu.innerHTML = `<b class="pm-nm">${d.name}</b><button class="ux-btn sm" data-pm="move">옮기기</button><button class="ux-btn sm danger" data-pm="del">치우기</button><button class="ux-btn sm ghost" data-pm="x">닫기</button>`;
-    pmMenu.style.left = Math.round(bx[0] + bx[2] / 2) + 'px'; pmMenu.style.top = Math.max(110, Math.round(bx[1] - 8)) + 'px';
+    const above = bx[1] - 8 >= 210;   // 위쪽 HUD와 겹치면 물건 아래에 띄움
+    pmMenu.style.left = Math.round(Math.max(230, Math.min(1690, bx[0] + bx[2] / 2))) + 'px';
+    pmMenu.style.top = Math.round(above ? bx[1] - 8 : bx[1] + bx[3] + 8) + 'px'; pmMenu.classList.toggle('below', !above);
     pmMenu.classList.add('on');
   }
   function pmMenuClose() { if (pmMenu) { pmMenu.classList.remove('on'); pmMenu.dataset.uid = ''; } }
@@ -1027,7 +1029,7 @@
     const b = q('#popBody'); b.innerHTML = '<p class="muted">100판을 돌려 계산하는 중…</p>';
     setTimeout(() => {
       const Sim = root.GuildSim, N = 100; let op = 0, d = 0, f = 0;
-      for (let i = 0; i < N; i++) { const g = Gm.newGame(Sim.defaults(), 7000 + i); for (let w = 0; w < 48; w++) { Gm.stepWeek(g); Gm.autoCook(g); /* 요리: 재료가 모이면 바로 만든다고 가정 (시뮬레이터와 같음) */ } op += g.history.reduce((t, m) => t + m.net, 0) / g.history.length; d += g.stats.done; f += g.stats.fail; }
+      for (let i = 0; i < N; i++) { const g = Gm.newGame(Sim.defaults(), 7000 + i); Gm.autoPlace(g, true); for (let w = 0; w < 48; w++) { Gm.stepWeek(g); Gm.autoCook(g); /* 요리: 재료가 모이면 바로 만든다고 가정 (시뮬레이터와 같음) */ if (g.week % Gm.WPM === 0) Gm.autoPlace(g, false); /* 테이블 자동 배치 (tools/gate1_check.js와 같음) */ } op += g.history.reduce((t, m) => t + m.net, 0) / g.history.length; d += g.stats.done; f += g.stats.fail; }
       const cfg = Sim.defaults(); cfg.run.maxYears = 1; let o2 = 0, d2 = 0, f2 = 0;
       for (let i = 0; i < N; i++) { const r = Sim.simulate(cfg, 'balanced', 7000 + i); o2 += r.firstNetF.reduce((a, c) => a + c, 0) / r.firstNetF.length; d2 += r.qDone; f2 += r.qFail; }
       const gOp = op / N, sOp = o2 / N, gS = d / (d + f), sS = d2 / (d2 + f2);

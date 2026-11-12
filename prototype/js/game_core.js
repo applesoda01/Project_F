@@ -296,6 +296,7 @@
 
   // ---------- 진행 ----------
   function generateQuests(s) {
+    if (s.week % WPM === 0) s.x2Owed = hasDeco(s, 'trophy') ? (s.cfg.deco.x2PerMonth || 0) : 0;
     const Q = s.cfg.quest, T = s.cfg.town;
     const mult = T.inflowMult[popStage(s)] * (0.7 + 0.6 * s.trust / 100) * (1 + 0.1 * s.grade) * (1 + 0.1 * Math.min(1, effN(s, '접수대')));
     const n = Math.round(Q.perMonth * mult / WPM + s.R() * 0.5);
@@ -306,8 +307,14 @@
     for (let i = 0; i < n; i++) {
       let r = s.R() * tot, g = 0; for (; g <= s.grade; g++) { r -= s.filter[g]; if (r <= 0) break; } g = Math.min(g, s.grade);
       const count = s.board.filter(q => q.g === g).length;
-      if (s.board.length < cap && count < Math.max(1, quota[g])) s.board.push(makeQuest(s, g));
+      if (s.board.length < cap && count < Math.max(1, quota[g])) { const q = makeQuest(s, g); markX2(s, q); s.board.push(q); }
     }
+  }
+  // ×2 의뢰 (2026-11-12, guild_interior.md 2-2·10-2): 게시될 때 quest.x2Rate 확률로 골드만 2배. 트로피 장식장이 있으면 달마다 처음 게시되는 의뢰부터 deco.x2PerMonth건 보장
+  function markX2(s, q) {
+    const r = s.R();
+    if (s.x2Owed > 0) { q.x2 = true; s.x2Owed--; } else if (r < (s.cfg.quest.x2Rate || 0)) q.x2 = true;
+    if (q.x2) s.stats.x2 = (s.stats.x2 || 0) + 1;
   }
   function present(s, a) {
     if (!a.alive || a.state === 'quest') return false;
@@ -363,6 +370,7 @@
 
 
   function departures(s) {
+    s.seatUsed = 0;   // 이번 주 식사한 좌석 수
     const Q = s.cfg.quest, E = s.cfg.econ;
     for (const a of s.advs) { if (!a.alive || a.state === 'quest') continue; if (a.state === 'injured' && s.week < a.until) continue; a.state = present(s, a) ? 'town' : 'away'; if (a.state === 'town') a.lastSeen = s.week; }   // lastSeen: 마지막으로 길드에 온 주
     const idle = s.advs.filter(a => a.state === 'town');
@@ -385,8 +393,9 @@
         // 출발 전 식사
         let eaters = 0; const dish = dishFor(s, q), ate = new Set();
         if (dish) for (const m of party) {
+          if (s.seatUsed >= seatsOf(s)) break;   // 2026-11-12: 앉을 자리(테이블 세트 × 2)만큼만 이번 주에 식사 (guild_interior.md 10-3)
           const price = Q.reward[dish.g] * E.mealPriceRate;
-          if (m.wallet >= price && s.R() < E.mealBuyRate[m.spend]) { m.wallet -= price; const inc = price * E.mealMargin + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += inc; s.month.meal += inc; eaters++; ate.add(m.id); const md = s.month.dishes = s.month.dishes || {}; md[dish.name] = (md[dish.name] || 0) + 1; }
+          if (m.wallet >= price && s.R() < E.mealBuyRate[m.spend]) { s.seatUsed++; m.wallet -= price; const inc = price * E.mealMargin + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += inc; s.month.meal += inc; eaters++; ate.add(m.id); const md = s.month.dishes = s.month.dishes || {}; md[dish.name] = (md[dish.name] || 0) + 1; }
         }
         // 식사 효과 (C안): ① 발견한 요리 하나당 +2% (비전투 성공 확률·전투 공격력, 먹은 비율만큼) ② 먹은 요리의 능력치 +n% (먹은 사람만)
         const mealB = dish ? (eaters / party.length) * E.mealPerDish * Object.keys(s.dishes).length : 0;
@@ -426,22 +435,24 @@
       if (F) { s.stats.combat++; if (ok) s.stats.combatWin++; }
       if (ok) {
         s.stats.done++; s.month.success++;
-        const fee = q.reward * feeRate(s), resale = q.reward * E.resaleRate;
+        const RW = q.reward * (q.x2 ? 2 : 1), DV = s.cfg.deco;   // ×2 의뢰는 골드만 2배 (명성·경험치는 그대로)
+        const fee = RW * feeRate(s) + (hasDeco(s, 'bench') ? DV.gold : 0), resale = RW * E.resaleRate;   // 벤치 +5G는 중계 수입에 더함
         s.gold += fee + resale; s.month.fee += fee; s.month.resale += resale;
-        const each = q.reward * (1 - feeRate(s)) / party.length;
+        const each = RW * (1 - feeRate(s)) / party.length;
         for (const a of party) {
           a.wallet += each; a.done++;
-          gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g));
+          gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) + (hasDeco(s, 'map') ? DV.xp : 0));
           a.stats[q.type] = Math.min(G.statCap, a.stats[q.type] + Q.subGrowth);
-          a.attach = Math.min(100, a.attach + A.attachSuccess);
+          a.attach = Math.min(100, a.attach + A.attachSuccess + (hasDeco(s, 'plant') ? DV.attach : 0));
           if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
           tryGradeUp(s, a);
         }
-        s.trust = Math.min(100, s.trust + (q.trustS != null ? q.trustS : s.cfg.quest.trustSucc));
-        s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + (q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g]));
+        s.trust = Math.min(100, s.trust + (q.trustS != null ? q.trustS : s.cfg.quest.trustSucc) + (hasDeco(s, 'boardDeco') ? DV.trust : 0));
+        s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + (q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g]) + (hasDeco(s, 'banner') ? DV.fame : 0));
         // 소재 획득: 편집기 보상표 확률대로 (요리는 이제 식당에서 조합으로만 발견 — 예전 '토벌·사냥 성공 시 50% 해금'은 없앰)
         dropMats(s, q);
-        log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 성공했습니다. 길드 수입 ${Math.round(fee + resale)}G.`, 'success', { who: party.map(x => x.name) });
+        if (hasDeco(s, 'locker')) { const T = QBYID[q.tid], b = T && (T.rewards || []).reduce((x, r) => (!x || r.p > x.p ? r : x), null); if (b) { s.mats[b.m] = (s.mats[b.m] || 0) + DV.mat; if (!s.knownMats[b.m]) { s.knownMats[b.m] = true; const m = MAT[b.m]; if (m) log(s, `처음 보는 소재를 얻었습니다: ${m.name}`, 'unlock'); } } }   // 사물함: 기본 소재 +1
+        log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 성공했습니다.${q.x2 ? ' (×2 보상)' : ''} 길드 수입 ${Math.round(fee + resale)}G.`, 'success', { who: party.map(x => x.name) });
       } else {
         s.stats.fail++; s.trust = Math.max(0, s.trust - (q.trustF != null ? q.trustF : s.cfg.quest.trustFail)); s.fame = Math.max(0, (s.fame || 0) - (q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g]));
         for (const a of party) gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate);
@@ -455,7 +466,7 @@
         s.stats.injuries++;
         const d = (q.death != null ? q.death : Q.deathBase[q.g]) * CB.C.deathRisk[a.risk] * (1 - 0.15 * Math.min(1, effN(s, '의무실')));
         if (s.R() < d) { a.alive = false; a.dead = true; a.state = 'dead'; s.stats.deaths++; log(s, `${J(a.name, '이', '가')} ${qn(q)} 의뢰에서 쓰러져 돌아오지 못했습니다.`, 'death', { who: [a.name] }); continue; }
-        const wk = Math.max(1, CB.C.injuryWeeks[q.g] - (s.built['의무실'] ? CB.C.injuryClinic : 0));
+        const wk = Math.max(1, CB.C.injuryWeeks[q.g] - (s.built['의무실'] ? CB.C.injuryClinic : 0) - (hasDeco(s, 'fireplace') ? s.cfg.deco.injury : 0));   // 벽난로 −1주
         a.state = 'injured'; a.until = s.week + wk; a.injuredFrom = q.name || `${GR[q.g]}급 ${QTYPE[q.type]} 의뢰`;   // 모험가 팝업 오버 창용
         log(s, `${J(a.name, '이', '가')} 전투에서 쓰러져 부상을 입었습니다. ${wk}주 동안 쉽니다.`, 'injury', { who: [a.name] });
       }
@@ -546,6 +557,13 @@
     const it = s.place.items.splice(k, 1)[0], d = DECO_BY[it.id]; log(s, `${J(d.name, '을', '를')} 치웠습니다. (돌려받는 돈 없음)`, 'build'); return true;
   }
   const tablesOf = s => s.place.items.filter(it => it.id === 'table').map(it => [it.gx, it.gy]);
+  const hasDeco = (s, id) => !!(s.place && s.place.items.some(it => it.id === id));
+  const seatsOf = s => 2 * (s.place ? s.place.items.filter(it => it.id === 'table').length : 0);   // 테이블 세트 하나에 2석
+  // 검증용 자동 배치 (관문 1·개발 패널): 시뮬레이터 tablePolicy와 같은 규칙. 첫 주 2세트, 이후 월말마다 구매 뒤 1,000G 이상 남으면 1세트씩 4세트까지. 자리는 예전 고정 테이블 칸
+  function autoPlace(s, first) {
+    const want = first ? 2 : (placedN(s, 'table') < 4 && s.gold - 200 >= 1000 ? 1 : 0);
+    for (let k = 0; k < want; k++) { const spot = OLD_TABLES.find(([gx, gy]) => placeOk(s, 'table', { gx, gy })); if (!spot || s.gold < 200 || placedN(s, 'table') >= 4) break; placeBuy(s, 'table', { gx: spot[0], gy: spot[1] }); }
+  }
   // 건설비: 등급별 기본값, 집무실만 따로 (2026-11-12: F급 1,000G)
   const facCost = (s, f) => f === '집무실' ? (s.cfg.econ.officeCost || 1000) : s.cfg.econ.buildCost[FAC_COST[f] || 0];
   // 시설 업그레이드 1단계 (2026-11-12, docs/design/popup_fac.md 6장): 지은 시설만, 금전만. 효과는 각 규칙에서 upg(s, 시설)로 확인
@@ -575,6 +593,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { DECO, DECO_BY, placeOk, placeBuy, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

@@ -79,7 +79,7 @@
   q('#dTemp').onclick = () => { location.search = Assets.forceTemp ? '' : '?temp=1'; };
   q('#dTemp').textContent = Assets.forceTemp ? '실제 리소스 보기' : '임시 그래픽 보기';
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && !/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName) && !document.querySelector('#dlg.open')) { e.preventDefault(); setSpeed(speed ? 0 : 1); }
+    if (e.code === 'Space' && !/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName) && !document.querySelector('#dlg.open, #placeLay.on')) { e.preventDefault(); setSpeed(speed ? 0 : 1); }
   });
 
   // ---------- 시작 화면: 저장 슬롯 고르기 (2026.11) ----------

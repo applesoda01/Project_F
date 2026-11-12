@@ -19,6 +19,7 @@
         expireWeeks: 4,                            // 게시 후 만료까지 주
         trustExpire: 1,                            // 만료 시 신뢰도 하락
         trustSucc: 1, trustFail: 2,
+        x2Rate: 0.05,                              // 게시될 때 ×2 의뢰(골드만 2배)가 될 확률 (2026-11-12)
         upBoardWeeks: 1,                           // 게시판 업그레이드: 의뢰 기한 +주                // 의뢰 성공·실패 시 신뢰도 (2026-11-12 정수화, 예전 0.3·0.6)
         partyAssist: 0.25,                         // 파티원 보조 계수
         deathBase: [0.01, 0.01, 0.03, 0.03, 0.05, 0.05, 0.08],
@@ -72,6 +73,7 @@
         raidMonths: [8, 6, 5, 4, 3],
         sCandidates: 2
       },
+      deco: { attach: 1, trust: 1, mat: 1, fame: 1, gold: 5, xp: 5, injury: 1, x2PerMonth: 1 },   // F급 장식 효과 (2026-11-12, guild_interior.md 10-2). 시뮬레이터는 run.deco 목록에 있는 장식만 놓였다고 봄
       fame: {                                    // 명성 [가안]: 높을수록 모험가가 많이 찾아옴 (방문 수 = 기본 × 신뢰도 보정 × 명성 보정)
         succ: [1, 2, 3, 4, 5, 6, 8],              // 의뢰 성공 시 등급별 상승 (2026-11-12 정수화, D 이상 가안)
         fail: [1, 2, 3, 4, 5, 6, 8],              // 의뢰 실패 시 등급별 하락 (2026-11-12 정수화, D 이상 가안)
@@ -329,6 +331,7 @@
       for (let i = s.board.length - 1; i >= 0; i--) if (s.week - s.board[i].posted >= W) { s.board.splice(i, 1); s.trust = Math.max(0, s.trust - (Q.trustExpire != null ? Q.trustExpire : 1)); s.st.qExpire = (s.st.qExpire || 0) + 1; }
     }
     function generateQuests() {
+      if (s.week % WPM === 0) s.x2Owed = s.deco.has('trophy') ? (cfg.deco.x2PerMonth || 0) : 0;
       const mult = T.inflowMult[popStage()] * (0.7 + 0.6 * s.trust / 100) * (1 + 0.1 * s.grade) * (1 + 0.1 * Math.min(1, effN('접수대')));
       const n = Math.round(Q.perMonth * mult / WPM + R() * 0.5);
       const cap = Q.boardCap[s.grade] + [0, 2, 5, 5][Math.min(3, effN('게시판'))];
@@ -337,8 +340,15 @@
         let g = s.grade;
         const r = R();
         if (r > bot.filterFocus) g = ri(s.grade + 1);
-        if (s.board.length < cap) s.board.push(makeQuest(g, false));
+        if (s.board.length < cap) { const q = makeQuest(g, false); markX2(q); s.board.push(q); }
       }
+    }
+    // ×2 의뢰 (2026-11-12): 게시될 때 x2Rate 확률, 트로피 장식장이 있으면 달마다 처음 게시되는 의뢰부터 x2PerMonth건 보장 (게임 markX2와 같음)
+    const baseMat = T => (T.rewards || []).reduce((b, r) => (!b || r.p > b.p ? r : b), null)?.m;   // 그 의뢰에서 가장 잘 나오는 소재
+    function markX2(q) {
+      const r = R();
+      if (s.x2Owed > 0) { q.x2 = true; s.x2Owed--; } else if (r < (Q.x2Rate || 0)) q.x2 = true;
+      if (q.x2) s.st.x2 = (s.st.x2 || 0) + 1;
     }
 
     function mealFor(q) { // 그 의뢰 등급 이하에서 가장 높은 해금 요리 등급
@@ -351,8 +361,9 @@
       if (dish) {
         let eaters = 0; const ate = new Set();
         for (const a of party) {
+          if (s.seatUsed >= s.tables * 2) break;   // 2026-11-12: 앉을 자리(테이블 세트 × 2)만큼만 이번 주에 식사
           const price = Q.reward[dish.g] * E.mealPriceRate;
-          if (a.wallet >= price && R() < E.mealBuyRate[a.spend]) { a.wallet -= price; s.gold += price * E.mealMargin; s.op += price * E.mealMargin; s.st.mealIncome += price * E.mealMargin; eaters++; ate.add(a); }
+          if (a.wallet >= price && R() < E.mealBuyRate[a.spend]) { s.seatUsed++; a.wallet -= price; s.gold += price * E.mealMargin; s.op += price * E.mealMargin; s.st.mealIncome += price * E.mealMargin; eaters++; ate.add(a); }
         }
         if (dish.stats.length) sm = (a, k) => ate.has(a) && dish.stats.includes(+k) ? 1 + dish.pct : 1;
         // 메뉴가 2개 열려 있으면 의뢰 유형에 맞는 요리를 고를 확률이 높음
@@ -375,27 +386,29 @@
         s.st.injuries++;
         const d = (q.T ? q.T.death : Q.deathBase[q.g]) * CB.C.deathRisk[a.risk] * (1 - 0.15 * Math.min(1, effN('의무실')));
         if (R() < d) { kill(a, false); s.st.questDeaths++; continue; }
-        a.busy += Math.max(1, CB.C.injuryWeeks[q.g] - (has('의무실') ? CB.C.injuryClinic : 0));
+        a.busy += Math.max(1, CB.C.injuryWeeks[q.g] - (has('의무실') ? CB.C.injuryClinic : 0) - (s.deco.has('fireplace') ? cfg.deco.injury : 0));
       }
       const fee = q.boss ? 0 : q.reward != null ? 0 : 0;
-      const reward = (q.T ? q.T.reward : Q.reward[q.g]) * (q.boss ? 2 : 1);
+      const reward = (q.T ? q.T.reward : Q.reward[q.g]) * (q.boss ? 2 : 1) * (q.x2 ? 2 : 1);   // ×2 의뢰는 골드만 2배
       if (ok) {
         s.st.qDone++;
         if (q.T) for (const r of q.T.rewards || []) if (R() * 100 < r.p) s.mats[r.m] = (s.mats[r.m] || 0) + 1;   // 소재 획득 (게임 dropMats와 같음)
+        if (q.T && s.deco.has('locker')) { const b = baseMat(q.T); if (b) s.mats[b] = (s.mats[b] || 0) + cfg.deco.mat; }   // 사물함: 기본 소재 +1
         for (const d of DISH) if (!s.dishes[d.name] && d.g <= s.grade && d.mats.every(m => s.mats[m] > 0)) { for (const m of d.mats) s.mats[m]--; s.dishes[d.name] = s.week; s.meals[d.g]++; s.st.mealsUnlocked.push(s.week); }
         const inc = reward * feeRate() + reward * E.resaleRate * (1 + 0.1 * effN('판매창구'));
-        s.gold += inc; s.op += inc;
+        const bench = s.deco.has('bench') ? cfg.deco.gold : 0;
+        s.gold += inc + bench; s.op += inc + bench;
         const each = reward * (1 - feeRate()) / party.length;
         for (const a of party) {
           a.wallet += each;
-          gainXp(a, G.xpBase * Math.pow(G.xpGradeMult, q.g));
+          gainXp(a, G.xpBase * Math.pow(G.xpGradeMult, q.g) + (s.deco.has('map') ? cfg.deco.xp : 0));
           a.stats[q.type] = Math.min(G.statCap, a.stats[q.type] + Q.subGrowth);
-          a.attach = Math.min(100, a.attach + A.attachSuccess * (1 + 0.2 * Math.min(1, effN('휴게실'))));
+          a.attach = Math.min(100, a.attach + A.attachSuccess * (1 + 0.2 * Math.min(1, effN('휴게실'))) + (s.deco.has('plant') ? cfg.deco.attach : 0));
           if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
           tryGradeUp(a);
         }
-        s.trust = Math.min(100, s.trust + (q.T && q.T.trustS != null ? q.T.trustS : Q.trustSucc));
-        s.fame = Math.min(cfg.fame.cap, s.fame + (q.T ? q.T.fameS : cfg.fame.succ[q.g]));
+        s.trust = Math.min(100, s.trust + (q.T && q.T.trustS != null ? q.T.trustS : Q.trustSucc) + (s.deco.has('boardDeco') ? cfg.deco.trust : 0));
+        s.fame = Math.min(cfg.fame.cap, s.fame + (q.T ? q.T.fameS : cfg.fame.succ[q.g]) + (s.deco.has('banner') ? cfg.deco.fame : 0));
       } else {
         s.st.qFail++;
         s.trust = Math.max(0, s.trust - (q.T && q.T.trustF != null ? q.T.trustF : Q.trustFail));
@@ -411,6 +424,7 @@
     }
 
     function adventurersChoose() {
+      s.seatUsed = 0;   // 이번 주 식사한 좌석 수
       const idle = s.advs.filter(present);
       for (const a of idle) {
         if (a.busy > 0 || !a.alive) continue;
@@ -572,6 +586,7 @@
         const cost = E.buildCost[Math.max(1, effG)] * E.effectCost[Math.min(2, n)];
         if (s.gold - cost >= 1000 / bot.buildEffects) { s.gold -= cost; s.eff[f] = n + 1; }
       }
+      tablePolicy(false);   // 테이블 세트 (게임 autoPlace와 같은 시점: 월말 결산 뒤)
       // 인구
       const residents = s.advs.filter(a => a.alive && a.attach >= 100).length;
       s.pop += s.pop * (T.growthBase + T.growthPerGrade * s.grade) + residents * T.perResident;
@@ -624,6 +639,11 @@
 
     // 시작 모험가 3명
     for (let i = 0; i < A.startCount; i++) newAdv({ attach: 20 });
+    // 로비 배치 (2026-11-12): 놓인 장식(cfg.run.deco 목록) · 테이블 세트 수. 테이블은 첫 주에 2세트, 이후 매달 금고 여유(구매 뒤 1,000G 이상)가 있으면 1세트씩 4세트까지 (게임 autoPlace와 같음)
+    s.deco = new Set((cfg.run && cfg.run.deco) || []); s.tables = 0; s.x2Owed = 0;
+    const buyTables = n0 => { const P = 200, MAX = 4; let n = n0; while (n-- > 0 && s.tables < MAX && s.gold >= P) { s.gold -= P; s.tables++; } };
+    const tablePolicy = first => { if (cfg.run && cfg.run.noTables) return; if (first) buyTables(2); else if (s.tables < 4 && s.gold - 200 >= 1000) buyTables(1); };
+    tablePolicy(true);
 
     const maxW = cfg.run.maxYears * WPY;
     for (s.week = 0; s.week < maxW && !s.ended; s.week++) {
