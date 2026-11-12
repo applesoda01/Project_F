@@ -73,7 +73,9 @@ h3{margin:0;font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.02
 .empty{color:var(--muted);padding:14px;text-align:center;font-size:13px}
 
 /* 가운데: 씬 정보 + 미리보기 */
-#metaCard{display:grid;grid-template-columns:200px 150px 1fr;gap:8px;padding:8px 10px}
+#metaCard{display:grid;grid-template-columns:170px 120px 1fr 1fr;gap:8px;padding:8px 10px}
+.scn .tt{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px}
+.scn .mm{font-size:12px;color:var(--ink);opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #stageCard{padding:10px;display:flex;flex-direction:column;gap:8px}
 #stageWrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:8px;background:#1b1410}
 #stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;font-family:"MaruBuri","Malgun Gothic",sans-serif;color:#3b2a1e;--wood2:#5a3a22;--ink:#3b2a1e;user-select:none}
@@ -192,7 +194,8 @@ table.t input,table.t select{width:100%;padding:3px 6px}
     <div class="card" id="metaCard">
       <label class="f">씬 ID<input id="mId" spellcheck="false"></label>
       <label class="f">종류<select id="mKind"><option value="prologue">프롤로그</option><option value="dialogue">대화씬</option><option value="mainquest">메인 퀘스트</option></select></label>
-      <label class="f">메모(제목)<input id="mTitle"></label>
+      <label class="f">제목<input id="mTitle" placeholder="씬 목록에 굵게 표시"></label>
+      <label class="f">한 줄 메모<input id="mMemo" maxlength="40" placeholder="씬 목록 아래에 표시 (40자)"></label>
     </div>
     <div class="card" id="stageCard">
       <div id="stageWrap"><div id="stage">
@@ -384,7 +387,7 @@ function cleanStep(s){
   return o;
 }
 function serScene(sc){
-  return '{\n  "id": '+J(sc.id)+',\n  "kind": '+J(sc.kind)+',\n  "title": '+J(sc.title||'')+',\n  "steps": ['+
+  return '{\n  "id": '+J(sc.id)+',\n  "kind": '+J(sc.kind)+',\n  "title": '+J(sc.title||'')+',\n  "memo": '+J(sc.memo||'')+',\n  "steps": ['+
     (sc.steps.length?'\n'+sc.steps.map(s=>'    '+stab(cleanStep(s),KO.step,2)).join(',\n')+'\n  ':'')+']\n}\n';
 }
 function serMap(map,ord,sortKeys){
@@ -398,7 +401,7 @@ const serIndex=()=>serMap(S.index,KO.idx,true);
 /* ===== 6. 가져오기 보조: 형식 점검 ===== */
 function normScene(o,fallbackId){
   if(!o||typeof o!=='object')throw new Error('씬 형식이 아닙니다.');
-  const sc={id:String(o.id||fallbackId||''),kind:KINDS[o.kind]?o.kind:'dialogue',title:String(o.title||''),steps:[]};
+  const sc={id:String(o.id||fallbackId||''),kind:KINDS[o.kind]?o.kind:'dialogue',title:String(o.title||''),memo:String(o.memo||'').slice(0,40),steps:[]};
   if(!sc.id)throw new Error('id 가 없습니다.');
   (Array.isArray(o.steps)?o.steps:[]).forEach((s,i)=>{
     const st=Object.assign({},s);if(!st.id)st.id='s'+String(i+1).padStart(3,'0');
@@ -465,16 +468,17 @@ function renderScenes(){
     const first=(sc.steps.find(s=>s.type==='say')||{}).text||'';
     return '<div class="scn'+(id===S.sel?' on':'')+'" data-id="'+esc(id)+'"><div class="r1"><span class="id">'+esc(id)+'</span><span class="chip '+sc.kind+'">'+KINDS[sc.kind]+'</span><span style="flex:1"></span>'+
       (p.err?'<span class="ib err" title="오류">⚠'+p.err+'</span>':'')+(p.warn?'<span class="ib warn" title="경고">!'+p.warn+'</span>':'')+
-      '</div><div class="m">'+sc.steps.length+'단계 · '+esc(sc.title||first)+'</div></div>';}).join(''):'<div class="empty">씬이 없습니다.<br>"+ 새 씬" 또는 "dialog.csv 가져오기"로 시작하세요.</div>';
+      '</div><div class="tt">'+esc(sc.title||first||'(제목 없음)')+'</div><div class="mm">'+esc(sc.memo||'')+(sc.memo?' · ':'')+sc.steps.length+'단계</div></div>';}).join(''):'<div class="empty">씬이 없습니다.<br>"+ 새 씬" 또는 "dialog.csv 가져오기"로 시작하세요.</div>';
 }
 function renderMeta(){
   const sc=cur(),on=!!sc;
-  for(const id of ['mId','mKind','mTitle']){const el=$('#'+id);el.disabled=!on;}
+  for(const id of ['mId','mKind','mTitle','mMemo']){const el=$('#'+id);el.disabled=!on;}
   $('#bDup').disabled=!on;$('#bDel').disabled=!on;
-  if(!on){$('#mId').value='';$('#mTitle').value='';return;}
+  if(!on){$('#mId').value='';$('#mTitle').value='';$('#mMemo').value='';return;}
   if(document.activeElement!==$('#mId'))$('#mId').value=sc.id;
   $('#mKind').value=sc.kind;
   if(document.activeElement!==$('#mTitle'))$('#mTitle').value=sc.title||'';
+  if(document.activeElement!==$('#mMemo'))$('#mMemo').value=sc.memo||'';
 }
 function stepIssues(){const m={};if(!S.sel)return m;validateScene(S.sel).forEach(x=>{if(x.i>=0){(m[x.i]=m[x.i]||[]).push(x);}});return m;}
 function renderLog(){
@@ -915,6 +919,7 @@ $('#scnQ').addEventListener('input',renderScenes);$('#scnK').addEventListener('c
 $('#mId').addEventListener('change',e=>renameScene(e.target.value));
 $('#mKind').addEventListener('change',e=>{const sc=cur();if(sc)commit(()=>{sc.kind=e.target.value;},null,true);});
 $('#mTitle').addEventListener('input',e=>{const sc=cur();if(sc)commit(()=>{sc.title=e.target.value;},'title:'+S.sel,true);});
+$('#mMemo').addEventListener('input',e=>{const sc=cur();if(sc)commit(()=>{sc.memo=e.target.value.slice(0,40);},'memo:'+S.sel,true);});
 document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>addStep(b.dataset.add));
 $('#bPlay').onclick=()=>play(S.step==null?0:S.step);$('#bStop').onclick=()=>stopPlay(false);$('#bFx').onclick=previewFx;
 $('#stageWrap').addEventListener('click',advance);

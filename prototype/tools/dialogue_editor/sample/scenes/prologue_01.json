@@ -2,6 +2,7 @@
   "id": "prologue_01",
   "kind": "prologue",
   "title": "새 게임 시작 샘플",
+  "memo": "길드에 처음 도착한 마스터를 리나가 맞이함",
   "steps": [
     {
       "id": "s001",

@@ -1,0 +1,37 @@
+{
+  "id": "test_dialogue_01",
+  "kind": "dialogue",
+  "title": "테스트 대화씬",
+  "memo": "편집기 동작 확인용 (배경·화자·효과)",
+  "steps": [
+    {
+      "id": "s001",
+      "type": "background",
+      "file": "lobby/lobby_counter.png",
+      "transition": "cut"
+    },
+    {
+      "id": "s002",
+      "type": "say",
+      "speaker": "lina",
+      "expr": "smile",
+      "text": "테스트 대사입니다. 첫 줄은 기본 표정으로 보입니다."
+    },
+    {
+      "id": "s003",
+      "type": "say",
+      "speaker": "adv_warrior_m",
+      "expr": "default",
+      "text": "두 번째 대사입니다. 흔들림 효과가 붙어 있습니다.",
+      "effect": ["shake"]
+    },
+    {
+      "id": "s004",
+      "type": "say",
+      "speaker": "lina",
+      "expr": "worried",
+      "text": "세 번째 대사입니다. 글자 떨림과 화면 번쩍임 효과입니다.",
+      "effect": ["tremble", "flash"]
+    }
+  ]
+}

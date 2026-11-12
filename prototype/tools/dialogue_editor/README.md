@@ -19,6 +19,15 @@ data/dialogue/
 ```
 키 순서와 들여쓰기가 고정이라 Git diff 에 바뀐 대사만 나타납니다. 예시는 `sample/` 에 있습니다.
 
+### 씬 필드
+| 필드 | 내용 |
+|---|---|
+| id | 씬 ID (파일 이름과 같음) |
+| kind | prologue · dialogue · mainquest |
+| title | 씬 목록에 굵게 보이는 제목 |
+| memo | 씬 목록 제목 아래의 한 줄 메모 (40자 이내, 없어도 됨) |
+| steps | 단계 목록 |
+
 ## 단계(step) 종류
 | type | 내용 |
 |---|---|

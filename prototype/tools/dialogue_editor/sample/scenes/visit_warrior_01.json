@@ -2,6 +2,7 @@
   "id": "visit_warrior_01",
   "kind": "dialogue",
   "title": "전사 첫 방문 샘플",
+  "memo": "전사가 위험한 의뢰를 청하고 리나가 말림",
   "steps": [
     {
       "id": "s001",
