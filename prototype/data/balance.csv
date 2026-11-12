@@ -21,6 +21,7 @@ growth,lvB,1.55,
 growth,lvCap,30|40|50,
 growth,trainPerWeek,0.1,훈련장·도서관 주간 훈련량
 growth,statCap,100,
+growth,gradeStat,0|3|4|5|6|8|10,승급하면 능력치 5개에 각각 더함 (F·E·D·C·B·A·S급으로 오를 때. 2026-11-12)
 adv,arrivalPerMonth,0.8,"arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)"
 adv,arrivalPerGrade,0.1,
 adv,startCount,5,

@@ -32,7 +32,8 @@
         lvA: 20, lvB: 1.55,                        // 다음 레벨 필요 경험치 = A × Lv^B
         lvCap: [30, 40, 50],
         trainPerWeek: 0.10,                        // 훈련장·도서관 주간 훈련량
-        statCap: 100
+        statCap: 100,
+        gradeStat: [0, 3, 4, 5, 6, 8, 10]          // 2026-11-12 승급 시 능력치 5개에 각각 (balance.csv와 같게)
       },
       adv: {
         arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,       // arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)
@@ -304,11 +305,12 @@
       if (n === 3) { if (s.st.firstStage3 == null) s.st.firstStage3 = s.week; s.st.lvAt3.push(a.lv); }
       if (a.bank > 0) { const b = a.bank; a.bank = 0; gainXp(a, b); }
     }
+    function gradeBonus(a, n) { const gb = (G.gradeStat || [])[n] || 0; for (let i = 0; i < 5; i++) a.stats[i] = Math.min(G.statCap, a.stats[i] + gb); }   // 2026-11-12 승급 보너스
     function tryGradeUp(a) {
       const lvReq = [0, 5, 10, 18, 26, 35, 45], achReq = [0, 5, 5, 7, 7, 10, 10];
       const n = a.grade + 1;
-      if (n > 6 || n > s.grade || n === 6) return; // S급은 길드 S 승급 순간에만
-      if (a.lv >= lvReq[n] && a.ach >= achReq[n]) { a.grade = n; a.ach = 0; }
+      if (n > 6 || n > s.grade + 1 || n === 6) return; // S급은 길드 S 승급 순간에만. 2026-11-12: 상한 = 길드 등급 + 1 (게임과 같음)
+      if (a.lv >= lvReq[n] && a.ach >= achReq[n]) { gradeBonus(a, n); a.grade = n; a.ach = 0; }
     }
 
     function kill(a, byDemon) {
@@ -429,7 +431,7 @@
       for (const a of idle) {
         if (a.busy > 0 || !a.alive) continue;
         const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
-        const lo = Math.max(0, a.grade + range[0]), hi = Math.min(s.grade, a.grade + range[1]);
+        const hi = Math.min(s.grade, a.grade + range[1]), lo = Math.min(hi, Math.max(0, a.grade + range[0]));   // 게임과 같음 (2026-11-12)
         const th = A.departTh[a.risk];
         const cands = s.board.map((q, i) => ({ q, i })).filter(o => o.q.g >= lo && o.q.g <= hi).sort((x, y) => y.q.g - x.q.g);
         for (const { q, i } of cands) {
@@ -522,7 +524,7 @@
       if (res.win) {
         s.st.invW++; s.grade++; s.st.reach[s.grade] = s.week; s.fame = Math.min(cfg.fame.cap, s.fame + cfg.fame.gradeUp[s.grade]); s.bossDone = 0; s.boss = []; s.bossRefill = [];
         if (s.grade === 6) {
-          for (const a of s.advs) if (a.alive && !a.external && a.grade === 5 && a.lv >= 45) a.grade = 6;
+          for (const a of s.advs) if (a.alive && !a.external && a.grade === 5 && a.lv >= 45) { gradeBonus(a, 6); a.grade = 6; }
           s.phase = 'officers'; s.officer = 0; s.mainCooldown = s.week + 4;
         }
       } else {

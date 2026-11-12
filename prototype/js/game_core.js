@@ -156,8 +156,11 @@
   }
   function tryGradeUp(s, a) {
     const lvReq = [0, 5, 10, 18, 26, 35, 45], achReq = [0, 5, 5, 7, 7, 10, 10]; const n = a.grade + 1;
-    if (n > 6 || n > s.grade || n === 6) return;
-    if (a.lv >= lvReq[n] && a.ach >= achReq[n]) { a.grade = n; a.ach = 0; if (a.career) a.career.push({ week: s.week, text: `${GR[n]}급 모험가로 승급` }); log(s, `${J(a.name, '이', '가')} ${GR[n]}급 모험가가 되었습니다.`, 'grow', { who: [a.name] }); }
+    if (n > 6 || n > s.grade + 1 || n === 6) return;   // 2026-11-12: 모험가 등급 상한 = 길드 등급 + 1 (1년 차 F급 길드에서도 E급 승급)
+    if (a.lv >= lvReq[n] && a.ach >= achReq[n]) {
+      const gb = (s.cfg.growth.gradeStat || [])[n] || 0, cap = s.cfg.growth.statCap;   // 2026-11-12: 승급 보너스 = 능력치 5개에 각각 고정값
+      for (let i = 0; i < 5; i++) a.stats[i] = Math.min(cap, a.stats[i] + gb);
+      a.grade = n; a.ach = 0; if (a.career) a.career.push({ week: s.week, text: `${GR[n]}급 모험가로 승급` }); log(s, `${J(a.name, '이', '가')} ${GR[n]}급 모험가가 되었습니다.`, 'grow', { who: [a.name], gup: { id: a.id, g: n, bonus: gb } }); }   // gup: 축하 팝업용
   }
 
   // ---------- 직업과 전직 (M3-1 성장 · M3-2 전직) ----------
@@ -377,7 +380,7 @@
     for (const a of idle) {
       if (a.state !== 'town') continue;
       const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
-      const lo = Math.max(0, a.grade + range[0]), hi = Math.min(s.grade, a.grade + range[1]);
+      const hi = Math.min(s.grade, a.grade + range[1]), lo = Math.min(hi, Math.max(0, a.grade + range[0]));   // 2026-11-12: 길드보다 1등급 높은 모험가도 길드 최고 등급 의뢰는 고름
       const th = s.cfg.adv.departTh[a.risk];
       const cands = s.board.filter(q => q.g >= lo && q.g <= hi).sort((x, y) => y.g - x.g);
       for (const q of cands) {

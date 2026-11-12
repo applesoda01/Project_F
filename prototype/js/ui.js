@@ -169,6 +169,7 @@
   }
   UI.toast = toast;
   UI.onLogs = function (logs) { // 새 기록들 (오래된 것부터)
+    const gups = logs.filter(L => L.gup).map(L => L.gup); if (gups.length) gupShow(gups);   // 2026-11-12 모험가 승급 축하 카드
     for (const L of logs) {
       UI.logLine(L.text, L.kind); // 로그박스로 흘려보냄 (알림은 전직 제안만 따로 띄움)
       if (L.kind === 'promo' && L.text.includes('제안합니다')) toast(L.text, L.kind);
@@ -176,6 +177,29 @@
       if (L.kind === 'promo' && L.text.includes('제안합니다')) { const nm = L.text.split(/[이가] \d차/)[0]; UI.say(UI.lines('promo_ready', { name: nm })); }
     }
   };
+
+  // ---------- 모험가 승급 축하 카드 (2026-11-12) ----------
+  // 같은 주에 승급한 모험가를 카드 하나에 모음. 게임은 멈추지 않고, 확인을 누르거나 바깥을 누르면 닫힘. 여러 주가 쌓이면 차례로 보여 줌
+  const gupQ = []; let gupEl = null;
+  const STAT_NM = ['힘', '민첩', '지력', '정신', '기교'];
+  function gupShow(list) { gupQ.push(list); if (!gupEl || !gupEl.classList.contains('on')) gupNext(); }
+  function gupNext() {
+    const list = gupQ.shift(); if (!list) { if (gupEl) gupEl.classList.remove('on'); return; }
+    if (!gupEl) { gupEl = document.createElement('div'); gupEl.id = 'gupLay'; stage.ui.appendChild(gupEl); gupEl.addEventListener('pointerdown', e => { if (e.target === gupEl || e.target.closest('[data-gup-ok]')) gupNext(); }); }
+    const advs = list.map(x => Object.assign({ a: s.advs.find(b => b.id === x.id) }, x)).filter(x => x.a);
+    if (!advs.length) { gupNext(); return; }
+    const g = Math.max(...advs.map(x => x.g)), L = GR[g], bonus = advs[0].bonus, one = advs.length === 1 ? advs[0].a : null;
+    const people = advs.map(x => `<div class="gup-p"><span class="gup-face" style="${faceStyle(x.a, 72, 376, 36)}"></span><b>${esc(x.a.name)}</b><em>${esc(x.a.cls)} Lv ${x.a.lv}</em></div>`).join('');
+    const stats = STAT_NM.map((n, i) => `<span class="gup-st" style="animation-delay:${.55 + i * .09}s">${n}${one ? ` <i>${Math.round(one.stats[i] - bonus)}</i>→<b>${Math.round(one.stats[i])}</b>` : ''} <u>+${bonus}</u></span>`).join('');
+    const who = one ? `${esc(one.name)} 씨` : '여러분';
+    gupEl.innerHTML = `<div class="gup-box"><img class="gup-badge" src="assets/ui/hud/badge_${L}.png" alt="${L}">
+      <h2>${L}급 승급!</h2><div class="gup-ps">${people}</div>
+      <div class="gup-sub">능력치 5개에 각각 +${bonus}</div><div class="gup-sts">${stats}</div>
+      <p class="gup-lina"><span class="gup-lf"></span>축하해요, ${who}! 이제 ${L}급 모험가예요.</p>
+      <button class="ux-btn gup-ok" data-gup-ok>확인</button></div>`;
+    gupEl.classList.remove('on'); void gupEl.offsetWidth; gupEl.classList.add('on');
+  }
+  UI.gupShow = gupShow;   // 시험용
 
   // ---------- 팝업 틀 ----------
   const TITLES = { sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
