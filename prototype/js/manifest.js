@@ -20,6 +20,7 @@
   add('iso_chair_r', ISO + 'chair_r.png', 138, 202, { color: '#a8784a' });
   // F급 장식 8종 (2026-11-12 자유 배치, 그림은 2배 크기 → 0.5배로 그림. docs/design/guild_interior.md 10-2)
   for (const [k, w, h] of [['plant', 159, 220], ['crest', 122, 180], ['locker', 160, 264], ['banner', 169, 256], ['bench', 216, 193], ['map', 146, 196], ['fireplace', 183, 280], ['trophy', 167, 256]]) add('deco_' + k, 'deco/deco_' + k + '.png', w / 2, h / 2, { optional: true, color: '#8a6a46' });
+  add('ui_install', 'ui/deco_menu/deco_install.png', 96, 96, { optional: true, color: '#b06a3a' });   // 건설 연출의 망치 (2026-11-12)
   // 시설 조각 7장 (2026-11-12 롤오버 빛): 원본 배경에서 오려 낸 원래 크기 그림. 위치·윤곽선은 lobby.js FAC_HOT
   for (const [k, w, h] of [['board', 276, 279], ['bar', 326, 267], ['sale', 237, 186], ['doorL', 112, 226], ['doorR', 115, 227], ['doorL_open', 117, 226], ['doorR_open', 114, 227]]) add('hot_' + k, ISO + 'hot/fac_' + k + '.png', w, h, { optional: true, color: '#b08a5a' });
   for (const k of ['idle', 'greet', 'guide', 'paper', 'thanks']) add('iso_lina_' + k, ISO + `lina_${k}.webp`, 2304, 1152, { color: '#6b4a7a' });

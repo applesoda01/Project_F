@@ -213,6 +213,86 @@
       if (!soft) { g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = .15; f(); g.restore(); }
     };
   }
+  // ---------- 업그레이드 · 건설 · 놓기 연출 (2026-11-12, guild_interior.md 10-11) ----------
+  // Lobby.fxUpgrade(시설) 약 1.2초 / Lobby.fxBuild(시설) 약 1.6초 / Lobby.fxPoof(x, y) 약 0.4초. 시간은 그리기 시간 t(초) 기준
+  const FX = [];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const ease = x => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
+  function facBox(s, id) {   // 시설 그림 [그림, x, y, w, h] (접수대는 별도 그림, 나머지는 조각)
+    if (id === '접수대') { const it = A.items.iso_counter; return [it && it.img, I.COUNTER_AT[0], I.COUNTER_AT[1], (it && it.w) || 320, (it && it.h) || 220]; }
+    const F = FAC_HOT.find(x => x.id === id); if (!F) return null;
+    const H = hotOf(s, F), it = A.items[H.img]; return [it && it.img, H.at[0], H.at[1], it ? it.w : 100, it ? it.h : 100];
+  }
+  function fxUpgrade(id) { FX.push({ k: 'up', id, t0: null, parts: Array.from({ length: 18 }, () => ({ x: rnd(-.5, .5), vy: rnd(140, 260), d: rnd(.0, .35), r: rnd(2, 4.5) })) }); }
+  function fxBuild(id) { FX.push({ k: 'build', id, t0: null, dust: Array.from({ length: 14 }, () => ({ a: rnd(0, 6.283), v: rnd(50, 130), r: rnd(14, 30) })) }); }
+  function fxPoof(x, y) { FX.push({ k: 'poof', x, y, t0: null, dust: Array.from({ length: 8 }, (_, i) => ({ a: i / 8 * 6.283 + rnd(-.3, .3), v: rnd(45, 80), r: rnd(10, 17) })) }); }
+  const FX_LEN = { up: 1.2, build: 1.6, poof: .45 };
+  function fxShake(t) {
+    for (const f of FX) if (f.k === 'build' && f.t0 != null) { const e = t - f.t0; if (e < .9) { const hit = (e % .3) / .3; if (hit > .45 && hit < .6) return [rnd(-3, 3), rnd(-2, 2)]; } }
+    return null;
+  }
+  function floatText(g, txt, x, y, e, dur) {   // 위로 떠오르며 사라지는 한글 글자
+    const p = e / dur, a = p < .15 ? p / .15 : p > .7 ? (1 - p) / .3 : 1;
+    g.save(); g.globalAlpha = Math.max(0, a); g.font = '800 34px "Pretendard", "Noto Sans KR", sans-serif'; g.textAlign = 'center'; g.lineJoin = 'round';
+    const yy = y - 60 * ease(p); g.lineWidth = 7; g.strokeStyle = '#4a2a10'; g.strokeText(txt, x, yy); g.fillStyle = '#ffe17a'; g.fillText(txt, x, yy);
+    g.restore();
+  }
+  function dustPuff(g, x, y, list, e, dur, col) {
+    const p = Math.min(1, e / dur);
+    for (const d of list) { const rr = d.r * (.6 + .8 * ease(p)), dx = Math.cos(d.a) * d.v * ease(p), dy = Math.sin(d.a) * d.v * .45 * ease(p);
+      g.beginPath(); g.arc(x + dx, y + dy - 6 * p, rr, 0, 6.283); g.fillStyle = `rgba(${col},${(.75 * (1 - p)).toFixed(3)})`; g.fill(); }
+  }
+  function fxDraw(g, s, t, layer) {
+    Lobby.fxT = t;   // 확인용 (연출 장면을 멈춰 찍을 때)
+    for (let i = FX.length - 1; i >= 0; i--) {
+      const f = FX[i]; if (f.t0 == null) f.t0 = t;
+      const e = t - f.t0; if (e > FX_LEN[f.k]) { if (layer === 'post') FX.splice(i, 1); continue; }
+      if (f.k === 'poof') { if (layer === 'post') dustPuff(g, f.x, f.y, f.dust, e, FX_LEN.poof, '214,190,150'); continue; }
+      const B = facBox(s, f.id); if (!B) continue;
+      const [img, x, y, w, h] = B, cx = x + w / 2, by = y + h;
+      if (f.k === 'up') {
+        if (layer === 'pre' && img && e < .45) {   // 번쩍이며 1.08배로 튐
+          const sc = 1 + .08 * Math.sin(Math.min(1, e / .35) * Math.PI), fl = Math.max(0, 1 - e / .45);
+          g.save(); g.translate(cx, by); g.scale(sc, sc); g.drawImage(img, -w / 2, -h, w, h);
+          g.globalCompositeOperation = 'lighter'; g.globalAlpha = .55 * fl; g.drawImage(img, -w / 2, -h, w, h); g.restore();
+        }
+        if (layer === 'post') {
+          const p = e / FX_LEN.up, colA = (p < .2 ? p / .2 : 1 - (p - .2) / .8) * .5;   // 빛기둥
+          if (colA > 0) {   // 가장자리가 부드러운 세로 타원 빛기둥
+            const R = w * .34, H2 = (h + 150) / 2, my = by - H2;
+            g.save(); g.globalCompositeOperation = 'lighter'; g.translate(cx, my); g.scale(1, H2 / R);
+            const gr = g.createRadialGradient(0, 0, 0, 0, 0, R); gr.addColorStop(0, `rgba(255,224,120,${colA.toFixed(3)})`); gr.addColorStop(.6, `rgba(255,214,100,${(colA * .45).toFixed(3)})`); gr.addColorStop(1, 'rgba(255,210,100,0)');
+            g.fillStyle = gr; g.beginPath(); g.arc(0, 0, R, 0, 6.283); g.fill(); g.restore(); }
+          for (const q of f.parts) { const ee = e - q.d; if (ee < 0 || ee > .9) continue; const a = 1 - ee / .9;   // 반짝이
+            g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(255,236,150,${a.toFixed(3)})`; g.beginPath(); g.arc(cx + q.x * w * .8, by - 20 - q.vy * ee, q.r, 0, 6.283); g.fill(); g.restore(); }
+          floatText(g, '★ 업그레이드!', cx, y - 10, e, FX_LEN.up);
+        }
+        continue;
+      }
+      if (f.k === 'build') {
+        const open = f.id === '집무실' || f.id === '관리소';
+        if (layer === 'pre' && open) {   // 열린 문 위에 닫힌 문 조각을 덮었다가 0.9~1.3초에 걷어 냄
+          const F = FAC_HOT.find(x => x.id === f.id), it = F && A.items[F.img], a = e < .9 ? 1 : Math.max(0, 1 - (e - .9) / .4);
+          if (it && it.img && a > 0) { g.save(); g.globalAlpha = a; g.drawImage(it.img, F.at[0], F.at[1]); g.restore(); }
+        }
+        if (layer === 'post') {
+          const hm = A.items.ui_install;
+          if (e < .9 && hm && hm.img) {   // 망치 3번 내려치기
+            const k = (e % .3) / .3, ang = k < .5 ? -.9 + 1.2 * (k / .5) : .3 - 1.2 * ((k - .5) / .5);
+            g.save(); g.translate(cx + 30, by - h * .45); g.rotate(ang); g.drawImage(hm.img, -10, -78, 84, 84); g.restore();
+            if (k > .45 && k < .75) for (let j = 0; j < 6; j++) { const a2 = j / 6 * 6.283 + e * 9, rr = 10 + 22 * ((k - .45) / .3);   // 불꽃
+              g.fillStyle = 'rgba(255,214,90,.9)'; g.beginPath(); g.arc(cx + 2 + Math.cos(a2) * rr, by - h * .3 + Math.sin(a2) * rr * .6, 2.5, 0, 6.283); g.fill(); }
+            dustPuff(g, cx, by - 8, f.dust.slice(0, 5), (e % .3), .3, '190,160,120');
+          }
+          if (e > .8 && e < 1.5) dustPuff(g, cx, by - 10, f.dust, e - .8, .7, '210,185,150');   // 큰 먼지 구름
+          if (e > 1.0) { const a = Math.min(1, (e - 1.0) / .2) * (1 - Math.max(0, (e - 1.3) / .3));   // 문에서 새어 나오는 빛
+            const gr = g.createRadialGradient(cx, by - h * .45, 6, cx, by - h * .45, h * .6); gr.addColorStop(0, `rgba(255,220,130,${(.5 * a).toFixed(3)})`); gr.addColorStop(1, 'rgba(255,220,130,0)');
+            g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.fillRect(cx - h, by - h * 1.1, h * 2, h * 1.3); g.restore(); }
+          if (e > 1.0) floatText(g, '건설 완료!', cx, y - 10, e - 1.0, .6);
+        }
+      }
+    }
+  }
   // 길게 누르기 원 게이지: 어두운 바탕 원 + 금빛 호가 0 → 360° 차오름
   function pressRing(g, P) {
     const r = 26; g.save(); g.lineCap = 'round';
@@ -291,7 +371,7 @@
     }
   }
 
-  const Lobby = { SLOTS, FILL, TABLES, Board, BT, layout, floorImg, wallImg, placedDrawables, pick, hitItem, hitAt, FAC_HOT, drawPlace, ghostUid: null, overlay: null, hover: null, press: null };
+  const Lobby = { SLOTS, FILL, TABLES, Board, BT, layout, floorImg, wallImg, placedDrawables, pick, hitItem, hitAt, FAC_HOT, drawPlace, ghostUid: null, overlay: null, hover: null, press: null, fxUpgrade, fxBuild, fxPoof, fxList: FX };
   Lobby.update = function (s, dt) {
     const tl = tablesOf(s), key = JSON.stringify(tl);
     if (key !== lastTables) { lastTables = key; root.Director.layout(tl); }
@@ -299,6 +379,7 @@
   };
   Lobby.draw = function (g, s, t, opt) {
     opt = opt || {};
+    const shk = fxShake(t); if (shk) { g.save(); g.translate(shk[0], shk[1]); }   // 건설 망치질 때 살짝 흔들림
     const cap = root.GuildGame.boardCap(s);
     Board.sync(s, cap);
     // 1~3 벽·바닥·게시판
@@ -308,6 +389,7 @@
       const op = A.items.iso_bg_open, m = (s.built['집무실'] ? 1 : 0) | (s.built['관리소'] ? 2 : 0);
       if (op && op.img && m) for (const [bit, r] of [[1, [810, 180, 155, 268]], [2, [965, 180, 152, 268]]]) if (m & bit) g.drawImage(op.img, r[0] * op.img.width / 1920, r[1] * op.img.height / 1080, r[2] * op.img.width / 1920, r[3] * op.img.height / 1080, r[0], r[1], r[2], r[3]);
     }
+    fxDraw(g, s, t, 'pre');   // 연출: 시설 번쩍임 · 닫힌 문 덮개 (의뢰서·모험가보다 뒤)
     if (Lobby.hover && Lobby.hover.kind === 'fac' && Lobby.hover.id !== '접수대') facGlow(g, s, Lobby.hover.id, t);   // 롤오버 빛: 의뢰서보다 먼저 그려 게시판 위 의뢰서가 가려지지 않게 (2026-11-12 A작업)
     // 4 의뢰서
     const usedSlots = new Set([...Board.notes.values()].map(n => n.slot));
@@ -332,7 +414,9 @@
     // 9 말풍선
     root.Director.bubbles(g);
     if (Lobby.press) pressRing(g, Lobby.press);   // 길게 누르기 게이지 (A작업)
+    fxDraw(g, s, t, 'post');   // 연출: 빛기둥 · 반짝이 · 망치 · 먼지 · 글자 (맨 앞)
     if (opt.debug) debug(g);
+    if (shk) g.restore();
   };
   function debug(g) { // 슬롯·자리·좌표 확인용
     g.save(); g.fillStyle = 'rgba(255,0,120,.9)'; g.font = '11px sans-serif'; g.textAlign = 'center';

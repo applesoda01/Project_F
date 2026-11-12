@@ -975,6 +975,12 @@
     pmLay.classList.remove('on'); pmBar.classList.remove('on');
     hooks.setSpeed && hooks.setSpeed(pmSp);
   };
+  function poofAt(uid) {   // 놓은 자리에 작은 먼지 "뿅" (2026-11-12)
+    const it = s.place.items.find(x => x.uid === uid), L = root.Lobby; if (!it || !L.fxPoof) return;
+    const bs = L.placedDrawables(null, it).map(o => o.box).filter(Boolean); if (!bs.length) return;
+    const x0 = Math.min(...bs.map(b => b[0])), x1 = Math.max(...bs.map(b => b[0] + b[2])), y1 = Math.max(...bs.map(b => b[1] + b[3]));
+    L.fxPoof((x0 + x1) / 2, y1 - 6);
+  }
   function pmHover(pt) {
     if (!PM) return;
     const at = root.Lobby.pick(PM.id, pt[0], pt[1]);
@@ -985,9 +991,9 @@
     if (!PM || !PM.at) return;
     const d = Gm.DECO_BY[PM.id];
     if (!PM.ok) { toast('여기에는 놓을 수 없습니다.', 'warn'); return; }
-    if (PM.uid != null) { Gm.placeMove(s, PM.uid, PM.at); UI.placeEnd(false); hooks.changed(); return; }
-    if (!Gm.placeBuy(s, PM.id, PM.at)) { toast('놓지 못했습니다.', 'warn'); return; }
-    hooks.changed();
+    if (PM.uid != null) { const uid = PM.uid; Gm.placeMove(s, uid, PM.at); UI.placeEnd(false); hooks.changed(); poofAt(uid); return; }
+    const it = Gm.placeBuy(s, PM.id, PM.at); if (!it) { toast('놓지 못했습니다.', 'warn'); return; }
+    hooks.changed(); poofAt(it.uid);
     if (d.max > 1 && pmCanBuy(d)) { PM.at = null; PM.ok = false; UI.placeStart(PM.id, null); return; }   // 테이블은 이어서 더 놓을 수 있게
     UI.placeEnd(false);
   }
@@ -1056,8 +1062,8 @@
     pmMenu.classList.add('on');
   }
   function facCardAct(f, act) {
-    if (act === 'install') { if (Gm.build(s, f)) { hooks.changed(); toast(`${FAC_NAME[f] || f}을(를) 지었습니다.`, 'info'); facCard(f, [0, 0]); } return; }
-    if (act === 'upgrade') { if (Gm.upgrade(s, f)) { hooks.changed(); toast(`${FAC_NAME[f] || f} 업그레이드: ${FAC_UP[f]}`, 'info'); facCard(f, [0, 0]); } return; }
+    if (act === 'install') { if (Gm.build(s, f)) { hooks.changed(); root.Lobby.fxBuild && root.Lobby.fxBuild(f); toast(`${FAC_NAME[f] || f}을(를) 지었습니다.`, 'info'); facCard(f, [0, 0]); } return; }
+    if (act === 'upgrade') { if (Gm.upgrade(s, f)) { hooks.changed(); root.Lobby.fxUpgrade && root.Lobby.fxUpgrade(f); toast(`${FAC_NAME[f] || f} 업그레이드: ${FAC_UP[f]}`, 'info'); facCard(f, [0, 0]); } return; }
     if (act === 'open') { const op = FAC_OPEN[f]; if (!op) return; pmMenuClose(); UI.open(op[0]); }
   }
   function facClick(f, pt) { facCard(f, pt || [960, 540]); }
