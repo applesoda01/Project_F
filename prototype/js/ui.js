@@ -167,7 +167,7 @@
   // ---------- 팝업 틀 ----------
   const TITLES = { sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
-    if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (시설 → 판매창구)', 'info'); return; }
+    if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
     popup = name; q('#popTitle').textContent = TITLES[name];
     q('#popBack').classList.add('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.toggle('on', b.dataset.pop === name));
     q('#popBody').innerHTML = ''; q('#popBody').dataset.g = ''; q('#popBody').dataset.p = name; renderPopup(); q('#popBody').scrollTop = 0;
@@ -697,12 +697,12 @@
   const FAC_UP = { 게시판: '의뢰 기한 +1주', 접수대: '리나 응대 −0.5초', 주점: '음식·술 1개당 +5G', 판매창구: '소재 1개당 +3G', 관리소: '전직 수락 확률 +10%p' };   // 지금 게임에 실제 효과가 있는 시설
   const FAC_LABEL = { 게시판: '의뢰 게시판', 주점: '주점·식당', 판매창구: '소재 판매 창구', 관리소: '모험가 관리소', 집무실: '길드 마스터 집무실' };
   // 건설 메뉴 (2026-11-12 C단계, docs/design/guild_interior.md 10-4): 시설 / 장식 / 테이블 탭. 장식·테이블은 고르면 로비 배치 모드
-  let facTab = 'fac';
+  let facTab = 'deco';   // 2026-11-12: 시설 탭 없앰 → 시설 짓기·업그레이드는 로비의 시설 카드에서 (guild_interior.md 10-10)
   function facHtml() {
     const DE = Gm.DECO, nT = Gm.placedN(s, 'table'), tT = (DE.find(d => d.id === 'table') || {}).max || 4;
     const nD = DE.filter(d => d.id !== 'table' && Gm.placedN(s, d.id)).length, tD = DE.filter(d => d.id !== 'table').length;
-    const tabs = [['fac', '시설', ''], ['deco', '장식', `${nD}/${tD}`], ['table', '테이블', `${nT}/${tT}`]];
-    return `<div class="ux-tabs bm-tabs">${tabs.map(([k, n, c]) => `<button data-ftab="${k}" class="${facTab === k ? 'on' : ''}">${n}${c ? `<span class="cnt">${c}</span>` : ''}</button>`).join('')}</div>` + (facTab === 'fac' ? facListHtml() : decoListHtml(facTab));
+    const tabs = [['deco', '장식', `${nD}/${tD}`], ['table', '테이블', `${nT}/${tT}`]];
+    return `<div class="ux-tabs bm-tabs">${tabs.map(([k, n, c]) => `<button data-ftab="${k}" class="${facTab === k ? 'on' : ''}">${n}${c ? `<span class="cnt">${c}</span>` : ''}</button>`).join('')}</div>` + decoListHtml(facTab === 'table' ? 'table' : 'deco');
   }
   const DECO_ICON = id => id === 'table' ? 'assets/lobby_iso/table.png' : `assets/deco/${(Gm.DECO_BY[id] || {}).img}.png`;
   const DECO_WHERE = { floor: '바닥', wall: '벽', fire: '벽 (벽난로 자리만)', table: '바닥 3칸' };
@@ -936,27 +936,38 @@
     stage.canvas.addEventListener('mousemove', e => hoverAt(pmPt(e)));
     stage.canvas.addEventListener('mouseleave', () => hoverAt(null));
     pmMenu.addEventListener('click', e => {
-      const b = e.target.closest('[data-pm]'); if (!b) return;
+      const b = e.target.closest('[data-pm]'); if (!b || b.classList.contains('lock')) return;
+      if (pmMenu.dataset.fac) { facCardAct(pmMenu.dataset.fac, b.dataset.pm); return; }   // 시설 카드
       const it = s.place.items.find(x => x.uid === +pmMenu.dataset.uid); if (!it) { pmMenuClose(); return; }
       if (b.dataset.pm === 'move') { pmMenuClose(); UI.placeStart(it.id, it.uid); }
       else if (b.dataset.pm === 'del') {
-        if (!b.classList.contains('sure')) { b.classList.add('sure'); b.innerHTML = '정말 치울까요? <small>(환불 없음)</small>'; return; }
+        if (!b.classList.contains('sure')) { b.classList.add('sure'); pmMenu.querySelector('.pm-tip').textContent = '한 번 더 누르면 치웁니다 (환불 없음)'; pmMenu.classList.add('warn'); return; }
         Gm.placeDestroy(s, it.uid); pmMenuClose(); hooks.changed(); toast(`${(Gm.DECO_BY[it.id] || {}).name}을(를) 치웠습니다. 다시 놓으려면 새로 사야 합니다.`, 'info');
-      } else pmMenuClose();
+      }
     });
+    pmMenu.addEventListener('mouseover', e => { const b = e.target.closest('[data-pm]'); if (b && !pmMenu.classList.contains('warn')) pmMenu.querySelector('.pm-tip').textContent = b.dataset.tip; });
+    pmMenu.addEventListener('mouseleave', () => { if (pmMenu.dataset.fac && !pmMenu.classList.contains('warn')) pmMenu.querySelector('.pm-tip').textContent = ''; });
+    pmMenu.addEventListener('mouseleave', () => { if (!pmMenu.classList.contains('warn')) pmMenu.querySelector('.pm-tip').textContent = ''; });
+    document.addEventListener('pointerdown', e => { if (pmMenu.classList.contains('on') && !e.target.closest('#placeMenu') && e.target !== stage.canvas) pmMenuClose(); }, true);   // 닫기 버튼 대신 다른 곳을 누르면 닫힘
+    // A작업 (2026-11-12): 놓인 물건을 0.4초 누르고 있으면 옮기기 모드. 누르는 동안 금빛 원이 차오름. 누른 채 끌어서 놓기
+    stage.canvas.addEventListener('pointerdown', e => { if (e.button === 0) pressStart(pmPt(e)); });
+    stage.canvas.addEventListener('pointermove', e => { if (PRESS) { const h = root.Lobby.hitAt(s, ...pmPt(e)); if (!h || h.kind !== 'item' || h.uid !== PRESS.uid) pressCancel(); } });
+    stage.canvas.addEventListener('pointerup', () => pressCancel());
+    stage.canvas.addEventListener('pointerleave', () => pressCancel());
+    pmLay.addEventListener('pointerup', e => { if (PM && PM.drag) { pmHover(pmPt(e)); if (PM.ok) pmDrop(); else UI.placeEnd(true); } });
   }
   const pmCanBuy = d => Gm.placedN(s, d.id) < d.max && s.gold >= d.price;
-  UI.placeStart = function (id, uid) {
+  UI.placeStart = function (id, uid, drag) {
     const d = Gm.DECO_BY[id]; if (!d) return;
     pmEls(); pmMenuClose();
     if (uid == null && !pmCanBuy(d)) { toast(Gm.placedN(s, id) >= d.max ? `${d.name}은(는) ${d.max}개까지 놓을 수 있습니다.` : `금고가 부족합니다. (${fmt(d.price)}G)`, 'warn'); return; }
     if (popup) UI.close();
     if (!PM) pmSp = curSp;
-    PM = { id, uid: uid == null ? null : uid, at: null, ok: false };
+    PM = { id, uid: uid == null ? null : uid, at: null, ok: false, drag: !!drag };   // drag: 길게 눌러 들어와 아직 버튼을 누르고 있음 → 손을 떼면 놓기
     hooks.setSpeed && hooks.setSpeed(0);
     root.Lobby.ghostUid = PM.uid; root.Lobby.overlay = (g, list) => { if (PM) root.Lobby.drawPlace(g, s, list, PM); };
     pmLay.classList.add('on'); pmBar.classList.add('on');
-    pmBar.innerHTML = `<b>${d.name}</b> ${PM.uid != null ? '옮기기 · 무료' : `놓기 · ${fmt(d.price)}G`}<span class="pb-hint">초록 칸을 누르세요 · 우클릭/Esc 취소</span><button class="ux-btn sm" data-pmx>취소</button>`;
+    pmBar.innerHTML = `<b>${d.name}</b> ${PM.uid != null ? '옮기기 · 무료' : `놓기 · ${fmt(d.price)}G`}<span class="pb-hint">${PM.drag ? '끌어서 초록 칸에 놓으세요 · 빨간 칸이면 제자리로' : '초록 칸을 누르세요 · 우클릭/Esc 취소'}</span><button class="ux-btn sm" data-pmx>취소</button>`;
   };
   UI.placeEnd = function (cancel) {
     if (!PM) return;
@@ -986,7 +997,7 @@
   function hoverAt(pt) {
     const L = root.Lobby; if (!L) return;
     let h = pt && lobbyIdle() ? L.hitAt(s, pt[0], pt[1]) : null;
-    if (pmMenu && pmMenu.classList.contains('on')) h = { kind: 'item', uid: +pmMenu.dataset.uid };   // 메뉴가 떠 있는 동안은 그 물건만
+    if (pmMenu && pmMenu.classList.contains('on')) h = pmMenu.dataset.fac ? { kind: 'fac', id: pmMenu.dataset.fac } : { kind: 'item', uid: +pmMenu.dataset.uid };   // 메뉴·카드가 떠 있는 동안은 그 물건·시설만
     L.hover = h; stage.canvas.style.cursor = h && pt ? 'pointer' : '';
     if (!pmTip) return;
     if (h && h.kind === 'fac' && pt) {
@@ -995,29 +1006,98 @@
       pmTip.style.left = Math.round(pt[0] + 18) + 'px'; pmTip.style.top = Math.round(pt[1] + 22) + 'px'; pmTip.classList.add('on');
     } else pmTip.classList.remove('on');
   }
-  function facClick(f) {
-    if (f === '접수대') { if (root.LinaMenu && !root.LinaMenu.blocked()) root.LinaMenu.toggle(); return; }   // 접수대 = 리나 메뉴 (길드 화면에서만)
-    if (f === '게시판') { UI.open('board'); return; }
-    if (f === '주점' && s.built['주점']) { UI.open('meals'); return; }
-    if (f === '판매창구' && s.built['판매창구']) { UI.open('sell'); return; }
-    facTab = 'fac'; UI.open('fac');   // 문(집무실·관리소)·짓지 않은 시설 → 건설 메뉴 시설 탭
+  // ---------- 시설 정보 카드 (2026-11-12, guild_interior.md 10-10) ----------
+  // 클릭 = 카드. 왼쪽 = 업그레이드(짓지 않았으면 그 자리에 설치), 가운데 = 열기(느낌표). 장식 팝업과 같은 틀(#placeMenu)
+  const FAC_OPEN = { 게시판: ['board', '의뢰 게시판 열기'], 접수대: ['advs', '모험가 목록 열기'], 주점: ['meals', '식당 열기'], 판매창구: ['sell', '판매 창구 열기'], 관리소: ['promo', '전직 제안 열기'] };   // 접수대 → 모험가 목록 (사용자 요청)
+  function facInfo(f) {   // [지금 효과 한 줄, 운영 숫자]
+    const up = Gm.upg(s, f);
+    if (f === '게시판') { const W = Gm.expireWeeks(s), soon = s.board.filter(q => W - (s.week - q.posted) <= 1).length; return [`의뢰가 붙는 곳 · 붙은 의뢰는 ${W}주 뒤 사라집니다`, `붙은 의뢰 ${s.board.length}/${Gm.boardCap(s)} · 기한 1주 남은 의뢰 ${soon}`]; }
+    if (f === '접수대') { const W = root.Director ? root.Director.winUse : null, n = W ? [W.meal, W.quest, W.sale].reduce((a, u) => a + u.filter(x => x != null).length, 0) : 0; return [`리나가 접수·보고를 받습니다 · 응대 ${up ? '1.0' : '1.5'}초`, `지금 줄 선 모험가 ${n}명`]; }
+    if (f === '주점') { const M = s.month || {}, meals = Object.values(M.dishes || {}).reduce((a, b) => a + b, 0); return ['출발 전 식사와 술을 팝니다' + (up ? ' · 1개당 +5G 적용 중' : ''), `이번 달 식사 ${meals} · 술 ${M.drinks || 0} · 수입 ${fmt(Math.round((M.meal || 0) + (M.tavern || 0)))}G · 좌석 ${Gm.seatsOf(s)}석`]; }
+    if (f === '판매창구') { const n = Object.values(s.mats || {}).reduce((a, b) => a + (b || 0), 0); return ['소재를 팔아 수입을 얻습니다' + (up ? ' · 1개당 +3G 적용 중' : ''), `보관 중인 소재 ${n}개`]; }
+    if (f === '관리소') return ['2차 전직을 할 수 있게 됩니다' + (up ? ' · 수락 확률 +10% 적용 중' : ''), `전직 제안 ${(s.proposals || []).length}건`];
+    if (f === '집무실') return ['메인·서브 퀘스트에 모험가를 지명합니다', '지명 기능은 준비 중입니다'];
+    return ['', ''];
   }
+  function facCard(f, pt) {
+    const L = root.Lobby, F = (L.FAC_HOT || []).find(x => x.id === f), built = !!s.built[f], g = Gm.FAC_COST[f] == null ? 0 : Gm.FAC_COST[f];
+    let bx;
+    if (f === '접수대') { const it = root.Assets.items.iso_counter; bx = [1020, 410, (it && it.w) || 320, (it && it.h) || 220]; }
+    else if (F) { const P = F.open && built ? F.open.poly : F.poly, xs = P.map(p => p[0]), ys = P.map(p => p[1]); bx = [Math.min(...xs), Math.min(...ys), Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)]; }
+    else bx = [pt[0], pt[1], 0, 0];
+    const IC = n => `<i style="background-image:url(assets/ui/deco_menu/${n}.png)"></i>`;
+    const [fx, stat] = built ? facInfo(f) : [FAC_UP[f] ? '' : '', ''];
+    let left, state;
+    if (!built) {
+      const cost = Gm.facCost(s, f), lockG = g > s.grade, poor = s.gold < cost;
+      state = '<span class="fc-st off">미설치</span>';
+      left = `<button class="pm-ic${lockG || poor ? ' lock' : ''}" data-pm="install" data-tip="${lockG ? `${GR[g]}급부터 지을 수 있습니다` : poor ? `설치 ${fmt(cost)}G · ${fmt(cost - s.gold)}G 부족` : `설치 ${fmt(cost)}G`}">${IC('deco_install')}<b class="pm-cost">${fmt(cost)}G</b></button>`;
+    } else if (FAC_UP[f] && !Gm.upg(s, f)) {
+      const cost = Gm.upgCost(s, f), poor = s.gold < cost;
+      state = '<span class="fc-st on">운영 중</span>';
+      left = `<button class="pm-ic${poor ? ' lock' : ''}" data-pm="upgrade" data-tip="업그레이드 ${fmt(cost)}G · ${FAC_UP[f]}${poor ? ` · ${fmt(cost - s.gold)}G 부족` : ''}">${IC('deco_up')}<b class="pm-cost">${fmt(cost)}G</b></button>`;
+    } else if (FAC_UP[f]) {
+      state = '<span class="fc-st done">★ 업그레이드 완료</span>';
+      left = `<button class="pm-ic lock done" data-pm="upgrade" data-tip="업그레이드 완료 · ${FAC_UP[f]} 적용 중">${IC('deco_up')}<b class="pm-cost">★</b></button>`;
+    } else {
+      state = '<span class="fc-st on">운영 중</span>';
+      left = `<button class="pm-ic lock" data-pm="upgrade" data-tip="업그레이드 · 준비 중">${IC('deco_up')}</button>`;
+    }
+    const op = FAC_OPEN[f];
+    const mid = !built ? '' : op ? `<button class="pm-ic" data-pm="open" data-tip="${op[1]}">${IC('fac_open')}</button>` : `<button class="pm-ic lock" data-pm="open" data-tip="준비 중">${IC('fac_open')}</button>`;
+    const pre = !built ? (f === '집무실' ? '지으면: 메인·서브 퀘스트에 모험가를 지명 (준비 중) · 왼쪽 문이 열립니다' : f === '관리소' ? '지으면: 2차 전직을 할 수 있게 됩니다 · 오른쪽 문이 열립니다' : '') : '';
+    pmMenu.dataset.uid = ''; pmMenu.dataset.fac = f; pmMenu.classList.remove('warn'); pmMenu.classList.add('fac');
+    pmMenu.innerHTML = `<div class="fc-hd">${badge(g)}<b class="pm-nm">${FAC_NAME[f] || f}</b>${state}</div>`
+      + (built ? `<div class="fc-fx">${fx}</div><div class="fc-stat">${stat}</div>` : `<div class="fc-fx">${pre}</div>`)
+      + `<div class="pm-ics">${left}${mid}</div><div class="pm-tip"></div>`;
+    const above = bx[1] - 8 >= 300;
+    pmMenu.style.left = Math.round(Math.max(260, Math.min(1660, bx[0] + bx[2] / 2))) + 'px';
+    pmMenu.style.top = Math.round(above ? bx[1] - 8 : bx[1] + bx[3] + 8) + 'px'; pmMenu.classList.toggle('below', !above);
+    pmMenu.classList.add('on');
+  }
+  function facCardAct(f, act) {
+    if (act === 'install') { if (Gm.build(s, f)) { hooks.changed(); toast(`${FAC_NAME[f] || f}을(를) 지었습니다.`, 'info'); facCard(f, [0, 0]); } return; }
+    if (act === 'upgrade') { if (Gm.upgrade(s, f)) { hooks.changed(); toast(`${FAC_NAME[f] || f} 업그레이드: ${FAC_UP[f]}`, 'info'); facCard(f, [0, 0]); } return; }
+    if (act === 'open') { const op = FAC_OPEN[f]; if (!op) return; pmMenuClose(); UI.open(op[0]); }
+  }
+  function facClick(f, pt) { facCard(f, pt || [960, 540]); }
+  const PRESS_MS = 400; let PRESS = null;
+  function pressStart(pt) {
+    pressCancel(); if (!lobbyIdle()) return;
+    const h = root.Lobby.hitAt(s, pt[0], pt[1]); if (!h || h.kind !== 'item') return;
+    const o = root.Lobby.placedDrawables(null, h.it).reduce((a, b) => (b.box && (!a || b.box[1] < a.box[1]) ? b : a), null), bx = o ? o.box : [pt[0], pt[1], 0, 0];
+    PRESS = { uid: h.uid, id: h.it.id, t0: performance.now() };
+    root.Lobby.press = { x: bx[0] + bx[2] / 2, y: bx[1] + bx[3] / 2, p: 0 };
+    const tick = () => {
+      if (!PRESS) return;
+      const p = (performance.now() - PRESS.t0) / PRESS_MS; root.Lobby.press.p = Math.min(1, p);
+      if (p >= 1) { const P0 = PRESS; pressCancel(); pmMenuClose(); UI.placeStart(P0.id, P0.uid, true); return; }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+  function pressCancel() { PRESS = null; if (root.Lobby) root.Lobby.press = null; }
   function pmItemClick(pt) {
     if (PM || popup || (root.Town && root.Town.active) || Dlg.open) return;
     if (root.LinaMenu && root.LinaMenu.open) { root.LinaMenu.close(); return; }   // 리나 메뉴가 떠 있으면 바닥을 눌러 닫기
     const h = root.Lobby.hitAt(s, pt[0], pt[1]);
-    if (h && h.kind === 'fac') { pmMenuClose(); hoverAt(null); facClick(h.id); return; }
+    if (h && h.kind === 'fac') { pmMenuClose(); facClick(h.id, pt); return; }
     const it = h && h.it; if (!it) { pmMenuClose(); return; }
     const d = Gm.DECO_BY[it.id], o = root.Lobby.placedDrawables(null, it).reduce((a, b) => (b.box && (!a || b.box[1] < a.box[1]) ? b : a), null);
     const bx = o ? o.box : [pt[0], pt[1], 0, 0];
-    pmMenu.dataset.uid = it.uid;
-    pmMenu.innerHTML = `<b class="pm-nm">${d.name}</b><button class="ux-btn sm" data-pm="move">옮기기</button><button class="ux-btn sm danger" data-pm="del">치우기</button><button class="ux-btn sm ghost" data-pm="x">닫기</button>`;
-    const above = bx[1] - 8 >= 210;   // 위쪽 HUD와 겹치면 물건 아래에 띄움
+    pmMenu.dataset.uid = it.uid; pmMenu.dataset.fac = ''; pmMenu.classList.remove('fac');
+    // B작업 (2026-11-12): 장식 이름 + 아이콘 3개(업그레이드 잠김 · 옮기기 · 치우기). 테이블은 업그레이드 없음. 닫기 버튼 없음
+    const IC = n => `<i style="background-image:url(assets/ui/deco_menu/deco_${n}.png)"></i>`;
+    pmMenu.classList.remove('warn');
+    pmMenu.innerHTML = `<b class="pm-nm">${d.name}</b><div class="pm-ics">`
+      + (d.kind !== 'table' ? `<button class="pm-ic lock" data-pm="up" data-tip="업그레이드 · 준비 중">${IC('up')}</button>` : '')
+      + `<button class="pm-ic" data-pm="move" data-tip="옮기기 · 무료 (길게 눌러도 됩니다)">${IC('move')}</button><button class="pm-ic del" data-pm="del" data-tip="치우기 · 돈은 돌려받지 못합니다">${IC('del')}</button></div><div class="pm-tip"></div>`;
+    const above = bx[1] - 8 >= 260;   // 위쪽 HUD와 겹치면 물건 아래에 띄움
     pmMenu.style.left = Math.round(Math.max(230, Math.min(1690, bx[0] + bx[2] / 2))) + 'px';
     pmMenu.style.top = Math.round(above ? bx[1] - 8 : bx[1] + bx[3] + 8) + 'px'; pmMenu.classList.toggle('below', !above);
     pmMenu.classList.add('on');
   }
-  function pmMenuClose() { if (pmMenu) { pmMenu.classList.remove('on'); pmMenu.dataset.uid = ''; } if (root.Lobby && root.Lobby.hover && root.Lobby.hover.kind === 'item') root.Lobby.hover = null; }
+  function pmMenuClose() { if (pmMenu) { pmMenu.classList.remove('on', 'fac'); pmMenu.dataset.uid = ''; pmMenu.dataset.fac = ''; } if (root.Lobby && root.Lobby.hover) root.Lobby.hover = null; }
 
   stagePopClicks();
   function stagePopClicks() {

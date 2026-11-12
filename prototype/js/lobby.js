@@ -213,6 +213,14 @@
       if (!soft) { g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = .15; f(); g.restore(); }
     };
   }
+  // 길게 누르기 원 게이지: 어두운 바탕 원 + 금빛 호가 0 → 360° 차오름
+  function pressRing(g, P) {
+    const r = 26; g.save(); g.lineCap = 'round';
+    g.beginPath(); g.arc(P.x, P.y, r, 0, 6.2832); g.fillStyle = 'rgba(40,24,10,.45)'; g.fill();
+    g.lineWidth = 6; g.strokeStyle = 'rgba(255,255,255,.25)'; g.stroke();
+    g.beginPath(); g.arc(P.x, P.y, r, -Math.PI / 2, -Math.PI / 2 + 6.2832 * P.p); g.strokeStyle = '#ffd25a'; g.shadowColor = 'rgba(255,200,80,.9)'; g.shadowBlur = 10; g.stroke();
+    g.restore();
+  }
   function facGlow(g, s, id, t) {
     const F = FAC_HOT.find(x => x.id === id); if (!F) return;
     const H = hotOf(s, F), it = A.items[H.img];
@@ -283,7 +291,7 @@
     }
   }
 
-  const Lobby = { SLOTS, FILL, TABLES, Board, BT, layout, floorImg, wallImg, placedDrawables, pick, hitItem, hitAt, FAC_HOT, drawPlace, ghostUid: null, overlay: null, hover: null };
+  const Lobby = { SLOTS, FILL, TABLES, Board, BT, layout, floorImg, wallImg, placedDrawables, pick, hitItem, hitAt, FAC_HOT, drawPlace, ghostUid: null, overlay: null, hover: null, press: null };
   Lobby.update = function (s, dt) {
     const tl = tablesOf(s), key = JSON.stringify(tl);
     if (key !== lastTables) { lastTables = key; root.Director.layout(tl); }
@@ -300,11 +308,11 @@
       const op = A.items.iso_bg_open, m = (s.built['집무실'] ? 1 : 0) | (s.built['관리소'] ? 2 : 0);
       if (op && op.img && m) for (const [bit, r] of [[1, [810, 180, 155, 268]], [2, [965, 180, 152, 268]]]) if (m & bit) g.drawImage(op.img, r[0] * op.img.width / 1920, r[1] * op.img.height / 1080, r[2] * op.img.width / 1920, r[3] * op.img.height / 1080, r[0], r[1], r[2], r[3]);
     }
+    if (Lobby.hover && Lobby.hover.kind === 'fac' && Lobby.hover.id !== '접수대') facGlow(g, s, Lobby.hover.id, t);   // 롤오버 빛: 의뢰서보다 먼저 그려 게시판 위 의뢰서가 가려지지 않게 (2026-11-12 A작업)
     // 4 의뢰서
     const usedSlots = new Set([...Board.notes.values()].map(n => n.slot));
     for (let i = 0; i < Math.min(cap, SLOTS.length); i++) if (!usedSlots.has(FILL[i])) drawEmptySlot(g, SLOTS[FILL[i]]);
     for (const n of [...Board.notes.values()].sort((a, b) => (a.st === 'taken') - (b.st === 'taken'))) if (n.st !== 'taken') drawNote(g, n, opt.still ? 0 : t);
-    if (Lobby.hover && Lobby.hover.kind === 'fac' && Lobby.hover.id !== '접수대') facGlow(g, s, Lobby.hover.id, t);   // 롤오버: 배경 시설 윤곽선 (모험가보다 뒤)
     // 5 리나
     root.Lina.draw(g);
     // 6 접수대 (리나 앞)
@@ -323,6 +331,7 @@
         list.sort((a, b) => a.z - b.z).forEach(o => o.f());
     // 9 말풍선
     root.Director.bubbles(g);
+    if (Lobby.press) pressRing(g, Lobby.press);   // 길게 누르기 게이지 (A작업)
     if (opt.debug) debug(g);
   };
   function debug(g) { // 슬롯·자리·좌표 확인용

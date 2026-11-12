@@ -52,9 +52,12 @@
   function updSmall() { let o = !!view; if (o && evPos) { const a = evPos; o = a.x < PANEL.x + PANEL.w && a.x + EVW > PANEL.x && a.y < PANEL.y + PANEL.h && a.y + EVH > PANEL.y; } ui.querySelector('#hudExp').classList.toggle('small', o); }
 
   // ---------- 목록 ----------
+  // C작업 (2026-11-12): 의뢰를 수락해도 파티원이 아직 로비에 있으면(리나에게 접수 → 문으로 걸어 나가는 중) 목록에 올리지 않음. 모두 건물을 나간 뒤에 표시
+  const outside = x => !(root.Director && root.Director.actors && x.party.some(id => root.Director.actors.has(id)));
+  const shown = s => s.active.filter(outside);
   function entries() {
     const s = getS(), out = [];
-    for (const x of s.active) out.push(entry(s, x, false));
+    for (const x of shown(s)) out.push(entry(s, x, false));
     for (const gh of ghosts.values()) out.push(entry(s, gh.x, true));
     return out;
   }
@@ -247,8 +250,9 @@
     const hide = !!(root.Town && root.Town.active);   // 마을 화면에서는 숨김
     if (hide !== X.hidden) { X.hidden = hide; for (const id of ['#hudExp', '#expView', '#expTip']) ui.querySelector(id).style.visibility = hide ? 'hidden' : ''; }
     // 귀환 감지: 지난 프레임에 있던 원정이 사라지면 2.2초(배속 반영) 동안 "귀환"으로 남김
-    const now = new Map(s.active.map(x => [x.q.id, x])); let changed = false;
-    for (const [id, x] of known) if (!now.has(id)) { ghosts.set(id, { x, doneAt: clock }); changed = true; }
+    const now = new Map(shown(s).map(x => [x.q.id, x])); let changed = false;
+    const all = new Set(s.active.map(x => x.q.id));
+    for (const [id, x] of known) if (!now.has(id)) { if (!all.has(id)) ghosts.set(id, { x, doneAt: clock }); changed = true; }   // 귀환했을 때만 '귀환' 표시
     for (const id of now.keys()) if (!known.has(id)) changed = true;
     known.clear(); for (const [id, x] of now) known.set(id, x);
     for (const [id, gh] of ghosts) if (clock - gh.doneAt > 2.2 / Math.max(1, sp)) { ghosts.delete(id); changed = true; if (sel === id) close(); }

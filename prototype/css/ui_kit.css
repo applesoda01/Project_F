@@ -579,16 +579,41 @@ span.kslot{cursor:default}
 #placeBar{position:absolute;left:50%;top:118px;transform:translateX(-50%);z-index:41;display:none;align-items:center;gap:14px;padding:10px 14px 10px 22px;border-radius:14px;background:linear-gradient(#fffaf0,#f3e3c1);border:2px solid var(--ux-wood2);box-shadow:0 8px 22px rgba(40,22,10,.35);font-size:19px;color:var(--ux-ink);white-space:nowrap}
 #placeBar.on{display:flex}
 #placeBar .pb-hint{font-size:15px;color:var(--ux-muted)}
-#placeMenu{position:absolute;z-index:39;display:none;transform:translate(-50%,-100%);align-items:center;gap:8px;padding:8px 10px 8px 14px;border-radius:12px;background:linear-gradient(#fffaf0,#f3e3c1);border:2px solid var(--ux-wood2);box-shadow:0 6px 18px rgba(40,22,10,.32);white-space:nowrap}
+#placeMenu{position:absolute;z-index:39;display:none;transform:translate(-50%,-100%);flex-direction:column;align-items:center;gap:6px;padding:10px 14px 8px;border-radius:22px;background:linear-gradient(#fffaf0,#f3e3c1);border:2px solid var(--ux-wood2);box-shadow:0 8px 20px rgba(40,22,10,.35);white-space:nowrap}
 #placeMenu.on{display:flex}
 #placeMenu.below{transform:translate(-50%,0)}
-#placeMenu .pm-nm{font-size:16px;color:var(--ux-ink);margin-right:4px}
-#placeMenu .ux-btn.ghost{background:transparent;border-color:transparent;color:var(--ux-muted)}
-#placeMenu .ux-btn.sure{animation:pm-sure .25s}
-@keyframes pm-sure{50%{transform:scale(1.06)}}
+#placeMenu .pm-nm{font-size:16px;color:var(--ux-ink)}
+/* B작업 (2026-11-12): 아이콘 버튼 3개 (업그레이드 잠김 · 옮기기 · 치우기) */
+#placeMenu .pm-ics{display:flex;gap:10px}
+#placeMenu .pm-ic{width:58px;height:58px;padding:0;border:0;border-radius:16px;background:rgba(120,80,40,.10);cursor:pointer;display:grid;place-items:center;transition:transform .12s,background .12s}
+#placeMenu .pm-ic i{width:48px;height:48px;background:center/contain no-repeat;display:block;filter:drop-shadow(0 2px 1px rgba(60,30,10,.35))}
+#placeMenu .pm-ic:hover{transform:translateY(-2px) scale(1.08);background:rgba(255,205,90,.30)}
+#placeMenu .pm-ic.lock{cursor:not-allowed}
+#placeMenu .pm-ic.lock i{filter:grayscale(1) opacity(.45)}
+#placeMenu .pm-ic.lock:hover{transform:none;background:rgba(120,80,40,.10)}
+#placeMenu .pm-ic.del.sure{background:rgba(220,70,50,.25);box-shadow:0 0 0 2px #d8483c inset;animation:pm-sure .25s}
+#placeMenu .pm-tip{min-height:18px;font-size:13px;color:var(--ux-muted)}
+#placeMenu.warn .pm-tip{color:#b8321f;font-weight:700}
+@keyframes pm-sure{50%{transform:scale(1.1)}}
 /* ×2 의뢰 (2026-11-12, guild_interior.md 2-2): 카드 금빛 테두리 + ×2 표식, 보상은 2배 금액으로 표시 */
 .qcard.x2{border-color:#e0b34a!important;box-shadow:0 0 0 2px rgba(240,190,70,.45),0 2px 6px rgba(150,100,20,.25)}
 .qx2{font-style:normal;font:800 13px/1 var(--hf);color:#fff6d6;background:linear-gradient(#e8b640,#b9801c);border-radius:6px;padding:3px 6px 2px;margin-left:6px;vertical-align:2px;text-shadow:0 1px 0 rgba(90,50,0,.4)}
 /* 로비 롤오버 툴팁 (2026-11-12): 시설 이름, 짓지 않은 시설은 짓기 비용 */
 #hoverTip{position:absolute;z-index:38;display:none;pointer-events:none;padding:6px 12px;border-radius:10px;background:linear-gradient(#fffaf0,#f3e3c1);border:2px solid var(--ux-wood2);box-shadow:0 4px 12px rgba(40,22,10,.3);font-size:16px;color:var(--ux-ink);white-space:nowrap}
 #hoverTip.on{display:block}
+/* 시설 정보 카드 (2026-11-12, guild_interior.md 10-10): 장식 팝업(#placeMenu)과 같은 틀 */
+#placeMenu.fac{min-width:300px;max-width:420px;white-space:normal;text-align:center}
+#placeMenu .fc-hd{display:flex;align-items:center;gap:8px;justify-content:center}
+#placeMenu .fc-hd .ux-grade{width:26px;height:26px}
+#placeMenu .fc-st{font-size:12px;padding:2px 8px;border-radius:9px;font-weight:700}
+#placeMenu .fc-st.on{background:rgba(79,138,60,.15);color:#3f7a3a}
+#placeMenu .fc-st.off{background:rgba(120,80,40,.12);color:var(--ux-muted)}
+#placeMenu .fc-st.done{background:rgba(240,190,70,.25);color:#9a6a10}
+#placeMenu .fc-fx{font-size:14px;color:var(--ux-ink);line-height:1.4}
+#placeMenu .fc-stat{font-size:13px;color:#7a5a30;background:rgba(120,80,40,.08);border-radius:8px;padding:3px 10px}
+#placeMenu .pm-ic{position:relative}
+#placeMenu .pm-ic .pm-cost{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);font:800 12px/1 var(--hf);color:#fff6dc;background:linear-gradient(#6b4524,#4a2e14);border-radius:7px;padding:3px 6px 2px;white-space:nowrap}
+#placeMenu .pm-ic.lock .pm-cost{background:#9a8a78}
+#placeMenu .pm-ic.done i{filter:none;opacity:.9}
+#placeMenu .pm-ics{margin-top:4px}
+#placeMenu.fac .pm-tip{margin-top:4px}
