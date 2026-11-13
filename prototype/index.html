@@ -330,7 +330,7 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 #hudTL .val small.cap{color:#8a7458}
 #hudTL .val small.cap.full{color:#b5462f}
 </style>
-<link rel="stylesheet" href="css/ui_kit.css"></head><body>
+<link rel="stylesheet" href="css/ui_kit.css"><link rel="stylesheet" href="css/book.css"></head><body>
 <div id="game"></div>
 <div id="loading"><span id="loadMsg"></span></div>
 <template id="uiTpl">
@@ -358,7 +358,7 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
   <div id="slotPick"><div class="sp-box"><h1>모험가 길드</h1><p>저장 슬롯을 골라 주세요. 고른 슬롯에 자동으로 저장됩니다.</p><div class="sp-list"></div></div></div>
   <div id="titleLay"><iframe id="titleFrame" title="타이틀" allow="autoplay"></iframe></div><div id="prologue"><video id="prologueVid" playsinline preload="auto"></video><button id="prologueSkip" class="ux-btn">건너뛰기 (Esc)</button></div><div id="fadeBlack"></div>
   <div id="dlg"><img id="dlgFace" alt="리나"><canvas id="dlgStand" width="341" height="640" hidden></canvas><div class="plate" id="dlgBox"><span id="dlgName">리나</span><span id="dlgText"></span><span id="dlgNext" hidden>▼</span></div></div>
-  <div id="popBack"><div class="plate" id="pop" role="dialog" aria-modal="true" aria-labelledby="popTitle"><div id="popHead"><h2 id="popTitle"></h2><button class="btn" id="popClose" aria-label="닫기">✕</button></div><div id="popBody"></div></div></div>
+  <div id="popBack"><div class="plate book" id="pop" role="dialog" aria-modal="true" aria-labelledby="popTitle"><div id="bookMarks"></div><div id="bookTitle"></div><div id="bookSub"></div><button id="bookRibbon" aria-label="닫기"><span>닫기</span></button><div id="popHead"><h2 id="popTitle"></h2><button class="btn" id="popClose" aria-label="닫기">✕</button></div><div id="popBody"></div><div id="bookOrn"></div></div></div>
 </template>
 <script src="js/data_gen.js"></script>
 <script src="js/combat.js"></script>

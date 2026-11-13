@@ -1,0 +1,181 @@
+/* 길드 업무 일지 — 책 펼침 팝업 (2026-11-13 단계 ① 틀 · 단계 ③ 의뢰 장. 값은 tools/book_layout_editor.html 로 조절)
+   펼침면 1600×879 = 종이(book_paper.png) → 내용 → 문양(book_ornament.png) 순서 (원본 합친 그림 book_spread.png). 안쪽 테두리 x 130~1471, y 41~832 · 접힘 선 x 794~804
+   왼쪽 쪽 내용 x 150~770 · 오른쪽 쪽 830~1451 · 네 모서리 약 120×120 비움 (docs/handoff_2026-11-12_night.md 4장) */
+#pop.book{--pb:0px;--bk-lx:157px;--bk-ly:116px;--bk-lw:588px;--bk-lh:624px;--bk-rx:856px;--bk-ry:116px;--bk-rw:561px;--bk-rh:675px;--bkt-y:80px;--bk-lpt:54px;--bkq-sec:54px;--bkc-x:864px;--bkc-y:743px;--bkt-fs:30px;--bks-w:10px;--bkq-cols:2;--bkq-h:66px;--bkq-gx:10px;--bkq-gy:8px;--bkq-fs:17px;--bkq-tfs:26px;--bkq-mat:52px;width:1600px;height:879px;left:calc(50% + 28px);top:50%;transform:translate(-50%,-50%) scale(1.12);border:0;border-image:none;padding:0;
+  background:url(../assets/ui/book/book_paper.png) center/100% 100% no-repeat;filter:drop-shadow(0 18px 26px rgba(30,16,6,.5));overflow:visible}
+#pop.book #popHead,#pop.book #popClose{display:none}
+/* 책이 열리면 아래 메뉴·재생 버튼(z 5·7)보다 위에 (사용자: 뒤 UI는 가려져도 됨) */
+#popBack:has(#pop.book){z-index:9}
+/* 쪽 안 내용: 양쪽 쪽을 합친 영역 (단계 ①은 기존 팝업을 그대로 넣음 → 장마다 왼쪽·오른쪽 쪽으로 나누는 것은 단계 ③) */
+#pop.book #popBody,#pop.book #popBody[data-p]{position:absolute;left:150px;top:96px;width:1301px;height:716px;padding:0 6px;box-sizing:border-box;overflow:auto}
+#pop.book #popBody[data-p="advs"],#pop.book #popBody[data-p="meals"]{overflow:hidden}
+#pop.book #popBody[data-p="ledger"]{display:flex;flex-direction:column;justify-content:center}
+/* 접힘 선 그늘 (내용 위에 살짝) */
+#pop.book::after{content:"";position:absolute;left:784px;top:44px;width:32px;height:786px;pointer-events:none;
+  background:linear-gradient(90deg,rgba(60,36,14,0) 0,rgba(60,36,14,.10) 45%,rgba(60,36,14,.16) 50%,rgba(60,36,14,.10) 55%,rgba(60,36,14,0) 100%)}
+
+/* 장 제목 (왼쪽 쪽 가운데, 양옆 잉크 선) */
+#bookTitle{position:absolute;left:var(--bk-lx);width:var(--bk-lw);top:var(--bkt-y);font:700 var(--bkt-fs) var(--hf,"MaruBuri","Malgun Gothic",serif);color:#4a2e17;letter-spacing:2px;display:none;align-items:center;justify-content:center;gap:16px;pointer-events:none}
+#pop.book #bookTitle{display:flex}
+#bookTitle::before,#bookTitle::after{content:"";width:70px;height:1px;background:linear-gradient(90deg,rgba(110,72,36,0),rgba(110,72,36,.6))}
+#bookTitle::after{transform:scaleX(-1)}
+
+/* 왼쪽 가장자리 큰 책갈피 6장 (임시 색 띠 — 부품 시트 ③ 그림이 오면 교체) */
+#bookMarks{position:absolute;left:-74px;top:110px;display:none;flex-direction:column;gap:14px}
+#pop.book #bookMarks{display:flex}
+#bookMarks button{position:relative;width:132px;height:86px;border:0;border-radius:10px 0 0 10px;padding:0 54px 0 0;cursor:pointer;
+  background:var(--bm);color:#fff6e4;font:700 21px var(--hf,"MaruBuri","Malgun Gothic",serif);letter-spacing:1px;text-shadow:0 1px 2px rgba(0,0,0,.45);
+  box-shadow:inset 0 0 0 2px rgba(255,236,190,.35),0 3px 6px rgba(30,16,6,.35);transform:translateX(18px);transition:transform .15s}
+#bookMarks button:hover{transform:translateX(6px)}
+#bookMarks button.on{transform:translateX(0);filter:brightness(1.08);box-shadow:inset 0 0 0 3px rgba(255,236,190,.7),0 4px 10px rgba(30,16,6,.45)}
+#bookMarks button i{position:absolute;right:58px;top:50%;transform:translateY(-50%);font-style:normal;white-space:nowrap}
+#bookMarks button[data-ch="req"] i{font-size:18px;letter-spacing:0}
+
+/* 쪽 위쪽 작은 탭 (장 안의 하위) */
+#bookSub{position:absolute;left:830px;top:46px;display:none;gap:8px;z-index:2}
+#pop.book #bookSub{display:flex}
+#bookSub button{height:40px;padding:0 18px;border:1px solid rgba(110,72,36,.45);border-bottom:0;border-radius:10px 10px 0 0;cursor:pointer;
+  background:#efe0bf;color:#5a3a1e;font:700 17px var(--hf,"MaruBuri","Malgun Gothic",serif);box-shadow:0 -1px 3px rgba(60,36,14,.18)}
+#bookSub button.on{background:#fff6dd;color:#3a2410;height:46px;margin-top:-6px}
+#bookSub button:hover:not(.on){background:#f7ead0}
+
+/* 위쪽 책끈 = 닫기 */
+#bookRibbon{position:absolute;right:210px;top:-14px;width:44px;height:120px;border:0;padding:0;cursor:pointer;display:none;z-index:3;
+  background:linear-gradient(90deg,#7d1f2b,#a33343 45%,#7d1f2b);clip-path:polygon(0 0,100% 0,100% 100%,50% 84%,0 100%);
+  filter:drop-shadow(0 3px 4px rgba(30,16,6,.45));transition:height .15s}
+#pop.book #bookRibbon{display:block}
+#bookRibbon:hover{height:132px}
+#bookRibbon span{position:absolute;left:0;right:0;top:44px;color:#ffe9c9;font:700 15px var(--hf,"MaruBuri","Malgun Gothic",serif);writing-mode:vertical-rl;margin:auto;text-align:center}
+
+/* 리퀘스트 장 (서브 퀘스트 디자인 전 빈 장) */
+.bk-empty{height:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px}
+.bk-empty>div{display:flex;flex-direction:column;justify-content:center;align-items:center;color:#7a5a3a;font:400 20px var(--hf,"MaruBuri","Malgun Gothic",serif);text-align:center;line-height:1.7}
+.bk-empty b{font-size:26px;color:#4a2e17;margin-bottom:8px}
+
+/* ===== 단계 ③ 공통: 왼쪽 쪽 · 오른쪽 쪽 나누기 (popBody 1301 = 왼쪽 620 + 접힘 60 + 오른쪽 621) ===== */
+#pop.book #popBody:has(.bk2){left:0;top:0;width:1600px;height:879px;padding:0;overflow:visible;pointer-events:none}
+.bk2>section{position:absolute;min-width:0;overflow:auto;padding:0 8px;box-sizing:border-box;pointer-events:auto}
+.bk2>.bk-l{left:var(--bk-lx);top:var(--bk-ly);width:var(--bk-lw);height:var(--bk-lh);padding-top:var(--bk-lpt)}   /* 제목 ↔ 첫 소제목 간격 */
+/* 책 안 소제목: 오른쪽 선 없이 가운데 (2026-11-13) */
+.bk2 .ux-h{justify-content:center}
+.bk2 .ux-h::after{display:none}
+.bk2>.bk-r{left:var(--bk-rx);top:var(--bk-ry);width:var(--bk-rw);height:var(--bk-rh)}
+
+/* ===== 의뢰 장 ===== */
+.qb-alloc.bk{grid-template-columns:repeat(2,max-content);gap:8px 22px}
+.bkq-list{display:grid;grid-template-columns:repeat(var(--bkq-cols),minmax(0,1fr));gap:var(--bkq-gy) var(--bkq-gx);padding-bottom:6px}
+.qcard.bk{height:var(--bkq-h);cursor:pointer}
+.qcard.bk .r2{gap:8px}.qcard.bk .r2 .gold{margin-left:auto}
+.qcard.bk.sel{border-color:#b0802e;box-shadow:0 0 0 3px rgba(214,160,60,.55),0 4px 10px rgba(60,36,16,.2);transform:translateX(4px)}
+.bkq-nc{font-size:13px;color:var(--ux-muted)}
+.bkq-slot{height:var(--bkq-h);border:2px dashed rgba(120,82,44,.28);border-radius:8px}
+/* 오른쪽 쪽: 마우스 오버 창 내용을 크게 */
+.bk-r{display:flex;flex-direction:column}
+.bkq-det{flex:1;font-size:var(--bkq-fs);color:var(--ux-ink);padding-top:6px}
+.bkq-det .t1{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding-bottom:10px;border-bottom:2px solid rgba(120,82,44,.3)}
+.bkq-det .t1 b{font:700 var(--bkq-tfs) var(--hf);margin-right:auto}
+.bkq-det .t1 .ux-tag{padding:1px 7px}
+.bkq-det .t1 .ux-tag+.ux-tag{margin-left:-5px}   /* 토벌 · 1주 사이 3px */
+.bkq-det .note{margin-top:14px;padding:12px 16px;background:rgba(255,250,236,.75);border-left:4px solid var(--ux-gold);border-radius:4px;font-size:16px;line-height:1.65}
+.bkq-det .sec{margin:18px 0 8px;font:700 18px var(--hf);color:var(--ux-wood)}.bkq-det .sec small{font-weight:400;color:var(--ux-muted);margin-left:6px;font-size:14px}
+.bkq-det .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 0}
+.bkq-det .sk{width:22px;height:22px}
+.bkq-det .mons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.bkq-det .mon{display:flex;flex-wrap:wrap;align-items:center;column-gap:6px;padding:6px 10px 8px 84px;min-height:56px;position:relative;background:rgba(255,250,236,.6);border-radius:8px;align-content:center}
+.bkq-det .mon .pic{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:68px;height:50px;background:no-repeat center bottom/contain;image-rendering:pixelated}
+.bkq-det .mon b{font-size:18px}
+.bkq-det .mon small{flex-basis:100%;color:var(--ux-muted);font-size:14px}
+.bkq-det .rw{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bkq-det .gold.big{font-size:22px}
+.bkq-det .mat{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+.bkq-det .mat .ux-slot{width:var(--bkq-mat);height:var(--bkq-mat)}.bkq-det .mat.main .ux-slot{width:calc(var(--bkq-mat) + 8px);height:calc(var(--bkq-mat) + 8px)}
+.bkq-det .mat em{font-style:normal;font-size:13px;color:var(--ux-muted)}
+.bkq-det .foot{display:flex;gap:24px;margin-top:16px;font-size:15px}.bkq-det .foot.muted{color:var(--ux-muted);margin-top:6px;font-size:14px}
+.bkq-act{position:absolute;left:var(--bkc-x);top:var(--bkc-y);display:flex;align-items:center;gap:12px;pointer-events:auto;white-space:nowrap}   /* 책 그림 좌표에 고정 */
+.bkq-act small{color:var(--ux-muted);font-size:14px}
+.bkq-none{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;color:#7a5a3a;font:400 18px var(--hf)}
+.bkq-none b{font-size:24px;color:#4a2e17}
+
+/* 개발 버튼·개발 메뉴는 책보다 위 (책을 연 채로 조절 패널을 켤 수 있게) */
+#devToggle,#dev{z-index:10!important}
+
+/* ===== 1. 문양 층: 종이(배경) → 내용 → 문양 (클릭은 통과) ===== */
+#bookOrn{display:none}
+#pop.book #bookOrn{display:block;position:absolute;left:0;top:0;width:1600px;height:879px;background:url(../assets/ui/book/book_ornament.png) 0 0/100% 100% no-repeat;pointer-events:none}
+
+/* ===== 2. 책 안 스크롤바 = 잉크 선 (가는 선 레일 + 잉크색 손잡이) ===== */
+#pop.book ::-webkit-scrollbar{width:var(--bks-w);height:var(--bks-w)}
+#pop.book ::-webkit-scrollbar-track{border:0;border-image:none;margin:6px 0;
+  background:linear-gradient(90deg,transparent calc(50% - .5px),rgba(110,72,36,.35) calc(50% - .5px),rgba(110,72,36,.35) calc(50% + .5px),transparent calc(50% + .5px))}
+#pop.book ::-webkit-scrollbar-thumb{border:2px solid transparent;border-image:none;border-radius:99px;background:rgba(74,46,23,.72);background-clip:padding-box}
+#pop.book ::-webkit-scrollbar-thumb:hover{background:rgba(74,46,23,.9);background-clip:padding-box;filter:none}
+#pop.book ::-webkit-scrollbar-button,#pop.book ::-webkit-scrollbar-corner{display:none;background:none}
+#pop.book *{scrollbar-width:thin;scrollbar-color:rgba(74,46,23,.72) transparent}
+
+/* ===== 4. 의뢰 배분 막대 ===== */
+.qb-bars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 12px;margin:0 0 var(--bkq-sec)}   /* 7등급 전체 기준 가운데 · 아래 = 배분 ↔ 게시된 의뢰 간격 */
+.qbb{display:flex;align-items:center;gap:5px}
+.qbb .bars{display:flex;align-items:flex-end;gap:3px;height:24px}
+.qbb .bars>*{display:block;width:9px;padding:0;border:1.5px solid rgba(90,58,34,.55);border-radius:2px;background:rgba(255,250,236,.5);box-sizing:border-box}
+.qbb .bars>:nth-child(1){height:10px}.qbb .bars>:nth-child(2){height:17px}.qbb .bars>:nth-child(3){height:24px}
+.qbb .bars button{cursor:pointer}
+.qbb .bars button.on{background:#6e4223;border-color:#4a2e17}
+.qbb .bars:hover button{background:rgba(255,250,236,.5);border-color:rgba(90,58,34,.55)}
+.qbb .bars:hover button:hover,.qbb .bars:hover button:has(~ button:hover){background:#a7774a;border-color:#6e4223}
+.qbb.off .ux-grade{filter:grayscale(1);opacity:.55}
+.qbb.lock{opacity:.35;position:relative}
+.qbb.lock .ux-grade{filter:grayscale(1)}
+.qbb.lock::after{content:"";position:absolute;left:14px;top:12px;width:12px;height:12px;background:radial-gradient(circle at 50% 70%,#4a2e17 0 35%,transparent 36%),linear-gradient(#4a2e17,#4a2e17) 50% 100%/10px 7px no-repeat;border-radius:2px}
+
+/* ===== 5. 의뢰 카드 시안: st-0 지금 · st-a 붙여 둔 쪽지 · st-b 장부 줄 · st-c 의뢰서 축소판 · st-d 장부 2열 ===== */
+.qcard .dlw{display:none}
+.qcard .dlw.low{color:#a8321f}
+/* A. 붙여 둔 쪽지 */
+.st-a .qcard{background:#fbf3df;border:0;border-radius:2px;box-shadow:0 2px 4px rgba(60,36,16,.28);padding-top:12px}
+.st-a .qcard:nth-child(3n){transform:rotate(-1.1deg)}.st-a .qcard:nth-child(3n+1){transform:rotate(.7deg)}.st-a .qcard:nth-child(3n+2){transform:rotate(-.3deg)}
+.st-a .qcard::before{content:"";position:absolute;left:50%;top:-6px;width:48px;height:14px;transform:translateX(-50%) rotate(-3deg);background:rgba(236,222,180,.75);box-shadow:0 1px 1px rgba(60,36,16,.15)}
+.st-a .qcard.age1{background:#f1e2bf}.st-a .qcard.age2{background:#e5d0a2}
+.st-a .qcard.sel{transform:rotate(0) scale(1.03);box-shadow:0 0 0 3px rgba(214,160,60,.6),0 4px 8px rgba(60,36,16,.3)}
+.st-a .bkq-slot{border:2px dashed rgba(120,82,44,.2);border-radius:2px}
+/* B. 장부 줄 */
+.st-b{row-gap:0!important}
+.st-b .qcard{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:8px;background:none;border:0;border-bottom:1px solid rgba(110,72,36,.38);border-radius:0;box-shadow:none;padding:0 6px 0 10px;transform:none}
+.st-b .qcard:hover{transform:none;background:rgba(255,250,236,.55);box-shadow:none}
+.st-b .qcard .r1{flex:1;min-width:0}
+.st-b .qcard .r1::after{content:"";flex:1;min-width:16px;height:0;border-bottom:2px dotted rgba(110,72,36,.35);margin:6px 2px 0 6px}
+.st-b .qcard .r2{flex:none}
+.st-b .qcard .qdl{display:none}
+.st-b .qcard .dlw{display:inline;width:34px;text-align:right;font-size:14px;color:#6e4e30}
+.st-b .qcard.age1 b{color:#5d4630}.st-b .qcard.age2 b{color:#86704f}
+.st-b .qcard.age1,.st-b .qcard.age2{background:none;color:inherit}
+.st-b .qcard.age2::after{display:none}
+.st-b .qcard.sel{transform:none;background:linear-gradient(90deg,rgba(214,160,60,.25),rgba(214,160,60,0));box-shadow:inset 4px 0 0 #8e2f3a}
+.st-b .qcard.x2{border-color:rgba(110,72,36,.38)!important;box-shadow:none!important}
+.st-b .qcard.x2.sel{box-shadow:inset 4px 0 0 #8e2f3a!important}
+.st-b .bkq-slot{border:0;border-bottom:1px solid rgba(110,72,36,.22);border-radius:0}
+/* C. 의뢰서 축소판 (게임 의뢰서 종이 그림) */
+.st-c .qcard{background:url(../assets/quest/quest_paper_0.png) center/100% 100% no-repeat;border:0;border-radius:0;box-shadow:none;filter:drop-shadow(0 2px 3px rgba(60,36,16,.3));padding:12px 14px 8px}
+.st-c .qcard.age1{background-image:url(../assets/quest/quest_paper_1.png)}.st-c .qcard.age2{background-image:url(../assets/quest/quest_paper_2.png)}
+.st-c .qcard.age2::after{display:none}
+.st-c .qcard.sel{transform:translateY(-3px);box-shadow:none;filter:drop-shadow(0 0 4px rgba(230,170,60,.95)) drop-shadow(0 3px 4px rgba(60,36,16,.3))}
+.st-c .qcard.x2{border:0!important;box-shadow:none!important}
+.st-c .qcard .qdl{left:14px;right:14px;bottom:7px}
+.st-c .bkq-slot{border:2px dashed rgba(120,82,44,.22);border-radius:4px}
+/* D. 장부 2열 (B 겉모습 + 지금 배치): 상자 없이 잉크 글씨, 칸 아래 장부 줄 = 기한 막대 */
+.st-d .qcard{background:none;border:0;border-radius:0;box-shadow:none;padding:6px 8px 9px 10px}
+.st-d .qcard:hover{transform:none;background:rgba(255,250,236,.55);box-shadow:none}
+.st-d .qcard .r2{gap:8px}
+.st-d .qcard .r2>*{order:1}
+.st-d .qcard .r2::before{content:"";order:2;flex:1;min-width:12px;height:0;border-bottom:2px dotted rgba(110,72,36,.35);margin-top:6px}
+.st-d .qcard .r2 .gold{order:3;margin-left:0}
+.st-d .qcard .dlw{display:inline;order:4;width:30px;text-align:right;font-size:14px;color:#6e4e30}
+.st-d .qcard .dlw.low{color:#a8321f}
+.st-d .qcard .qdl{left:0;right:0;bottom:0;height:2px;border-radius:0;background:rgba(110,72,36,.22)}
+.st-d .qcard .qdl i{border-radius:0;background:#6e4223}.st-d .qcard .qdl i.low{background:#a8321f}
+.st-d .qcard.age1,.st-d .qcard.age2{background:none;color:inherit}
+.st-d .qcard.age1 b{color:#5d4630}.st-d .qcard.age2 b{color:#86704f}
+.st-d .qcard.age2::after{display:none}
+.st-d .qcard.sel,.st-d .qcard.bk.sel{transform:none;background:linear-gradient(90deg,rgba(214,160,60,.25),rgba(214,160,60,0));box-shadow:inset 4px 0 0 #8e2f3a}
+.st-d .qcard.x2{border:0!important;box-shadow:none!important}
+.st-d .qcard.x2.sel{box-shadow:inset 4px 0 0 #8e2f3a!important}
+.st-d .bkq-slot{border:0;border-bottom:2px solid rgba(110,72,36,.15);border-radius:0}

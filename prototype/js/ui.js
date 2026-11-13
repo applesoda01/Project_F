@@ -202,12 +202,41 @@
   UI.gupShow = gupShow;   // 시험용
 
   // ---------- 팝업 틀 ----------
-  const TITLES = { sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
+  // ---------- 길드 업무 일지 (책 팝업, 2026-11-13 단계 ①) ----------
+  // 왼쪽 큰 책갈피 6장 = 장, 쪽 위 작은 탭 = 장 안의 팝업. 허브 버튼은 그대로 UI.open(이름) → 해당 장이 펼쳐진 채 열림
+  const BOOK = [
+    { id: 'quest', name: '의뢰', col: '#8e2f3a', pops: ['board'] },
+    { id: 'req', name: '리퀘스트', col: '#2f7f7a', pops: ['req'] },
+    { id: 'adv', name: '모험가', col: '#b38a26', pops: ['advs', 'promo'] },
+    { id: 'fac', name: '시설', col: '#566d84', pops: ['fac'] },
+    { id: 'mgmt', name: '경영', col: '#66763a', pops: ['ledger', 'meals', 'sell', 'codex', 'log'] },
+    { id: 'opt', name: '설정', col: '#6a4785', pops: ['opts'] },
+  ];
+  const SUB_NAME = { board: '게시판', req: '리퀘스트', advs: '명부', promo: '전직 제안', fac: '시설', ledger: '장부', meals: '음식 설정', sell: '소재 판매', codex: '도감', log: '기록', opts: '설정' };
+  const chapterOf = name => BOOK.find(c => c.pops.includes(name)) || null;
+  function bookInit() {
+    const mk = q('#bookMarks'); if (!mk || mk.childElementCount) return;
+    mk.innerHTML = BOOK.map(c => `<button data-ch="${c.id}" style="--bm:${c.col}"><i>${c.name}</i></button>`).join('');
+    mk.onclick = e => { const b = e.target.closest('[data-ch]'); if (!b) return; const c = BOOK.find(x => x.id === b.dataset.ch); if (c && !c.pops.includes(popup)) UI.open(c.pops.find(p => p !== 'sell' || s.built['판매창구']) || c.pops[0]); };
+    q('#bookSub').onclick = e => { const b = e.target.closest('[data-sub]'); if (b && b.dataset.sub !== popup) UI.open(b.dataset.sub); };
+    q('#bookRibbon').onclick = () => UI.close();
+  }
+  function bookSync(name) {
+    bookInit(); const c = chapterOf(name);
+    q('#bookMarks').querySelectorAll('[data-ch]').forEach(b => b.classList.toggle('on', !!c && b.dataset.ch === c.id));
+    q('#bookTitle').textContent = c ? c.name : (TITLES[name] || '');
+    q('#bookSub').innerHTML = c && c.pops.length > 1 ? c.pops.map(p => `<button data-sub="${p}" class="${p === name ? 'on' : ''}">${SUB_NAME[p] || TITLES[p]}</button>`).join('') : '';
+  }
+  function reqHtml() {   // 리퀘스트 장: 서브 퀘스트 디자인 전 빈 장 (docs/design/named_sub_quest_v1.md)
+    return `<div class="bk-empty"><div><b>리퀘스트</b>마을 사람·영주·모험가가 맡기는 부탁이<br>이 장에 모입니다.</div><div><b>준비 중</b>서브 퀘스트(기부·납품·토벌 지명 등)를<br>디자인한 뒤 채워집니다.</div></div>`;
+  }
+  const TITLES = { req: '리퀘스트', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
     popup = name; q('#popTitle').textContent = TITLES[name];
     q('#popBack').classList.add('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.toggle('on', b.dataset.pop === name));
     q('#popBody').innerHTML = ''; q('#popBody').dataset.g = ''; q('#popBody').dataset.p = name; renderPopup(); q('#popBody').scrollTop = 0;
+    bookSync(name);
     if (name === 'verify') verify();
   };
   UI.close = function () { mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
@@ -223,6 +252,7 @@
     else if (popup === 'codex') b.innerHTML = codexHtml();
     else if (popup === 'sell') b.innerHTML = sellHtml();
     else if (popup === 'opts') b.innerHTML = optsHtml();
+    else if (popup === 'req') b.innerHTML = reqHtml();
   }
 
   // 소재 판매 창구 (docs/balance/economy_v1.md 6절, 시설 팝업 '판매하기'로 열기): 보관 소재를 직접 팖. 음식이 아닌 소재 먼저, 음식 소재는 "요리 재료"
@@ -323,7 +353,9 @@
   const cleanName = q => q.name || `${GR[q.g]}급 ${Gm.QTYPE[q.type]} 의뢰`;
   const gradeImg = (g, cls) => `<i class="ux-grade ${cls || ''}" style="background-image:url(assets/ui/hud/badge_${GR[g]}.png)" title="${GR[g]}급"></i>`;
   let qHover = null, qTimer = 0;
+  let qSel = null;
   function renderBoard(b) {
+    if (document.getElementById('pop').classList.contains('book')) return renderBoardBook(b);
     const cap = Gm.boardCap(s);
     // 의뢰 배분: 제목 + 아랫줄에 등급별 버튼 (한 줄 3등급, 등급이 늘면 아래 게시판이 밀림)
     let top = '<div class="ux-h">의뢰 배분 <small>등급별로 받을 의뢰의 비율을 정합니다</small></div><div class="qb-alloc">';
@@ -355,9 +387,46 @@
     b.onmouseout = e => { const c = e.target.closest('.qcard'); if (!c || c.contains(e.relatedTarget)) return; clearTimeout(qTimer); qHover = null; b.querySelector('#qTip').classList.remove('on'); };
     if (qHover != null) showTip(b);   // 다시 그린 뒤에도 보고 있던 카드면 유지
   }
-  function showTip(b) {
-    const q = s.board.find(x => x.id === qHover), c = b.querySelector(`.qcard[data-q="${qHover}"]`), tip = b.querySelector('#qTip');
-    if (!q || !c) { tip.classList.remove('on'); return; }
+  // 책 펼침 (2026-11-13 단계 ③): 왼쪽 쪽 = 의뢰 배분 + 게시된 의뢰 목록 / 오른쪽 쪽 = 고른 의뢰 상세 (마우스 오버 창 대신)
+  function renderBoardBook(b) {
+    const cap = Gm.boardCap(s);
+    if (!s.board.some(x => x.id === qSel)) qSel = s.board.length ? s.board[0].id : null;
+    // 의뢰 배분 = 등급마다 막대 3개 (없음 0 · 적게 1 · 보통 2 · 우선 3), 7등급 한 줄. 아직 안 열린 등급은 자물쇠 (2026-11-13 결정)
+    let L = '<div class="ux-h">의뢰 배분 <small>막대가 많을수록 그 등급 의뢰를 많이 받습니다</small></div><div class="qb-bars">';
+    for (let g = 0; g < GR.length; g++) {
+      if (g > s.grade) { L += `<div class="qbb lock" title="${GR[g]}급 · 아직 열리지 않음">${gradeImg(g, 'sm')}<span class="bars"><i></i><i></i><i></i></span></div>`; continue; }
+      const lv = Gm.filterLevel(s.filter[g]);
+      L += `<div class="qbb${lv ? '' : ' off'}" title="${GR[g]}급 · ${Gm.FILTER_NAME[lv]}">${gradeImg(g, 'sm')}<span class="bars">${[1, 2, 3].map(k => `<button data-fb="${g}:${k}" class="${k <= lv ? 'on' : ''}" title="${GR[g]}급 · ${Gm.FILTER_NAME[k]}"></button>`).join('')}</span></div>`;
+    }
+    L += `</div><div class="ux-h qb-h">게시된 의뢰 <small>${s.board.length} / ${cap}칸</small></div><div class="bkq-list ${root.BOOK_CARD_STYLE || 'st-d'}">`;
+    for (const q of s.board) {
+      const T = QT[q.tid], d = danger(T, q.g), fb = foeBand(q), intel = !!s.built['정보실'];
+      const sk = d.n ? `<span class="skulls" title="위험도">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}</span>` : '<span class="bkq-nc">비전투</span>';
+      const foe = d.n ? (intel ? (fb === 'up' ? '<i class="foe up" title="강한 무리">▲</i>' : fb === 'down' ? '<i class="foe down" title="약한 무리">▼</i>' : '') : '<i class="foe unk" title="정보실이 있으면 알 수 있음">?</i>') : '';
+      L += `<div class="qcard bk age${ageOf(q)}${q.x2 ? ' x2' : ''}${q.id === qSel ? ' sel' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}</div>
+        <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><span class="dlw${Gm.expireWeeks(s) - (s.week - q.posted) <= 1 ? ' low' : ''}">${Gm.expireWeeks(s) - (s.week - q.posted)}주</span></div>
+        <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
+    }
+    for (let k = s.board.length; k < Math.min(cap, 14); k++) L += '<div class="bkq-slot"></div>';   // 빈 칸 = 점선 자리 (한 쪽에 보이는 14칸까지)
+    L += '</div>';
+    let R;
+    const q = s.board.find(x => x.id === qSel);
+    let A = '';   // 의뢰 취소 버튼: 오른쪽 쪽 안이 아니라 책 그림 좌표에 고정 (--bkc-x, --bkc-y)
+    if (q) { R = `<div class="bkq-det">${qDetailHtml(q)}</div>`; A = `<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">의뢰 취소</button><small>등록비·위약금 ${fmt(Math.round(q.reward * 0.10))}G · 신뢰도 −2</small></div>`; }
+    else R = '<div class="bkq-none"><b>게시된 의뢰가 없습니다</b>의뢰는 매주 게시판에 들어옵니다.</div>';
+    b.innerHTML = `<div class="bk2"><section class="bk-l">${L}</section><section class="bk-r">${R}</section>${A}</div>`;
+    b.onclick = e => {
+      const wd = e.target.closest('[data-wd]'); if (wd) { Gm.withdrawQuest(s, +wd.dataset.wd); hooks.changed(); return; }
+      const fb = e.target.closest('[data-fb]'); if (fb) {   // 이미 칠해진 맨 위 막대를 다시 누르면 없음
+        const [g, k] = fb.dataset.fb.split(':').map(Number), lv = Gm.filterLevel(s.filter[g]), w = s.filter.slice(); w[g] = Gm.FILTER_W[lv === k ? 0 : k];
+        if (!Gm.setFilter(s, w)) { toast('적어도 한 등급은 의뢰를 받아야 합니다.', 'warn'); return; }
+        hooks.changed(); return;
+      }
+      const c = e.target.closest('.qcard'); if (c) { qSel = +c.dataset.q; renderBoardBook(b); }
+    };
+    b.onmouseover = b.onmouseout = null;
+  }
+  function qDetailHtml(q) {
     const T = QT[q.tid] || {}, d = danger(T, q.g), fb = foeBand(q), intel = !!s.built['정보실'], wk = T.weeks || 1;
     let h = `<div class="t1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b><span class="ux-tag">${Gm.QTYPE[q.type]}</span><span class="ux-tag">${wk}주</span></div>`;
     if (T.client || T.notice || T.tip) h += `<div class="note">${T.client ? `<b>${esc(T.client)}</b> ` : ''}${esc(T.notice || '')}${T.notice && T.tip ? '<br>' : ''}${esc(T.tip || '')}</div>`;   // 오버 메모(편집기)
@@ -372,7 +441,13 @@
     const fs = q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g], ff = q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g], ts = q.trustS != null ? q.trustS : s.cfg.quest.trustSucc, tf = q.trustF != null ? q.trustF : s.cfg.quest.trustFail;
     h += `<div class="foot"><span>성공 명성 <b class="ux-plus">+${fs}</b> · 신뢰 <b class="ux-plus">+${ts}</b></span><span>실패 명성 <b class="ux-minus">−${ff}</b> · 신뢰 <b class="ux-minus">−${tf}</b></span></div>`;
     { const left = Gm.expireWeeks(s) - (s.week - q.posted);
-      h += `<div class="foot muted">기한 ${left}주 남음 (지나면 사라지고 신뢰도 −${s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1}) · 떼면 ${fmt(Math.round(q.reward * 0.10))}G, 신뢰도 −2</div>`; }
+      h += `<div class="foot muted">기한 ${left}주 남음 (지나면 사라지고 신뢰도 −${s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1}) · 취소하면 ${fmt(Math.round(q.reward * 0.10))}G, 신뢰도 −2</div>`; }
+    return h;
+  }
+  function showTip(b) {
+    const q = s.board.find(x => x.id === qHover), c = b.querySelector(`.qcard[data-q="${qHover}"]`), tip = b.querySelector('#qTip');
+    if (!q || !c) { tip.classList.remove('on'); return; }
+    const h = qDetailHtml(q);
     tip.innerHTML = h; tip.classList.add('on');
     // 카드 오른쪽, 공간이 없으면 왼쪽
     const bw = b.clientWidth, x = c.offsetLeft + c.offsetWidth + 10, tw = tip.offsetWidth;
