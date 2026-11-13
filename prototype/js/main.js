@@ -46,6 +46,13 @@
     try { const ns = Gm.deserialize(t); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); swap(ns, UI.lines('load', { date: Gm.dateLabel(ns.week) })); }
     catch (e) { UI.toast('저장 데이터를 불러오지 못했습니다.', 'warn'); }
   }
+  function saveTo(n) { useSlot(n); save(); }   // 이 칸에 저장 → 이후 자동 저장도 이 칸
+  function loadSlot(n) {
+    let t = null; try { t = localStorage.getItem(slotKey(n)); } catch (e) { /* 저장소 없음 */ }
+    if (!t) { UI.toast('빈 슬롯입니다.', 'warn'); return; }
+    try { const ns = Gm.deserialize(t); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); useSlot(n); swap(ns, UI.lines('load', { date: Gm.dateLabel(ns.week) })); }
+    catch (e) { UI.toast('저장 데이터를 불러오지 못했습니다.', 'warn'); }
+  }
   function newGame() {
     // 새 게임은 비어 있는 첫 슬롯에서 시작한다 (모두 차 있으면 지금 슬롯을 덮어쓴다)
     const e0 = firstEmpty(); if (e0) useSlot(e0);
@@ -53,7 +60,8 @@
     swap(ns, UI.lines('newgame'));
   }
 
-  UI.init(stage, s, { setSpeed, save, load, newGame, changed: () => UI.hud(), promoted: a => Director.celebrate(a.id), town: () => Town.open() });
+  UI.init(stage, s, { setSpeed, save, load, newGame, slots: () => ({ cur: slot, list: Array.from({ length: SLOTS }, (_, i) => slotInfo(i + 1)) }), saveTo, loadSlot,   // 책 설정 장 오른쪽: 슬롯 3칸 정보 · 칸 골라 저장 / 불러오기 (2026-11-13)
+    changed: () => UI.hud(), promoted: a => Director.celebrate(a.id), town: () => Town.open() });
   Town.init(stage, () => s, {});
   LinaMenu.init(stage, () => s, UI); // 리나 클릭 메뉴 (좌3·우3)
   Expedition.init(stage, () => s); // 원정 현황 패널 + 미니 뷰 (expedition.js)

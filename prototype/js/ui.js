@@ -230,7 +230,7 @@
     q('#bookTitle').textContent = c ? c.name : (TITLES[name] || '');
     { const on = q('#bookMarks [data-ch].on'); q('#bookSub').style.setProperty('--bm', on ? getComputedStyle(on).getPropertyValue('--bm') : '#8a6a46'); }   // 오른쪽 책갈피 색 = 지금 장 색
     const subs = c ? (c.id === 'adv' ? [['advs', name === 'advs' && advView !== 'career'], ['advs:career', name === 'advs' && advView === 'career'], ['promo', name === 'promo']] : c.pops.map(p => [p, p === name])) : [];   // 모험가 장: 명부 · 경력 · 전직 제안
-    q('#bookSub').innerHTML = subs.length > 1 ? subs.map(([p, on]) => `<button data-sub="${p}" class="${on ? 'on' : ''}">${SUB_NAME[p] || TITLES[p]}</button>`).join('') : '';
+    q('#bookSub').innerHTML = subs.length > 1 ? subs.map(([p, on]) => `<button data-sub="${p}" class="${on ? 'on' : ''}">${(SUB_NAME[p] || TITLES[p]).replace(/ /g, '')}</button>`).join('') : '';
   }
   // ---------- 책: 경영 장 정렬 (2026-11-13) — 기존 화면을 그대로 그린 뒤 왼쪽 / 오른쪽 쪽으로 나눠 담음 (쪽마다 원래 바깥 상자 class를 붙여 스타일 유지) ----------
   function mgBook(b, kind) {
@@ -582,8 +582,26 @@
     return `background-image:url(assets/chr/chr_${k}_front.png);background-size:auto ${Math.round(h * (f[2] || 1))}px;background-position:${Math.round(box / 2 - f[0] * z)}px ${Math.round(cy - f[1] * z)}px`;
   }
   // ---------- 설정 창: 소리 · 월말 장부 · 화면 효과 · 저장 ----------
+  let optArm = null;   // 책 설정 장: 덮어쓰기 확인 중인 칸 ('s2' 등)
   function optsHtml() {
     const o = root.Snd ? root.Snd.opt : { bgm: .6, mute: false, fx: true }, sw = (k, on, tx) => `<button class="ux-btn op-sw ${on ? 'on' : ''}" data-ocmd="${k}">${tx[on ? 0 : 1]}</button>`;
+    if (document.getElementById('pop').classList.contains('book')) {   // 책: 왼쪽 = 소리 · 화면 / 오른쪽 = 게임(지금 슬롯 · 저장 · 불러오기) (2026-11-13)
+      const SL = hooks.slots ? hooks.slots() : { cur: 1, list: [] }, stamp = ts => { const d = new Date(ts); return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+      const L = `<div class="ux-h">소리</div><div class="op-sec">
+          ${[['master', '전체 음량', ''], ['bgm', '배경음악', ''], ['sfx', '효과음', '효과음은 준비 중']].map(([k, n, sm]) => { const v = Math.round((o[k] == null ? (k === 'sfx' ? 0.8 : 1) : o[k]) * 100); return `<div class="op-row"><span class="op-nm">${n}${sm ? ` <small>${sm}</small>` : ''}</span><input type="range" class="op-rg" data-ovol="${k}" min="0" max="100" value="${v}" style="--v:${v}%"><b data-ovv="${k}">${v}%</b></div>`; }).join('')}
+          <div class="op-row"><span class="op-nm">음소거</span>${sw('mute', o.mute, ['켜짐', '꺼짐'])}</div></div>
+        <div class="ux-h">화면</div><div class="op-sec">
+          <div class="op-row"><span class="op-nm">화면 효과 <small>별가루 · 낙엽 · 쪽지 흔들림</small></span>${sw('fx', o.fx, ['켜짐', '꺼짐'])}</div>
+          <div class="op-row"><span class="op-nm">월말 장부 자동 표시</span>${sw('report', UI.autoReport, ['켜짐', '꺼짐'])}</div></div>`;
+      const card = (i, k) => { const n = k + 1, cur = n === SL.cur, arm = optArm === 's' + n;
+        const info = !i ? '<div class="op-empty">빈 칸</div>' : i.bad ? '<div class="op-empty">읽을 수 없는 저장</div>'
+          : `<div class="op-i1"><b>${i.date}</b><span>${i.grade}급 · ${fmt(i.gold)}G · 모험가 ${i.advs}명</span></div><div class="op-i2">저장 ${i.ts ? stamp(i.ts) : '—'}</div>`;
+        return `<div class="op-slot ${cur ? 'cur' : ''} ${i ? '' : 'empty'}"><div class="op-sh"><b>${n}번 슬롯</b>${cur ? '<em>지금 쓰는 칸</em>' : ''}</div>${info}
+          <div class="op-sb"><button class="ux-btn sm ${cur ? 'primary' : ''} ${arm ? 'danger' : ''}" data-ocmd="saveto" data-n="${n}">${arm ? '한 번 더 누르면 덮어씀' : '여기에 저장'}</button>${i && !i.bad ? `<button class="ux-btn sm" data-ocmd="loadn" data-n="${n}">불러오기</button>` : ''}</div></div>`; };
+      const R = `<div class="ux-h">저장 슬롯 <small>${SL.list.filter(Boolean).length} / ${SL.list.length}칸</small></div><div class="op-slots">${SL.list.map(card).join('')}</div>
+        <p class="op-note">게임은 매달 초에 "지금 쓰는 칸"에 자동 저장됩니다. 다른 칸에 저장하거나 불러오면 그 칸이 지금 쓰는 칸이 됩니다.</p>`;
+      return `<div class="bk2 bk-opt"><section class="bk-l">${L}</section><section class="bk-r">${R}</section></div>`;
+    }
     return `<div class="op-wrap">
       <div class="op-sec"><h3>소리</h3>
         <div class="op-row"><span class="op-nm">배경음악 음량</span><input type="range" class="op-rg" id="opBgm" min="0" max="100" value="${Math.round(o.bgm * 100)}"><b id="opBgmV">${Math.round(o.bgm * 100)}%</b></div>
@@ -597,12 +615,17 @@
         <div class="op-row op-btns"><button class="ux-btn" data-ocmd="save">저장하기</button><button class="ux-btn" data-ocmd="load">불러오기</button></div>
       </div></div>`;
   }
-  document.addEventListener('input', e => { if (popup !== 'opts' || e.target.id !== 'opBgm') return; const v = +e.target.value; if (root.Snd) root.Snd.set('bgm', v / 100); q('#opBgmV').textContent = v + '%'; });
+  document.addEventListener('input', e => { const k = popup === 'opts' && e.target.dataset && e.target.dataset.ovol; if (k) { const v = +e.target.value; if (root.Snd) root.Snd.set(k, v / 100); e.target.style.setProperty('--v', v + '%'); const o = q(`[data-ovv="${k}"]`); if (o) o.textContent = v + '%'; return; }   // 책: 전체 · 배경음악 · 효과음
+    if (popup !== 'opts' || e.target.id !== 'opBgm') return; const v = +e.target.value; if (root.Snd) root.Snd.set('bgm', v / 100); q('#opBgmV').textContent = v + '%'; e.target.style.setProperty('--v', v + '%'); });
   document.addEventListener('click', e => {
     if (popup !== 'opts') return; const t = e.target.closest('[data-ocmd]'); if (!t) return; const c = t.dataset.ocmd, S = root.Snd;
     if (c === 'mute' || c === 'fx') S.set(c, !S.opt[c]);
     else if (c === 'report') { UI.autoReport = !UI.autoReport; S.set('report', UI.autoReport); const r = q('#mReport'); if (r) { r.querySelector('i').textContent = UI.autoReport ? '켬' : '끔'; r.classList.toggle('off', !UI.autoReport); } }
     else if (c === 'save') { hooks.save(); toast('게임을 저장했습니다.', 'info'); }
+    else if (c === 'saveto') { const n = +t.dataset.n, SL = hooks.slots(), i = SL.list[n - 1];
+      if (i && n !== SL.cur && optArm !== 's' + n) { optArm = 's' + n; renderPopup(); return; }   // 다른 칸 덮어쓰기는 두 번 눌러 확인
+      optArm = null; hooks.saveTo(n); toast(`${n}번 슬롯에 저장했습니다.`, 'info'); }
+    else if (c === 'loadn') { optArm = null; UI.close(); hooks.loadSlot(+t.dataset.n); return; }
     else if (c === 'load') { UI.close(); hooks.load(); }
     renderPopup();
   });

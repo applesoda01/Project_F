@@ -6,13 +6,14 @@
    옵션은 localStorage 'guildProto2_opt' 에 저장한다 (저장소가 없으면 이번 접속 동안만 유지). */
 (function (root) {
   'use strict';
-  const KEY = 'guildProto2_opt', DEF = { bgm: 0.6, mute: false, fx: true, report: true };
+  const KEY = 'guildProto2_opt', DEF = { master: 1, bgm: 0.6, sfx: 0.8, mute: false, fx: true, report: true };   // 2026-11-13: 전체 음량(master) · 효과음(sfx) 추가
   const Opt = Object.assign({}, DEF);
   try { Object.assign(Opt, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* 저장소 없음 */ }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(Opt)); } catch (e) { /* 무시 */ } };
   const Snd = { opt: Opt, cur: null, key: null, unlocked: false, fade: [] };
   const url = (k, part) => `assets/audio/town_${k}_${part}.ogg`;
-  const vol = () => Opt.mute ? 0 : Math.max(0, Math.min(1, Opt.bgm)) * 0.8;
+  const clamp = v => Math.max(0, Math.min(1, +v || 0));
+  const vol = () => Opt.mute ? 0 : clamp(Opt.master == null ? 1 : Opt.master) * clamp(Opt.bgm) * 0.8;
   const FADE = 1.2;
 
   // ---------- Web Audio ----------
@@ -77,5 +78,7 @@
   const unlock = () => { Snd.unlocked = true; ensureCtx(); ['pointerdown', 'keydown'].forEach(e => root.removeEventListener(e, unlock, true)); };
   ['pointerdown', 'keydown'].forEach(e => root.addEventListener(e, unlock, true));
   Snd.set = function (k, v) { Opt[k] = v; save(); };
+  // 효과음 음량 = 전체 × 효과음 (효과음은 아직 없음 — 효과음을 넣을 때 재생 음량에 이 값을 곱함)
+  Snd.sfxVol = () => Opt.mute ? 0 : clamp(Opt.master == null ? 1 : Opt.master) * clamp(Opt.sfx == null ? 0.8 : Opt.sfx);
   root.Snd = Snd;
 })(this);

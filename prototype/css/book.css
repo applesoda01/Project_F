@@ -1,7 +1,7 @@
 /* 길드 업무 일지 — 책 펼침 팝업 (2026-11-13 단계 ① 틀 · 단계 ③ 의뢰 장. 값은 tools/book_layout_editor.html 로 조절)
    펼침면 1600×879 = 종이(book_paper.png) → 내용 → 문양(book_ornament.png) 순서 (원본 합친 그림 book_spread.png). 안쪽 테두리 x 130~1471, y 41~832 · 접힘 선 x 794~804
    왼쪽 쪽 내용 x 150~770 · 오른쪽 쪽 830~1451 · 네 모서리 약 120×120 비움 (docs/handoff_2026-11-12_night.md 4장) */
-#pop.book{--pb:0px;--bk-lx:157px;--bk-ly:116px;--bk-lw:588px;--bk-lh:624px;--bk-rx:856px;--bk-ry:116px;--bk-rw:561px;--bk-rh:675px;--bkt-y:80px;--bk-lpt:54px;--bkq-sec:54px;--bkc-x:864px;--bkc-y:743px;--bkm-out:30px;--bkm-w:70px;--bkm-y:150px;--bkm-h:124px;--bkm-gap:10px;--av-rh:52px;--av-pt:96px;--av-nfs:24px;--av-eq:58px;--av-pot:42px;--av-sr:4px;--av-note:250px;--av-hmy:48px;--av-stw:170px;--av-sks:68px;--av-skg:12px;--sl-sil:40%;--fb-cols:3;--fb-ic:78px;--fb-fs:15px;--fb-gy:2px;--av-px:0px;--av-py:22px;--av-lfs:18px;--av-cfs:16px;--av-wfs:16px;--av-ttfs:13px;--av-tgfs:12px;--av-bfs:12px;--av-bvfs:11px;--av-hfs:19px;--av-sfs:16px;--av-skfs:13px;--av-cbfs:22px;--p-nm-x:0px;--p-nm-y:-4px;--p-tt-x:0px;--p-tt-y:-7px;--p-cls-x:0px;--p-cls-y:-1px;--p-wal-x:0px;--p-wal-y:-5px;--p-tag-x:0px;--p-tag-y:-11px;--p-trt-x:0px;--p-trt-y:-14px;--p-lv-x:0px;--p-lv-y:0px;--p-eqh-x:0px;--p-eqh-y:0px;--p-poth-x:0px;--p-poth-y:0px;--p-sth-x:70px;--p-sth-y:15px;--p-cbs-x:0px;--p-cbs-y:0px;--p-skh-x:0px;--p-skh-y:0px;--p-ske-x:0px;--p-ske-y:0px;--p-hm-x:0px;--p-hm-y:0px;--p-eqg-x:0px;--p-eqg-y:0px;--p-potg-x:0px;--p-potg-y:0px;--p-stg-x:0px;--p-stg-y:0px;--p-skg-x:0px;--p-skg-y:0px;--av-hmw:200px;--sl-size:285px;--sl-x:330px;--sl-y:436px;--sl-rot:-8deg;--sl-op:67%;--bkt-fs:30px;--bks-w:10px;--bkq-cols:2;--bkq-h:66px;--bkq-gx:10px;--bkq-gy:8px;--bkq-fs:17px;--bkq-tfs:26px;--bkq-mat:52px;width:1600px;height:879px;left:calc(50% + 28px);top:50%;transform:translate(-50%,-50%) scale(1.12);border:0;border-image:none;padding:0;
+#pop.book{--pb:0px;--bk-lx:157px;--bk-ly:116px;--bk-lw:588px;--bk-lh:624px;--bk-rx:856px;--bk-ry:116px;--bk-rw:561px;--bk-rh:675px;--bkt-y:80px;--bk-lpt:54px;--bkq-sec:54px;--bkc-x:864px;--bkc-y:743px;--bkm-out:30px;--bkm-w:70px;--bkm-y:150px;--bkm-h:124px;--bkm-gap:10px;--av-rh:52px;--av-pt:96px;--av-nfs:24px;--av-eq:58px;--av-pot:42px;--av-sr:4px;--av-note:250px;--av-hmy:48px;--av-stw:170px;--av-sks:68px;--av-skg:12px;--sl-sil:40%;--tb-cx:65px;--tb-ly:0px;--tb-fs:21px;--tb-rfs:21px;--tb-sfs:17px;--rb-r:129px;--rb-ty:38px;--rb-t:-14px;--rb-w:56px;--rb-h:124px;--fb-cols:3;--fb-ic:78px;--fb-fs:15px;--fb-gy:2px;--av-px:0px;--av-py:22px;--av-lfs:18px;--av-cfs:16px;--av-wfs:16px;--av-ttfs:13px;--av-tgfs:12px;--av-bfs:12px;--av-bvfs:11px;--av-hfs:19px;--av-sfs:16px;--av-skfs:13px;--av-cbfs:22px;--p-nm-x:0px;--p-nm-y:-4px;--p-tt-x:0px;--p-tt-y:-7px;--p-cls-x:0px;--p-cls-y:-1px;--p-wal-x:0px;--p-wal-y:-5px;--p-tag-x:0px;--p-tag-y:-11px;--p-trt-x:0px;--p-trt-y:-14px;--p-lv-x:0px;--p-lv-y:0px;--p-eqh-x:0px;--p-eqh-y:0px;--p-poth-x:0px;--p-poth-y:0px;--p-sth-x:70px;--p-sth-y:15px;--p-cbs-x:0px;--p-cbs-y:0px;--p-skh-x:0px;--p-skh-y:0px;--p-ske-x:0px;--p-ske-y:0px;--p-hm-x:0px;--p-hm-y:0px;--p-eqg-x:0px;--p-eqg-y:0px;--p-potg-x:0px;--p-potg-y:0px;--p-stg-x:0px;--p-stg-y:0px;--p-skg-x:0px;--p-skg-y:0px;--av-hmw:200px;--sl-size:285px;--sl-x:330px;--sl-y:436px;--sl-rot:-8deg;--sl-op:67%;--bkt-fs:30px;--bks-w:10px;--bkq-cols:2;--bkq-h:66px;--bkq-gx:10px;--bkq-gy:8px;--bkq-fs:17px;--bkq-tfs:26px;--bkq-mat:52px;width:1600px;height:879px;left:calc(50% + 28px);top:50%;transform:translate(-50%,-50%) scale(1.12);border:0;border-image:none;padding:0;
   background:url(../assets/ui/book/book_paper.png) center/100% 100% no-repeat;filter:drop-shadow(0 18px 26px rgba(30,16,6,.5));overflow:visible}
 #pop.book #popHead,#pop.book #popClose{display:none}
 /* 책이 열리면 아래 메뉴·재생 버튼(z 5·7)보다 위에 (사용자: 뒤 UI는 가려져도 됨) */
@@ -295,7 +295,7 @@
 
 /* 등급 도장 (2026-11-13): 종이 문양 색 테두리 + Playball 글자, 오른쪽 쪽 정보 뒤에 깔림. 크기·위치·기울기·진하기 = --sl-* */
 @font-face{font-family:"Playball";src:url(../assets/fonts/Playball-Regular.ttf) format("truetype");font-display:swap}
-.bk-av.bk2>.bk-r{position:relative;isolation:isolate}
+.bk-av.bk2>.bk-r{isolation:isolate}   /* 쪽 상자는 .bk2>section 의 absolute 그대로 (도장 기준 상자 겸함) */
 .bk-av .av-seal{position:absolute;left:var(--sl-x);top:var(--sl-y);width:var(--sl-size);height:var(--sl-size);z-index:-1;pointer-events:none;
   display:flex;align-items:center;justify-content:center;opacity:var(--sl-op);transform:rotate(var(--sl-rot));
   background:url(../assets/ui/book/seal_frame.png) center/contain no-repeat}
@@ -580,3 +580,51 @@
 .mg-log .gl-rh{margin:0}
 .mg-ledger .lg,.mg-ledger .lg tr,.mg-ledger .lg tr:not(.tot) td,.mg-ledger .lg tr:not(.tot) th{background-color:transparent!important;background-image:none!important;box-shadow:none!important}
 .mg-ledger .lg{border:0!important;border-radius:0!important}.mg-ledger .lg td,.mg-ledger .lg th{border-bottom:1px solid rgba(110,72,36,.18)!important}.mg-ledger .lg tr.tot td{background:linear-gradient(90deg,rgba(236,194,95,.3),rgba(236,194,95,.05))!important;border-top:3px double rgba(110,72,36,.45)!important}
+/* ===== 설정 장 (2026-11-13): 왼쪽 소리 · 화면 / 오른쪽 게임(슬롯 · 저장) — 흰 상자 · 나무 이름표 대신 잉크 장부 줄 ===== */
+.bk-opt.bk2>section{display:flex;flex-direction:column;gap:6px}
+.bk-opt .op-sec{background:none;border:0;border-radius:0;padding:0 6px;margin-bottom:14px}
+.bk-opt .op-row{border-top:0;border-bottom:1px solid rgba(110,72,36,.2);padding:10px 2px}
+.bk-opt .op-nm{font:700 16px var(--hf);color:#4a2e18}.bk-opt .op-nm small{display:block;font:400 12px var(--hf);color:var(--ux-muted)}
+.bk-opt .op-v{font:700 16px var(--hf);color:#5a3a20}
+.bk-opt .op-row b{width:52px}
+.bk-opt .op-sw{min-width:72px}
+.bk-opt .op-sw:not(.on){background:none;border:1px solid rgba(110,72,36,.35);color:var(--ux-muted);box-shadow:none}
+/* 음량: 물감 번짐 막대 모양 */
+.bk-opt .op-rg{-webkit-appearance:none;appearance:none;width:200px;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(138,106,70,.35),#6e4e30) 0 0/var(--v,60%) 100% no-repeat,rgba(138,106,70,.14);outline:none}
+.bk-opt .op-rg::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#f4e6c6;border:2px solid #8a6a46;box-shadow:0 1px 2px rgba(60,36,16,.3);cursor:pointer}
+.bk-opt .op-rg::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#f4e6c6;border:2px solid #8a6a46}
+.bk-opt .op-sh{display:flex;align-items:baseline;gap:8px;padding:4px 2px 8px;border-bottom:1px solid rgba(110,72,36,.35)}
+.bk-opt .op-sh b{font:700 20px var(--hf);color:#4a2e18}.bk-opt .op-sh small{font-size:12px;color:var(--ux-muted)}
+.bk-opt .op-btns{display:flex;gap:10px;justify-content:center;border:0;padding:6px 0}
+.bk-opt .op-btns .ux-btn{min-width:120px}
+.bk-opt .op-note{font-size:12px;color:var(--ux-muted);text-align:center;margin:4px 0}
+/* 설정 장 오른쪽: 저장 슬롯 3칸 (2026-11-13) */
+.bk-opt .op-slots{display:flex;flex-direction:column;gap:10px}
+.bk-opt .op-slot{display:grid;grid-template-columns:1fr auto;grid-template-areas:"h b" "i b" "j b";align-items:center;column-gap:12px;padding:10px 12px;border-bottom:1px solid rgba(110,72,36,.25)}
+.bk-opt .op-slot.cur{background:linear-gradient(90deg,rgba(214,160,60,.22),rgba(214,160,60,0));box-shadow:inset 4px 0 0 #6a4785}
+.bk-opt .op-slot .op-sh{grid-area:h;border:0;padding:0 0 2px}
+.bk-opt .op-slot .op-sh b{font-size:18px}.bk-opt .op-slot .op-sh em{font-style:normal;font-size:12px;font-weight:700;color:#6a4785;margin-left:6px}
+.bk-opt .op-i1{grid-area:i;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.bk-opt .op-i1 b{font:700 15px var(--hf);color:#4a2e18}.bk-opt .op-i1 span{font-size:13px;color:#5a3a20}
+.bk-opt .op-i2{grid-area:j;font-size:12px;color:var(--ux-muted)}
+.bk-opt .op-empty{grid-area:i;font-size:14px;color:var(--ux-muted)}
+.bk-opt .op-sb{grid-area:b;display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.bk-opt .op-sb .ux-btn{min-width:110px;white-space:nowrap}
+/* ===== 책갈피 · 닫기 끈 그림 (2026-11-13, Gemini 천 리본): 회색 그림 × 장 색(곱하기)으로 칠하고 그림 모양으로 잘라 냄 ===== */
+#bookMarks,#bookSub{filter:drop-shadow(0 3px 4px rgba(30,16,6,.35))}
+#bookMarks button,#bookSub button,#bookRibbon{border-radius:0;box-shadow:none;background-blend-mode:multiply;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%}
+#bookMarks button{background:url(../assets/ui/book/tab_left.png) 0 0/100% 100% no-repeat,var(--bm);-webkit-mask-image:url(../assets/ui/book/tab_left.png);mask-image:url(../assets/ui/book/tab_left.png)}
+#bookMarks button.on{box-shadow:none;filter:brightness(1.12) saturate(1.1)}
+#bookSub button{background:url(../assets/ui/book/tab_right.png) 0 0/100% 100% no-repeat,color-mix(in srgb,var(--bm,#8a6a46) 62%,#e9d6b0);-webkit-mask-image:url(../assets/ui/book/tab_right.png);mask-image:url(../assets/ui/book/tab_right.png)}
+#bookSub button.on{background:url(../assets/ui/book/tab_right.png) 0 0/100% 100% no-repeat,var(--bm,#8a6a46);box-shadow:none}
+#bookRibbon{width:56px;height:124px;clip-path:none;background:url(../assets/ui/book/ribbon_close.png) 0 0/100% 100% no-repeat,#a33343;-webkit-mask-image:url(../assets/ui/book/ribbon_close.png);mask-image:url(../assets/ui/book/ribbon_close.png)}
+#bookRibbon:hover{height:136px}
+#bookRibbon span{top:40px}
+/* 닫기 끈: 오른쪽 쪽 위 오른쪽 모서리 문양 자리로 (2026-11-13) / 왼쪽 책갈피 글자: 책 밖으로 보이는 부분 가운데 */
+#bookRibbon{right:var(--rb-r);top:var(--rb-t);width:var(--rb-w);height:var(--rb-h)}
+#bookRibbon:hover{height:calc(var(--rb-h) + 12px)}
+#bookMarks button i{left:calc(var(--tb-cx) - 70px);right:auto;width:140px;top:calc(50% + var(--tb-ly));text-align:center;transform:translateY(-50%);font-size:var(--tb-fs)}   /* 글자 가운데 = 버튼 왼쪽에서 --tb-cx (글자 수와 관계없이 같은 가운데) */
+#bookRibbon span{left:50%;right:auto;top:var(--rb-ty);transform:translateX(-50%);width:auto;margin:0}
+#bookMarks button[data-ch="req"] i{font-size:var(--tb-rfs);letter-spacing:-.5px}
+#bookSub button{font-size:var(--tb-sfs)}
+/* 오른쪽 책갈피 글자: 접힌 띠(왼쪽 약 20%)를 뺀 천 부분 가운데 (닫기 끈 글자처럼) */
+#bookSub button{display:flex;align-items:center;justify-content:center;padding:0 0 0 calc(var(--bkm-w) * .2)!important;letter-spacing:0}
