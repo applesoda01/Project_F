@@ -1,7 +1,7 @@
 /* 길드 업무 일지 — 책 펼침 팝업 (2026-11-13 단계 ① 틀 · 단계 ③ 의뢰 장. 값은 tools/book_layout_editor.html 로 조절)
    펼침면 1600×879 = 종이(book_paper.png) → 내용 → 문양(book_ornament.png) 순서 (원본 합친 그림 book_spread.png). 안쪽 테두리 x 130~1471, y 41~832 · 접힘 선 x 794~804
    왼쪽 쪽 내용 x 150~770 · 오른쪽 쪽 830~1451 · 네 모서리 약 120×120 비움 (docs/handoff_2026-11-12_night.md 4장) */
-#pop.book{--pb:0px;--bk-lx:157px;--bk-ly:116px;--bk-lw:588px;--bk-lh:624px;--bk-rx:856px;--bk-ry:116px;--bk-rw:561px;--bk-rh:675px;--bkt-y:80px;--bk-lpt:54px;--bkq-sec:54px;--bkc-x:864px;--bkc-y:743px;--bkm-out:30px;--bkm-w:70px;--bkm-y:150px;--bkm-h:124px;--bkm-gap:10px;--av-rh:52px;--av-pt:96px;--av-nfs:24px;--av-eq:58px;--av-pot:42px;--av-sr:4px;--av-note:250px;--av-hmy:48px;--av-stw:170px;--av-sks:68px;--av-skg:12px;--sl-sil:40%;--av-px:0px;--av-py:22px;--av-lfs:18px;--av-cfs:16px;--av-wfs:16px;--av-ttfs:13px;--av-tgfs:12px;--av-bfs:12px;--av-bvfs:11px;--av-hfs:19px;--av-sfs:16px;--av-skfs:13px;--av-cbfs:22px;--p-nm-x:0px;--p-nm-y:-4px;--p-tt-x:0px;--p-tt-y:-7px;--p-cls-x:0px;--p-cls-y:-1px;--p-wal-x:0px;--p-wal-y:-5px;--p-tag-x:0px;--p-tag-y:-11px;--p-trt-x:0px;--p-trt-y:-14px;--p-lv-x:0px;--p-lv-y:0px;--p-eqh-x:0px;--p-eqh-y:0px;--p-poth-x:0px;--p-poth-y:0px;--p-sth-x:70px;--p-sth-y:15px;--p-cbs-x:0px;--p-cbs-y:0px;--p-skh-x:0px;--p-skh-y:0px;--p-ske-x:0px;--p-ske-y:0px;--p-hm-x:0px;--p-hm-y:0px;--p-eqg-x:0px;--p-eqg-y:0px;--p-potg-x:0px;--p-potg-y:0px;--p-stg-x:0px;--p-stg-y:0px;--p-skg-x:0px;--p-skg-y:0px;--av-hmw:200px;--sl-size:285px;--sl-x:330px;--sl-y:436px;--sl-rot:-8deg;--sl-op:67%;--bkt-fs:30px;--bks-w:10px;--bkq-cols:2;--bkq-h:66px;--bkq-gx:10px;--bkq-gy:8px;--bkq-fs:17px;--bkq-tfs:26px;--bkq-mat:52px;width:1600px;height:879px;left:calc(50% + 28px);top:50%;transform:translate(-50%,-50%) scale(1.12);border:0;border-image:none;padding:0;
+#pop.book{--pb:0px;--bk-lx:157px;--bk-ly:116px;--bk-lw:588px;--bk-lh:624px;--bk-rx:856px;--bk-ry:116px;--bk-rw:561px;--bk-rh:675px;--bkt-y:80px;--bk-lpt:54px;--bkq-sec:54px;--bkc-x:864px;--bkc-y:743px;--bkm-out:30px;--bkm-w:70px;--bkm-y:150px;--bkm-h:124px;--bkm-gap:10px;--av-rh:52px;--av-pt:96px;--av-nfs:24px;--av-eq:58px;--av-pot:42px;--av-sr:4px;--av-note:250px;--av-hmy:48px;--av-stw:170px;--av-sks:68px;--av-skg:12px;--sl-sil:40%;--fb-cols:3;--fb-ic:78px;--fb-fs:15px;--fb-gy:2px;--av-px:0px;--av-py:22px;--av-lfs:18px;--av-cfs:16px;--av-wfs:16px;--av-ttfs:13px;--av-tgfs:12px;--av-bfs:12px;--av-bvfs:11px;--av-hfs:19px;--av-sfs:16px;--av-skfs:13px;--av-cbfs:22px;--p-nm-x:0px;--p-nm-y:-4px;--p-tt-x:0px;--p-tt-y:-7px;--p-cls-x:0px;--p-cls-y:-1px;--p-wal-x:0px;--p-wal-y:-5px;--p-tag-x:0px;--p-tag-y:-11px;--p-trt-x:0px;--p-trt-y:-14px;--p-lv-x:0px;--p-lv-y:0px;--p-eqh-x:0px;--p-eqh-y:0px;--p-poth-x:0px;--p-poth-y:0px;--p-sth-x:70px;--p-sth-y:15px;--p-cbs-x:0px;--p-cbs-y:0px;--p-skh-x:0px;--p-skh-y:0px;--p-ske-x:0px;--p-ske-y:0px;--p-hm-x:0px;--p-hm-y:0px;--p-eqg-x:0px;--p-eqg-y:0px;--p-potg-x:0px;--p-potg-y:0px;--p-stg-x:0px;--p-stg-y:0px;--p-skg-x:0px;--p-skg-y:0px;--av-hmw:200px;--sl-size:285px;--sl-x:330px;--sl-y:436px;--sl-rot:-8deg;--sl-op:67%;--bkt-fs:30px;--bks-w:10px;--bkq-cols:2;--bkq-h:66px;--bkq-gx:10px;--bkq-gy:8px;--bkq-fs:17px;--bkq-tfs:26px;--bkq-mat:52px;width:1600px;height:879px;left:calc(50% + 28px);top:50%;transform:translate(-50%,-50%) scale(1.12);border:0;border-image:none;padding:0;
   background:url(../assets/ui/book/book_paper.png) center/100% 100% no-repeat;filter:drop-shadow(0 18px 26px rgba(30,16,6,.5));overflow:visible}
 #pop.book #popHead,#pop.book #popClose{display:none}
 /* 책이 열리면 아래 메뉴·재생 버튼(z 5·7)보다 위에 (사용자: 뒤 UI는 가려져도 됨) */
@@ -480,3 +480,69 @@
 .bk-pm .pm-go{margin-top:auto}
 .bk-pm .pm-ft{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ux-muted)}
 .bk-pm .pm-cd .sv .ux-muted,.bk-pm .pm-cd .gw .ux-muted{font-size:12px}
+/* ===== 시설 장 (2026-11-13 시안 2, 카이로소프트식): 아이콘 카드 격자 + 아래 정보 상자 ===== */
+.bk-fac.bk2>section{display:flex;flex-direction:column;gap:8px;min-height:0}
+.bk-fac .ux-h{margin:0}
+.bk-fac .fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 8px;align-content:start}
+.bk-fac .fc{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;row-gap:3px;padding:6px 2px 5px;border:0;border-radius:6px;background:none;cursor:pointer;font:inherit}
+.bk-fac .fc:hover{background:rgba(255,250,236,.55)}
+.bk-fac .fc.sel{background:linear-gradient(rgba(214,160,60,.28),rgba(214,160,60,.08));box-shadow:inset 0 0 0 1.5px rgba(168,114,26,.55)}
+.bk-fac .fc b{font:700 13px/1.2 var(--hf);color:#4a2e18;text-align:center;word-break:keep-all}
+.bk-fac .fc small{font-size:12px;font-weight:700;color:#7a4a14}.bk-fac .fc small.poor{color:#b0321f}
+.bk-fac .fc.run small{color:#3f7a3a}.bk-fac .fc.lock{opacity:.5}.bk-fac .fc.lock small{color:var(--ux-muted);font-weight:400}
+.bk-fac .fc .mk{position:absolute;right:8px;top:4px;font-style:normal;font-size:11px;font-weight:700;color:#3f7a3a;background:#f4ead2;border:1px solid rgba(63,122,58,.45);border-radius:9px;padding:0 5px}
+.bk-fac .fb-ic{--c:rgba(110,72,36,.38);--cl:10px;width:56px;height:56px;border:0;box-shadow:none;border-radius:0;display:grid;place-items:center;
+  background:linear-gradient(var(--c),var(--c)) top left/var(--cl) 2px no-repeat,linear-gradient(var(--c),var(--c)) top left/2px var(--cl) no-repeat,
+  linear-gradient(var(--c),var(--c)) top right/var(--cl) 2px no-repeat,linear-gradient(var(--c),var(--c)) top right/2px var(--cl) no-repeat,
+  linear-gradient(var(--c),var(--c)) bottom left/var(--cl) 2px no-repeat,linear-gradient(var(--c),var(--c)) bottom left/2px var(--cl) no-repeat,
+  linear-gradient(var(--c),var(--c)) bottom right/var(--cl) 2px no-repeat,linear-gradient(var(--c),var(--c)) bottom right/2px var(--cl) no-repeat}
+.bk-fac .fc.on .fb-ic,.bk-fac .fc.run .fb-ic{--c:#a8792a}
+.bk-fac .fb-ic img{width:86%;height:86%;object-fit:contain}
+.bk-fac .fb-ic .ux-grade{width:36px;height:36px}
+.bk-fac .fb-ic.empty img{opacity:.5;filter:grayscale(.5)}.bk-fac .fb-ic.empty::after{content:none}
+.bk-fac .fb-ic .q{font:700 26px var(--hf);color:rgba(110,72,36,.4)}
+.bk-fac .fi{margin-top:auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;border-top:1px solid rgba(110,72,36,.3);background:linear-gradient(rgba(255,250,236,.5),rgba(255,250,236,0))}
+.bk-fac .fi .fb-ic.big{width:72px;height:72px}
+.bk-fac .fi .tx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bk-fac .fi .tx b{display:flex;align-items:center;gap:6px;font:700 18px var(--hf);color:#4a2e18}.bk-fac .fi .tx b small{font-weight:400;font-size:13px;color:var(--ux-wood)}
+.bk-fac .fi .tx b .ux-grade{width:22px;height:22px}
+.bk-fac .fi .tx em{font-style:normal;font-size:13px;line-height:1.4;color:#5a3a20}.bk-fac .fi .tx i{font-style:normal;font-size:12px;color:var(--ux-muted)}
+.bk-fac .fb-done{font-size:13px;font-weight:700;color:#3f7a3a}.bk-fac .fb-done.gold{color:#a8721a}.bk-fac .fb-soon{font-size:12px;color:var(--ux-muted)}
+.bk-fac .fc .fb-ic{margin-bottom:5px}
+/* 시설 장 오른쪽: 장부 줄 목록 (2026-11-13 사용자 선택: 설비 = 카드 격자, 시설 = 목록) */
+.bk-fac.bk2>.bk-r{overflow:auto;gap:2px}
+.bk-fac .bk-r .ux-h{margin:8px 0 0}
+.bk-fac .fb-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:6px;border-bottom:1px solid rgba(110,72,36,.2)}
+.bk-fac .fb-row.lock{opacity:.5}
+.bk-fac .fb-row .ux-grade{width:34px;height:34px}
+.bk-fac .fb-row .tx{display:flex;flex-direction:column;gap:1px;min-width:0}
+.bk-fac .fb-row .tx b{font:700 16px var(--hf);color:#4a2e18}
+.bk-fac .fb-row .tx em{font-style:normal;font-size:13px;color:#5a3a20;line-height:1.35}
+.bk-fac .fb-row .tx i{font-style:normal;font-size:12px;color:var(--ux-muted)}.bk-fac .fb-row .tx i.up.on{color:#3f7a3a}
+.bk-fac .fb-row .st{text-align:right;white-space:nowrap}
+.bk-fac .bk-r .ux-h:not(.fb-top){font-size:15px;justify-content:flex-start;margin-top:10px;color:var(--ux-wood)}.bk-fac .bk-r .ux-h.fb-top{margin:0 0 2px}
+.bk-fac .fb-row.lock{padding:3px 6px;gap:10px}
+.bk-fac .fb-row.lock .ux-grade{width:24px;height:24px}
+.bk-fac .fb-row.lock .tx b{font-size:14px;font-weight:400}
+.bk-fac .fb-row.can{background:linear-gradient(90deg,rgba(236,194,95,.22),rgba(236,194,95,0))}
+.bk-fac .fb-lock2{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}
+/* 설비 칸 키움 (2026-11-13): 3열 × 3줄 = 9칸이 딱 맞게, 아이콘 칸 84px */
+.bk-fac .bk-l .fgrid{grid-template-columns:repeat(var(--fb-cols),1fr);gap:var(--fb-gy) 10px}
+.bk-fac .bk-l .fc .fb-ic{width:var(--fb-ic);height:var(--fb-ic)}
+.bk-fac .bk-l .fc b{font-size:var(--fb-fs)}
+.bk-fac .bk-l .fc small{font-size:calc(var(--fb-fs) - 1px)}
+.bk-fac .bk-l .fc{padding:8px 4px 7px}
+.bk-fac .bk-l .fc .fb-ic{margin-bottom:8px}.bk-fac .fb-ic img{max-height:100%}
+/* 설비 카드 위 놓은 수 / 놓을 수 있는 수 (2026-11-13) */
+.bk-fac .bk-l .fc .mk{position:static;order:-1;align-self:center;margin-bottom:2px;font:700 12px/1.3 var(--hf);color:var(--ux-muted);background:rgba(138,106,70,.1);border:1px solid rgba(110,72,36,.25);border-radius:9px;padding:0 8px}
+.bk-fac .bk-l .fc .mk.on{color:#3f7a3a;background:rgba(63,122,58,.1);border-color:rgba(63,122,58,.45)}
+.bk-fac .bk-l .fc .mk.full{color:#a8721a;background:rgba(236,194,95,.25);border-color:rgba(168,114,26,.5)}
+/* 크기 = 사용자 선택 (숫자 칸이 아이콘 위 따로 한 줄). 정보 상자가 쪽 안에 들어가도록 카드 안팎 여백만 줄임 */
+.bk-fac .bk-l .fc{padding:2px 4px 2px}.bk-fac .bk-l .fc .fb-ic{margin-bottom:6px}.bk-fac .bk-l .fc .mk{margin-bottom:0}
+.bk-fac.bk2>.bk-l{gap:4px}.bk-fac .bk-l .fi{padding:6px 10px}.bk-fac .bk-l .fi .fb-ic.big{width:60px;height:60px}
+/* 설비 잠김 (2026-11-13): 서브 퀘스트(리퀘스트) 보상으로 열림 */
+.bk-fac .bk-l .fc.lockd .fb-ic img{opacity:.22;filter:grayscale(1) sepia(.3)}
+.bk-fac .bk-l .fc.lockd .lk{position:absolute;inset:26%;background:url(../assets/ui/book/slot/sl_lock.png) center/contain no-repeat;opacity:.55}
+.bk-fac .bk-l .fc.lockd .fb-ic{position:relative}
+.bk-fac .bk-l .fc.lockd b{color:var(--ux-muted)}.bk-fac .bk-l .fc.lockd small{color:var(--ux-muted);font-weight:400;font-size:12px}
+.bk-fac .bk-l .fc.lockd .mk{color:var(--ux-muted)}

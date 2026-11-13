@@ -250,7 +250,7 @@
     else if (popup === 'ledger') { b.innerHTML = ledgerHtml(); ledgerTipBind(b); }
     else if (popup === 'advs') { const keep = sel => { const el = b.querySelector(sel); return el ? el.scrollTop : 0; }, t1 = keep('.av-list'), t2 = keep('.av-main'); b.innerHTML = document.getElementById('pop').classList.contains('book') ? advsBookHtml() : advsHtml(); const d1 = b.querySelector('.av-list'), d2 = b.querySelector('.av-main'); if (d1) d1.scrollTop = t1; if (d2) d2.scrollTop = t2; advTipBind(b); }
     else if (popup === 'promo') { const l0 = b.querySelector('.pm-list'), m0 = b.querySelector('.pm-main'), y = l0 ? l0.scrollTop : 0, sel0 = b.dataset.psel, my = m0 ? m0.scrollTop : 0; b.innerHTML = document.getElementById('pop').classList.contains('book') ? promoBookHtml() : promoHtml(); const l1 = b.querySelector('.pm-list'), m1 = b.querySelector('.pm-main'); if (l1) l1.scrollTop = y; if (m1 && sel0 === String(promoSel)) m1.scrollTop = my; b.dataset.psel = promoSel; const on = l1 && l1.querySelector('.ux-row.on'); if (on && (on.offsetTop < l1.scrollTop || on.offsetTop + on.offsetHeight > l1.scrollTop + l1.clientHeight)) on.scrollIntoView({ block: 'nearest' }); }   // 목록이 길어도 스크롤 위치 유지, 고른 모험가는 보이게
-    else if (popup === 'fac') b.innerHTML = facHtml();
+    else if (popup === 'fac') b.innerHTML = document.getElementById('pop').classList.contains('book') ? facBookHtml() : facHtml();
     else if (popup === 'meals') { const m0 = b.querySelector('.kmenuwrap'), y = m0 ? m0.scrollTop : 0; b.innerHTML = mealsHtml(); const m1 = b.querySelector('.kmenuwrap'); if (m1) m1.scrollTop = y; }   // 메뉴판만 스크롤 (위쪽 보관함·조리대는 고정)
     else if (popup === 'log') { const l0 = b.querySelector('.gl-list'), y = l0 ? l0.scrollTop : 0; b.innerHTML = logHtml(); const l1 = b.querySelector('.gl-list'); if (l1) l1.scrollTop = y; }   // 필터 줄은 고정, 목록만 스크롤 (다시 그려도 위치 유지)
     else if (popup === 'codex') b.innerHTML = codexHtml();
@@ -958,14 +958,45 @@
   const DECO_WHERE = { floor: '바닥', wall: '벽', fire: '벽 (벽난로 자리만)', table: '바닥 3칸' };
   function decoListHtml(tab) {
     const rows = Gm.DECO.filter(d => (tab === 'table') === (d.id === 'table')).map(d => {
-      const n = Gm.placedN(s, d.id), full = n >= d.max, poor = s.gold < d.price;
+      const n = Gm.placedN(s, d.id), cap = Gm.capOf(s, d.id), full = n >= cap, poor = s.gold < d.price;
+      if (!cap) return `<div class="fx-row bm-row off"><i class="bm-ic" style="background-image:url(${DECO_ICON(d.id)})"></i><b class="nm">${d.name}</b><span class="fx">${d.fx || d.desc || ''}</span><span class="st"><span class="fx-lock">리퀘스트 보상</span></span></div>`;
       const placed = s.place.items.filter(it => it.id === d.id);
-      const st = full ? (d.max === 1 ? `<button class="ux-btn sm" data-pmove="${placed[0].uid}">옮기기</button>` : `<span class="ux-tag town">${n}/${d.max} 모두 놓음</span>`)
+      const st = full ? (d.max === 1 ? `<button class="ux-btn sm" data-pmove="${placed[0].uid}">옮기기</button>` : `<span class="ux-tag town">${n}/${cap} 모두 놓음</span>`)
         : `<button class="ux-btn sm" data-place="${d.id}" ${poor ? 'disabled' : ''}>놓기 <b>${fmt(d.price)}G</b></button>`;
-      return `<div class="fx-row bm-row ${n ? 'on' : ''} ${!full && !poor ? 'glow' : ''}"><i class="bm-ic" style="background-image:url(${DECO_ICON(d.id)})"></i><b class="nm">${d.name}${d.max > 1 ? ` <small>${n}/${d.max}</small>` : ''}</b><span class="fx">${d.fx || d.desc || ''} <em class="fx-up${n && d.id !== 'table' ? ' on' : ''}">${n && d.id !== 'table' ? '적용 중 · ' : ''}${DECO_WHERE[d.kind] || ''}</em></span><span class="st">${st}</span></div>`;
+      return `<div class="fx-row bm-row ${n ? 'on' : ''} ${!full && !poor ? 'glow' : ''}"><i class="bm-ic" style="background-image:url(${DECO_ICON(d.id)})"></i><b class="nm">${d.name}${d.max > 1 ? ` <small>${n}/${cap}</small>` : ''}</b><span class="fx">${d.fx || d.desc || ''} <em class="fx-up${n && d.id !== 'table' ? ' on' : ''}">${n && d.id !== 'table' ? '적용 중 · ' : ''}${DECO_WHERE[d.kind] || ''}</em></span><span class="st">${st}</span></div>`;
     });
     const note = tab === 'table' ? `테이블 1세트에 2명이 앉고, 앉은 모험가만 출발 전 식사를 주문합니다 (지금 ${Gm.seatsOf(s)}석 · 한 주에 ${Gm.seatsOf(s)}명까지). 놓은 테이블을 로비에서 누르면 옮기거나 치울 수 있습니다.` : '종류마다 1개씩 놓을 수 있고, 놓아 두는 동안 효과가 적용됩니다. 놓은 장식은 로비에서 눌러 옮기거나 치울 수 있습니다.';
     return `<div class="fx-list"><p class="muted small bm-note">${note} 옮기기는 무료, 치우면 돈은 돌려받지 못합니다.</p>${rows.join('')}</div>`;
+  }
+  // ---------- 책: 시설 장 (2026-11-13) — 왼쪽 = 설비: 카이로소프트식 아이콘 카드 격자 + 아래 정보 상자(놓기 · 옮기기) / 오른쪽 = 시설: 장부 줄 목록(짓기 · 업그레이드) ----------
+  let fbSel = 'table';
+  const FAC_IMG = { 게시판: 'assets/lobby_iso/hot/fac_board.png', 주점: 'assets/lobby_iso/hot/fac_bar.png', 판매창구: 'assets/lobby_iso/hot/fac_sale.png' };   // 시설 아이콘이 있는 것만 (나머지는 등급 배지로 대신, Gemini 생성 예정)
+  function facBookHtml() {
+    const DE = Gm.DECO, items = [DE.find(d => d.id === 'table')].concat(DE.filter(d => d.id !== 'table')).filter(Boolean);
+    if (!items.some(d => d.id === fbSel)) fbSel = items[0].id;
+    const dcard = d => { const n = Gm.placedN(s, d.id), cap = Gm.capOf(s, d.id), poor = s.gold < d.price, full = cap > 0 && n >= cap;
+      if (!cap) return `<button class="fc lockd ${d.id === fbSel ? 'sel' : ''}" data-fbs="${d.id}"><i class="mk">잠김</i><span class="ux-slot fb-ic empty"><img src="${DECO_ICON(d.id)}" alt=""><i class="lk"></i></span><b>${d.name}</b><small>리퀘스트 보상</small></button>`;   // 서브 퀘스트 보상으로 열림
+      return `<button class="fc ${n ? 'on' : ''} ${d.id === fbSel ? 'sel' : ''}" data-fbs="${d.id}"><span class="ux-slot fb-ic ${n ? '' : 'empty'}"><img src="${DECO_ICON(d.id)}" alt=""></span><b>${d.id === 'table' ? '테이블' : d.name}</b><small class="${poor && !full ? 'poor' : ''}">${full ? '모두 놓음' : fmt(d.price) + 'G'}</small><i class="mk ${n ? 'on' : ''} ${full ? 'full' : ''}">${n}/${cap}</i></button>`; };   // 위 = 놓은 수 / 놓을 수 있는 수
+    const d = items.find(x => x.id === fbSel), dn = Gm.placedN(s, d.id), dcap = Gm.capOf(s, d.id), dfull = dcap > 0 && dn >= dcap, placed = s.place.items.filter(it => it.id === d.id);
+    const dbtn = !dcap ? '<span class="fb-soon">리퀘스트 보상으로 열림</span>' : dfull ? (dcap === 1 && placed[0] ? `<button class="ux-btn" data-pmove="${placed[0].uid}">옮기기</button>` : '<span class="fb-done">모두 놓음</span>') : `<button class="ux-btn primary" data-place="${d.id}" ${s.gold < d.price ? 'disabled' : ''}>놓기 <b>${fmt(d.price)}G</b></button>`;
+    const dinfo = `<div class="fi"><span class="ux-slot fb-ic big"><img src="${DECO_ICON(d.id)}" alt=""></span><div class="tx"><b>${d.name}${dcap ? ` <small>${dn}/${dcap}</small>` : ''}</b><em>${d.id === 'table' ? `1세트 = 2석 · 지금 ${Gm.seatsOf(s)}석 (한 주 식사 ${Gm.seatsOf(s)}명까지)` : (d.fx || d.desc || '')}</em><i>${DECO_WHERE[d.kind] || ''}${dn && d.id !== 'table' ? ' · 적용 중' : ''}${d.id === 'table' && dcap < d.max ? ` · ${dcap + 1}~${d.max}세트는 리퀘스트 보상` : ''}${!dcap ? ' · 리퀘스트 보상' : ''}</i></div><div class="bt">${dbtn}</div></div>`;
+    const L = `<div class="ux-h">설비 <small>테이블 ${Gm.placedN(s, 'table')}/${Gm.capOf(s, 'table')}세트 · 장식 얻음 ${items.slice(1).filter(x => Gm.capOf(s, x.id)).length}/${items.length - 1}종</small></div><div class="fgrid">${items.map(dcard).join('')}</div>${dinfo}`;
+    // 오른쪽 = 시설 장부 줄 목록 (2026-11-13 사용자 선택): 지을 수 있음 → 운영 중 → 잠김 · 준비 중(한 줄)
+    const G = { run: [], can: [], lock: [] };
+    for (const f of ['게시판', '접수대', '주점', '판매창구'].concat(FACS)) {
+      const g = Gm.FAC_COST[f] == null ? 0 : Gm.FAC_COST[f], cost = Gm.facCost(s, f), ready = !!FAC_READY[f];
+      let st, k, up = '';
+      if (s.built[f]) { k = 'run'; st = '<span class="fb-done">● 운영 중</span>';
+        if (FAC_UP[f]) { const uc = Gm.upgCost(s, f); st = Gm.upg(s, f) ? '<span class="fb-done gold">★ 업그레이드 완료</span>' : `<button class="ux-btn sm" data-upg="${f}" ${s.gold < uc ? 'disabled' : ''}>업그레이드 <b>${fmt(uc)}G</b></button>`; up = `<i class="up ${Gm.upg(s, f) ? 'on' : ''}">${Gm.upg(s, f) ? '적용 중' : '업그레이드'}: ${FAC_UP[f]}</i>`; } }
+      else if (!ready) { k = 'lock'; st = '<span class="fb-soon">준비 중</span>'; }
+      else if (g > s.grade) { k = 'lock'; st = `<span class="fb-soon">${GR[g]}급부터</span>`; }
+      else { k = 'can'; st = `<button class="ux-btn sm primary" data-build="${f}" ${s.gold < cost ? 'disabled' : ''}>짓기 <b>${fmt(cost)}G</b></button>`; }
+      G[k].push(k === 'lock' ? `<div class="fb-row lock" title="${FAC_FX[f] || ''}">${badge(g)}<span class="tx"><b>${FAC_LABEL[f] || f}</b></span><span class="st">${st}</span></div>`   // 잠김 = 한 줄 (효과는 마우스 오버)
+        : `<div class="fb-row ${k}">${badge(g)}<span class="tx"><b>${FAC_LABEL[f] || f}</b><em>${FAC_FX[f] || ''}</em>${up}</span><span class="st">${st}</span></div>`);
+    }
+    const sec = (t, a) => a.length ? `<div class="ux-h">${t} <small>${a.length}</small></div><div class="fb-list">${a.join('')}</div>` : '';
+    const R_ = `<div class="ux-h fb-top">시설 <small>운영 ${G.run.length} · 지을 수 있음 ${G.can.length} · 잠김 ${G.lock.length}</small></div>` + sec('지을 수 있음', G.can) + sec('운영 중', G.run) + (G.lock.length ? `<div class="ux-h">잠김 · 준비 중 <small>${G.lock.length}</small></div><div class="fb-list fb-lock2">${G.lock.join('')}</div>` : '');   // 지을 수 있는 시설을 맨 위에, 잠김은 한 줄짜리 2열
+    return `<div class="bk2 bk-fac"><section class="bk-l">${L}</section><section class="bk-r">${R_}</section></div>`;
   }
   function facListHtml() {
     const all = ['게시판', '접수대', '주점', '판매창구'].concat(FACS), run = [], can = [], lock = [];
@@ -1359,7 +1390,8 @@
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
-      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
+      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
+      if (t.dataset.fbs) { fbSel = t.dataset.fbs; renderPopup(); return; }
       if (t.dataset.tsel) { t.closest('.av-ttl').classList.toggle('open'); return; }
       if (t.dataset.tpick != null) { const a = s.advs.find(x => x.id === openAdv); if (a) { const k = +t.dataset.tpick; if (k < 0) delete a.title; else a.title = k; } renderPopup(); return; }
       if (t.dataset.ftab) { facTab = t.dataset.ftab; renderPopup(); return; }

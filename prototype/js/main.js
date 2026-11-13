@@ -71,6 +71,7 @@
   // [개발] 식당 시험: F·E 음식 소재 각 3개 + 발견한 요리 초기화 후 식당 열기. 주소에 ?lab=kitchen 을 붙이면 시작하자마자 이 상태로 열림
   const kitchenLab = () => { if (s.grade < 1) Gm.debugSetGrade(s, 1); Gm.debugKitchen(s, 'reset'); Gm.debugKitchen(s, 'fill'); Gm.log(s, '[디버그] 식당 시험: 음식 소재 각 3개, 요리 초기화', 'debug'); UI.hud(); UI.open('meals'); };
   q('#dKitchen').onclick = kitchenLab;
+  q('#dUnlock').onclick = () => { for (const d of Gm.DECO) while (Gm.unlockReward(s, d.id)) {} Gm.log(s, '[디버그] 설비 보상 열기: 테이블 4세트 · 장식 8종', 'debug'); UI.hud(); UI.open('fac'); };   // [개발] 서브 퀘스트 보상 대신 설비를 모두 엶 (2026-11-13)
   if (/[?&]lab=kitchen/.test(location.search)) setTimeout(kitchenLab, 300);
   q('#dWalk').onclick = e => { e.currentTarget.classList.toggle('on', Director.demoWalk()); };
   q('#dGold').onclick = () => { s.gold += 5000; Gm.log(s, '[디버그] 금고에 5,000G를 넣었습니다.', 'debug'); UI.hud(); };

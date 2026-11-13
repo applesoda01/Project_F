@@ -654,8 +654,8 @@
     for (let i = 0; i < A.startCount; i++) newAdv({ attach: 20 });
     // 로비 배치 (2026-11-12): 놓인 장식(cfg.run.deco 목록) · 테이블 세트 수. 테이블은 첫 주에 2세트, 이후 매달 금고 여유(구매 뒤 1,000G 이상)가 있으면 1세트씩 4세트까지 (게임 autoPlace와 같음)
     s.deco = new Set((cfg.run && cfg.run.deco) || []); s.tables = 0; s.x2Owed = 0;
-    const buyTables = n0 => { const P = 200, MAX = 4; let n = n0; while (n-- > 0 && s.tables < MAX && s.gold >= P) { s.gold -= P; s.tables++; } };
-    const tablePolicy = first => { if (cfg.run && cfg.run.noTables) return; if (first) buyTables(2); else if (s.tables < 4 && s.gold - 200 >= 1000) buyTables(1); };
+    const buyTables = n0 => { const P = 200, MAX = 2; /* 2026-11-13: 테이블은 처음 2세트까지 (3·4세트는 서브 퀘스트 보상, 시뮬레이터는 보상 없음으로 가정) */ let n = n0; while (n-- > 0 && s.tables < MAX && s.gold >= P) { s.gold -= P; s.tables++; } };
+    const MAX2 = 2; const tablePolicy = first => { if (cfg.run && cfg.run.noTables) return; if (first) buyTables(2); else if (s.tables < MAX2 && s.gold - 200 >= 1000) buyTables(1); };
     tablePolicy(true);
 
     const maxW = cfg.run.maxYears * WPY;

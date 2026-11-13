@@ -277,6 +277,10 @@
     s.proposals = s.proposals || []; s.discovered = s.discovered || {}; s.knownMats = s.knownMats || {}; s.seenMons = s.seenMons || {}; if (s.fame == null) s.fame = 0;
     s.mats = s.mats || {}; s.up = s.up || {};
     if (!s.houses) initHouses(s);   // 2026-11-13 민가 도입 전 저장: 지금 인구로 초가를 지어 줌
+    if (!s.unlock && s.place) {   // 2026-11-13 설비 해금 도입 전 저장: 이미 놓은 테이블 수 · 장식은 열린 것으로 둠
+      const nt = s.place.items.filter(it => it.id === 'table').length; s.unlock = { table: Math.max(2, Math.min(4, nt)), deco: {} };
+      for (const it of s.place.items) if (it.id !== 'table') s.unlock.deco[it.id] = true;
+    }
     if (!s.place) {   // 2026-11-12 자유 배치 도입 전 저장: 그때 있던 테이블(등급별 2·3·4세트)을 예전 자리에 무료로 놓아 줌
       s.place = { items: [], next: 1 }; const n = 2 + (s.grade >= 1 ? 1 : 0) + (s.grade >= 2 ? 1 : 0);
       for (const [gx, gy] of OLD_TABLES.slice(0, n)) s.place.items.push({ uid: s.place.next++, id: 'table', gx, gy });
@@ -575,9 +579,18 @@
     return true;
   }
   const placedN = (s, id) => s.place.items.filter(it => it.id === id).length;
+  // 설비 해금 (2026-11-13 사용자 결정): 처음엔 테이블 2세트만, 테이블 3·4세트와 장식 8종은 서브 퀘스트(리퀘스트) 보상으로 열림 (docs/design/named_sub_quest_v1.md 보상 연동 메모)
+  const unlockOf = s => (s.unlock = s.unlock || { table: 2, deco: {} });
+  const capOf = (s, id) => { const d = DECO_BY[id]; if (!d) return 0; const u = unlockOf(s); return id === 'table' ? Math.min(d.max, u.table) : (u.deco[id] ? d.max : 0); };
+  function unlockReward(s, id) {   // 서브 퀘스트 보상 연결 자리: 'table' = 테이블 1세트 더 (최대 4) / 장식 id = 그 장식 열기
+    const u = unlockOf(s), d = DECO_BY[id]; if (!d) return false;
+    if (id === 'table') { if (u.table >= d.max) return false; u.table++; log(s, `테이블을 ${u.table}세트까지 놓을 수 있게 되었습니다.`, 'unlock'); return true; }
+    if (u.deco[id]) return false; u.deco[id] = true; log(s, `새 장식을 얻었습니다: ${d.name}`, 'unlock'); return true;
+  }
   function placeBuy(s, id, p) {
     const d = DECO_BY[id]; if (!d) return false;
-    if (placedN(s, id) >= d.max) { log(s, `${d.name}은(는) ${d.max}개까지 놓을 수 있습니다.`, 'sys'); return false; }
+    const cap = capOf(s, id); if (!cap) { log(s, `${d.name}은(는) 리퀘스트 보상으로 열립니다.`, 'sys'); return false; }
+    if (placedN(s, id) >= cap) { log(s, `${d.name}은(는) 지금 ${cap}개까지 놓을 수 있습니다.`, 'sys'); return false; }
     if (s.gold < d.price) { log(s, `${d.name} 가격 ${d.price}G가 부족합니다.`, 'sys'); return false; }
     if (!placeOk(s, id, p)) return false;
     const it = Object.assign({ uid: s.place.next++, id }, p.wall ? { wall: p.wall, i: p.i } : { gx: p.gx, gy: p.gy });
@@ -597,8 +610,8 @@
   const seatsOf = s => 2 * (s.place ? s.place.items.filter(it => it.id === 'table').length : 0);   // 테이블 세트 하나에 2석
   // 검증용 자동 배치 (관문 1·개발 패널): 시뮬레이터 tablePolicy와 같은 규칙. 첫 주 2세트, 이후 월말마다 구매 뒤 1,000G 이상 남으면 1세트씩 4세트까지. 자리는 예전 고정 테이블 칸
   function autoPlace(s, first) {
-    const want = first ? 2 : (placedN(s, 'table') < 4 && s.gold - 200 >= 1000 ? 1 : 0);
-    for (let k = 0; k < want; k++) { const spot = OLD_TABLES.find(([gx, gy]) => placeOk(s, 'table', { gx, gy })); if (!spot || s.gold < 200 || placedN(s, 'table') >= 4) break; placeBuy(s, 'table', { gx: spot[0], gy: spot[1] }); }
+    const tc = capOf(s, 'table'), want = first ? 2 : (placedN(s, 'table') < tc && s.gold - 200 >= 1000 ? 1 : 0);   // 테이블 상한 = 해금된 세트 수 (처음 2)
+    for (let k = 0; k < want; k++) { const spot = OLD_TABLES.find(([gx, gy]) => placeOk(s, 'table', { gx, gy })); if (!spot || s.gold < 200 || placedN(s, 'table') >= tc) break; placeBuy(s, 'table', { gx: spot[0], gy: spot[1] }); }
   }
   // 건설비: 등급별 기본값, 집무실만 따로 (2026-11-12: F급 1,000G)
   const facCost = (s, f) => f === '집무실' ? (s.cfg.econ.officeCost || 1000) : s.cfg.econ.buildCost[FAC_COST[f] || 0];
@@ -629,6 +642,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
