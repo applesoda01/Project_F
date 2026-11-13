@@ -12,5 +12,6 @@
  "center_x": 320,
  "standing_height_px": 516,
  "scale_video_to_game": 1.0705,
- "loop_error": 1.6
+ "loop_error": 1.6,
+ "seam_fix": "마지막 3프레임을 첫 프레임 쪽으로 섞음(XFADE=3) — 2026-11-13 사용자 선택 B안"
 }

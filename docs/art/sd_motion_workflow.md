@@ -117,13 +117,14 @@ LTX로는 숨쉬기가 안 나와서 **시작 이미지를 후처리로 움직�
 | 궁수 남 | runB s7102 (좋음) | **완료** `cdbba5c5` | 후처리 완료 18프레임 |
 | 성직자 여 | runD s7302 (좋음) | **완료** `8a5b0fd5` | 후처리 완료 19프레임 |
 | 도적 남 | runD s7316 (좋음) | **완료** `3a223b95` | 후처리 완료 20프레임 (이음매 차이 0.91, 가장 깔끔) |
-| 마법사 남 | runD s7308 (좋음) | 묶음 05 — 11-13 한도로 실패 | 다음 날 |
-| 도적 여 | runB s7112 (망토가 크게 퍼짐) | 묶음 06 | 대기 |
+| 마법사 남 | runD s7308 (좋음) | **완료** `b63dac07` (11-13 오전) | 후처리 완료 17프레임 (배율 0.977), 저장소 반영 전 |
+| 도적 여 | runB s7112 (망토가 크게 퍼짐) | 묶음 06 — 11-13 `6b4c7cfd` **실패: 옷이 마법사 남 코트로 바뀜**(같은 채팅방에서 연달아 만들어 섞인 것으로 추정). 색 바꾸기로는 못 고침 | **새 채팅방 + 옷 설명 한 줄 추가 프롬프트로 재생성** |
 | 성직자 남 | runB s7106 (보통, 걷기에 가까움) | 묶음 07 (다음 날) | 대기 |
 | 마법사 여 | runB s7108, runD s7304·s7306 (모두 약함) | 묶음 08 (**runE s7404 채택**) | 다음 Gemini (11-13, 프롬프트 강화: "runs in place energetically, two clear running cycles, knees lift high, both feet briefly leave the ground", 부정에 small steps·walking 추가) |
 | 전사 여 | runB s7116 (약함) | 묶음 09 (**runE s7414 채택**) | 다음 Gemini |
 
 - **Gemini 결과 후처리 (2026-11-13 확정):** 결과는 1280×720, 24fps, 10초(240프레임). 배경이 순수 마젠타가 아니라 약 (236, 32, 220) → 테두리 중앙값을 배경색으로 쓰고 거리 d 기준 alpha = clip((d−45)/(120−45)) (예전 130/280 기준은 피부가 반투명해져 얼굴이 회색이 됨). 오른쪽 아래 [640:, 1080:] 워터마크 제거 → 처음 1초 뒤에서 같은 자세로 돌아오는 주기 P(16~60)와 시작점을 자동 탐색 → 첫 프레임(시작 이미지) 키로 배율 = 516/키 → 주기 안 가장 낮은 발을 y=787, 평균 중심을 x=320에 고정. 스크립트 `pp.py`(작업 공간). 결과: 작업 공간 `run_final/<직업>/run_NN.png, run.gif, sheet.png, run.json`.
+- **Gemini 주의 (11-13):** 같은 채팅방에서 여러 캐릭터를 연달아 만들면 앞 캐릭터의 옷이 섞임 → **번호마다 새 채팅방**. 프롬프트 맨 앞에 옷 설명 한 줄(예: 도적 여 "The character wears a light gray hooded cloak over a short brown leather tunic with a brown belt and gold buckle, white shorts, a purple scarf, and purple boots with white bandages. Do not change any part of this outfit.")을 넣음. 하루 한도(계정당 3개)를 다 쓰면 다음 날.
 - **사용자 진행 방식:** 사용자는 자기 브라우저의 Gemini에서 생성. Claude는 번호마다 **시작 이미지·참고 영상을 이 대화에 SendUserFile로 올리고 프롬프트도 함께 붙여 줌**(경로에서 찾는 수고를 덜기 위함). 계정이 막히면 다른 계정으로 전환.
 - 저장소 반영: `archive/art_source/sd_sprites/run/<직업>/` (run_NN.png, run.gif, run.json). 게임용 시트(`prototype/assets/chr/`)는 아직 안 만듦.
 - Gemini 묶음: `C:\Users\apple\Downloads\run_gemini\` — `00_prompt.txt`(사용법·공통 프롬프트), `0N_<직업>_run_base.mp4`, `0N_<직업>_start.png`. 계정 A: 01~03, 계정 B: 04~06, 07은 다음 날.
