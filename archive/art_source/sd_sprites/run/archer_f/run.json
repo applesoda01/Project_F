@@ -1,8 +1,8 @@
 {
  "name": "run",
- "source": "01_archer_f_gemini_a84f8329.mp4",
- "frames": 23,
- "source_start_frame": 151,
+ "source": "archer_f",
+ "frames": 24,
+ "source_start_frame": 155,
  "fps": 24,
  "canvas": [
   640,
@@ -11,7 +11,7 @@
  "feet_y": 787,
  "center_x": 320,
  "standing_height_px": 516,
- "scale_video_to_game": 1.0705,
- "loop_error": 1.6,
- "seam_fix": "마지막 3프레임을 첫 프레임 쪽으로 섞음(XFADE=3) — 2026-11-13 사용자 선택 B안"
+ "scale_video_to_game": 1.071,
+ "loop_error": 0.18,
+ "x_drift_fix_px": 3.14
 }

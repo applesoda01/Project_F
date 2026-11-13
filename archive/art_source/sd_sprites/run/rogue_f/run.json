@@ -1,0 +1,16 @@
+{
+ "name": "run",
+ "source": "06_rogue_f_gemini_db1160a6.mp4",
+ "frames": 20,
+ "source_start_frame": 53,
+ "fps": 24,
+ "canvas": [
+  640,
+  800
+ ],
+ "feet_y": 787,
+ "center_x": 320,
+ "standing_height_px": 516,
+ "scale_video_to_game": 0.985,
+ "loop_error": 0.37
+}

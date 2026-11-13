@@ -1,0 +1,42 @@
+{
+ "name": "run",
+ "source": "cleric_m",
+ "frames": 20,
+ "source_start_frame": 57,
+ "fps": 24,
+ "canvas": [
+  640,
+  800
+ ],
+ "feet_y": 787,
+ "center_x": 320,
+ "standing_height_px": 516,
+ "scale_video_to_game": 0.921,
+ "loop_error": 0.22,
+ "retimed_from": {
+  "frames": 33,
+  "picked": [
+   0,
+   2,
+   3,
+   5,
+   7,
+   8,
+   10,
+   12,
+   13,
+   15,
+   16,
+   18,
+   20,
+   21,
+   23,
+   25,
+   26,
+   28,
+   30,
+   31
+  ],
+  "reason": "다른 직업 걸음 속도(1주기 16~26프레임, 중앙 20)에 맞춤 (2026-11-14 사용자 요청)"
+ }
+}
