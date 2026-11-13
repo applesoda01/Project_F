@@ -1,7 +1,7 @@
 /* 길드 업무 일지 — 책 펼침 팝업 (2026-11-13 단계 ① 틀 · 단계 ③ 의뢰 장. 값은 tools/book_layout_editor.html 로 조절)
    펼침면 1600×879 = 종이(book_paper.png) → 내용 → 문양(book_ornament.png) 순서 (원본 합친 그림 book_spread.png). 안쪽 테두리 x 130~1471, y 41~832 · 접힘 선 x 794~804
    왼쪽 쪽 내용 x 150~770 · 오른쪽 쪽 830~1451 · 네 모서리 약 120×120 비움 (docs/handoff_2026-11-12_night.md 4장) */
-#pop.book{--pb:0px;--bk-lx:157px;--bk-ly:116px;--bk-lw:588px;--bk-lh:624px;--bk-rx:856px;--bk-ry:116px;--bk-rw:561px;--bk-rh:675px;--bkt-y:80px;--bk-lpt:54px;--bkq-sec:54px;--bkc-x:864px;--bkc-y:743px;--bkt-fs:30px;--bks-w:10px;--bkq-cols:2;--bkq-h:66px;--bkq-gx:10px;--bkq-gy:8px;--bkq-fs:17px;--bkq-tfs:26px;--bkq-mat:52px;width:1600px;height:879px;left:calc(50% + 28px);top:50%;transform:translate(-50%,-50%) scale(1.12);border:0;border-image:none;padding:0;
+#pop.book{--pb:0px;--bk-lx:157px;--bk-ly:116px;--bk-lw:588px;--bk-lh:624px;--bk-rx:856px;--bk-ry:116px;--bk-rw:561px;--bk-rh:675px;--bkt-y:80px;--bk-lpt:54px;--bkq-sec:54px;--bkc-x:864px;--bkc-y:743px;--bkm-out:30px;--bkm-w:70px;--bkm-y:150px;--bkm-h:124px;--bkm-gap:10px;--av-rh:52px;--av-pt:96px;--av-nfs:24px;--av-eq:58px;--av-pot:42px;--av-sr:4px;--av-note:250px;--av-hmy:48px;--av-stw:170px;--av-sks:68px;--av-skg:12px;--sl-sil:40%;--av-px:0px;--av-py:22px;--av-lfs:18px;--av-cfs:16px;--av-wfs:16px;--av-ttfs:13px;--av-tgfs:12px;--av-bfs:12px;--av-bvfs:11px;--av-hfs:19px;--av-sfs:16px;--av-skfs:13px;--av-cbfs:22px;--p-nm-x:0px;--p-nm-y:-4px;--p-tt-x:0px;--p-tt-y:-7px;--p-cls-x:0px;--p-cls-y:-1px;--p-wal-x:0px;--p-wal-y:-5px;--p-tag-x:0px;--p-tag-y:-11px;--p-trt-x:0px;--p-trt-y:-14px;--p-lv-x:0px;--p-lv-y:0px;--p-eqh-x:0px;--p-eqh-y:0px;--p-poth-x:0px;--p-poth-y:0px;--p-sth-x:70px;--p-sth-y:15px;--p-cbs-x:0px;--p-cbs-y:0px;--p-skh-x:0px;--p-skh-y:0px;--p-ske-x:0px;--p-ske-y:0px;--p-hm-x:0px;--p-hm-y:0px;--p-eqg-x:0px;--p-eqg-y:0px;--p-potg-x:0px;--p-potg-y:0px;--p-stg-x:0px;--p-stg-y:0px;--p-skg-x:0px;--p-skg-y:0px;--av-hmw:200px;--sl-size:285px;--sl-x:330px;--sl-y:436px;--sl-rot:-8deg;--sl-op:67%;--bkt-fs:30px;--bks-w:10px;--bkq-cols:2;--bkq-h:66px;--bkq-gx:10px;--bkq-gy:8px;--bkq-fs:17px;--bkq-tfs:26px;--bkq-mat:52px;width:1600px;height:879px;left:calc(50% + 28px);top:50%;transform:translate(-50%,-50%) scale(1.12);border:0;border-image:none;padding:0;
   background:url(../assets/ui/book/book_paper.png) center/100% 100% no-repeat;filter:drop-shadow(0 18px 26px rgba(30,16,6,.5));overflow:visible}
 #pop.book #popHead,#pop.book #popClose{display:none}
 /* 책이 열리면 아래 메뉴·재생 버튼(z 5·7)보다 위에 (사용자: 뒤 UI는 가려져도 됨) */
@@ -31,13 +31,15 @@
 #bookMarks button i{position:absolute;right:58px;top:50%;transform:translateY(-50%);font-style:normal;white-space:nowrap}
 #bookMarks button[data-ch="req"] i{font-size:18px;letter-spacing:0}
 
-/* 쪽 위쪽 작은 탭 (장 안의 하위) */
-#bookSub{position:absolute;left:830px;top:46px;display:none;gap:8px;z-index:2}
+/* 오른쪽 가장자리 작은 책갈피 = 장 안의 하위 칸 (2026-11-13: 쪽 위 탭 → 오른쪽 책갈피). 색은 지금 장의 왼쪽 책갈피 색(--bm)
+   폭 --bkm-w 중 --bkm-out 만큼만 책 밖으로 나오고 나머지는 책 옆면(쪽 묶음) 위에 겹침 = 쪽 사이에 끼운 책갈피 */
+#bookSub{position:absolute;right:calc(-1 * var(--bkm-out));top:var(--bkm-y);display:none;flex-direction:column;gap:var(--bkm-gap);z-index:2}
 #pop.book #bookSub{display:flex}
-#bookSub button{height:40px;padding:0 18px;border:1px solid rgba(110,72,36,.45);border-bottom:0;border-radius:10px 10px 0 0;cursor:pointer;
-  background:#efe0bf;color:#5a3a1e;font:700 17px var(--hf,"MaruBuri","Malgun Gothic",serif);box-shadow:0 -1px 3px rgba(60,36,14,.18)}
-#bookSub button.on{background:#fff6dd;color:#3a2410;height:46px;margin-top:-6px}
-#bookSub button:hover:not(.on){background:#f7ead0}
+#bookSub button{width:var(--bkm-w);padding-left:calc(var(--bkm-w) - var(--bkm-out) - 6px)!important;height:var(--bkm-h);border:0;border-radius:0 10px 10px 0;padding:0;cursor:pointer;writing-mode:vertical-rl;text-orientation:upright;letter-spacing:1px;
+  font:700 17px var(--hf,"MaruBuri","Malgun Gothic",serif);color:#fff6e4;text-shadow:0 1px 2px rgba(0,0,0,.45);
+  background:color-mix(in srgb,var(--bm,#8a6a46) 62%,#e9d6b0);box-shadow:inset 7px 0 6px -5px rgba(30,16,6,.5),0 3px 6px rgba(30,16,6,.3);transform:translateX(-10px);transition:transform .15s}
+#bookSub button:hover{transform:translateX(-4px)}
+#bookSub button.on{background:var(--bm,#8a6a46);transform:translateX(0);box-shadow:inset 7px 0 6px -5px rgba(30,16,6,.5),inset 0 0 0 2px rgba(255,236,190,.55),0 4px 10px rgba(30,16,6,.4)}
 
 /* 위쪽 책끈 = 닫기 */
 #bookRibbon{position:absolute;right:210px;top:-14px;width:44px;height:120px;border:0;padding:0;cursor:pointer;display:none;z-index:3;
@@ -179,3 +181,302 @@
 .st-d .qcard.x2{border:0!important;box-shadow:none!important}
 .st-d .qcard.x2.sel{box-shadow:inset 4px 0 0 #8e2f3a!important}
 .st-d .bkq-slot{border:0;border-bottom:2px solid rgba(110,72,36,.15);border-radius:0}
+
+/* ===== 모험가 장 (2026-11-13 시안): 왼쪽 = 명부 / 오른쪽 = 상세 + 붙인 쪽지 묶음 ===== */
+.av-att{display:none}
+.bk-av .av-att{display:inline-flex;align-items:center}
+.bk-av.att-a .att-b,.bk-av.att-b .att-a{display:none}
+.bk-av .att-a{font:700 16px var(--hf);color:#b0413a}
+.bk-av .att-b{display:inline-flex;align-items:center;gap:5px;font-size:14px;color:#8a4a2a}
+.bk-av .att-b em{font-style:normal;font-weight:700}
+.bk-av .att-b .trk{display:block;width:46px;height:6px;border-radius:3px;background:rgba(110,72,36,.2);overflow:hidden}
+.bk-av .att-b .trk i{display:block;height:100%;background:#c0574a}
+/* 명부 목록 */
+.bk-av .av-list{overflow:visible;padding:0 2px;gap:4px}
+.bk-av .av-list .ux-row{min-height:var(--av-rh);padding:4px 8px}
+.bk-av .av-list.st-d{gap:0}
+.bk-av .av-list.st-d .ux-row,.bk-av .av-list.st-d .ux-row.quest,.bk-av .av-list.st-d .ux-row.injured,.bk-av .av-list.st-d .ux-row.pty{background:none;border:0;border-bottom:1px solid rgba(110,72,36,.35);border-radius:0;box-shadow:none}
+.bk-av .av-list.st-d .ux-row:hover{background:rgba(255,250,236,.55)}
+.bk-av .av-list.st-d .ux-row.pty{box-shadow:inset 3px 0 0 var(--pc)}
+.bk-av .av-list.st-d .ux-row.on{background:linear-gradient(90deg,rgba(214,160,60,.25),rgba(214,160,60,0));box-shadow:inset 4px 0 0 #8e2f3a}
+.bk-av .av-list.st-d .ux-row.promo::before{inset:2px 0;border-radius:4px}
+/* 상세 */
+.bk-av.bk2>.bk-r{display:flex;flex-direction:column;gap:10px}
+.bk-av .av-head{grid-template-columns:var(--av-pt) 1fr;gap:12px}
+.bk-av .ux-portrait.sm{width:var(--av-pt);height:calc(var(--av-pt) * 1.15)}
+.bk-av .av-head .nm{font-size:var(--av-nfs);gap:6px}
+.bk-av .av-head .av-wal{margin-left:auto}
+.bk-av .av-head .hm{gap:14px;margin-top:6px}
+.bk-av .av-head .lv{margin-top:6px}
+.bk-av .av-body{grid-template-columns:auto 1fr;gap:16px}
+.bk-av .av-eq .eqgrid,.bk-av .av-eq .potgrid{gap:6px}
+.bk-av .av-eq .eqgrid .ux-slot{width:var(--av-eq);height:var(--av-eq)}
+.bk-av .av-eq .potgrid .ux-slot{width:var(--av-pot);height:var(--av-pot)}
+.bk-av .av-eq .ux-h{flex-wrap:wrap;row-gap:2px}
+.bk-av .av-next{flex-basis:100%;font-size:12px}
+.bk-av .av-st .srow{margin-bottom:var(--av-sr);gap:8px;grid-template-columns:36px auto 56px}
+.bk-av .av-st .cbs{margin-top:6px;gap:6px}
+.bk-av .av-st .cbs span{padding:3px 8px}.bk-av .av-st .cbs b{font-size:17px}
+/* 붙인 쪽지 묶음: 위 끝이 계단처럼 보이는 탭 + 겹친 종이 */
+.bk-av .av-tabs{position:relative;margin-top:4px}
+.bk-av .av-tabs .ux-tabs{display:flex;align-items:flex-end;gap:2px;padding-left:4px;border:0;margin:0}
+.bk-av .av-tabs .ux-tabs button{position:relative;border:0;border-radius:6px 6px 0 0;padding:5px 16px 6px;font:700 15px var(--hf);color:#6e4e30;box-shadow:0 -1px 2px rgba(60,36,16,.15);cursor:pointer}
+.bk-av .av-tabs .ux-tabs button:nth-child(1){background:#f6ead0;transform:translateY(0)}
+.bk-av .av-tabs .ux-tabs button:nth-child(2){background:#efe0bd;transform:translateY(3px)}
+.bk-av .av-tabs .ux-tabs button:nth-child(3){background:#e9d7ae;transform:translateY(6px)}
+.bk-av .av-tabs .ux-tabs button:nth-child(4){background:#e3cfa1;transform:translateY(9px)}
+.bk-av .av-tabs .ux-tabs button.on{background:#fffaf0;color:#3a2410;transform:translateY(1px);z-index:2;box-shadow:0 -2px 3px rgba(60,36,16,.18)}
+.bk-av .av-tb{position:relative;z-index:1;min-height:var(--av-note);box-sizing:border-box;padding:12px 14px 10px;background:#fffaf0;border-radius:0 8px 8px 8px;
+  box-shadow:0 2px 4px rgba(60,36,16,.22),4px 5px 0 -1px #f1e4c6,4px 5px 2px -1px rgba(60,36,16,.15),8px 10px 0 -2px #e9d9b4,8px 10px 2px -2px rgba(60,36,16,.12)}
+.bk-av .av-tb.flip{transform-origin:50% 0;animation:bkNoteFlip .25s ease-out both}
+@keyframes bkNoteFlip{from{transform:perspective(700px) rotateX(-60deg) translateY(-10px);opacity:.25}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.bk-av .av-tb.flip{animation:none}}
+
+/* 명부 줄 (2026-11-13 시안 2): 두 줄 장부 줄 + 가운데 상태 아이콘 3개(건강·배고픔·피로) + 애착 단계 + Lv. 머리글·칸 선 없음 */
+.bk-av .av-list .ux-row{grid-template-columns:52px minmax(0,1fr) auto auto 56px;gap:12px}
+.bk-av .av-list .nm .ttl{font-style:normal;font-size:12px;font-weight:700;color:#a8721a;background:rgba(232,180,74,.18);border:1px solid rgba(168,114,26,.35);border-radius:4px;padding:0 4px;margin-right:2px}
+.bk-av .cond{display:flex;align-items:center;gap:10px}
+.bk-av .cs{display:inline-flex;align-items:center;gap:3px;min-width:66px;font-size:13px;font-weight:700;white-space:nowrap}
+.bk-av .cs.lv0{color:#6e4e30}.bk-av .cs.lv1{color:#c06a1a}.bk-av .cs.lv2{color:#b0321f}
+.bk-av .ci{display:inline-block;width:22px;height:22px;flex:none}.bk-av .ci svg,.bk-av .ci img{display:block;width:100%;height:100%}
+.bk-av .attm{display:flex;align-items:center;gap:6px;min-width:80px;font-size:13px;color:#7a4a28}
+.bk-av .attm em{font-style:normal;font-weight:700;white-space:nowrap}
+.bk-av .attm .trk{display:block;width:34px;height:6px;border-radius:3px;background:rgba(110,72,36,.2);overflow:hidden;flex:none}
+.bk-av .attm .trk i{display:block;height:100%;background:#a7774a}
+.bk-av .av-head .av-ttl{font:700 13px var(--hf);color:#a8721a;letter-spacing:1px;margin-bottom:-2px}
+/* 칭호 쪽지 */
+.bk-av .av-title .tnow{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.bk-av .av-title .tnow b{font:700 20px var(--hf);color:#7a4a14}
+.bk-av .av-title .tk{font-weight:700;color:var(--ux-wood)}
+.bk-av .av-title .ux-h{font-size:15px;margin:6px 0}
+.bk-av .tchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.bk-av .tchip{display:inline-flex;flex-direction:column;align-items:center;min-width:64px;padding:4px 8px;border-radius:6px;background:#fbf1d8;border:1px solid rgba(168,114,26,.45);cursor:pointer}
+.bk-av .tchip b{font:700 14px var(--hf);color:#6e4223}.bk-av .tchip em{font-style:normal;font-size:11px;color:#3f7a3a}
+.bk-av .tchip.on{background:linear-gradient(#ffe7a3,#ecc25f);border-color:#a8792a}
+.bk-av .tchip.lock{opacity:.45;cursor:default;background:none;border-style:dashed}
+.bk-av .tchip.lock em{color:var(--ux-muted)}
+/* 성향 쪽지: 배고픔·피로 */
+.bk-av .tcond{display:grid;grid-template-columns:auto 20px auto 1fr auto 20px auto 1fr;align-items:center;gap:6px;margin:4px 0 8px;font-size:14px}
+.bk-av .tcond .tk{font-weight:700;color:var(--ux-wood)}
+.bk-av .ux-bar.food i{background:#d9a35a}.bk-av .ux-bar.tired i{background:#8a7aa8}
+
+/* ===== 모험가 장 오른쪽 쪽 정렬 (2026-11-13 2차) ===== */
+/* 머리: 1줄 = 이름 · 등급 · 직업 ······ 소지금 / 2줄 = 상태 · 애착 */
+.nm .br{display:none}
+.bk-av .who .nm{display:flex;flex-wrap:wrap;align-items:center;column-gap:8px;row-gap:6px}
+.bk-av .who .nm>*{order:1}
+.bk-av .who .nm .cls{font-size:16px}
+.bk-av .who .nm .av-wal{order:2;margin:0 0 0 auto;font-size:16px}
+.bk-av .who .nm .br{display:block;order:3;flex-basis:100%;height:0}
+.bk-av .who .nm .ux-tag{order:4;font-size:13px}
+.bk-av .who .nm .av-att{order:4;margin-left:6px}
+.bk-av .who .nm .av-att::before{content:"애착";font:700 13px var(--hf);color:var(--ux-wood);margin-right:6px}
+.bk-av .av-head .hm{margin-top:8px}
+/* 장비: "다음 장비" 막대를 장비 칸 아래 한 줄로 */
+.bk-av .av-eq{position:relative}
+.bk-av .av-eq .eqgrid{margin-bottom:30px}
+.bk-av .av-next{position:absolute;left:0;right:0;top:calc(36px + var(--av-eq));display:flex;align-items:center;gap:6px;font-size:12px;white-space:nowrap}
+.bk-av .av-next .ux-bar{flex:1;min-width:30px}
+/* 능력치: 숫자를 막대 바로 옆에 */
+.bk-av .av-st .srow{grid-template-columns:36px auto auto;justify-content:start;column-gap:10px}
+.bk-av .av-st .srow .v{min-width:56px;text-align:left}
+/* 붙인 쪽지: 쪽 아래 끝까지 채움 (빈 칸이 떠 보이지 않게) */
+.bk-av .av-tb{flex:1}
+
+/* ===== 모험가 장 오른쪽 쪽 정리 (2026-11-13 3차): 애착·다음 장비 뺌, 막대 안에 수치 ===== */
+.bk-av .who .nm .av-att{display:none}
+.bk-av .av-eq .eqgrid{margin-bottom:0}
+.bk-av .av-head .vb{grid-template-columns:auto 1fr}
+.bk-av .av-head .vb .trk{position:relative;height:18px;border-radius:9px}
+.bk-av .av-head .vb .trk>i{border-radius:8px}
+.bk-av .av-head .lv.bk{grid-template-columns:auto 1fr}
+.bk-av .av-head .lv.bk .ux-bar{height:18px;border-radius:9px;max-width:none}
+.bk-av .bv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 12px/1 var(--hf);font-style:normal;color:#fff;letter-spacing:.5px;text-shadow:0 1px 1px rgba(40,20,10,.75),0 0 2px rgba(40,20,10,.6);pointer-events:none}
+
+/* 등급 도장 (2026-11-13): 종이 문양 색 테두리 + Playball 글자, 오른쪽 쪽 정보 뒤에 깔림. 크기·위치·기울기·진하기 = --sl-* */
+@font-face{font-family:"Playball";src:url(../assets/fonts/Playball-Regular.ttf) format("truetype");font-display:swap}
+.bk-av.bk2>.bk-r{position:relative;isolation:isolate}
+.bk-av .av-seal{position:absolute;left:var(--sl-x);top:var(--sl-y);width:var(--sl-size);height:var(--sl-size);z-index:-1;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;opacity:var(--sl-op);transform:rotate(var(--sl-rot));
+  background:url(../assets/ui/book/seal_frame.png) center/contain no-repeat}
+.bk-av .av-seal b{font:400 calc(var(--sl-size) * .52)/1 "Playball",cursive;color:#ac9078;transform:translateY(-2%)}
+/* 머리 (2026-11-13 4차): Lv = 초상화 아래, 체력·마력·경험치 = 세로 한 줄씩 */
+.bk-av .av-head .pcol{display:flex;flex-direction:column;align-items:center;gap:4px}
+.bk-av .av-head .plv{font:700 18px/1 var(--hf);color:var(--ux-ink)}
+.bk-av .av-head .hm{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.bk-av .av-head .vb{grid-template-columns:46px 1fr;gap:8px}
+.bk-av .av-head .vb .k{text-align:right;font-size:13px}
+.bk-av .av-head .vb .trk{height:16px}
+.bk-av .av-head .vb.ex .trk>i{background:linear-gradient(#86a8dd,#4f78b8)}
+/* 머리 (2026-11-13 5차): 막대 3줄을 짧게(소지금 폭) → 오른쪽, 상태 표시 줄 옆에 붙임 (아래 빈 줄 없음) */
+.bk-av .av-head .who{position:relative;min-height:calc(var(--av-pt) * 1.15)}
+.bk-av .av-head .hm{position:absolute;right:0;top:var(--av-hmy);width:var(--av-hmw);margin:0;gap:4px}
+.bk-av .av-head .vb{grid-template-columns:auto 1fr;gap:6px}
+.bk-av .av-head .vb .k{min-width:38px;font-size:12px}
+.bk-av .av-head .vb .trk{height:15px}
+.bk-av .av-head .bv{font-size:11px}
+/* 머리: 등급은 도장으로 보이므로 이름 옆 등급 배지 뺌 (2026-11-13) */
+.bk-av .who .nm .ux-grade{display:none}
+/* 머리: 상태 표시 아래 성향 3가지 (모험심 · 소비 · 사교) — 2026-11-13 */
+.bk-av .who .nm .br2{order:5}
+.bk-av .who .nm .av-trt{order:6;display:flex;gap:4px;flex-wrap:nowrap}
+.bk-av .av-trt>span{display:inline-flex;align-items:baseline;gap:3px;padding:1px 6px;border-radius:5px;background:rgba(168,114,26,.1);border:1px solid rgba(110,72,36,.28);font:700 12px/1.3 var(--hf);color:#5a3a20;white-space:nowrap}
+.bk-av .av-trt em{font-style:normal;font-weight:400;font-size:11px;color:var(--ux-wood)}
+/* 머리 (2026-11-13 6차): 상태 표시를 성향 칸과 같은 크기·두께로, 경험치 막대 = 노란색 */
+.bk-av .who .nm .ux-tag{min-width:0;padding:1px 6px;border-radius:5px;font:700 12px/1.3 var(--hf);border:1px solid rgba(110,72,36,.28);gap:3px}
+.bk-av .av-head .vb.ex .trk>i{background:linear-gradient(#f1d27c,#c9963e)}
+/* 성향 칸 마우스 올림 설명 (2026-11-13): 책에서는 성향 쪽지 대신 */
+.bk-av .av-trt>span{position:relative;cursor:help}
+.bk-av .av-trt>span:hover{background:rgba(168,114,26,.22)}
+.bk-av .av-trt .tip{display:none;position:absolute;left:0;top:calc(100% + 6px);z-index:6;width:240px;padding:7px 10px;border-radius:6px;background:#fffaf0;border:1px solid rgba(110,72,36,.4);box-shadow:0 3px 8px rgba(60,36,16,.25);font:400 13px/1.45 var(--bf,inherit);font-style:normal;color:#4a2e18;white-space:normal}
+.bk-av .av-trt>span:hover .tip{display:block}
+/* 칭호 버튼 + 드롭다운 (2026-11-13): 쪽지 칭호 탭 대신 */
+.bk-av .av-head .av-ttl{position:relative;margin-bottom:2px;letter-spacing:0}
+.bk-av .av-tbtn{display:inline-flex;align-items:center;gap:4px;padding:1px 6px 1px 8px;border:1px solid rgba(168,114,26,.45);border-radius:5px;background:rgba(232,180,74,.18);font:700 13px/1.3 var(--hf);color:#a8721a;cursor:pointer}
+.bk-av .av-tbtn:hover,.bk-av .av-ttl.open .av-tbtn{background:rgba(232,180,74,.35)}
+.bk-av .av-tbtn i{font-style:normal;font-size:10px;transition:transform .15s}
+.bk-av .av-ttl.open .av-tbtn i{transform:rotate(180deg)}
+.bk-av .av-tdd{display:none;position:absolute;left:0;top:calc(100% + 4px);z-index:8;width:250px;max-height:300px;overflow:auto;padding:6px;border-radius:7px;background:#fffaf0;border:1px solid rgba(110,72,36,.4);box-shadow:0 4px 10px rgba(60,36,16,.28)}
+.bk-av .av-ttl.open .av-tdd{display:block}
+.bk-av .tdo{display:flex;align-items:baseline;gap:8px;width:100%;padding:4px 8px;border:0;border-radius:5px;background:none;text-align:left;cursor:pointer;font:inherit}
+.bk-av .tdo b{font:700 14px var(--hf);color:#6e4223;min-width:56px}.bk-av .tdo em{font-style:normal;font-size:12px;color:#3f7a3a}
+.bk-av button.tdo:hover{background:rgba(232,180,74,.2)}
+.bk-av .tdo.on{background:linear-gradient(90deg,rgba(236,194,95,.45),rgba(236,194,95,.1))}
+.bk-av .tdo.on b::after{content:" ✓";color:#a8721a}
+.bk-av .tdo.lock{opacity:.5;cursor:default}.bk-av .tdo.lock em{color:var(--ux-muted)}
+.bk-av .tdh{margin:6px 8px 2px;padding-top:6px;border-top:1px dashed rgba(110,72,36,.3);font-size:11px;color:var(--ux-muted)}
+/* 능력치 (2026-11-13): 물감 번짐 막대 B2 + 오른쪽 정렬, 공격·방어 = 잉크 톤 */
+.bk-av .av-st .srow{grid-template-columns:auto var(--av-stw) 64px;justify-content:end;column-gap:10px;align-items:center}
+.bk-av .av-st .srow .k{text-align:right}
+.bk-av .av-st .srow .v{text-align:left;min-width:0;font:700 16px var(--hf)}
+.bk-av .av-st .cells{display:block}
+.bk-av .av-st .ibar{position:relative;display:block;height:8px;border-radius:4px;background:rgba(138,106,70,.14);overflow:hidden}
+.bk-av .av-st .ibar i{position:absolute;top:0;bottom:0;display:block}
+.bk-av .av-st .ibar .f{left:0;border-radius:4px;background:linear-gradient(90deg,rgba(138,106,70,.35),#6e4e30) 0 0/calc(100% * 100 / var(--w)) 100% no-repeat}
+.bk-av .av-st .srow.core .ibar .f{background-image:linear-gradient(90deg,rgba(214,128,70,.4),#a8401c)}
+.bk-av .av-st .ibar .p{border-radius:0 4px 4px 0;background:#7fb36a}
+.bk-av .av-st .ibar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(246,234,208,.9) calc(10% - 1px) 10%)}
+.bk-av .av-st.anim .ibar i{animation:bkBarIn .45s ease-out both;transform-origin:left}
+@keyframes bkBarIn{from{transform:scaleX(0)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.bk-av .av-st.anim .ibar i{animation:none}}
+.bk-av .av-st .ux-h{text-align:right;padding-right:calc(64px + 10px)}
+.bk-av .av-st .cbs{display:flex;justify-content:flex-end;gap:0;margin-top:12px;padding-top:8px;border-top:1px solid rgba(110,72,36,.25)}
+.bk-av .av-st .cbs span{display:flex;align-items:baseline;gap:6px;background:none;border:0;border-radius:0;padding:0 14px;font-size:13px;color:var(--ux-wood)}
+.bk-av .av-st .cbs span+span{border-left:1px solid rgba(110,72,36,.3)}
+.bk-av .av-st .cbs span:last-child{padding-right:0}
+.bk-av .av-st .cbs b{display:inline;font:700 22px/1 var(--hf);color:var(--ux-ink)}
+.bk-av .av-st .srow{grid-template-columns:auto var(--av-stw) 52px}
+.bk-av .av-st .srow .v{text-align:right;white-space:nowrap}
+.bk-av .av-st .ux-h{padding-right:calc(52px + 10px)}
+/* 스킬 칸 (2026-11-13): 탭·쪽지 없이 장비처럼 제목 + 한 줄 */
+.bk-av .av-sk{margin-top:6px}
+.bk-av .av-sk .ux-h{text-align:left}
+.bk-av .av-sk .skrow{gap:var(--av-skg);justify-content:flex-start}
+.bk-av .av-sk .skslot{width:var(--av-sks);height:var(--av-sks)}
+/* 경력 쪽 (오른쪽 책갈피 "경력") */
+.bk-av .av-career{display:flex;flex-direction:column;height:100%;min-height:0}
+.bk-av .av-ch{display:flex;align-items:center;gap:12px;padding-bottom:10px;margin-bottom:8px;border-bottom:1px solid rgba(110,72,36,.3)}
+.bk-av .av-ch .ux-portrait.xs{width:56px;height:56px;flex:none}
+.bk-av .av-ch div b{display:block;font:700 22px/1.2 var(--hf);color:var(--ux-ink)}.bk-av .av-ch div span{font-size:14px;color:var(--ux-wood)}
+.bk-av .av-ch em{margin-left:auto;font-style:normal;font-size:14px;color:var(--ux-wood)}.bk-av .av-ch em b{font:700 22px var(--hf);color:var(--ux-ink)}
+.bk-av .av-career .career{flex:1;min-height:0;overflow:auto;font-size:15px}
+.bk-av .av-career .career li{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:6px 2px;border-bottom:1px dashed rgba(110,72,36,.22)}
+.bk-av .av-career .career .w{color:var(--ux-wood);font-size:13px}
+.bk-av .av-career .career li.none{display:block;color:var(--ux-muted)}
+/* 장비 · 물약 · 스킬 칸 (2026-11-13 A+D): 두꺼운 테두리·빗금 대신 잉크 모서리 꺾쇠, 빈 칸 = 옅은 물건 윤곽 (윤곽 그림 = Gemini 손그림, assets/ui/book/slot/) */
+.bk-av .av-eq .ux-slot,.bk-av .av-sk .ux-slot{--c:rgba(110,72,36,.38);--cl:12px;border:0;box-shadow:none;border-radius:0;
+  background:linear-gradient(var(--c),var(--c)) top left/var(--cl) 2px no-repeat,linear-gradient(var(--c),var(--c)) top left/2px var(--cl) no-repeat,
+  linear-gradient(var(--c),var(--c)) top right/var(--cl) 2px no-repeat,linear-gradient(var(--c),var(--c)) top right/2px var(--cl) no-repeat,
+  linear-gradient(var(--c),var(--c)) bottom left/var(--cl) 2px no-repeat,linear-gradient(var(--c),var(--c)) bottom left/2px var(--cl) no-repeat,
+  linear-gradient(var(--c),var(--c)) bottom right/var(--cl) 2px no-repeat,linear-gradient(var(--c),var(--c)) bottom right/2px var(--cl) no-repeat}
+.bk-av .av-eq .ux-slot[data-g]{--c:var(--gc)}
+.bk-av .av-sk .skslot[data-line="0"]{--c:#c0583e}.bk-av .av-sk .skslot[data-line="1"]{--c:#5d9a45}.bk-av .av-sk .skslot[data-line="2"]{--c:#4f78b8}.bk-av .av-sk .skslot[data-line="3"]{--c:#d1a23a}.bk-av .av-sk .skslot[data-line="4"]{--c:#8a5bb5}
+.bk-av .av-eq .ux-slot.empty,.bk-av .av-sk .ux-slot.empty{--c:rgba(110,72,36,.22)}
+.bk-av .av-eq .ux-slot.empty::after,.bk-av .av-sk .ux-slot.empty::after{content:"";position:absolute;inset:7%;background:var(--sil) center/contain no-repeat;opacity:var(--sl-sil)}
+.bk-av .av-eq .ux-slot.empty[data-ph="무기"]{--sil:url(../assets/ui/book/slot/sl_weapon.png)}
+.bk-av .av-eq .ux-slot.empty[data-ph="방어구"]{--sil:url(../assets/ui/book/slot/sl_armor.png)}
+.bk-av .av-eq .ux-slot.empty[data-ph="장신구"]{--sil:url(../assets/ui/book/slot/sl_acc.png)}
+.bk-av .av-eq .pot.empty{--sil:url(../assets/ui/book/slot/sl_pot.png)}
+.bk-av .av-sk .skslot.empty{--sil:url(../assets/ui/book/slot/sl_skill.png)}
+.bk-av .av-eq .pot.locked{background:none;opacity:1}
+.bk-av .av-eq .pot.locked>*{display:none}
+.bk-av .av-eq .pot.locked::after{content:"";position:absolute;inset:22%;background:url(../assets/ui/book/slot/sl_lock.png) center/contain no-repeat;opacity:calc(var(--sl-sil) * .8)}
+.bk-av .av-sk .sk.empty em{visibility:hidden}
+/* 오른쪽 쪽 세부 조절 (2026-11-13): 초상화 위치 · 글자 크기 = --av-* (조절 도구 "모험가 오른쪽 쪽") */
+.bk-av .av-head .pcol{transform:translate(var(--av-px),var(--av-py))}
+.bk-av .av-head .plv{font-size:var(--av-lfs)}
+.bk-av .who .nm .cls{font-size:var(--av-cfs)}
+.bk-av .who .nm .av-wal{font-size:var(--av-wfs)}
+.bk-av .av-tbtn{font-size:var(--av-ttfs)}
+.bk-av .who .nm .ux-tag,.bk-av .av-trt>span{font-size:var(--av-tgfs)}
+.bk-av .av-trt em{font-size:calc(var(--av-tgfs) - 1px)}
+.bk-av .av-head .vb .k{font-size:var(--av-bfs)}
+.bk-av .av-head .bv{font-size:var(--av-bvfs)}
+.bk-av .av-eq .ux-h,.bk-av .av-st .ux-h,.bk-av .av-sk .ux-h{font-size:var(--av-hfs)}
+.bk-av .av-st .srow .k,.bk-av .av-st .srow .v{font-size:var(--av-sfs)}
+.bk-av .av-sk .sk em{font-size:var(--av-skfs)}
+.bk-av .av-st .cbs b{font-size:var(--av-cbfs)}
+
+/* 글자별 위치 (2026-11-13): --p-*-x / --p-*-y 만큼 제자리에서 옮김 (자리 차지는 그대로) */
+.bk-av .who .nm .anm{position:relative;left:var(--p-nm-x);top:var(--p-nm-y)}
+.bk-av .av-head .av-ttl{position:relative;left:var(--p-tt-x);top:var(--p-tt-y)}
+.bk-av .who .nm .cls{position:relative;left:var(--p-cls-x);top:var(--p-cls-y)}
+.bk-av .who .nm .av-wal{position:relative;left:var(--p-wal-x);top:var(--p-wal-y)}
+.bk-av .who .nm .ux-tag{position:relative;left:var(--p-tag-x);top:var(--p-tag-y)}
+.bk-av .who .nm .av-trt{position:relative;left:var(--p-trt-x);top:var(--p-trt-y)}
+.bk-av .av-head .plv{position:relative;left:var(--p-lv-x);top:var(--p-lv-y)}
+.bk-av .av-eq>.ux-h:first-child{position:relative;left:var(--p-eqh-x);top:var(--p-eqh-y)}
+.bk-av .av-eq>.ux-h:not(:first-child){position:relative;left:var(--p-poth-x);top:var(--p-poth-y)}
+.bk-av .av-st>.ux-h{position:relative;left:var(--p-sth-x);top:var(--p-sth-y)}
+.bk-av .av-st .cbs{position:relative;left:var(--p-cbs-x);top:var(--p-cbs-y)}
+.bk-av .av-sk>.ux-h{position:relative;left:var(--p-skh-x);top:var(--p-skh-y)}
+.bk-av .av-sk .sk em{position:relative;left:var(--p-ske-x);top:var(--p-ske-y)}
+.bk-av .av-head .hm{transform:translate(var(--p-hm-x),var(--p-hm-y))}
+/* 도장이 쪽 아래로 넘쳐 스크롤바가 생기지 않게: 쪽 크기 안에서 잘라 보여 줌 */
+.bk-av .av-sealw{position:absolute;inset:0;overflow:hidden;z-index:-1;pointer-events:none}
+.bk-av .av-sealw .av-seal{z-index:auto}
+/* 칸 묶음 위치 (2026-11-13): 장비 칸 · 물약 칸 · 능력치 5줄 · 스킬 칸 */
+.bk-av .av-eq .eqgrid{position:relative;left:var(--p-eqg-x);top:var(--p-eqg-y)}
+.bk-av .av-eq .potgrid{position:relative;left:var(--p-potg-x);top:var(--p-potg-y)}
+.bk-av .av-st .srow{position:relative;left:var(--p-stg-x);top:var(--p-stg-y)}
+.bk-av .av-sk .skrow{position:relative;left:var(--p-skg-x);top:var(--p-skg-y)}
+/* 능력치 제목: 상자를 글자 폭으로 줄여 옮겨도 쪽 밖으로 넘치지 않게 (가로 스크롤 방지, 2026-11-13). −31px = 예전 오른쪽 여백 62px의 절반 → 보이는 자리 그대로 */
+.bk-av .av-st>.ux-h{width:fit-content;margin-left:auto;margin-right:auto;padding-right:0;left:calc(var(--p-sth-x) - 31px)}
+/* ===== 전직 제안 장 (2026-11-13): 왼쪽 = 제안 목록 + 전직의 길 순위 / 오른쪽 = 직업 고르기 카드 또는 전직의 길 ===== */
+.bk-pm.bk2>.bk-l{display:flex;flex-direction:column;gap:6px;overflow:auto}
+.bk-pm .pm-l{margin-bottom:10px}
+.bk-pm .ux-row{grid-template-columns:52px minmax(0,1fr) auto 56px!important;gap:12px;min-height:var(--av-rh)}
+.bk-pm .ux-row .star{position:absolute;right:-4px;top:-4px;font-style:normal;color:#d1a23a;font-size:16px;text-shadow:0 1px 0 #fff}
+.bk-pm .pg{display:flex;align-items:center;gap:8px;min-width:150px}
+.bk-pm .pg .ibar{width:100px}.bk-pm .pg b{font:700 14px var(--hf);color:#6e4e30;min-width:38px;text-align:right}
+.bk-pm .pg.done{font-size:13px;color:var(--ux-muted)}
+.bk-pm .ibar{position:relative;display:block;height:8px;border-radius:4px;background:rgba(138,106,70,.14)}
+.bk-pm .ibar .f{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,rgba(138,106,70,.35),#6e4e30) 0 0/calc(100% * 100 / var(--w)) 100% no-repeat}
+.bk-pm .ibar .f.cr{background-image:linear-gradient(90deg,rgba(214,128,70,.4),#a8401c)}
+.bk-pm .ibar .goal{position:absolute;top:-4px;bottom:-4px;width:2px;margin-left:-1px;background:#8e2f3a;border-radius:1px}
+.bk-pm .ibar .goal::after{content:"";position:absolute;left:-3px;top:-4px;border:4px solid transparent;border-top-color:#8e2f3a}
+/* 오른쪽 */
+.bk-pm.bk2>.bk-r{display:flex;flex-direction:column;gap:8px;overflow:auto}
+.bk-pm .pm-hd{display:flex;align-items:center;gap:12px;padding-bottom:10px;border-bottom:1px solid rgba(110,72,36,.3)}
+.bk-pm .pm-hd .ux-portrait.xs{width:56px;height:56px;flex:none}
+.bk-pm .pm-hd div b{display:block;font:700 22px/1.2 var(--hf);color:var(--ux-ink)}.bk-pm .pm-hd div span{font-size:14px;color:var(--ux-wood)}
+.bk-pm .pm-ch{margin-left:auto;text-align:right}.bk-pm .pm-ch em{display:block;font-style:normal;font-size:12px;color:var(--ux-wood)}
+.bk-pm .pm-ch b{font:700 24px/1.1 var(--hf)!important;color:#7a4a14!important;display:inline!important}.bk-pm .pm-ch small{margin-left:6px;font-size:13px;color:var(--ux-wood)}
+.bk-pm .pq{display:grid;grid-template-columns:36px 1fr 64px;align-items:center;gap:8px;margin:5px 0;font-size:14px}
+.bk-pm .pq .k{text-align:right;font-weight:700;color:var(--ux-wood)}
+.bk-pm .pq .v{font:700 15px var(--hf);color:var(--ux-ink)}.bk-pm .pq .v small{font-weight:400;font-size:12px;color:var(--ux-muted)}.bk-pm .pq .v.ok{color:#3f7a3a}
+.bk-pm .pm-path{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+.bk-pm .pp{padding:6px 4px 4px;border-bottom:1px dashed rgba(110,72,36,.22)}
+.bk-pm .pp .pn{display:flex;align-items:baseline;gap:6px}.bk-pm .pp .pn b{font:700 16px var(--hf);color:#5a3a20}
+.bk-pm .pp .pn small{font-size:12px;color:var(--ux-wood)}.bk-pm .pp .pn .tw{margin-left:auto;color:var(--ux-muted)}
+.bk-pm .pp.unk .pn b{color:var(--ux-muted);letter-spacing:2px}
+.bk-pm .pp .ux-tag{font-size:11px;padding:0 6px;min-width:0;border-radius:5px}
+.bk-pm .pm-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.bk-pm .pm-cd{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:6px;background:rgba(255,250,236,.55);border:1px solid rgba(110,72,36,.3)}
+.bk-pm .pm-cd .ct b{font:700 19px var(--hf);color:#5a3a20;margin-right:6px}.bk-pm .pm-cd .ct small{font-size:11px;color:var(--ux-wood)}
+.bk-pm .pm-cd em{display:block;font-style:normal;font-size:11px;color:var(--ux-muted);margin-bottom:2px}
+.bk-pm .pm-cd .gw span{display:inline-block;margin-right:8px;font-size:13px;font-weight:700}.bk-pm .pm-cd .gw .up{color:#3f7a3a}.bk-pm .pm-cd .gw .dn{color:#b0321f}
+.bk-pm .pm-cd .ev{display:flex;align-items:center;gap:4px;font-size:13px;color:#5a3a20}.bk-pm .pm-cd .ev img{width:26px;height:26px}.bk-pm .pm-cd .ev i{font-style:normal;color:var(--ux-muted)}
+.bk-pm .pm-go{margin-top:auto}
+.bk-pm .pm-ft{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ux-muted)}
+.bk-pm .pm-cd .sv .ux-muted,.bk-pm .pm-cd .gw .ux-muted{font-size:12px}
