@@ -142,9 +142,9 @@
     const tg = LOG_TAG[kind]; if (tg) { const i = document.createElement('i'); i.className = 'tag ' + tg[1]; i.textContent = tg[0]; el.append(i); }
     const sp = document.createElement('span'); sp.textContent = text; el.append(sp); lbAdd(el);
   };
-  UI.chat = function (name, text, who, a) { // 캐릭터 대화 (말풍선·리나 대사). a: 말한 모험가 (얼굴·직업 표시)
+  UI.chat = function (name, text, who, a, grp) { // 캐릭터 대화 (말풍선·리나 대사). a: 말한 모험가 (얼굴·직업 표시)
     if (!text) return;
-    const el = document.createElement('div'); el.className = 'ln chat' + (who === 'lina' ? ' lina' : '');
+    const el = document.createElement('div'); el.className = 'ln chat' + (who === 'lina' ? ' lina' : '') + (grp === 'talk' ? ' talk' : '');   // talk: 두 사람 대화 줄 (왼쪽 옅은 세로줄로 묶음)
     const hd = document.createElement('div'); hd.className = 'hd';
     const fc = document.createElement('span'); fc.className = 'cf';
     if (a) fc.setAttribute('style', faceStyle(a, 30, 156, 15));

@@ -237,12 +237,46 @@
     return true;
   };
   D.celebrate = function (id) { const ac = D.actors.get(id); if (ac) { ac.fx = D.t + 2.4; say(ac, '힘이 넘친다…!', 2.4); } };
-  D.reset = function (s) { D.actors.clear(); D.pcol.clear(); for (const st of D.seats) st.by = null; for (const l of LOITER) l.by = null; for (const w in D.winUse) D.winUse[w] = []; D.init(s); };
-  function say(ac, text, dur) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text, null, ac.a); } }   // 얼굴·직업 표시용으로 모험가를 함께 넘김
+  D.reset = function (s) { D.actors.clear(); D.timers = []; D.talk.next = 0; D.pcol.clear(); for (const st of D.seats) st.by = null; for (const l of LOITER) l.by = null; for (const w in D.winUse) D.winUse[w] = []; D.init(s); };
+  // ---------- 모험가끼리 대화 (2026-11-13 ② 로비 잡담, docs/design/character_talk_v1.md) ----------
+  // 같은 테이블에 앉은 두 사람(식탁, 자리마다 1번) · 서성이는 두 사람(게시판·구경 25%) · 가까이 선 두 사람(잡담 30%).
+  // 로비 전체에서 동시에 대화 1개, 끝난 뒤 20~40초 쉼, 한 사람은 60초 안에 다시 대화하지 않음. 줄 간격 1.2초, 말풍선 1.8초
+  const TALK_P = { table: 1, board: 0.25, idle: 0.3 }, TALK_R = { board: 300, idle: 260 };
+  D.talk = { next: 0 }; D.timers = [];
+  function talkPartner(ac) {
+    let best = null;
+    for (const o of D.actors.values()) {
+      if (o === ac || !o.a || o.tasks.length || o.bubble || (o.talkCool || 0) > D.t) continue;
+      const d = Math.hypot(o.x - ac.x, o.y - ac.y); let sit = null;
+      if (ac.pose === 'sit' && o.pose === 'sit' && ac.seat && o.seat && ac.seat.tab === o.seat.tab) sit = 'table';
+      else if (ac.loiter != null && o.loiter != null && d < TALK_R.board) sit = 'board';
+      else if (ac.pose === 'stand' && o.pose === 'stand' && d < TALK_R.idle) sit = 'idle';
+      if (sit && (!best || sit === 'table')) best = { o, sit };
+    }
+    return best;
+  }
+  function tryTalk(ac) {
+    if (!ac.a || !root.Speech || !Speech.talk || D.t < D.talk.next || ac.bubble || (ac.talkCool || 0) > D.t) return false;
+    const p = talkPartner(ac); if (!p) return false;
+    if (p.sit === 'table' && ac.tableTalk === ac.seat) return false;   // 같은 자리에서는 한 번만
+    if (Math.random() > TALK_P[p.sit]) return false;
+    const L = Speech.talk(ac.a, p.o.a, p.sit); if (!L) return false;
+    const o = p.o;
+    if (ac.pose === 'stand') ac.face = o.x < ac.x; if (o.pose === 'stand') o.face = ac.x < o.x;   // 서 있으면 서로 마주 봄
+    say(ac, L[0], 1.8, 'talk');
+    D.timers.push({ t: D.t + 1.2, fn: () => { if (D.actors.get(o.id) === o) say(o, L[1], 1.8, 'talk'); } });
+    if (L[2]) D.timers.push({ t: D.t + 2.4, fn: () => { if (D.actors.get(ac.id) === ac) say(ac, L[2], 1.6, 'talk'); } });
+    D.talk.busy = D.t + (L[2] ? 4 : 3);   // 대화 중에는 다른 사람 혼잣말을 미룸 (기록이 섞이지 않게)
+    D.talk.next = D.t + 4 + 20 + Math.random() * 20; ac.talkCool = o.talkCool = D.t + 60;
+    if (p.sit === 'table') { ac.tableTalk = ac.seat; o.tableTalk = o.seat; }
+    return true;
+  }
+  function say(ac, text, dur, grp) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text, null, ac.a, grp); } }   // 얼굴·직업 표시용으로 모험가를 함께 넘김
 
   // ---------- 매 프레임 ----------
   D.update = function (dt) {
     D.t += dt;
+    for (let i = D.timers.length - 1; i >= 0; i--) if (D.timers[i].t <= D.t) { const f = D.timers[i].fn; D.timers.splice(i, 1); f(); }   // 대화 다음 줄
     for (const [id, ac] of D.actors) {
       if (ac.gl) { const G = ac.gl, len = Math.hypot(G.x, G.y), st = 420 * dt; ac.wf = (ac.wf || 0) + st / 150 * 30; if (len <= st) ac.gl = null; else { G.x -= G.x / len * st; G.y -= G.y / len * st; G.face = faceLeft(-G.x, G.face); } }
       let budget = dt;
@@ -276,7 +310,7 @@
         } else if (k.k === 'remove') { release(ac); D.actors.delete(id); budget = 0; }
       }
       if (ac.bubble && D.t > ac.bubble.until) ac.bubble = null;
-      if (!ac.tasks.length && D.t > ac.chatAt) { ac.chatAt = D.t + 10 + Math.random() * 14; if (Math.random() < 0.45) say(ac, Speech.line(ac.a, 'chat'), 2.2); }
+      if (!ac.tasks.length && D.t > ac.chatAt) { ac.chatAt = D.t + 10 + Math.random() * 14; if (!tryTalk(ac) && D.t > (D.talk.busy || 0) && Math.random() < 0.45) say(ac, Speech.line(ac.a, 'chat'), 2.2); }   // 옆에 말 걸 사람이 있으면 대화, 없으면 혼잣말
       // 한가할 때의 행동: 가끔 자리를 옮김. 술 주문은 2026-11-12부터 규칙이 정한 사람만 (위 4-1)
       if (!ac.tasks.length && D.t > (ac.idleAt || (ac.idleAt = D.t + 14 + Math.random() * 20))) {
         ac.idleAt = D.t + 22 + Math.random() * 26;

@@ -19,5 +19,20 @@
   }
   // 리나 말풍선 (lina_meal, lina_depart …)
   function lina(ev) { const set = SP.lina[ev] || []; return set.length ? set[Math.floor(Math.random() * set.length)] : ''; }
-  root.Speech = { line, lina, tone, TONE_NAME };
+  // 모험가끼리 대화 (2026-11-13, docs/design/character_talk_v1.md): 말 거는 A의 말투에서 open, 대답하는 B의 말투에서 reply를 골라 이어 붙임
+  // rel: 'good' | 'bad' | '' (⑤ 친밀도 — 숨김 수치, 아직 없음). 그 관계 대사가 있으면 우선
+  const TK = SP.talk || {};
+  function pick(role, sit, t, rel) {
+    const g = (TK[sit] || {})[role] || {}, pool = (g[t] || []).concat(g.any || []);
+    const fit = rel ? pool.filter(x => x[1] === rel) : [], base = pool.filter(x => !x[1]);
+    const set = fit.length ? fit : base.length ? base : ((g.plain || []).filter(x => !x[1]));
+    return set.length ? set[Math.floor(Math.random() * set.length)][0] : '';
+  }
+  function talk(a, b, sit, rel) {
+    const fill = s => s.replace(/\{a\}/g, a.name).replace(/\{b\}/g, b.name);
+    const o = pick('open', sit, tone(a), rel), r = pick('reply', sit, tone(b), rel); if (!o || !r) return null;
+    const c = pick('close', sit, tone(a), rel);
+    return [fill(o), fill(r)].concat(c ? [fill(c)] : []);
+  }
+  root.Speech = { line, lina, tone, talk, TONE_NAME };
 })(this);

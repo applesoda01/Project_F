@@ -111,6 +111,24 @@ for e in EVENTS:
 for e in LINA_EVENTS:
     if not speech['lina'][e]: err('speech.csv', '-', f'{e} 리나 대사가 하나도 없습니다')
 
+# ---------- 모험가끼리 대화 (2026-11-13, docs/design/character_talk_v1.md) ----------
+TALK_SITS = ['table', 'board', 'idle', 'depart', 'return_ok', 'return_fail', 'battle_start', 'battle_hit', 'battle_heal', 'battle_win', 'battle_lose', 'town']
+TALK_ROLES = ['open', 'reply', 'close']
+talk = {}
+for ln, r in read('talk.csv', ['상황', '역할', '말투', '관계', '대사', '메모']):
+    st, ro, t, rel, line = r['상황'], r['역할'], r['말투'], r['관계'], r['대사']
+    if not line: err('talk.csv', ln, '대사가 비었습니다'); continue
+    if st not in TALK_SITS: err('talk.csv', ln, f"상황 '{st}' 을 모릅니다 ({' '.join(TALK_SITS)})"); continue
+    if ro not in TALK_ROLES: err('talk.csv', ln, f"역할 '{ro}' 은 open reply close 중 하나여야 합니다"); continue
+    if t not in TONES + ['any']: err('talk.csv', ln, f"말투 '{t}' 는 {' '.join(TONES)} any 중 하나여야 합니다"); continue
+    if rel not in ('', 'good', 'bad'): err('talk.csv', ln, f"관계 '{rel}' 은 비움 good bad 중 하나여야 합니다"); continue
+    for v in re.findall(r'\{(\w+)\}', line):
+        if v not in ('a', 'b', 'q'): err('talk.csv', ln, f"{{{v}}} 는 쓸 수 없습니다 (a b q)")
+    talk.setdefault(st, {}).setdefault(ro, {}).setdefault(t, []).append([line, rel])
+for st, R_ in talk.items():
+    if 'open' not in R_ or 'reply' not in R_: err('talk.csv', '-', f'{st} 상황에 open · reply 대사가 모두 있어야 합니다')
+speech['talk'] = talk
+
 # ---------- 대화 장면 ----------
 dialog = {}
 for ln, r in read('dialog.csv', ['장면', '순서', '표정', '대사', '메모']):

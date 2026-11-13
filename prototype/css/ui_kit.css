@@ -627,6 +627,7 @@ span.kslot{cursor:default}
 #logBox .ln .tag.t-gold{background:#FAC775;color:#412402}
 #logBox .ln .tag.t-gray{background:#D3D1C7;color:#2C2C2A}
 #logBox .ln.chat .hd{display:flex;align-items:center;gap:6px;margin:0 0 3px 4px}
+#logBox .ln.chat.talk{border-left:3px solid rgba(233,217,184,.55);padding-left:6px}   /* 2026-11-13 모험가끼리 대화: 이어진 줄을 옅은 세로줄로 묶음 */
 #logBox .ln.chat .hd .cf{flex:none;width:30px;height:30px;border-radius:50%;background-color:#efe2cf;background-repeat:no-repeat;border:2px solid rgba(46,32,18,.85);box-shadow:0 1px 3px rgba(0,0,0,.4)}
 #logBox .ln.chat .hd .cf.none{display:none}
 #logBox .ln.chat .hd b{display:inline;margin:0}

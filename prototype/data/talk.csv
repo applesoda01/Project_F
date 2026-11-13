@@ -1,0 +1,91 @@
+﻿상황,역할,말투,관계,대사,메모
+table,open,bold,,오늘 고기 두 접시 먹을 거야!,식탁 · 말 걸기 · 호탕
+table,open,bold,,이거 먹고 바로 한 판 더 뛰자!,식탁 · 말 걸기 · 호탕
+table,open,bold,,"{b}, 다음엔 나랑 같이 가자!",식탁 · 말 걸기 · 호탕
+table,open,careful,,천천히 먹어요. 체하겠어요.,식탁 · 말 걸기 · 조심
+table,open,careful,,"이 수프, 상처에 좋대요.",식탁 · 말 걸기 · 조심
+table,open,careful,,"{b} 씨, 요즘 무리하는 거 아니에요?",식탁 · 말 걸기 · 조심
+table,open,friendly,,"{b}! 여기 앉아, 같이 먹자!",식탁 · 말 걸기 · 다정
+table,open,friendly,,"이거 맛있다, 한 입 먹어 볼래?",식탁 · 말 걸기 · 다정
+table,open,friendly,,오늘 의뢰 어땠어? 얘기해 줘!,식탁 · 말 걸기 · 다정
+table,open,loner,,…자리가 여기밖에 없나.,식탁 · 말 걸기 · 무뚝뚝
+table,open,loner,,…조용히 먹고 싶은데.,식탁 · 말 걸기 · 무뚝뚝
+table,open,loner,,"…그 빵, 안 먹을 거면 줘.",식탁 · 말 걸기 · 무뚝뚝
+table,open,plain,,여기 음식 꽤 괜찮네.,식탁 · 말 걸기 · 보통
+table,open,plain,,오늘은 뭐 먹을까?,식탁 · 말 걸기 · 보통
+table,open,plain,,배고파서 죽는 줄 알았어.,식탁 · 말 걸기 · 보통
+table,reply,bold,,좋지! 내가 다 먹어 주지!,식탁 · 대답 · 호탕
+table,reply,bold,,"하하, 그 정도야 껌이지!",식탁 · 대답 · 호탕
+table,reply,bold,,다음 판은 내가 쏜다!,식탁 · 대답 · 호탕
+table,reply,careful,,…그래도 너무 많이 먹진 마요.,식탁 · 대답 · 조심
+table,reply,careful,,"음, 조금만 생각해 볼게요.",식탁 · 대답 · 조심
+table,reply,careful,,다치지 않게 조심해요.,식탁 · 대답 · 조심
+table,reply,friendly,,"응응, 완전 좋아!",식탁 · 대답 · 다정
+table,reply,friendly,,같이 먹으니까 더 맛있다!,식탁 · 대답 · 다정
+table,reply,friendly,,"고마워, 다음엔 내가 살게!",식탁 · 대답 · 다정
+table,reply,loner,,…마음대로 해.,식탁 · 대답 · 무뚝뚝
+table,reply,loner,,…그래.,식탁 · 대답 · 무뚝뚝
+table,reply,loner,,"…흥, 나쁘진 않네.",식탁 · 대답 · 무뚝뚝
+table,reply,plain,,"그러게, 나도 그렇게 생각해.",식탁 · 대답 · 보통
+table,reply,plain,,"좋아, 그렇게 하자.",식탁 · 대답 · 보통
+table,reply,plain,,"하하, 맞아.",식탁 · 대답 · 보통
+board,open,bold,,제일 센 의뢰는 내 거다!,게시판·구경 · 말 걸기 · 호탕
+board,open,bold,,"이 토벌 의뢰, 같이 할 사람?",게시판·구경 · 말 걸기 · 호탕
+board,open,bold,,보상 큰 거 남았나?,게시판·구경 · 말 걸기 · 호탕
+board,open,careful,,"이 의뢰, 조건이 좀 수상해요.",게시판·구경 · 말 걸기 · 조심
+board,open,careful,,위험도부터 확인해야죠.,게시판·구경 · 말 걸기 · 조심
+board,open,careful,,기한이 너무 짧지 않아요?,게시판·구경 · 말 걸기 · 조심
+board,open,friendly,,{b}! 같이 갈 의뢰 고르자!,게시판·구경 · 말 걸기 · 다정
+board,open,friendly,,이거 재밌어 보이지 않아?,게시판·구경 · 말 걸기 · 다정
+board,open,friendly,,둘이 가면 금방 끝날 거야!,게시판·구경 · 말 걸기 · 다정
+board,open,loner,,…혼자 할 만한 거 없나.,게시판·구경 · 말 걸기 · 무뚝뚝
+board,open,loner,,…방해하지 마.,게시판·구경 · 말 걸기 · 무뚝뚝
+board,open,loner,,…이건 내 몫이야.,게시판·구경 · 말 걸기 · 무뚝뚝
+board,open,plain,,오늘은 의뢰가 많네.,게시판·구경 · 말 걸기 · 보통
+board,open,plain,,어떤 걸 고를까…,게시판·구경 · 말 걸기 · 보통
+board,open,plain,,보상은 다 비슷하네.,게시판·구경 · 말 걸기 · 보통
+board,reply,bold,,"좋아, 한판 하자고!",게시판·구경 · 대답 · 호탕
+board,reply,bold,,"겁낼 거 없어, 내가 앞장선다!",게시판·구경 · 대답 · 호탕
+board,reply,bold,,그거 내가 찜했어!,게시판·구경 · 대답 · 호탕
+board,reply,careful,,…준비부터 단단히 해요.,게시판·구경 · 대답 · 조심
+board,reply,careful,,물약은 챙겼어요?,게시판·구경 · 대답 · 조심
+board,reply,careful,,조금 더 쉬운 걸로 해요.,게시판·구경 · 대답 · 조심
+board,reply,friendly,,"같이 가자, 같이!",게시판·구경 · 대답 · 다정
+board,reply,friendly,,너라면 든든하지!,게시판·구경 · 대답 · 다정
+board,reply,friendly,,"좋아, 내가 뒤를 받쳐 줄게!",게시판·구경 · 대답 · 다정
+board,reply,loner,,…알아서 해.,게시판·구경 · 대답 · 무뚝뚝
+board,reply,loner,,…난 혼자 갈 거야.,게시판·구경 · 대답 · 무뚝뚝
+board,reply,loner,,…시끄러워.,게시판·구경 · 대답 · 무뚝뚝
+board,reply,plain,,"그래, 한번 보자.",게시판·구경 · 대답 · 보통
+board,reply,plain,,괜찮아 보이네.,게시판·구경 · 대답 · 보통
+board,reply,plain,,"음, 나쁘지 않은데.",게시판·구경 · 대답 · 보통
+idle,open,bold,,요즘 몸이 근질근질해!,로비 잡담 · 말 걸기 · 호탕
+idle,open,bold,,어제 늑대를 한 방에 잡았지!,로비 잡담 · 말 걸기 · 호탕
+idle,open,bold,,팔씨름 한 판 어때?,로비 잡담 · 말 걸기 · 호탕
+idle,open,careful,,요즘 숲이 좀 이상하지 않아요?,로비 잡담 · 말 걸기 · 조심
+idle,open,careful,,장비 손질은 했어요?,로비 잡담 · 말 걸기 · 조심
+idle,open,careful,,어제 다친 사람이 있었대요…,로비 잡담 · 말 걸기 · 조심
+idle,open,friendly,,"{b}, 오늘 날씨 좋다!",로비 잡담 · 말 걸기 · 다정
+idle,open,friendly,,리나 씨가 나 보고 웃어 줬어!,로비 잡담 · 말 걸기 · 다정
+idle,open,friendly,,우리 길드 분위기 좋지 않아?,로비 잡담 · 말 걸기 · 다정
+idle,open,loner,,…또 너야?,로비 잡담 · 말 걸기 · 무뚝뚝
+idle,open,loner,,…할 말 있어?,로비 잡담 · 말 걸기 · 무뚝뚝
+idle,open,loner,,…시선이 느껴지는데.,로비 잡담 · 말 걸기 · 무뚝뚝
+idle,open,plain,,오늘은 좀 한가하네.,로비 잡담 · 말 걸기 · 보통
+idle,open,plain,,마을에 새 가게가 생겼대.,로비 잡담 · 말 걸기 · 보통
+idle,open,plain,,다음 달엔 등급이 오를까?,로비 잡담 · 말 걸기 · 보통
+idle,reply,bold,,"하하, 역시 그렇지!",로비 잡담 · 대답 · 호탕
+idle,reply,bold,,"좋아, 덤벼 봐!",로비 잡담 · 대답 · 호탕
+idle,reply,bold,,내가 최고라니까!,로비 잡담 · 대답 · 호탕
+idle,reply,careful,,…그렇다면 더 조심해야겠네요.,로비 잡담 · 대답 · 조심
+idle,reply,careful,,"음, 저도 신경 쓰고 있었어요.",로비 잡담 · 대답 · 조심
+idle,reply,careful,,무리하지 마세요.,로비 잡담 · 대답 · 조심
+idle,reply,friendly,,"와, 정말? 신난다!",로비 잡담 · 대답 · 다정
+idle,reply,friendly,,덕분에 기분 좋아졌어!,로비 잡담 · 대답 · 다정
+idle,reply,friendly,,나도 나도!,로비 잡담 · 대답 · 다정
+idle,reply,loner,,…그래서?,로비 잡담 · 대답 · 무뚝뚝
+idle,reply,loner,,…관심 없어.,로비 잡담 · 대답 · 무뚝뚝
+idle,reply,loner,,…흥.,로비 잡담 · 대답 · 무뚝뚝
+idle,reply,plain,,그렇구나.,로비 잡담 · 대답 · 보통
+idle,reply,plain,,"응, 그럴 수도 있겠다.",로비 잡담 · 대답 · 보통
+idle,reply,plain,,"하하, 그러게.",로비 잡담 · 대답 · 보통
