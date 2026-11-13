@@ -546,3 +546,37 @@
 .bk-fac .bk-l .fc.lockd .fb-ic{position:relative}
 .bk-fac .bk-l .fc.lockd b{color:var(--ux-muted)}.bk-fac .bk-l .fc.lockd small{color:var(--ux-muted);font-weight:400;font-size:12px}
 .bk-fac .bk-l .fc.lockd .mk{color:var(--ux-muted)}
+/* ===== 경영 장 정렬 (2026-11-13): 기존 화면을 왼쪽 / 오른쪽 쪽에 나눠 담음 (mgBook) ===== */
+.bk-mg.bk2>section{display:flex;flex-direction:column;gap:12px;grid-template-columns:none;height:var(--bk-lh)}
+.bk-mg.bk2>.bk-r{height:var(--bk-rh)}
+.bk-mg .kpan{width:auto;min-width:0}
+.bk-mg .kpantry{display:flex;flex-wrap:wrap;gap:10px}
+.bk-mg .ux-h{justify-content:center}
+/* 장부: 흰 표 → 잉크 장부 줄 */
+.mg-ledger .lg{background:none;border:0;border-radius:0}
+.mg-ledger .lg th,.mg-ledger .lg td{border-bottom:1px solid rgba(110,72,36,.18)}
+.mg-ledger .lg tr.sec.in th{background:none;color:#3d6b2c;border-bottom:1px solid rgba(61,107,44,.4)}
+.mg-ledger .lg tr.sec.out th{background:none;color:#9a3b26;border-bottom:1px solid rgba(154,59,38,.4)}
+.mg-ledger .lg tr.tot td{background:linear-gradient(90deg,rgba(236,194,95,.28),rgba(236,194,95,.05))}
+.mg-ledger>.bk-l{justify-content:flex-start}
+.mg-ledger .lg-bars{height:420px}
+/* 음식: 왼쪽 보관함 · 조리대 / 오른쪽 메뉴판 */
+.mg-meals .kpan.wide{flex:1;min-height:0}
+.mg-meals .kmenuwrap{flex:1;min-height:0;overflow:auto}
+/* 판매: 왼쪽 소재 + 아래 판매 줄 / 오른쪽 고른 소재 */
+.mg-sell .sl-left{flex:1;min-height:0;overflow:auto}
+.mg-sell .sl-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:8px;border-top:1px solid rgba(110,72,36,.25)}
+/* 도감 오른쪽: 진행 요약 */
+.mg-codex .cdx-sum{display:flex;flex-direction:column;gap:6px}
+.mg-codex .cs-row{display:grid;grid-template-columns:110px 1fr 70px;align-items:center;gap:12px;padding:8px 10px;border:0;border-bottom:1px solid rgba(110,72,36,.2);background:none;cursor:pointer;font:inherit;text-align:left}
+.mg-codex .cs-row:hover{background:rgba(255,250,236,.55)}
+.mg-codex .cs-row.on{background:linear-gradient(90deg,rgba(214,160,60,.25),rgba(214,160,60,0));box-shadow:inset 4px 0 0 #66763a}
+.mg-codex .cs-row b{font:700 16px var(--hf);color:#4a2e18}.mg-codex .cs-row em{font-style:normal;font:700 15px var(--hf);color:#5a3a20;text-align:right}
+.mg-codex .ibar{position:relative;display:block;height:8px;border-radius:4px;background:rgba(138,106,70,.14);overflow:hidden}
+.mg-codex .ibar .f{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,rgba(138,106,70,.35),#6e4e30) 0 0/calc(100% * 100 / var(--w)) 100% no-repeat}
+.mg-codex .cs-note{font-size:13px;color:var(--ux-muted);margin:6px 4px}
+/* 기록: 왼쪽 필터 + 이번 달 / 오른쪽 지난 기록 */
+.mg-log .gl-list{flex:1;min-height:0;overflow:auto}
+.mg-log .gl-rh{margin:0}
+.mg-ledger .lg,.mg-ledger .lg tr,.mg-ledger .lg tr:not(.tot) td,.mg-ledger .lg tr:not(.tot) th{background-color:transparent!important;background-image:none!important;box-shadow:none!important}
+.mg-ledger .lg{border:0!important;border-radius:0!important}.mg-ledger .lg td,.mg-ledger .lg th{border-bottom:1px solid rgba(110,72,36,.18)!important}.mg-ledger .lg tr.tot td{background:linear-gradient(90deg,rgba(236,194,95,.3),rgba(236,194,95,.05))!important;border-top:3px double rgba(110,72,36,.45)!important}
