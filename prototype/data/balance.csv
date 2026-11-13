@@ -82,10 +82,14 @@ fame,maxBonus,0.6,"명성 보정 = 1 + 0.6 × min(1, 명성/500) → 최대 1.6�
 fame,full,500,
 fame,cap,1000,
 town,startPop,150,
-town,growthBase,0.012,
-town,growthPerGrade,0.002,
-town,perResident,1,
-town,stages,300|1000|3000|8000,
+town,baseAdd,2,매달 기본 인구 증가 (2026-11-13 정수 가산형)
+town,perSuccess,1|2|3|4|5|6|8,의뢰 성공 1건당 인구 증가 (F~S급)
+town,residentAttach,65,이 애착 이상인 모험가 = 정착 모험가
+town,perResident,2,정착 모험가 1명당 매달 인구 증가
+town,houseCap,40|45|50|60|75,민가 1칸 수용 인원 (레벨 1 초가·2 목조·3 회반죽·4 회반죽 2층·5 석조). 1×2는 레벨 2부터 2배
+town,upgradePerMonth,2,매달 레벨이 오르는 민가 수 (오래된 집부터)
+town,upgradeWait,3,민가가 다음 레벨로 오르기까지 기다리는 개월 수
+town,stages,300|1000|2000|3500,
 town,inflowMult,1|1.3|1.6|2|2.5,
 town,raidLoss,0.05,
 town,invasionLoss,0.1,

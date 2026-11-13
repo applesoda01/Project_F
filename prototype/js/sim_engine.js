@@ -82,8 +82,9 @@
         maxBonus: 0.6, full: 500, cap: 1000       // 명성 보정 = 1 + 0.6 × min(1, 명성/500) → 최대 1.6배 (명성 도입 전 S급 보정과 같음)
       },
       town: {
-        startPop: 150, growthBase: 0.012, growthPerGrade: 0.002, perResident: 1,
-        stages: [300, 1000, 3000, 8000], inflowMult: [1.0, 1.3, 1.6, 2.0, 2.5],
+        startPop: 150, baseAdd: 2, perSuccess: [1, 2, 3, 4, 5, 6, 8], residentAttach: 65, perResident: 2,   // 2026-11-13 정수 가산형 인구 (balance.csv와 같게)
+        houseCap: [40, 45, 50, 60, 75], upgradePerMonth: 2, upgradeWait: 3,                                    // 민가 수용·레벨업 (docs/design/town_houses_v1.md)
+        stages: [300, 1000, 2000, 3500], inflowMult: [1.0, 1.3, 1.6, 2.0, 2.5],
         raidLoss: 0.05, invasionLoss: 0.10
       },
       ending: {
@@ -176,6 +177,12 @@
     const has = f => !!s.built[f];
     const effN = f => s.eff[f] || 0;
     const popStage = () => { let k = 0; for (const t of T.stages) if (s.pop >= t) k++; return k; };
+    // 마을 민가 (게임 game_core.js townMonthly와 같은 규칙, 2026-11-13)
+    const GDh = gameData(), HS = ((GDh && GDh.townHouses) || []).map(r => ({ st: r[5], size: r[3] * r[4] }));
+    const hCap = h => T.houseCap[h.lv - 1] * (h.size === 2 && h.lv >= 2 ? 2 : 1);
+    const capAll = () => s.houses.reduce((t, h) => t + hCap(h), 0);
+    function addHouses(need) { const st = popStage() + 1; let cap = capAll(); while (cap < need && s.houses.length < HS.length && HS[s.houses.length].st <= st) { const h = { size: HS[s.houses.length].size, lv: 1, age: 0 }; s.houses.push(h); cap += hCap(h); } }
+    s.houses = []; s.popAdd = 0; if (HS.length) addHouses(s.pop);
     const feeRate = () => E.feeBase + E.feePerInfo * effN('정보실');
 
     function newAdv(opts) {
@@ -393,7 +400,7 @@
       const fee = q.boss ? 0 : q.reward != null ? 0 : 0;
       const reward = (q.T ? q.T.reward : Q.reward[q.g]) * (q.boss ? 2 : 1) * (q.x2 ? 2 : 1);   // ×2 의뢰는 골드만 2배
       if (ok) {
-        s.st.qDone++;
+        s.st.qDone++; s.popAdd += T.perSuccess[q.g] || 0;   // 의뢰 성공 → 인구 (2026-11-13)
         if (q.T) for (const r of q.T.rewards || []) if (R() * 100 < r.p) s.mats[r.m] = (s.mats[r.m] || 0) + 1;   // 소재 획득 (게임 dropMats와 같음)
         if (q.T && s.deco.has('locker')) { const b = baseMat(q.T); if (b) s.mats[b] = (s.mats[b] || 0) + cfg.deco.mat; }   // 사물함: 기본 소재 +1
         for (const d of DISH) if (!s.dishes[d.name] && d.g <= s.grade && d.mats.every(m => s.mats[m] > 0)) { for (const m of d.mats) s.mats[m]--; s.dishes[d.name] = s.week; s.meals[d.g]++; s.st.mealsUnlocked.push(s.week); }
@@ -590,8 +597,12 @@
       }
       tablePolicy(false);   // 테이블 세트 (게임 autoPlace와 같은 시점: 월말 결산 뒤)
       // 인구
-      const residents = s.advs.filter(a => a.alive && a.attach >= 100).length;
-      s.pop += s.pop * (T.growthBase + T.growthPerGrade * s.grade) + residents * T.perResident;
+      { const st = popStage() + 1; let up = 0;
+        for (const h of s.houses) { if (up >= T.upgradePerMonth) break; if (h.lv < st && h.age >= T.upgradeWait) { h.lv++; h.age = 0; up++; } }
+        for (const h of s.houses) h.age++;
+        const residents = s.advs.filter(a => a.alive && a.attach >= T.residentAttach).length;
+        const want = s.pop + T.baseAdd + s.popAdd + residents * T.perResident; s.popAdd = 0;
+        if (HS.length) { addHouses(want); s.pop = Math.min(want, capAll()); } else s.pop = want; }
       // 애착(마을에 머문 모험가)
       for (const a of s.advs) if (a.alive && a.busy === 0) a.attach = Math.min(100, a.attach + A.attachPerMonthInTown * 0.5);
       // 이탈

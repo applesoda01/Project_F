@@ -45,13 +45,14 @@
     };
     attachRng(s);
     for (let i = 0; i < cfg.adv.startCount; i++) spawnAdv(s, { attach: 20, quiet: true });
+    initHouses(s);   // 2026-11-13 시작 인구만큼 초가
     log(s, '길드가 문을 열었습니다. 모험가 ' + cfg.adv.startCount + '명이 첫 손님으로 찾아왔습니다.', 'guild');
     return s;
   }
   function hasBatchim(w) { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; }
   function J(w, a, b) { return w + (hasBatchim(w) ? a : b); }
   const names = party => party.map(m => m.name).join('·');
-  function blankLedger() { return { fee: 0, resale: 0, meal: 0, tavern: 0, subsidy: 0, upkeep: 0, other: 0, quests: 0, success: 0, build: 0, dishes: {}, wd: [], builds: [], inTown: 0 }; }   // build·dishes·wd·builds·inTown: 장부 화면 내역용 (운영 순이익 net에는 건설비를 넣지 않음 = 관문 1 기준)
+  function blankLedger() { return { fee: 0, resale: 0, meal: 0, tavern: 0, subsidy: 0, upkeep: 0, other: 0, quests: 0, success: 0, popAdd: 0, build: 0, dishes: {}, wd: [], builds: [], inTown: 0 }; }   // build·dishes·wd·builds·inTown: 장부 화면 내역용 (운영 순이익 net에는 건설비를 넣지 않음 = 관문 1 기준)
   const ri = (s, n) => Math.floor(s.R() * n);
   // 기록용 의뢰 이름: 편집기에서 지은 이름이 있으면 「이름」, 기본 이름(○○ F급 의뢰)이면 등급·유형
   function qn(q) { return q.name && !/급 의뢰/.test(q.name) ? `${GR[q.g]}급 「${q.name}」` : `${GR[q.g]}급 ${QTYPE[q.type]}`; }
@@ -63,6 +64,38 @@
   function log(s, text, kind, extra) { s.log.unshift(Object.assign({ week: s.week, text, kind: kind || 'info' }, extra || {})); if (s.log.length > 600) s.log.pop(); }   // 기록 600개 = 약 2년치 (길드 기록 팝업)
   const effN = (s, f) => s.eff[f] || 0;
   const popStage = s => { let k = 0; for (const t of s.cfg.town.stages) if (s.pop >= t) k++; return k; };
+  // ---------- 마을 민가 · 인구 (2026-11-13 docs/design/town_houses_v1.md) ----------
+  // 집 수는 인구가 정함: 인구가 지금 집들의 수용 합을 넘으면 해금된 민가 자리에 1레벨(초가) 집이 생김.
+  // 집은 매달 오래된 집부터 upgradePerMonth채가 한 레벨씩 오름(지은 뒤 upgradeWait개월, 상한 = 마을 단계 1~5). 1×2 자리는 2레벨(목조)부터 2칸.
+  const HOUSE_SLOTS = (GD.townHouses || []).map(r => ({ id: r[0], gx: r[1], gy: r[2], w: r[3], d: r[4], st: r[5], c: r[6] }));
+  const houseCap = (T, h) => T.houseCap[h.lv - 1] * (h.size === 2 && h.lv >= 2 ? 2 : 1);
+  const housingCap = s => (s.houses || []).reduce((t, h) => t + houseCap(s.cfg.town, h), 0);
+  function addHouses(s, need) {   // need 명을 담을 때까지 해금된 자리에 초가를 지음. 지은 수를 돌려줌
+    const T = s.cfg.town, st = popStage(s) + 1; let cap = housingCap(s), n = 0;
+    while (cap < need && s.houses.length < HOUSE_SLOTS.length && HOUSE_SLOTS[s.houses.length].st <= st) {
+      const sl = HOUSE_SLOTS[s.houses.length], h = { slot: sl.id, size: sl.w * sl.d, lv: 1, age: 0 };
+      s.houses.push(h); cap += houseCap(T, h); n++;
+    }
+    return n;
+  }
+  function initHouses(s) { s.houses = []; if (HOUSE_SLOTS.length) addHouses(s, s.pop); }
+  const LV_NAME = ['초가', '목조 집', '회반죽 집', '2층 회반죽 집', '석조 집'];
+  function townMonthly(s) {
+    const T = s.cfg.town; if (!s.houses) initHouses(s);
+    const st = popStage(s) + 1; let up = 0, upCap = 0;
+    for (const h of s.houses) {   // 오래된 집부터 (s.houses는 지은 순서)
+      if (up >= T.upgradePerMonth) break;
+      if (h.lv < st && h.age >= T.upgradeWait) { const c0 = houseCap(T, h); h.lv++; h.age = 0; up++; upCap += houseCap(T, h) - c0; }
+    }
+    for (const h of s.houses) h.age++;
+    const residents = s.advs.filter(a => a.alive && a.attach >= T.residentAttach).length;
+    const want = s.pop + T.baseAdd + (s.month.popAdd || 0) + residents * T.perResident;
+    const built = HOUSE_SLOTS.length ? addHouses(s, want) : 0;
+    const cap = HOUSE_SLOTS.length ? housingCap(s) : Infinity;
+    s.housingFull = want > cap; s.pop = Math.min(want, cap);
+    if (up) log(s, `마을 집 ${up}채를 고쳐 지었습니다. (주거 +${upCap}명 · 지금 마을에서는 ${LV_NAME[Math.min(4, st - 1)]}까지)`, 'town');
+    if (built) log(s, `마을에 새 집이 ${built}채 생겼습니다. (인구 ${Math.round(s.pop)}명 · 집 ${s.houses.length}채)`, 'town');
+  }
   const feeRate = s => s.cfg.econ.feeBase + s.cfg.econ.feePerInfo * effN(s, '정보실');
   // 게시판 칸 배분: 버튼 4단계의 비중. 칸 수 = 최대 칸 × 비중 ÷ 합 (최대 나머지 방식으로 합을 정확히 맞춤)
   const FILTER_W = [0, 1, 2, 4], FILTER_NAME = ['없음', '적게', '보통', '우선'];
@@ -243,6 +276,7 @@
   function migrate(s) {
     s.proposals = s.proposals || []; s.discovered = s.discovered || {}; s.knownMats = s.knownMats || {}; s.seenMons = s.seenMons || {}; if (s.fame == null) s.fame = 0;
     s.mats = s.mats || {}; s.up = s.up || {};
+    if (!s.houses) initHouses(s);   // 2026-11-13 민가 도입 전 저장: 지금 인구로 초가를 지어 줌
     if (!s.place) {   // 2026-11-12 자유 배치 도입 전 저장: 그때 있던 테이블(등급별 2·3·4세트)을 예전 자리에 무료로 놓아 줌
       s.place = { items: [], next: 1 }; const n = 2 + (s.grade >= 1 ? 1 : 0) + (s.grade >= 2 ? 1 : 0);
       for (const [gx, gy] of OLD_TABLES.slice(0, n)) s.place.items.push({ uid: s.place.next++, id: 'table', gx, gy });
@@ -437,7 +471,7 @@
       const ok = x.ok != null ? x.ok : F ? F.win : s.R() < x.p;   // 예전 저장(출발 때 결과 없음)은 귀환 때 판정
       if (F) { s.stats.combat++; if (ok) s.stats.combatWin++; }
       if (ok) {
-        s.stats.done++; s.month.success++;
+        s.stats.done++; s.month.success++; s.month.popAdd = (s.month.popAdd || 0) + (s.cfg.town.perSuccess[q.g] || 0);   // 의뢰 성공 → 인구 (2026-11-13)
         const RW = q.reward * (q.x2 ? 2 : 1), DV = s.cfg.deco;   // ×2 의뢰는 골드만 2배 (명성·경험치는 그대로)
         const fee = RW * feeRate(s) + (hasDeco(s, 'bench') ? DV.gold : 0), resale = RW * E.resaleRate;   // 벤치 +5G는 중계 수입에 더함
         s.gold += fee + resale; s.month.fee += fee; s.month.resale += resale;
@@ -483,8 +517,7 @@
     s.month.inTown = inTown;   // 주점 매출은 2026-11-12부터 매주 술 1잔 단위 (departures 끝)
     let up = 0; for (const f of Object.keys(s.built)) up += (FAC_COST[f] != null ? E.buildCost[FAC_COST[f]] : 0) * E.upkeepRate;
     s.gold -= up; s.month.upkeep -= up;
-    const residents = s.advs.filter(a => a.alive && a.attach >= 100).length;
-    s.pop += s.pop * (T.growthBase + T.growthPerGrade * s.grade) + residents * T.perResident;
+    townMonthly(s);   // 2026-11-13: 정수 가산형 인구 + 민가
     for (const a of s.advs) if (a.alive && a.state !== 'quest') a.attach = Math.min(100, a.attach + A.attachPerMonthInTown * 0.5);
     for (const a of s.advs) if (a.alive && a.attach < A.leaveAttach && s.week - a.joined > A.leaveAfterYears * WPY && a.state !== 'quest') { a.alive = false; log(s, `${J(a.name, '이', '가')} 이 마을을 떠났습니다. (애착도 ${Math.round(a.attach)})`, 'leave', { who: [a.name] }); }
     // 새 모험가 방문 수 = 기본 × 신뢰도 보정(0.7~1.3) × 명성 보정(1~1.6)
@@ -596,6 +629,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

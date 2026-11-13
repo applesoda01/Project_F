@@ -58,6 +58,28 @@
   // 하늘 연출 그림 (없으면 코드로 그린 임시 그림 사용)
   for (let i = 1; i <= 4; i++) M['town_cloud' + i] = { src: `town/sky/cloud${i}.png`, w: 640, h: 340, ax: 0, ay: 0, optional: true }; // 2배 저장, 0.5배로 그림
   M.town_bird = { src: 'town/sky/bird.png', w: 256, h: 64, ax: 0.5, ay: 0.5, optional: true };
+  // 민가 (2026-11-13 docs/design/town_houses_v1.md). 세트별 [파일 w, h, 앞 모서리 ax, ay] — 2배 저장, 0.5배로 그림 (tools/town_editor.html과 같음)
+  const HM = { '1x1_s1_f1': [225, 226, 112, 223], '1x1_s2_f1': [226, 220, 112, 218], '1x1_s3_f1': [226, 221, 112, 218], '1x1_s3_f2': [225, 288, 114, 285], '1x1_s5_f1': [225, 249, 112, 246], '1x1_s5_f2': [226, 312, 111, 310],
+    '1x2_s2_f1': [343, 283, 112, 282], '1x2_s3_f1': [343, 284, 111, 282], '1x2_s3_f2': [343, 348, 113, 347], '1x2_s5_f1': [342, 308, 112, 307], '1x2_s5_f2': [343, 373, 110, 371] };
+  for (const k in HM) for (let c = 0; c < 4; c++) M['town_house_' + k + '_c' + c] = { src: `town/houses/${k}_c${c}.png`, w: HM[k][0], h: HM[k][1], ax: HM[k][2] / HM[k][0], ay: HM[k][3] / HM[k][1], color: '#b98d5e', optional: true };
+  const H_LOOK = ['s1_f1', 's2_f1', 's3_f1', 's3_f2', 's5_f2'];   // 집 레벨 1~5 → 그림 (초가 · 목조 · 회반죽 · 회반죽 2층 · 석조)
+  const SLOT_BY = {}; for (const r of ((root.GAME_DATA || {}).townHouses || [])) SLOT_BY[r[0]] = { gx: r[1], gy: r[2], w: r[3], d: r[4], c: r[6] };
+  function houseDraws(s) {   // 지어진 집 → 그릴 정보. 1×2 자리는 2레벨(목조)부터 1×2, 그 전에는 앞 칸에 1×1
+    const out = [];
+    for (const h of (s.houses || [])) {
+      const sl = SLOT_BY[h.slot]; if (!sl) continue;
+      const big = sl.w * sl.d === 2 && h.lv >= 2, w = big ? sl.w : 1, d = big ? sl.d : 1;
+      const gx = sl.gx + (sl.w - w), gy = sl.gy + (sl.d - d);   // 1×1일 때는 앞 칸
+      out.push({ k: (big ? '1x2_' : '1x1_') + H_LOOK[h.lv - 1], c: sl.c, gx, gy, w, d, flip: big && sl.w === 2, depth: gx + w + gy + d });
+    }
+    return out;
+  }
+  function drawHouse(g, hd) {
+    const it = root.Assets.items['town_house_' + hd.k + '_c' + hd.c], m = HM[hd.k]; if (!m) return;
+    const X = px(hd.gx + hd.w, hd.gy + hd.d), Y = py(hd.gx + hd.w, hd.gy + hd.d), W = m[0] * 0.5, H = m[1] * 0.5, ax = hd.flip ? W - m[2] * 0.5 : m[2] * 0.5, x = X - ax, y = Y - m[3] * 0.5;
+    if (it && it.img) { if (hd.flip) { g.save(); g.translate(x + W, y); g.scale(-1, 1); g.drawImage(it.img, 0, 0, W, H); g.restore(); } else g.drawImage(it.img, x, y, W, H); }
+    else { g.fillStyle = ['#c0392b', '#2f5fb3', '#3f8a3a', '#e08a2a'][hd.c] || '#b98d5e'; g.beginPath(); g.moveTo(X, Y - 10); g.lineTo(X - HX, Y - HY - 10); g.lineTo(X, Y - 2 * HY - 10); g.lineTo(X + HX, Y - HY - 10); g.closePath(); g.fill(); }
+  }
 
   const Town = { active: false };
   let stage, getS, hooks, ui = null, cv, hover = null, sel = null, T = 0, override = -1, res = new Map(), bub = null, nextBub = 3, mouse = { x: -1, y: -1 };
@@ -318,6 +340,7 @@
     }
     const items = visible(s).map(b => ({ t: 0, d: depth(b), b }));
     for (const r of res.values()) items.push({ t: 1, d: r.gd + 0.05, r });
+    for (const hd of houseDraws(s)) items.push({ t: 2, d: hd.depth - 0.01, hd });   // 민가 (클릭 불가 장식)
     items.sort((p, q) => p.d - q.d);
     for (const it of items) {
       if (it.b) {
@@ -326,10 +349,16 @@
         const k = keyOf(b, s);
         if (A.items[k] && A.items[k].img) { const [dw, dh] = sizeOf(b, s); A.draw(wg, k, ax, ay, { w: dw, h: dh }); }
         else { diamond(wg, b, 'rgba(180,150,100,.7)', '#5a3a22'); wg.fillStyle = '#3b2a1e'; wg.font = '700 18px "Malgun Gothic",sans-serif'; wg.textAlign = 'center'; wg.fillText(b.name, ax, ay - 20); }
-      } else drawRes(wg, it.r, T);
+      } else if (it.hd) drawHouse(wg, it.hd); else drawRes(wg, it.r, T);
     }
     if (TS) { TS.tint(wg); g.drawImage(TS.worldImage(), 0, 0); TS.drawFx(g); }   // 시간대 색 → 화면 → 낙엽·눈·비
     if (TS) TS.drawSky(g, c => skyDraw(c, skyImg)); else skyDraw(g, skyImg); // 구름 그림자·새·구름 (클릭 판정과 무관). 계절 모듈이 있으면 일반 배경의 아침~노을에만 보임
+    if (s.housingFull) {   // 주거지 부족 (2026-11-13 임시: 화면 가운데 글자. UI 확정 뒤 자리·모양 결정)
+      const t1 = '주거지가 부족합니다', t2 = '집이 고쳐 지어지거나 마을 단계가 오르면 인구가 다시 늘어납니다';
+      g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '700 40px "Malgun Gothic",sans-serif';
+      g.lineWidth = 6; g.strokeStyle = 'rgba(34,22,13,.85)'; g.strokeText(t1, 960, 520); g.fillStyle = '#fbe3c4'; g.fillText(t1, 960, 520);
+      g.font = '600 22px "Malgun Gothic",sans-serif'; g.lineWidth = 4; g.strokeText(t2, 960, 566); g.fillStyle = '#fbf1dc'; g.fillText(t2, 960, 566); g.restore();
+    }
     // 이름표
     const tag = hover || sel;
     if (tag) {
