@@ -89,3 +89,193 @@ idle,reply,loner,,…흥.,로비 잡담 · 대답 · 무뚝뚝
 idle,reply,plain,,그렇구나.,로비 잡담 · 대답 · 보통
 idle,reply,plain,,"응, 그럴 수도 있겠다.",로비 잡담 · 대답 · 보통
 idle,reply,plain,,"하하, 그러게.",로비 잡담 · 대답 · 보통
+depart,open,bold,,"가자! {q}, 금방 끝내 주지!",출발 · 말 걸기 · 호탕
+depart,open,bold,,"{b}, 뒤는 맡긴다!",출발 · 말 걸기 · 호탕
+depart,open,bold,,오늘은 내가 앞장선다!,출발 · 말 걸기 · 호탕
+depart,open,careful,,물약은 다 챙겼죠?,출발 · 말 걸기 · 조심
+depart,open,careful,,"{b}, 길은 확인했어요?",출발 · 말 걸기 · 조심
+depart,open,careful,,무리하지 말고 다녀와요.,출발 · 말 걸기 · 조심
+depart,open,friendly,,"{b}, 같이 가니까 든든해!",출발 · 말 걸기 · 다정
+depart,open,friendly,,다녀와서 같이 밥 먹자!,출발 · 말 걸기 · 다정
+depart,open,friendly,,오늘도 잘 부탁해!,출발 · 말 걸기 · 다정
+depart,open,loner,,…발목이나 잡지 마.,출발 · 말 걸기 · 무뚝뚝
+depart,open,loner,,…따라오든지.,출발 · 말 걸기 · 무뚝뚝
+depart,open,loner,,…빨리 끝내자.,출발 · 말 걸기 · 무뚝뚝
+depart,open,plain,,그럼 출발해 볼까.,출발 · 말 걸기 · 보통
+depart,open,plain,,"{q}, 잘 해 보자.",출발 · 말 걸기 · 보통
+depart,open,plain,,짐은 다 챙겼지?,출발 · 말 걸기 · 보통
+depart,reply,bold,,"좋아, 가자고!",출발 · 대답 · 호탕
+depart,reply,bold,,"걱정 마, 내가 있잖아!",출발 · 대답 · 호탕
+depart,reply,bold,,"하하, 기대하라고!",출발 · 대답 · 호탕
+depart,reply,careful,,"네, 조심해서 가요.",출발 · 대답 · 조심
+depart,reply,careful,,…두 번 확인했어요.,출발 · 대답 · 조심
+depart,reply,careful,,"천천히 가요, 천천히.",출발 · 대답 · 조심
+depart,reply,friendly,,"응, 나만 믿어!",출발 · 대답 · 다정
+depart,reply,friendly,,"좋아, 같이 힘내자!",출발 · 대답 · 다정
+depart,reply,friendly,,{a} 덕분에 힘이 나!,출발 · 대답 · 다정
+depart,reply,loner,,…알아서 해.,출발 · 대답 · 무뚝뚝
+depart,reply,loner,,…흥.,출발 · 대답 · 무뚝뚝
+depart,reply,loner,,…그래.,출발 · 대답 · 무뚝뚝
+depart,reply,plain,,"응, 가자.",출발 · 대답 · 보통
+depart,reply,plain,,"그래, 잘 부탁해.",출발 · 대답 · 보통
+depart,reply,plain,,다 챙겼어.,출발 · 대답 · 보통
+return_ok,open,bold,,봤지? 내가 다 했잖아!,귀환 성공 · 말 걸기 · 호탕
+return_ok,open,bold,,"하하, 식은 죽 먹기였어!",귀환 성공 · 말 걸기 · 호탕
+return_ok,open,bold,,"{b}, 한잔하러 가자!",귀환 성공 · 말 걸기 · 호탕
+return_ok,open,careful,,다친 데는 없어요?,귀환 성공 · 말 걸기 · 조심
+return_ok,open,careful,,"휴, 무사히 끝났네요.",귀환 성공 · 말 걸기 · 조심
+return_ok,open,careful,,다음에도 이렇게만 가요.,귀환 성공 · 말 걸기 · 조심
+return_ok,open,friendly,,"{b}, 오늘 정말 멋졌어!",귀환 성공 · 말 걸기 · 다정
+return_ok,open,friendly,,우리 호흡 최고였지?,귀환 성공 · 말 걸기 · 다정
+return_ok,open,friendly,,같이 가길 잘했다!,귀환 성공 · 말 걸기 · 다정
+return_ok,open,loner,,…나쁘지 않았어.,귀환 성공 · 말 걸기 · 무뚝뚝
+return_ok,open,loner,,…이 정도는 당연하지.,귀환 성공 · 말 걸기 · 무뚝뚝
+return_ok,open,loner,,…다음엔 혼자 가도 돼.,귀환 성공 · 말 걸기 · 무뚝뚝
+return_ok,open,plain,,수고했어.,귀환 성공 · 말 걸기 · 보통
+return_ok,open,plain,,생각보다 수월했네.,귀환 성공 · 말 걸기 · 보통
+return_ok,open,plain,,보상 나눠 갖자.,귀환 성공 · 말 걸기 · 보통
+return_ok,reply,bold,,다음엔 더 센 놈이다!,귀환 성공 · 대답 · 호탕
+return_ok,reply,bold,,"당연하지, 우리가 누군데!",귀환 성공 · 대답 · 호탕
+return_ok,reply,bold,,"좋아, 오늘은 내가 산다!",귀환 성공 · 대답 · 호탕
+return_ok,reply,careful,,"네, 덕분에 무사해요.",귀환 성공 · 대답 · 조심
+return_ok,reply,careful,,"…다행이에요, 정말.",귀환 성공 · 대답 · 조심
+return_ok,reply,careful,,다음에도 조심해요.,귀환 성공 · 대답 · 조심
+return_ok,reply,friendly,,"응, {a}도 최고였어!",귀환 성공 · 대답 · 다정
+return_ok,reply,friendly,,다음에도 같이 가자!,귀환 성공 · 대답 · 다정
+return_ok,reply,friendly,,"헤헤, 기분 좋다!",귀환 성공 · 대답 · 다정
+return_ok,reply,loner,,…그래.,귀환 성공 · 대답 · 무뚝뚝
+return_ok,reply,loner,,"…흥, 운이 좋았지.",귀환 성공 · 대답 · 무뚝뚝
+return_ok,reply,loner,,…수고했어.,귀환 성공 · 대답 · 무뚝뚝
+return_ok,reply,plain,,"응, 수고했어.",귀환 성공 · 대답 · 보통
+return_ok,reply,plain,,다행이다.,귀환 성공 · 대답 · 보통
+return_ok,reply,plain,,"좋아, 나눠 갖자.",귀환 성공 · 대답 · 보통
+return_fail,open,bold,,"쳇, 다음엔 꼭 이긴다!",귀환 실패 · 말 걸기 · 호탕
+return_fail,open,bold,,이번엔 운이 없었어!,귀환 실패 · 말 걸기 · 호탕
+return_fail,open,bold,,"{b}, 다음에 설욕하자!",귀환 실패 · 말 걸기 · 호탕
+return_fail,open,careful,,역시 무리였나 봐요…,귀환 실패 · 말 걸기 · 조심
+return_fail,open,careful,,다들 살아 돌아왔으니 됐어요.,귀환 실패 · 말 걸기 · 조심
+return_fail,open,careful,,준비를 더 해야겠어요.,귀환 실패 · 말 걸기 · 조심
+return_fail,open,friendly,,"{b}, 괜찮아? 많이 다쳤어?",귀환 실패 · 말 걸기 · 다정
+return_fail,open,friendly,,다음엔 꼭 잘될 거야.,귀환 실패 · 말 걸기 · 다정
+return_fail,open,friendly,,"기운 내, 다들 무사하잖아.",귀환 실패 · 말 걸기 · 다정
+return_fail,open,loner,,…발목 잡혔군.,귀환 실패 · 말 걸기 · 무뚝뚝
+return_fail,open,loner,,…다음엔 혼자 간다.,귀환 실패 · 말 걸기 · 무뚝뚝
+return_fail,open,loner,,…말 걸지 마.,귀환 실패 · 말 걸기 · 무뚝뚝
+return_fail,open,plain,,아쉽게 됐네.,귀환 실패 · 말 걸기 · 보통
+return_fail,open,plain,,다음엔 잘하자.,귀환 실패 · 말 걸기 · 보통
+return_fail,open,plain,,오늘은 쉬자.,귀환 실패 · 말 걸기 · 보통
+return_fail,reply,bold,,당연하지! 두고 보라고!,귀환 실패 · 대답 · 호탕
+return_fail,reply,bold,,하하… 다음엔 안 진다!,귀환 실패 · 대답 · 호탕
+return_fail,reply,bold,,이걸로 끝이 아니야!,귀환 실패 · 대답 · 호탕
+return_fail,reply,careful,,"…네, 다음엔 신중하게요.",귀환 실패 · 대답 · 조심
+return_fail,reply,careful,,무사해서 다행이에요.,귀환 실패 · 대답 · 조심
+return_fail,reply,careful,,상처부터 치료해요.,귀환 실패 · 대답 · 조심
+return_fail,reply,friendly,,"응… 고마워, {a}.",귀환 실패 · 대답 · 다정
+return_fail,reply,friendly,,같이 다시 힘내자!,귀환 실패 · 대답 · 다정
+return_fail,reply,friendly,,{a}가 있어서 다행이야.,귀환 실패 · 대답 · 다정
+return_fail,reply,loner,,…알아.,귀환 실패 · 대답 · 무뚝뚝
+return_fail,reply,loner,,…흥.,귀환 실패 · 대답 · 무뚝뚝
+return_fail,reply,loner,,…시끄러워.,귀환 실패 · 대답 · 무뚝뚝
+return_fail,reply,plain,,"그래, 다음에 다시.",귀환 실패 · 대답 · 보통
+return_fail,reply,plain,,"응, 좀 쉬자.",귀환 실패 · 대답 · 보통
+return_fail,reply,plain,,어쩔 수 없지.,귀환 실패 · 대답 · 보통
+battle_start,open,bold,,덤벼라!,전투 시작 · 말 걸기 · 호탕
+battle_start,open,bold,,간다!,전투 시작 · 말 걸기 · 호탕
+battle_start,open,careful,,조심해요!,전투 시작 · 말 걸기 · 조심
+battle_start,open,careful,,진형 유지!,전투 시작 · 말 걸기 · 조심
+battle_start,open,friendly,,같이 가자!,전투 시작 · 말 걸기 · 다정
+battle_start,open,friendly,,힘내자!,전투 시작 · 말 걸기 · 다정
+battle_start,open,loner,,…비켜.,전투 시작 · 말 걸기 · 무뚝뚝
+battle_start,open,loner,,…처리한다.,전투 시작 · 말 걸기 · 무뚝뚝
+battle_start,open,plain,,온다!,전투 시작 · 말 걸기 · 보통
+battle_start,open,plain,,싸우자!,전투 시작 · 말 걸기 · 보통
+battle_start,reply,bold,,좋아!,전투 시작 · 대답 · 호탕
+battle_start,reply,bold,,맡겨!,전투 시작 · 대답 · 호탕
+battle_start,reply,careful,,네!,전투 시작 · 대답 · 조심
+battle_start,reply,careful,,뒤는 맡겨요.,전투 시작 · 대답 · 조심
+battle_start,reply,friendly,,응!,전투 시작 · 대답 · 다정
+battle_start,reply,friendly,,가자!,전투 시작 · 대답 · 다정
+battle_start,reply,loner,,…흥.,전투 시작 · 대답 · 무뚝뚝
+battle_start,reply,loner,,…알아.,전투 시작 · 대답 · 무뚝뚝
+battle_start,reply,plain,,그래!,전투 시작 · 대답 · 보통
+battle_start,reply,plain,,응!,전투 시작 · 대답 · 보통
+battle_hit,open,bold,,버텨!,동료 피격 · 말 걸기 · 호탕
+battle_hit,open,bold,,"{b}, 괜찮냐!",동료 피격 · 말 걸기 · 호탕
+battle_hit,open,careful,,"{b}, 물러나요!",동료 피격 · 말 걸기 · 조심
+battle_hit,open,careful,,다쳤어요?,동료 피격 · 말 걸기 · 조심
+battle_hit,open,friendly,,{b}!,동료 피격 · 말 걸기 · 다정
+battle_hit,open,friendly,,괜찮아?!,동료 피격 · 말 걸기 · 다정
+battle_hit,open,loner,,…방심했군.,동료 피격 · 말 걸기 · 무뚝뚝
+battle_hit,open,loner,,…정신 차려.,동료 피격 · 말 걸기 · 무뚝뚝
+battle_hit,open,plain,,괜찮아?,동료 피격 · 말 걸기 · 보통
+battle_hit,open,plain,,조심해!,동료 피격 · 말 걸기 · 보통
+battle_hit,reply,bold,,이 정도쯤!,동료 피격 · 대답 · 호탕
+battle_hit,reply,bold,,안 아파!,동료 피격 · 대답 · 호탕
+battle_hit,reply,careful,,괜찮아요…,동료 피격 · 대답 · 조심
+battle_hit,reply,careful,,"윽, 조심할게요.",동료 피격 · 대답 · 조심
+battle_hit,reply,friendly,,괜찮아!,동료 피격 · 대답 · 다정
+battle_hit,reply,friendly,,고마워!,동료 피격 · 대답 · 다정
+battle_hit,reply,loner,,…상관 마.,동료 피격 · 대답 · 무뚝뚝
+battle_hit,reply,loner,,…긁혔을 뿐.,동료 피격 · 대답 · 무뚝뚝
+battle_hit,reply,plain,,괜찮아.,동료 피격 · 대답 · 보통
+battle_hit,reply,plain,,아직 버텨.,동료 피격 · 대답 · 보통
+battle_heal,open,bold,,"자, 일어나!",치유 · 말 걸기 · 호탕
+battle_heal,open,bold,,다시 싸워!,치유 · 말 걸기 · 호탕
+battle_heal,open,careful,,치료할게요.,치유 · 말 걸기 · 조심
+battle_heal,open,careful,,가만히 있어요.,치유 · 말 걸기 · 조심
+battle_heal,open,friendly,,금방 나을 거야!,치유 · 말 걸기 · 다정
+battle_heal,open,friendly,,조금만 참아!,치유 · 말 걸기 · 다정
+battle_heal,open,loner,,…받아.,치유 · 말 걸기 · 무뚝뚝
+battle_heal,open,loner,,…빚이다.,치유 · 말 걸기 · 무뚝뚝
+battle_heal,open,plain,,치료할게.,치유 · 말 걸기 · 보통
+battle_heal,open,plain,,좀 나아?,치유 · 말 걸기 · 보통
+battle_heal,reply,bold,,고맙다!,치유 · 대답 · 호탕
+battle_heal,reply,bold,,힘이 난다!,치유 · 대답 · 호탕
+battle_heal,reply,careful,,고마워요.,치유 · 대답 · 조심
+battle_heal,reply,careful,,살았어요…,치유 · 대답 · 조심
+battle_heal,reply,friendly,,고마워!,치유 · 대답 · 다정
+battle_heal,reply,friendly,,최고야!,치유 · 대답 · 다정
+battle_heal,reply,loner,,…흥.,치유 · 대답 · 무뚝뚝
+battle_heal,reply,loner,,…갚을게.,치유 · 대답 · 무뚝뚝
+battle_heal,reply,plain,,고마워.,치유 · 대답 · 보통
+battle_heal,reply,plain,,나아졌어.,치유 · 대답 · 보통
+battle_win,open,bold,,이겼다!,승리 · 말 걸기 · 호탕
+battle_win,open,bold,,봤냐!,승리 · 말 걸기 · 호탕
+battle_win,open,careful,,끝났네요…,승리 · 말 걸기 · 조심
+battle_win,open,careful,,"휴, 다행이다.",승리 · 말 걸기 · 조심
+battle_win,open,friendly,,해냈다!,승리 · 말 걸기 · 다정
+battle_win,open,friendly,,우리가 이겼어!,승리 · 말 걸기 · 다정
+battle_win,open,loner,,…끝.,승리 · 말 걸기 · 무뚝뚝
+battle_win,open,loner,,…별것 없군.,승리 · 말 걸기 · 무뚝뚝
+battle_win,open,plain,,이겼다.,승리 · 말 걸기 · 보통
+battle_win,open,plain,,끝났어.,승리 · 말 걸기 · 보통
+battle_win,reply,bold,,하하!,승리 · 대답 · 호탕
+battle_win,reply,bold,,당연하지!,승리 · 대답 · 호탕
+battle_win,reply,careful,,다친 사람 없죠?,승리 · 대답 · 조심
+battle_win,reply,careful,,다행이에요.,승리 · 대답 · 조심
+battle_win,reply,friendly,,야호!,승리 · 대답 · 다정
+battle_win,reply,friendly,,최고야!,승리 · 대답 · 다정
+battle_win,reply,loner,,…흥.,승리 · 대답 · 무뚝뚝
+battle_win,reply,loner,,…그래.,승리 · 대답 · 무뚝뚝
+battle_win,reply,plain,,수고했어.,승리 · 대답 · 보통
+battle_win,reply,plain,,좋아.,승리 · 대답 · 보통
+battle_lose,open,bold,,"쳇, 물러난다!",패배 · 말 걸기 · 호탕
+battle_lose,open,bold,,다음엔 안 져!,패배 · 말 걸기 · 호탕
+battle_lose,open,careful,,후퇴해요!,패배 · 말 걸기 · 조심
+battle_lose,open,careful,,무리예요!,패배 · 말 걸기 · 조심
+battle_lose,open,friendly,,다들 도망쳐!,패배 · 말 걸기 · 다정
+battle_lose,open,friendly,,같이 빠지자!,패배 · 말 걸기 · 다정
+battle_lose,open,loner,,…물러난다.,패배 · 말 걸기 · 무뚝뚝
+battle_lose,open,loner,,…여기까지.,패배 · 말 걸기 · 무뚝뚝
+battle_lose,open,plain,,후퇴하자!,패배 · 말 걸기 · 보통
+battle_lose,open,plain,,안 되겠어!,패배 · 말 걸기 · 보통
+battle_lose,reply,bold,,젠장!,패배 · 대답 · 호탕
+battle_lose,reply,bold,,기억해 둬라!,패배 · 대답 · 호탕
+battle_lose,reply,careful,,"네, 빨리요!",패배 · 대답 · 조심
+battle_lose,reply,careful,,조심해서요!,패배 · 대답 · 조심
+battle_lose,reply,friendly,,"응, 따라갈게!",패배 · 대답 · 다정
+battle_lose,reply,friendly,,같이 가!,패배 · 대답 · 다정
+battle_lose,reply,loner,,…쳇.,패배 · 대답 · 무뚝뚝
+battle_lose,reply,loner,,…알아.,패배 · 대답 · 무뚝뚝
+battle_lose,reply,plain,,알았어!,패배 · 대답 · 보통
+battle_lose,reply,plain,,가자!,패배 · 대답 · 보통

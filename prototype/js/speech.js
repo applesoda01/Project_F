@@ -28,8 +28,8 @@
     const set = fit.length ? fit : base.length ? base : ((g.plain || []).filter(x => !x[1]));
     return set.length ? set[Math.floor(Math.random() * set.length)][0] : '';
   }
-  function talk(a, b, sit, rel) {
-    const fill = s => s.replace(/\{a\}/g, a.name).replace(/\{b\}/g, b.name);
+  function talk(a, b, sit, rel, q) {   // q: 의뢰 이름 (출발 대화 {q})
+    const fill = s => s.replace(/\{a\}/g, a.name).replace(/\{b\}/g, b.name).replace(/\{q\}/g, q || '이번 의뢰');
     const o = pick('open', sit, tone(a), rel), r = pick('reply', sit, tone(b), rel); if (!o || !r) return null;
     const c = pick('close', sit, tone(a), rel);
     return [fill(o), fill(r)].concat(c ? [fill(c)] : []);

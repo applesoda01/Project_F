@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>모험가 대화 편집기</title>
+<!-- 2026-11-13: data/talk.csv (모험가끼리 대화) 편집 도구. 설계 docs/design/character_talk_v1.md
+     열기 → 상황별로 대사 고치기 · 줄 추가/삭제 → 말투 조합 미리 보기 → 저장(talk.csv) → python prototype/tools/data_build.py 로 게임에 반영.
+     파일을 열기 전에는 게임 데이터(js/data_gen.js)의 대사를 읽기 전용으로 보여 줌 (메모 열은 없음). -->
+<script src="../js/data_gen.js"></script>
+<style>
+:root{--ink:#3b2a1e;--muted:#8a735a;--paper:#fffaf0;--line:rgba(120,82,44,.28);--line2:rgba(120,82,44,.5);--wood:#5a3a22;--wood2:#7a5032;--gold:#c9963e;--green:#4f8a3c;--red:#b5452f;--bg:#f3e6c8;--side:#ead9b4}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Serif KR","Nanum Myeongjo",serif;color:var(--ink);background:var(--bg)}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 16px;background:var(--wood);color:#f6e7c8}
+.top h1{font-size:18px;margin:0 12px 0 0}
+.top .st{font-size:13px;opacity:.9;margin-right:auto}
+.top .st b{color:#ffd77a}
+button,select,input{font:inherit;color:var(--ink)}
+button{font-weight:700;font-size:13px;background:linear-gradient(#fffaf0,#efe0c0);border:1px solid var(--line2);border-radius:8px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--wood2)} button[disabled]{opacity:.45;cursor:default}
+button.pri{background:linear-gradient(#ffe8a8,#e9c46a);border-color:#a8782c}
+.wrap{display:grid;grid-template-columns:230px minmax(0,1fr) 340px;height:calc(100vh - 52px)}
+.side{background:var(--side);border-right:2px solid var(--wood2);overflow:auto;padding:10px}
+.side h2,.prev h2{font-size:13px;color:var(--wood);margin:10px 4px 6px;letter-spacing:.04em}
+.sit{display:flex;align-items:center;gap:6px;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:8px;padding:6px 8px;margin:1px 0;font-weight:600}
+.sit:hover{background:rgba(255,250,240,.6)} .sit.on{background:var(--paper);border-color:var(--line2)}
+.sit .n{margin-left:auto;font-size:12px;color:var(--muted);font-weight:400}
+.sit .w{color:var(--red);font-size:12px}
+.sit small{display:block;font-size:11px;color:var(--muted);font-weight:400}
+.main{overflow:auto;padding:14px 18px 60px}
+.main h3{margin:0 0 2px;font-size:17px;color:var(--wood)} .main .d{margin:0 0 12px;font-size:13px;color:var(--muted);line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.col{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px;min-width:0}
+.col>h4{margin:2px 2px 6px;font-size:14px;color:var(--wood)}
+.tg{border-top:1px dashed var(--line);padding:6px 0 4px}
+.tg:first-of-type{border-top:0}
+.tg .th{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:3px}
+.tg .th b{color:var(--wood);font-size:13px}
+.tg .th .add{margin-left:auto;padding:1px 8px;font-size:12px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 64px 22px;gap:4px;align-items:center;margin:2px 0}
+.row input{width:100%;border:1px solid transparent;background:transparent;border-radius:6px;padding:3px 6px;font-size:14px}
+.row input:hover{border-color:var(--line)} .row input:focus{border-color:var(--wood2);background:#fff;outline:none}
+.row select{font-size:11px;border:1px solid var(--line);border-radius:6px;background:#fff;padding:1px}
+.row .x{border:0;background:none;padding:0;color:var(--muted);font-size:15px;cursor:pointer}
+.row .x:hover{color:var(--red)}
+.row.bad input{background:#fbe3dc} .row.long input{background:#fff2c9}
+.empty{font-size:12px;color:var(--red);padding:2px 6px}
+.ro .row input,.ro .row select{pointer-events:none} .ro .add,.ro .x{display:none}
+.prev{background:var(--side);border-left:2px solid var(--wood2);overflow:auto;padding:10px 12px}
+.pk{display:grid;grid-template-columns:auto 1fr;gap:6px 8px;align-items:center;font-size:13px;margin-bottom:8px}
+.pk select,.pk input{width:100%;border:1px solid var(--line2);border-radius:6px;background:var(--paper);padding:3px 6px}
+.conv{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:8px 0}
+.conv .who{font-size:11px;color:var(--muted);margin:4px 0 1px}
+.bub{display:inline-block;background:#fff;border:1.5px solid #3a2614;border-radius:10px;padding:4px 10px;font-size:14px;max-width:100%}
+.conv .r2{text-align:right} .conv .r2 .bub{background:#fff6dc}
+.note{font-size:12px;color:var(--muted);line-height:1.6;background:rgba(255,250,240,.6);border-radius:8px;padding:8px 10px;margin-top:10px}
+.note code{background:#fff;border-radius:4px;padding:0 4px;overflow-wrap:anywhere}
+.drop{position:fixed;inset:0;background:rgba(90,58,34,.6);color:#fff;display:none;align-items:center;justify-content:center;font-size:24px;z-index:9}
+.drop.on{display:flex}
+.chk{font-size:12px;margin:4px 0 0 4px;line-height:1.6}
+.chk .bad{color:var(--red)} .chk .ok{color:var(--green)}
+@media (max-width:1100px){.wrap{grid-template-columns:200px minmax(0,1fr)}.prev{grid-column:1/-1;border-left:0;border-top:2px solid var(--wood2)}.wrap{height:auto}}
+@media (max-width:760px){.wrap{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.side{border-right:0}}
+</style></head>
+<body>
+<div class="top">
+  <h1>모험가 대화 편집기</h1>
+  <span class="st" id="st">파일을 열기 전 · 게임 데이터 읽기 전용</span>
+  <button id="bOpen" class="pri">talk.csv 열기</button>
+  <input type="file" id="fIn" accept=".csv,text/csv" hidden>
+  <button id="bSave" disabled>저장</button>
+  <button id="bDown" disabled>다른 이름으로 내려받기</button>
+</div>
+<div class="wrap">
+  <aside class="side"><h2>상황</h2><div id="sits"></div>
+    <div class="note">
+      <b>대사 칸</b><br>
+      <code>{a}</code> 말 건 사람 · <code>{b}</code> 대답하는 사람 · <code>{q}</code> 의뢰 이름<br>
+      말투는 말하는 사람의 성향에서 자동으로 정해집니다. <b>공통(any)</b> 줄은 모든 말투에 섞입니다.<br>
+      <span style="background:#fff2c9;padding:0 3px">노란 칸</span> = 길이 초과 (전투 12자, 그 밖 28자) ·
+      <span style="background:#fbe3dc;padding:0 3px">붉은 칸</span> = 빈 줄 또는 쓸 수 없는 {변수}
+    </div>
+    <div class="note"><b>게임에 반영</b><br>저장한 뒤 <code>python prototype/tools/data_build.py</code> 를 실행하면 <code>js/data_gen.js</code> 가 다시 만들어집니다.</div>
+  </aside>
+  <main class="main" id="main"></main>
+  <aside class="prev">
+    <h2>미리 보기 (말투 조합)</h2>
+    <div class="pk">
+      <span>말 거는 사람</span><select id="pA"></select>
+      <span>대답하는 사람</span><select id="pB"></select>
+      <span>이름</span><input id="pN" value="토빈, 소피">
+      <span>의뢰 이름</span><input id="pQ" value="고블린 소탕">
+    </div>
+    <button id="bRoll" style="width:100%">다시 뽑기</button>
+    <div id="conv"></div>
+    <h2>점검</h2><div class="chk" id="chk"></div>
+  </aside>
+</div>
+<div class="drop" id="drop">talk.csv 를 놓으세요</div>
+<script>
+'use strict';
+const HEAD = ['상황', '역할', '말투', '관계', '대사', '메모'];
+const SITS = [
+  ['table', '식탁 잡담', '로비 · 같은 테이블에 앉은 두 사람'], ['board', '게시판 앞', '로비 · 함께 서성이는 두 사람 (25%)'], ['idle', '로비 잡담', '로비 · 가까이 선 두 사람 (30%)'],
+  ['depart', '출발 전', '로비 · 파티 대표와 동료, 파티마다 1번'], ['return_ok', '귀환 (성공)', '로비 · 보고 뒤'], ['return_fail', '귀환 (실패)', '로비 · 보고 뒤'],
+  ['battle_start', '전투 시작', '미니 뷰 · 70%'], ['battle_hit', '동료 피격', '미니 뷰 · 다른 동료가 말 걸고 맞은 사람이 대답 · 30%'], ['battle_heal', '치유', '미니 뷰 · 치유한 사람 → 받은 사람 · 35%'],
+  ['battle_win', '승리', '미니 뷰 · 80%'], ['battle_lose', '후퇴', '미니 뷰 · 80%'], ['town', '마을 길', '④ 단계 (아직 게임에서 안 씀)']];
+const SIT_NAME = Object.fromEntries(SITS.map(s => [s[0], s[1]]));
+const ROLES = [['open', '말 걸기'], ['reply', '대답'], ['close', '맺음 (선택)']];
+const TONES = [['bold', '호탕'], ['careful', '조심'], ['friendly', '다정'], ['loner', '무뚝뚝'], ['plain', '보통'], ['any', '공통']];
+const TN = Object.fromEntries(TONES), RN = Object.fromEntries(ROLES);
+const RELS = [['', '관계 무관'], ['good', '단짝만'], ['bad', '서먹만']];
+const $ = s => document.querySelector(s);
+let rows = [], handle = null, fileName = 'talk.csv', editable = false, dirty = false, cur = 'table';
+
+// ---------- CSV (data_build.py 의 csv 모듈과 같은 규칙: 쉼표 · 따옴표 · 줄바꿈이 있으면 따옴표로 감쌈) ----------
+function parseCSV(text) {
+  text = text.replace(/^﻿/, ''); const out = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++) { const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true; else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(f); out.push(row); row = []; f = ''; }
+    else f += c; }
+  if (f !== '' || row.length) { row.push(f); out.push(row); }
+  return out.filter(r => r.some(x => x !== ''));
+}
+const cell = v => /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+const toCSV = () => '﻿' + [HEAD].concat(rows.map(r => [r.sit, r.role, r.tone, r.rel, r.text, r.memo])).map(r => r.map(cell).join(',')).join('\r\n') + '\r\n';
+
+function load(text, name) {
+  const t = parseCSV(text), h = t.shift() || [];
+  if (HEAD.some((k, i) => h[i] !== k)) { alert('talk.csv 머리줄이 다릅니다: ' + h.join(',')); return; }
+  rows = t.map(r => ({ sit: r[0] || '', role: r[1] || '', tone: r[2] || '', rel: r[3] || '', text: r[4] || '', memo: r[5] || '' }));
+  fileName = name || 'talk.csv'; editable = true; dirty = false; status(); draw();
+}
+function fromGame() {   // 파일을 열기 전: 게임 데이터에서 읽기 전용으로
+  const tk = (window.GAME_DATA && GAME_DATA.speech && GAME_DATA.speech.talk) || {};
+  rows = []; for (const sit in tk) for (const role in tk[sit]) for (const tone in tk[sit][role]) for (const [text, rel] of tk[sit][role][tone]) rows.push({ sit, role, tone, rel: rel || '', text, memo: '' });
+}
+function status() {
+  $('#st').innerHTML = editable ? `<b>${fileName}</b> · ${rows.length}줄${dirty ? ' · <b>저장 안 됨</b>' : ''}${handle ? '' : ' · (저장 = 내려받기)'}` : `파일을 열기 전 · 게임 데이터 ${rows.length}줄 읽기 전용`;
+  $('#bSave').disabled = !editable || !dirty; $('#bDown').disabled = !editable;
+}
+function touch() { dirty = true; status(); try { localStorage.setItem('talkEditorDraft', JSON.stringify({ fileName, rows })); } catch (e) { /* 무시 */ } }
+
+// ---------- 점검 ----------
+const MAXLEN = s => s.startsWith('battle') ? 12 : 28;
+function issue(r) { if (!r.text.trim()) return 'bad'; const v = (r.text.match(/\{(\w+)\}/g) || []).map(x => x.slice(1, -1)); if (v.some(x => !['a', 'b', 'q'].includes(x))) return 'bad'; if ([...r.text.replace(/\{\w\}/g, 'ㅇㅇ')].length > MAXLEN(r.sit)) return 'long'; return ''; }
+function gaps(sit) {   // 말투마다 open · reply 가 있는지 (공통 줄이 있으면 통과)
+  const R = rows.filter(r => r.sit === sit), out = [];
+  if (!R.length) return out;
+  for (const role of ['open', 'reply']) for (const [t] of TONES.slice(0, 5)) if (!R.some(r => r.role === role && (r.tone === t || r.tone === 'any'))) out.push(`${RN[role]} · ${TN[t]}`);
+  return out;
+}
+
+// ---------- 그리기 ----------
+function drawSits() {
+  const box = $('#sits'); box.innerHTML = '';
+  for (const [k, nm, d] of SITS) {
+    const n = rows.filter(r => r.sit === k).length, g = gaps(k), bad = rows.some(r => r.sit === k && issue(r));
+    const b = document.createElement('button'); b.className = 'sit' + (k === cur ? ' on' : '');
+    b.innerHTML = `<span>${nm}<small>${k}</small></span>${g.length || bad ? '<span class="w">●</span>' : ''}<span class="n">${n}</span>`; b.title = d;
+    b.onclick = () => { cur = k; draw(); }; box.append(b);
+  }
+}
+function drawMain() {
+  const m = $('#main'), info = SITS.find(s => s[0] === cur); m.innerHTML = '';
+  m.innerHTML = `<h3>${info[1]} <small style="color:var(--muted);font-weight:400">${cur}</small></h3><p class="d">${info[2]}. 말 걸기는 말 거는 사람의 말투에서, 대답은 대답하는 사람의 말투에서 하나씩 골라 이어 붙입니다.</p>`;
+  const grid = document.createElement('div'); grid.className = 'grid' + (editable ? '' : ' ro'); m.append(grid);
+  for (const [role, rn] of ROLES) {
+    if (role === 'close' && !rows.some(r => r.sit === cur && r.role === 'close') && !editable) continue;
+    const col = document.createElement('div'); col.className = 'col'; col.innerHTML = `<h4>${rn}</h4>`; grid.append(col);
+    for (const [tone, tn] of TONES) {
+      const list = rows.filter(r => r.sit === cur && r.role === role && r.tone === tone);
+      if (!list.length && (tone === 'any' || role === 'close') && !editable) continue;
+      const tg = document.createElement('div'); tg.className = 'tg';
+      tg.innerHTML = `<div class="th"><b>${tn}</b><span>${list.length}줄</span><button class="add">+ 줄</button></div>`;
+      tg.querySelector('.add').onclick = () => { const at = rows.lastIndexOf(list[list.length - 1]); const nr = { sit: cur, role, tone, rel: '', text: '', memo: `${SIT_NAME[cur]} · ${role === 'open' ? '말 걸기' : role === 'reply' ? '대답' : '맺음'} · ${tn}` };
+        if (at >= 0) rows.splice(at + 1, 0, nr); else rows.push(nr); touch(); draw(); const ins = [...document.querySelectorAll('.row input')]; const el = ins.find(i => i._r === nr); if (el) el.focus(); };
+      if (!list.length && role !== 'close' && tone !== 'any' && !rows.some(r => r.sit === cur && r.role === role && r.tone === 'any')) tg.insertAdjacentHTML('beforeend', '<div class="empty">대사가 없습니다 — 이 말투끼리는 대화가 생기지 않습니다</div>');
+      for (const r of list) {
+        const el = document.createElement('div'); el.className = 'row ' + issue(r);
+        const inp = document.createElement('input'); inp.value = r.text; inp._r = r; inp.placeholder = '대사';
+        inp.title = r.memo || ''; inp.oninput = () => { r.text = inp.value; el.className = "row " + issue(r); touch(); preview(); check(); };
+        inp.onchange = () => { drawSits(); check(); };
+        inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); tg.querySelector('.add').click(); } };
+        const sel = document.createElement('select'); sel.title = '관계 (⑤ 친밀도 단계에서 씀)';
+        for (const [v, n] of RELS) sel.add(new Option(n, v, false, r.rel === v));
+        sel.onchange = () => { r.rel = sel.value; touch(); };
+        const x = document.createElement('button'); x.className = 'x'; x.textContent = '×'; x.title = '이 줄 지우기';
+        x.onclick = () => { rows.splice(rows.indexOf(r), 1); touch(); draw(); };
+        el.append(inp, sel, x); tg.append(el);
+      }
+      col.append(tg);
+    }
+  }
+}
+function check() {
+  const out = [];
+  for (const [k, nm] of SITS) { const g = gaps(k), n = rows.filter(r => r.sit === k).length; if (!n) continue;
+    const bad = rows.filter(r => r.sit === k && issue(r) === 'bad').length, long = rows.filter(r => r.sit === k && issue(r) === 'long').length;
+    if (g.length || bad || long) out.push(`<div class="bad">${nm}: ${[g.length ? '빈 말투 ' + g.join(', ') : '', bad ? `오류 ${bad}줄` : '', long ? `길이 초과 ${long}줄` : ''].filter(Boolean).join(' / ')}</div>`); }
+  const unk = rows.filter(r => !SIT_NAME[r.sit] || !RN[r.role] || !TN[r.tone]).length;
+  if (unk) out.push(`<div class="bad">상황 · 역할 · 말투 이름이 틀린 줄 ${unk}개 (data_build.py 가 거부)</div>`);
+  $('#chk').innerHTML = out.length ? out.join('') : '<div class="ok">문제 없음 — 모든 상황에서 말투 25가지 조합이 나옵니다</div>';
+}
+function fillTones() { for (const id of ['#pA', '#pB']) { const s = $(id); s.innerHTML = ''; s.add(new Option('무작위', '')); for (const [t, n] of TONES.slice(0, 5)) s.add(new Option(n, t)); } }
+function pickLine(role, tone) { const pool = rows.filter(r => r.sit === cur && r.role === role && (r.tone === tone || r.tone === 'any') && !r.rel && r.text.trim()); return pool.length ? pool[Math.floor(Math.random() * pool.length)].text : null; }
+function preview() {
+  const box = $('#conv'); box.innerHTML = ''; const [na, nb] = ($('#pN').value.split(',').map(s => s.trim()).concat(['A', 'B'])).slice(0, 2), q = $('#pQ').value || '이번 의뢰';
+  const T5 = TONES.slice(0, 5).map(t => t[0]), rnd = () => T5[Math.floor(Math.random() * 5)];
+  const fill = s => s.replace(/\{a\}/g, na).replace(/\{b\}/g, nb).replace(/\{q\}/g, q);
+  const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  for (let i = 0; i < 4; i++) {
+    const ta = $('#pA').value || rnd(), tb = $('#pB').value || rnd(), o = pickLine('open', ta), r = pickLine('reply', tb), c = pickLine('close', ta);
+    const d = document.createElement('div'); d.className = 'conv';
+    d.innerHTML = o && r ? `<div class="who">${esc(na)} · ${TN[ta]}</div><span class="bub">${esc(fill(o))}</span><div class="r2"><div class="who">${esc(nb)} · ${TN[tb]}</div><span class="bub">${esc(fill(r))}</span></div>${c ? `<div class="who">${esc(na)}</div><span class="bub">${esc(fill(c))}</span>` : ''}`
+      : `<div class="who">${TN[ta]} → ${TN[tb]}</div><span style="color:var(--red);font-size:13px">이 조합은 대사가 없어 대화가 생기지 않습니다</span>`;
+    box.append(d);
+  }
+}
+function draw() { drawSits(); drawMain(); check(); preview(); status(); }
+
+// ---------- 열기 · 저장 ----------
+$('#bOpen').onclick = async () => {
+  if (dirty && !confirmLose()) return;
+  if (window.showOpenFilePicker) { try { const [h] = await showOpenFilePicker({ types: [{ description: 'CSV', accept: { 'text/csv': ['.csv'] } }] }); handle = h; const f = await h.getFile(); load(await f.text(), f.name); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  $('#fIn').click();
+};
+$('#fIn').onchange = async e => { const f = e.target.files[0]; if (!f) return; handle = null; load(await f.text(), f.name); e.target.value = ''; };
+function confirmLose() { return window.confirm ? confirm('저장하지 않은 수정이 있습니다. 버릴까요?') : true; }
+function download() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([toCSV()], { type: 'text/csv' })); a.download = fileName; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+async function save() {
+  if (!editable) return;
+  if (handle && handle.createWritable) { try { const w = await handle.createWritable(); await w.write(toCSV()); await w.close(); dirty = false; status(); return; } catch (e) { alert('저장하지 못했습니다: ' + e.message); return; } }
+  download(); dirty = false; status();
+}
+$('#bSave').onclick = save; $('#bDown').onclick = download;
+addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); save(); } });
+addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+['#pA', '#pB', '#pN', '#pQ'].forEach(id => $(id).addEventListener('input', preview)); $('#bRoll').onclick = preview;
+// 끌어 놓기
+let dc = 0; addEventListener('dragenter', e => { e.preventDefault(); dc++; $('#drop').classList.add('on'); });
+addEventListener('dragleave', () => { if (--dc <= 0) { dc = 0; $('#drop').classList.remove('on'); } });
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('drop', async e => { e.preventDefault(); dc = 0; $('#drop').classList.remove('on'); const it = e.dataTransfer.items && e.dataTransfer.items[0];
+  if (it && it.getAsFileSystemHandle) { try { const h = await it.getAsFileSystemHandle(); if (h && h.kind === 'file') { handle = h; const f = await h.getFile(); load(await f.text(), f.name); return; } } catch (er) { /* 아래로 */ } }
+  const f = e.dataTransfer.files[0]; if (f) { handle = null; load(await f.text(), f.name); } });
+
+fillTones(); fromGame(); draw();
+</script>
+</body></html>

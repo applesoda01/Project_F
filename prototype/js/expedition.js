@@ -120,9 +120,9 @@
     const x = e.x, F = x.fight, party = x.party.map(pid => advOf(s, pid)).filter(Boolean).sort((a, b) => ROW[a.core] - ROW[b.core]);
     sel = id;
     const unitOf = a => (F && F.units.find(u => u.id === a.id)) || null;
-    view = { id, cam: 0, t: 0, phaseT: 0, phase: null, ev: timeline(F), applied: 0, fresh: true, sparks: [], nums: [], combat: !!F,
+    view = { id, cam: 0, t: 0, phaseT: 0, phase: null, ev: timeline(F), applied: 0, fresh: true, sparks: [], nums: [], combat: !!F, say: [],
       actors: party.map((a, i) => { const u = unitOf(a), k = CLS[a.core] + '_' + sexOf(a); ['walk', 'run', 'attack', 'fall'].forEach(n => img(k + '_' + n));
-        return { id: a.id, name: a.name, k, i, x: 0, anim: 'walk', t: Math.random(), flash: 0, glow: 0, dodge: 0, dir: 1, hp: u ? u.maxHp : 1, maxHp: u ? u.maxHp : 1, mp: u ? u.maxMp : 0, maxMp: u ? u.maxMp : 0, acts: actTimes(F, a.id), down: false, show: 0 }; }),
+        return { id: a.id, name: a.name, adv: a, k, i, x: 0, anim: 'walk', t: Math.random(), flash: 0, glow: 0, dodge: 0, dir: 1, hp: u ? u.maxHp : 1, maxHp: u ? u.maxHp : 1, mp: u ? u.maxMp : 0, maxMp: u ? u.maxMp : 0, acts: actTimes(F, a.id), down: false, show: 0 }; }),
       enemies: (F ? F.enemies : []).map((m, i) => ({ n: m.name, boss: m.boss, scale: m.boss ? 140 : 100, im: monImg(m.mon), x: 540 + i * 56, flash: 0, crit: 0, alpha: 1, hp: m.maxHp, maxHp: m.maxHp, shown: 1 })) };
     ev.classList.add('on'); requestAnimationFrame(() => ev.classList.add('vis')); updSmall(); render();
   }
@@ -144,6 +144,30 @@
     const ox = a.dodge > 0 ? -Math.sin((1 - a.dodge / 0.3) * Math.PI) * 10 * a.dir : 0; // 회피: 살짝 뒤로 비킴
     g.save(); if (a.dir < 0) { g.translate(Math.round(x + ox), 0); g.scale(-1, 1); g.drawImage(tmp, -px, SURF - 92); } else g.drawImage(tmp, Math.round(x + ox) - px, SURF - 92); g.restore();
   }
+  // ③ 전투 대사 (2026-11-13, docs/design/character_talk_v1.md): 미니 뷰를 보고 있을 때만, 파티 2명 이상. 짧은 말풍선 1줄 + 1초 뒤 대답 1줄
+  //   교전 시작 70% · 동료 피격 30% · 치유 35% · 승리/후퇴 80%. 대사 하나가 끝나기 전에는 다음 대사 없음
+  const TALK_P = { battle_start: 0.7, battle_hit: 0.3, battle_heal: 0.35, battle_win: 0.8, battle_lose: 0.8 };
+  function vTalk(v, sit, a, b) {
+    if (!a || !b || a === b || !root.Speech || !root.Speech.talk || v.say.length || Math.random() > TALK_P[sit]) return;
+    const L = root.Speech.talk(a.adv, b.adv, sit); if (!L) return;
+    v.say.push({ who: a, txt: L[0], t: 0, dur: 1.4 }, { who: b, txt: L[1], t: -1.0, dur: 1.4 });
+  }
+  const upOf = v => v.actors.filter(a => !a.down), other = (v, a) => { const o = upOf(v).filter(x => x !== a); return o[Math.floor(Math.random() * o.length)]; };
+  function drawSay(v, dt) {
+    const rdt = dt / Math.max(1, Math.min(3, speed));   // 배속과 상관없이 실제 시간으로 보여 줌
+    v.say.forEach(s => { const was = s.t; s.t += rdt; if (was < 0 && s.t >= 0) v.say.forEach(o => { if (o !== s && o.t >= 0) o.dur = Math.min(o.dur, o.t); }); });   // 대답이 뜨면 앞 말풍선은 닫음
+    v.say = v.say.filter(s => s.t < s.dur);
+    g.font = 'bold 11px "MaruBuri",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (const s of v.say) { if (s.t < 0) continue;
+      const w = Math.ceil(g.measureText(s.txt).width) + 12, h = 18, cx = Math.max(w / 2 + 2, Math.min(EVW - w / 2 - 2, Math.round(s.who.x))), y = SURF - 136;
+      g.globalAlpha = Math.min(1, s.t * 8, (s.dur - s.t) * 6);
+      g.fillStyle = 'rgba(255,250,238,.96)'; g.strokeStyle = '#3a2614'; g.lineWidth = 1.5;
+      g.beginPath(); g.roundRect ? g.roundRect(cx - w / 2, y, w, h, 6) : g.rect(cx - w / 2, y, w, h); g.fill(); g.stroke();
+      const tx = Math.round(s.who.x); g.beginPath(); g.moveTo(tx - 4, y + h - 0.5); g.lineTo(tx, y + h + 5); g.lineTo(tx + 4, y + h - 0.5); g.fill();
+      g.beginPath(); g.moveTo(tx - 4, y + h); g.lineTo(tx, y + h + 5); g.lineTo(tx + 4, y + h); g.stroke();
+      g.fillStyle = '#2e2012'; g.fillText(s.txt, cx, y + h / 2 + 1); }
+    g.globalAlpha = 1; g.textBaseline = 'alphabetic';
+  }
   function bar(x, y, w, h, v, col) { g.fillStyle = 'rgba(0,0,0,.75)'; g.fillRect(x - 1, y - 1, w + 2, h + 2); g.fillStyle = '#2a1010'; g.fillRect(x, y, w, h); const hw = Math.round(w * Math.max(0, Math.min(1, v))); g.fillStyle = col(v); g.fillRect(x, y, hw, h); g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(x, y, hw, 1); }
   const hpCol = v => v > 0.5 ? '#5fd16b' : v > 0.25 ? '#e8c13a' : '#e8443a', enCol = v => v > 0.5 ? '#e8443a' : v > 0.25 ? '#e8913a' : '#e8d23a';
   // 기록 1건 반영. fx=false 면 효과 없이 상태만 (미니 뷰를 교전 도중에 열었을 때)
@@ -152,15 +176,20 @@
     if (x.by && x.mp != null) { const b = A(x.by); if (b) b.mp = x.mp; }
     if (x.t === 'hit') { const m = E(x.to); if (!m) return; m.hp = x.hp; if (fx) { m.flash = 0.25; if (x.c) m.crit = 0.4; if (x.d != null) v.nums.push({ who: m, e: 1, txt: String(x.d), crit: !!x.c, t: 0, ox: Math.random() * 14 - 7 }); } }
     else { const a = A(x.to); if (!a) return;
-      if (x.t === 'hurt') { a.hp = x.hp; if (fx) { a.flash = 0.3; if (x.d != null) v.nums.push({ who: a, txt: String(x.d), t: 0, ox: Math.random() * 10 - 5 }); } }
+      if (x.t === 'hurt') { a.hp = x.hp; if (fx && a.hp > 0) vTalk(v, 'battle_hit', other(v, a), a); if (fx) { a.flash = 0.3; if (x.d != null) v.nums.push({ who: a, txt: String(x.d), t: 0, ox: Math.random() * 10 - 5 }); } }
       else if (x.t === 'miss') { if (fx) a.dodge = 0.3; }
-      else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx) { a.glow = 0.5; if (x.d != null && x.d > 0) v.nums.push({ who: a, txt: '+' + x.d, heal: true, t: 0, ox: Math.random() * 10 - 5 }); for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
+      else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx && x.t === 'heal' && x.by && x.by !== x.to) vTalk(v, 'battle_heal', A(x.by), a); if (fx) { a.glow = 0.5; if (x.d != null && x.d > 0) v.nums.push({ who: a, txt: '+' + x.d, heal: true, t: 0, ox: Math.random() * 10 - 5 }); for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
       else if (x.t === 'down') { a.hp = 0; a.down = true; a.anim = 'fall'; a.t = 0; } }
   }
   function drawScene(dt) {
     const v = view, e = entries().find(o => o.id === v.id); if (!e) { close(); return; }
     const x = e.x, ok = x.ok != null ? x.ok : (x.fight ? x.fight.win : true), p = e.p, ph = phaseOf(p, !!x.fight);
-    if (ph !== v.phase && v.phaseT >= 0.5 / Math.max(speed, 1) || v.phase === null) { v.phase = ph; v.phaseT = 0; }
+    if (ph !== v.phase && v.phaseT >= 0.5 / Math.max(speed, 1) || v.phase === null) {
+      const was = v.phase; v.phase = ph; v.phaseT = 0;
+      if (was && v.combat && !v.fresh) { const up = upOf(v), a = up[Math.floor(Math.random() * up.length)];   // ③ 교전 시작 · 결과 한마디
+        if (ph === 'fight') vTalk(v, 'battle_start', a, other(v, a));
+        else if (ph === 'result') vTalk(v, ok ? 'battle_win' : 'battle_lose', a, other(v, a)); }
+    }
     v.phaseT += dt; v.t += dt; const P = v.phase, en = x.fight ? groupName(x.fight.enemies) : '';
     // 전투 기록 재생: 교전 구간 진행도까지의 기록을 반영
     let fp = -1;
@@ -223,6 +252,7 @@
         bar(bx, SURF - 106, BW, 4, a.hp / a.maxHp, () => '#e8443a');
         if (a.maxMp > 0) bar(bx, SURF - 100, BW, 4, a.mp / a.maxMp, () => '#3a8ee8');
         g.globalAlpha = 1; } });
+    drawSay(v, dt);
     // 피해·회복 숫자: 대상 머리 위로 떠올랐다가 사라짐 (치명타는 크고 금색, 아군이 맞으면 붉게, 회복은 초록)
     v.nums = v.nums.filter(n => (n.t += dt) < 1.1);
     for (const n of v.nums) { const tx = n.e ? n.who.cx : n.who.x, ty = (n.e ? n.who.top : SURF - 118) - n.t * 22 - (n.crit ? 4 : 0); if (tx == null || ty == null) continue;

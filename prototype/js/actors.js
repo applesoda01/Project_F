@@ -160,6 +160,7 @@
         T(ac, 'wait', { t: i * 0.5 }); enter(ac); LAB(ac, '보고 중');
         if (i === 0) visitWindow(ac, ok ? 'sale' : 'quest', { mode: ok ? 'happy' : 'talk', text: Speech.lina(ok ? 'lina_success' : 'lina_fail'), dur: SV }, Speech.line(a, ok ? 'success' : 'fail'));
         else visitWindow(ac, ok ? 'sale' : 'quest', null, i === 1 ? Speech.line(a, ok ? 'success' : 'fail') : null);
+        if (i === 0 && party.length > 1) { T(ac, 'wait', { t: 0.6 }); T(ac, 'do', { fn: () => partyTalk(ac, D.actors.get(party[1].id), ok ? 'return_ok' : 'return_fail') }); }   // ③ 보고 뒤 동료와 한마디
         T(ac, 'do', { fn: () => clearParty(ac, qid) });   // 보고가 끝나면 파티 원을 지움
       });
     }
@@ -167,7 +168,7 @@
     for (const [qid, x] of after.active) {
       if (before.active.has(qid)) continue;
       Board.hold(qid); // 리나가 떼어 낼 때까지 게시판에 남겨 둠
-      const party = x.party.map(find).filter(Boolean);
+      const party = x.party.map(find).filter(Boolean), grp = { goAt: null }, qn = x.q && x.q.name;   // grp: 대표가 출발 대화를 마치면 동료도 함께 나감
       party.forEach((a, i) => {
         const had = D.actors.has(a.id), ac = actor(a, EXIT);
         setParty(ac, qid); if (!had) ac.lab = '도착';
@@ -177,8 +178,10 @@
         if (x.ate && i < x.ate) visitWindow(ac, 'meal', i === 0 ? { mode: 'talk', text: Speech.lina('lina_meal'), dur: SV } : null, Speech.line(a, 'meal'));
         LAB(ac, i === 0 ? '의뢰 수주 중' : '출발 준비');
         if (i === 0) visitWindow(ac, 'quest', { mode: 'paper', text: Speech.lina('lina_depart'), dur: SV, onStart: () => Board.take(qid) }, Speech.line(a, 'accept'));
+        else if (party.length > 1) T(ac, 'hold', { fn: () => grp.goAt != null && D.t >= grp.goAt, max: 25 });   // ③ 대표의 출발 대화(대답 포함)를 기다림
         else T(ac, 'wait', { t: 1.2 });
-        T(ac, 'say', { text: i === 0 ? Speech.line(a, 'depart') : '' });
+        if (i === 0 && party.length > 1) { T(ac, 'do', { fn: () => { const d = partyTalk(ac, D.actors.get(party[1].id), 'depart', qn); grp.goAt = D.t + Math.max(0, d); if (d < 0) say(ac, Speech.line(a, 'depart'), 1.8); else if (d > 2.6) ac.tasks.unshift({ k: 'wait', t: d - 2.6 });   /* 앞 대화를 기다린 만큼 대표도 늦게 나감 */  } }); T(ac, 'wait', { t: 1.4 }); }
+        else T(ac, 'say', { text: i === 0 ? Speech.line(a, 'depart') : '' });
         leave(ac, '출발');
       });
     }
@@ -271,6 +274,18 @@
     if (p.sit === 'table') { ac.tableTalk = ac.seat; o.tableTalk = o.seat; }
     return true;
   }
+  // ③ 파티 대화 (출발 · 귀환): 판정 없이 파티마다 1번. 대답할 동료가 아직 로비에 있을 때만. 로비 잡담 쉼도 함께 늘림
+  // ③ 파티 대화 (출발 · 귀환): 판정 없이 파티마다 1번. 대답할 동료가 아직 로비에 있을 때만.
+  //   다른 대화가 진행 중이면 끝난 뒤(0.3초)로 미룸 → 돌려주는 값 = 대화가 끝나는 데까지 남은 초 (못 하면 -1)
+  function partyTalk(ac, o, sit, q) {
+    if (!o || !o.a || !ac.a || D.actors.get(o.id) !== o || !Speech.talk) return -1;
+    const L = Speech.talk(ac.a, o.a, sit, null, q); if (!L) return -1;
+    const d = Math.max(0, (D.talk.busy || 0) + 0.3 - D.t), here = x => D.actors.get(x.id) === x;
+    const line = (who, txt, t) => t > 0 ? D.timers.push({ t: D.t + t, fn: () => { if (here(who)) say(who, txt, 1.8, 'talk'); } }) : say(who, txt, 1.8, 'talk');
+    line(ac, L[0], d); line(o, L[1], d + 1.2);
+    D.talk.busy = D.t + d + 3; D.talk.next = Math.max(D.talk.next, D.talk.busy + 20 + Math.random() * 20); ac.talkCool = o.talkCool = D.talk.busy + 57;
+    return d + 2.6;
+  }
   function say(ac, text, dur, grp) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text, null, ac.a, grp); } }   // 얼굴·직업 표시용으로 모험가를 함께 넘김
 
   // ---------- 매 프레임 ----------
@@ -292,6 +307,7 @@
           else { ac.x += dx / dist * sp * budget; ac.y += dy / dist * sp * budget; ac.ph += budget * 9; budget = 0; }
         } else if (k.k === 'wait') { if (k.t <= budget) { budget -= k.t; ac.tasks.shift(); } else { k.t -= budget; budget = 0; } }
         else if (k.k === 'say') { say(ac, k.text, 1.8); ac.tasks.shift(); }
+        else if (k.k === 'hold') { k.max -= budget; budget = 0; if (k.fn() || k.max <= 0) ac.tasks.shift(); }   // 동료(파티 대표)를 기다림 (최대 k.max초)
         else if (k.k === 'face') { ac.dir = k.dir; ac.tasks.shift(); }
         else if (k.k === 'sit') {
           if (!k.began) { k.began = true; ac.seat = k.seat; ac.pose = 'sit'; ac.xfIn = D.t; if (!startSit(ac, k.seat, 'down')) { ac.tasks.shift(); continue; } }
