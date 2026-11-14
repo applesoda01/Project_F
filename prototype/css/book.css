@@ -628,3 +628,7 @@
 #bookSub button{font-size:var(--tb-sfs)}
 /* 오른쪽 책갈피 글자: 접힌 띠(왼쪽 약 20%)를 뺀 천 부분 가운데 (닫기 끈 글자처럼) */
 #bookSub button{display:flex;align-items:center;justify-content:center;padding:0 0 0 calc(var(--bkm-w) * .2)!important;letter-spacing:0}
+
+/* 책 연출 (2026-11-14, js/book_fx.js): 표지가 덮인 동안 책갈피 · 책끈 숨김 */
+#pop.bfx-closed #bookMarks,#pop.bfx-closed #bookSub,#pop.bfx-closed #bookRibbon{opacity:0}
+#bookMarks,#bookSub,#bookRibbon{transition:opacity .2s}

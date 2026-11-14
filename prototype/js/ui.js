@@ -21,7 +21,7 @@
     stage.ui.querySelectorAll('[data-pop]').forEach(b => b.onclick = () => UI.open(b.dataset.pop));
     lbInit();
     q('#popClose').onclick = UI.close;
-    q('#popBack').onclick = e => { if (e.target.id === 'popBack') UI.close(); };
+    q('#popBack').onclick = e => { if (e.target.id === 'popBack') UI.closeFx(); };
     // 메뉴
     // 하단 HUD 묶음(경영·옵션)은 마우스를 올리면 열림. 준비 중인 항목은 안내만
     stage.ui.querySelectorAll('[data-act]').forEach(b => b.onclick = () => b.dataset.act === 'town' && hooks.town ? (root.Town && root.Town.active ? root.Town.close() : hooks.town()) : toast(b.dataset.act === 'town' ? '마을 화면은 준비 중입니다.' : '요리하기는 준비 중입니다.', 'info'));
@@ -36,7 +36,7 @@
     // 대화창
     q('#dlg').onclick = UI.advance;
     root.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { if (popup) UI.close(); }
+      if (e.key === 'Escape') { if (popup) UI.closeFx(); }
       if ((e.key === ' ' || e.key === 'Enter') && Dlg.open && !popup) { e.preventDefault(); UI.advance(); }
     });
     UI.autoReport = root.Snd ? !!root.Snd.opt.report : true;
@@ -222,7 +222,7 @@
     q('#bookSub').onclick = e => { const b = e.target.closest('[data-sub]'); if (!b) return; const sub = b.dataset.sub;
       if (sub === 'advs' || sub === 'advs:career') { advView = sub === 'advs:career' ? 'career' : 'detail'; if (popup === 'advs') { renderPopup(); bookSync('advs'); } else UI.open('advs'); return; }   // 모험가 장: 명부 ↔ 경력 (같은 팝업, 오른쪽 쪽만 바뀜)
       if (sub !== popup) UI.open(sub); };
-    q('#bookRibbon').onclick = () => UI.close();
+    q('#bookRibbon').onclick = () => UI.closeFx();
   }
   function bookSync(name) {
     bookInit(); const c = chapterOf(name);
@@ -257,12 +257,21 @@
   const TITLES = { req: '리퀘스트', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
-    popup = name; q('#popTitle').textContent = TITLES[name];
-    q('#popBack').classList.add('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.toggle('on', b.dataset.pop === name));
-    q('#popBody').innerHTML = ''; q('#popBody').dataset.g = ''; q('#popBody').dataset.p = name; renderPopup(); q('#popBody').scrollTop = 0;
-    bookSync(name);
-    if (name === 'verify') verify();
+    const wasOpen = q('#popBack').classList.contains('open'), prev = popup;
+    const go = () => {
+      popup = name; q('#popTitle').textContent = TITLES[name];
+      q('#popBack').classList.add('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.toggle('on', b.dataset.pop === name));
+      q('#popBody').innerHTML = ''; q('#popBody').dataset.g = ''; q('#popBody').dataset.p = name; renderPopup(); q('#popBody').scrollTop = 0;
+      bookSync(name);
+      if (name === 'verify') verify();
+    };
+    // 책 연출 (2026-11-14, js/book_fx.js): 다른 장으로 가면 쪽 넘기기(여러 장이면 촤르륵), 처음 열면 표지 펼치기
+    const ci = n => BOOK.findIndex(c => c.pops.includes(n));
+    if (root.BookFX && wasOpen && prev && ci(prev) >= 0 && ci(name) >= 0 && ci(prev) !== ci(name)) { root.BookFX.flip(ci(prev), ci(name), go); return; }
+    go();
+    if (root.BookFX && !wasOpen) root.BookFX.openCover();
   };
+  UI.closeFx = function () { if (root.BookFX && popup) root.BookFX.closeCover(() => UI.close()); else UI.close(); };   // 책끈 · Esc · 바깥 누르기 = 표지 덮으며 닫기
   UI.close = function () { mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
   function renderPopup() {
     const b = q('#popBody');
