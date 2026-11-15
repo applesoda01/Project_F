@@ -1,0 +1,42 @@
+{
+ "name": "archer_f_attack_shoot",
+ "sheet": "archer_f_attack_shoot.webp",
+ "frames": 16,
+ "fw": 256,
+ "fh": 220,
+ "cols": 8,
+ "scale_from_source": 0.25,
+ "source_canvas": [
+  1024,
+  880
+ ],
+ "feet_xy_in_frame": [
+  128,
+  197
+ ],
+ "fps": 24,
+ "hit_frames": [
+  13
+ ],
+ "note": "archer_f: 시위를 놓는 프레임(화살은 게임에서 따로 날림)",
+ "standing_height_px": 129,
+ "source": "archer_f_shoot_g1.mp4",
+ "source_frame_indices": [
+  0,
+  3,
+  7,
+  11,
+  16,
+  20,
+  24,
+  28,
+  33,
+  37,
+  41,
+  45,
+  50,
+  54,
+  58,
+  59
+ ]
+}

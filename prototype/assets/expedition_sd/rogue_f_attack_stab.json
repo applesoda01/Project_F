@@ -1,0 +1,42 @@
+{
+ "name": "rogue_f_attack_stab",
+ "sheet": "rogue_f_attack_stab.webp",
+ "frames": 16,
+ "fw": 256,
+ "fh": 220,
+ "cols": 8,
+ "scale_from_source": 0.25,
+ "source_canvas": [
+  1024,
+  880
+ ],
+ "feet_xy_in_frame": [
+  128,
+  197
+ ],
+ "fps": 24,
+ "hit_frames": [
+  4
+ ],
+ "note": "rogue_f: 단검이 가장 멀리 나간 프레임",
+ "standing_height_px": 129,
+ "source": "atkG_rogue_f_s8154_00001_.mp4",
+ "source_frame_indices": [
+  0,
+  1,
+  3,
+  5,
+  7,
+  9,
+  11,
+  13,
+  15,
+  17,
+  19,
+  21,
+  23,
+  25,
+  27,
+  48
+ ]
+}

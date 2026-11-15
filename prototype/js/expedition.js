@@ -134,7 +134,35 @@
   const SURF = 150, GAP = 54, LEAD_X = 270;
   const SHEET = { walk: [128, 96, 64, 8, 100, true], run: [128, 96, 64, 8, 75, true], attack: [128, 96, 64, 8, 90, true], fall: [160, 104, 104, 10, 110, false], stand: [128, 96, 64, 8, 100, false] };
   const tmp = document.createElement('canvas'), tg = tmp.getContext('2d');
+  // SD 그림 (2026-11-15): 달리기 · 공격(10직업) · 걷기 · 서 있기(로비 걷기 · 대기 시트). 쓰러짐(10직업)은 한 번 재생 후 누운 채 유지. 주소 끝에 ?px=1을 붙이면 예전 도트
+  const SDH = 84;   // 미니 뷰 키(예전 도트와 같음)
+  const SDRUN = { archer_f: 24, archer_m: 18, cleric_f: 19, cleric_m: 20, mage_f: 26, mage_m: 17, rogue_f: 20, rogue_m: 20, warrior_f: 16, warrior_m: 41 };
+  const SDATK = { warrior_m: 'attack_horiz', warrior_f: 'attack_slash', archer_m: 'attack_shoot', archer_f: 'attack_shoot', rogue_m: 'attack_stab', rogue_f: 'attack_stab', mage_m: 'attack_strike', mage_f: 'attack_strike', cleric_m: 'attack_bless', cleric_f: 'attack_bless' };
+  const SDIM = {}; const sdi = src => { if (!SDIM[src]) { const i = new Image(); i.src = src; SDIM[src] = i; } return SDIM[src]; };
+  function sdSheet(k, anim) {
+    if (anim === 'fall') return { im: sdi('assets/expedition_sd/' + k + '_fall.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: 16, once: true };   // 쓰러짐: 한 번 재생 후 누운 채 유지
+    if (anim === 'walk') return { im: sdi('assets/lobby_iso/chr/' + k + '_walk.webp'), fw: 160, fh: 200, cols: 12, n: 24, ax: 80, ay: 197, st: 129, fps: 24 };   // 로비 걷기 시트(오른쪽 3/4)
+    if (anim === 'run') return SDRUN[k] ? { im: sdi('assets/expedition_sd/run_' + k + '.webp'), fw: 258, fh: 322, cols: 10, n: SDRUN[k], ax: 129, ay: 317, st: 208, fps: 24 } : null;
+    if (anim === 'attack' && SDATK[k]) return { im: sdi('assets/expedition_sd/' + k + '_' + SDATK[k] + '.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: 16 };
+    return { im: sdi('assets/lobby_iso/chr/' + k + '_idle.webp'), fw: 160, fh: 200, cols: 12, n: 36, ax: 80, ay: 197, st: 129, fps: 12 };
+  }
+  const sdOn = () => !/[?&]px=1/.test(location.search);
+  function drawActorSD(a, x) {
+    const sh = sdSheet(a.k, a.anim); if (!sh || !ready(sh.im)) return false;
+    const s = SDH / sh.st; const f = sh.once ? Math.min(sh.n - 1, Math.floor(a.t * sh.fps)) : Math.floor(a.t * sh.fps) % sh.n;
+    const w = Math.ceil(sh.fw * s), h = Math.ceil(sh.fh * s);
+    tmp.width = w; tmp.height = h; tg.clearRect(0, 0, w, h); tg.imageSmoothingQuality = 'high';
+    tg.drawImage(sh.im, (f % sh.cols) * sh.fw, Math.floor(f / sh.cols) * sh.fh, sh.fw, sh.fh, 0, 0, w, h);
+    const tint = (c, k) => { tg.globalCompositeOperation = 'source-atop'; tg.fillStyle = c.replace('A', k); tg.fillRect(0, 0, w, h); tg.globalCompositeOperation = 'source-over'; };
+    if (a.flash > 0) tint('rgba(255,40,30,A)', 0.65 * Math.min(1, a.flash * 4));
+    if (a.glow > 0) tint('rgba(120,255,140,A)', 0.55 * Math.min(1, a.glow * 3));
+    if (a.anim === 'fall') tint('rgba(40,30,50,A)', 0.35);
+    const ox = a.dodge > 0 ? -Math.sin((1 - a.dodge / 0.3) * Math.PI) * 10 * a.dir : 0, ax = sh.ax * s, ay = sh.ay * s;
+    g.save(); g.translate(Math.round(x + ox), SURF - 1); if (a.dir < 0) g.scale(-1, 1);
+    g.drawImage(tmp, -ax, -ay); g.restore(); return true;
+  }
   function drawActor(a, x) {
+    if (sdOn() && drawActorSD(a, x)) return;
     const [cw, ch, px, n, ms, loop] = SHEET[a.anim], im = IM[a.k + '_' + (a.anim === 'stand' ? 'walk' : a.anim)]; if (!im || !im.complete || !im.naturalWidth) return;
     let f = a.anim === 'stand' ? 0 : Math.floor(a.t * 1000 / ms); f = loop ? f % n : Math.min(f, n - 1);
     tmp.width = cw; tmp.height = ch; tg.clearRect(0, 0, cw, ch); tg.drawImage(im, f * cw, 0, cw, ch, 0, 0, cw, ch);

@@ -1,0 +1,40 @@
+{
+ "name": "mage_m_fall",
+ "sheet": "mage_m_fall.webp",
+ "frames": 16,
+ "fw": 256,
+ "fh": 220,
+ "cols": 8,
+ "scale_from_source": 0.25,
+ "source_canvas": [
+  1024,
+  880
+ ],
+ "feet_xy_in_frame": [
+  128,
+  197
+ ],
+ "fps": 16,
+ "loop": false,
+ "note": "한 번 재생 후 마지막 프레임(누운 자세) 유지",
+ "source": "fall_mage_m_s8822_00001_.mp4",
+ "source_frame_indices": [
+  0,
+  3,
+  5,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  15,
+  18,
+  22,
+  28,
+  36,
+  48
+ ],
+ "note_fix": "넘어지는 구간의 번진 프레임 정리 (RIFE)"
+}

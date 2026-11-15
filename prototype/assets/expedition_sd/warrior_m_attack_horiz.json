@@ -1,0 +1,44 @@
+{
+ "name": "warrior_m_attack_horiz",
+ "sheet": "warrior_m_attack_horiz.webp",
+ "frames": 16,
+ "fw": 256,
+ "fh": 220,
+ "cols": 8,
+ "scale_from_source": 0.25,
+ "source_canvas": [
+  1024,
+  880
+ ],
+ "feet_xy_in_frame": [
+  128,
+  197
+ ],
+ "fps": 24,
+ "hit_frames": [
+  5,
+  6,
+  7
+ ],
+ "note": "warrior_m: 칼이 몸 앞을 지나는 프레임",
+ "standing_height_px": 129,
+ "source": "warrior_m_horiz_g2.mp4",
+ "source_frame_indices": [
+  0,
+  3,
+  6,
+  8,
+  11,
+  13,
+  16,
+  19,
+  21,
+  24,
+  27,
+  29,
+  32,
+  34,
+  37,
+  43
+ ]
+}

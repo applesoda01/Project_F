@@ -1,0 +1,43 @@
+{
+ "name": "cleric_m_attack_bless",
+ "sheet": "cleric_m_attack_bless.webp",
+ "frames": 16,
+ "fw": 256,
+ "fh": 220,
+ "cols": 8,
+ "scale_from_source": 0.25,
+ "source_canvas": [
+  1024,
+  880
+ ],
+ "feet_xy_in_frame": [
+  128,
+  197
+ ],
+ "fps": 24,
+ "hit_frames": [
+  6
+ ],
+ "note": "cleric_m: 책을 들고 손을 가장 높이 든 프레임",
+ "standing_height_px": 129,
+ "source": "patched_cleric_m.mp4 (원본 + RIFE)",
+ "source_frame_indices": [
+  0,
+  2,
+  3,
+  4,
+  5,
+  7,
+  9,
+  11,
+  14,
+  16,
+  18,
+  20,
+  23,
+  27,
+  32,
+  48
+ ],
+ "note_fix": "번진 구간을 RIFE 중간 프레임으로 채움"
+}

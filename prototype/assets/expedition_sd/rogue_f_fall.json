@@ -1,0 +1,39 @@
+{
+ "name": "rogue_f_fall",
+ "sheet": "rogue_f_fall.webp",
+ "frames": 16,
+ "fw": 256,
+ "fh": 220,
+ "cols": 8,
+ "scale_from_source": 0.25,
+ "source_canvas": [
+  1024,
+  880
+ ],
+ "feet_xy_in_frame": [
+  128,
+  197
+ ],
+ "fps": 16,
+ "loop": false,
+ "note": "한 번 재생 후 마지막 프레임(누운 자세) 유지",
+ "source": "fall_rogue_f_s8802_00001_.mp4 + RIFE",
+ "source_frame_indices": [
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  9,
+  11,
+  14,
+  18,
+  23,
+  30,
+  38,
+  48
+ ]
+}

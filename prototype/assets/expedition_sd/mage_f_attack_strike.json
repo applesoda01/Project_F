@@ -1,0 +1,43 @@
+{
+ "name": "mage_f_attack_strike",
+ "sheet": "mage_f_attack_strike.webp",
+ "frames": 16,
+ "fw": 256,
+ "fh": 220,
+ "cols": 8,
+ "scale_from_source": 0.25,
+ "source_canvas": [
+  1024,
+  880
+ ],
+ "feet_xy_in_frame": [
+  128,
+  197
+ ],
+ "fps": 24,
+ "hit_frames": [
+  6
+ ],
+ "note": "mage_f: 지팡이가 땅에 닿는 프레임",
+ "standing_height_px": 129,
+ "source": "patched_mage_f.mp4 (원본 + RIFE)",
+ "source_frame_indices": [
+  0,
+  2,
+  4,
+  6,
+  8,
+  9,
+  11,
+  12,
+  14,
+  17,
+  20,
+  23,
+  26,
+  31,
+  37,
+  48
+ ],
+ "note_fix": "번진 구간을 RIFE 중간 프레임으로 채움"
+}

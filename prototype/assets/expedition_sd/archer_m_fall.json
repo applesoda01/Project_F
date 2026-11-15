@@ -1,0 +1,40 @@
+{
+ "name": "archer_m_fall",
+ "sheet": "archer_m_fall.webp",
+ "frames": 16,
+ "fw": 256,
+ "fh": 220,
+ "cols": 8,
+ "scale_from_source": 0.25,
+ "source_canvas": [
+  1024,
+  880
+ ],
+ "feet_xy_in_frame": [
+  128,
+  197
+ ],
+ "fps": 16,
+ "loop": false,
+ "note": "한 번 재생 후 마지막 프레임(누운 자세) 유지",
+ "source": "fall_archer_m_s8742_00001_.mp4",
+ "source_frame_indices": [
+  0,
+  3,
+  6,
+  9,
+  11,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  21,
+  26,
+  34,
+  48
+ ],
+ "note_fix": "넘어지는 구간의 번진 프레임 정리 (RIFE)"
+}
