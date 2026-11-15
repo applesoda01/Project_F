@@ -27,6 +27,7 @@
   const ISO_CHARS = ['cleric_f', 'rogue_f', 'archer_m', 'mage_m', 'cleric_m', 'rogue_m', 'mage_f', 'warrior_f', 'warrior_m', 'archer_f'];
   const ISO_SZ = {'cleric_f_walk':[1920,400],'cleric_f_idle':[1920,600],'cleric_f_sit':[2160,700],'rogue_f_walk':[1920,400],'rogue_f_idle':[1920,600],'rogue_f_sit':[2160,875],'archer_m_walk':[1920,400],'archer_m_idle':[1920,600],'archer_m_sit':[2160,700],'mage_m_walk':[1920,400],'mage_m_idle':[1920,600],'mage_m_sit':[2160,700],'cleric_m_walk':[1920,400],'cleric_m_idle':[1920,600],'cleric_m_sit':[2160,700],'rogue_m_walk':[1920,400],'rogue_m_idle':[1920,600],'rogue_m_sit':[2160,700],'mage_f_walk':[1920,400],'mage_f_idle':[1920,600],'mage_f_sit':[2160,700],'warrior_f_walk':[1920,400],'warrior_f_idle':[1920,600],'warrior_f_sit':[2160,700],'archer_f_walk':[1920,400],'archer_f_idle':[1920,600],'archer_f_sit':[2160,525],'warrior_m_walk':[1920,400],'warrior_m_idle':[1920,600],'warrior_m_sit':[2160,525]};
   ISO_CHARS.forEach(c => { for (const v of ['walk', 'idle', 'sit']) add(`iso_${c}_${v}`, ISO + `chr/${c}_${v}.webp`, ISO_SZ[c + '_' + v][0], ISO_SZ[c + '_' + v][1], { color: '#7a6a5a' }); });   // 남 전사 서 있기 시트 적용 완료 (2026.11)
+  ISO_CHARS.forEach(c => { for (const v of ['eat', 'beer']) add(`iso_${c}_${v}`, `lobby_eat/${c}_${v}.webp`, 2160, 350, { optional: true, color: '#7a6a5a' }); });   // 앉아서 먹기 · 맥주 (2026-11-16, 24칸 12fps, 앉기 시트와 같은 칸·기준점)
 
   // 길드 바깥 계절·시간대 (2026.11): 바깥 그림 4종(일반·가을·겨울·비)은 방 크기 89%로 맞춰 흐림 5px 처리, 건물 안은 iso_bg 를 마스크로 얹음
   const SKY = 'lobby_iso/season/';

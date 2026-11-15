@@ -17,6 +17,17 @@
   function monImg(id) { const m = MON[id]; if (!m || !m.img) return null; const k = 'm:' + m.img; if (!IM[k]) { IM[k] = new Image(); IM[k].src = 'assets/expedition/' + m.img; } return IM[k]; }
   const ready = im => im && im.complete && im.naturalWidth > 0;
   ['forest_a', 'forest_b', 'fdirt_a', 'fdirt_b', 'o_pine', 'o_oak'].forEach(img);
+  // 의뢰 종류별 배경 (2026-11-16): 토벌 = 숲 · 사냥·채집 = 풀밭 · 조사 = 마을 · 호위·구호 = 마을 → 풀밭 길 · 탐사 = 사막. 블록은 타이틀 화면 도트 그대로
+  const DIRT = ['dirt_a', 'dirt_a', 'dirt_b', 'dirt_c', 'dirt_c', 'dirt_c', 'dirt_d', 'dirt_d', 'dirt_e', 'dirt_e', 'dirt_e'];
+  const BG = {
+    forest: { top: ['forest_a', 'forest_a', 'forest_b'], low: ['fdirt_a', 'fdirt_b'], props: [['o_pine', 20], ['o_oak', 150], ['o_pine', 260], ['o_pine', 330], ['o_oak', 420], ['o_pine', 500]] },
+    grass: { top: ['grass_a', 'grass_b', 'grass_c'], low: DIRT, props: [['o_oak', 40], ['o_bush', 150], ['o_flowers', 230], ['o_rock', 320], ['o_oak', 400], ['o_bush', 500]] },
+    town: { top: ['town_a', 'town_b', 'town_c'], low: DIRT, props: [['o_house', 10], ['o_lamp', 170], ['o_fence', 230], ['o_barrels', 300], ['o_house', 360], ['o_lamp', 520]] },
+    road: { top: ['grass_a', 'grass_b', 'grass_c'], low: DIRT, from: 'town', props: [['o_fence', 20], ['o_lamp', 120], ['o_oak', 200], ['o_fence', 300], ['o_bush', 380], ['o_lamp', 480]] },
+    desert: { top: ['sand_a', 'sand_b'], low: ['sand_c'], props: [['o_cactus', 30], ['o_drock', 150], ['o_cactus_s', 250], ['o_bones', 330], ['o_cactus', 420], ['o_drock', 510]] }
+  };
+  const BGQ = ['forest', 'grass', 'town', 'road', 'desert'];   // 의뢰 종류 번호(data/quest_types.csv) 순서
+  for (const k in BG) { BG[k].top.concat(BG[k].low, BG[k].props.map(p => p[0])).forEach(img); } img('town_to_grass');
   const josa = (w, a, b) => { const c = w.charCodeAt(w.length - 1); return w + (c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 ? a : b); };
   function groupName(list) { const m = new Map(); for (const e of list) m.set(e.name, (m.get(e.name) || 0) + 1); return [...m].map(([n, c]) => c > 1 ? `${n} ${c}마리` : n).join(', '); }
   const risk = r => r >= 70 ? ['r-safe', '● 안전'] : r >= 40 ? ['r-warn', '◆ 주의'] : ['r-risk', '▲ 위험'];
@@ -123,7 +134,7 @@
     view = { id, cam: 0, t: 0, phaseT: 0, phase: null, ev: timeline(F), applied: 0, fresh: true, sparks: [], nums: [], combat: !!F, say: [],
       actors: party.map((a, i) => { const u = unitOf(a), k = CLS[a.core] + '_' + sexOf(a); ['walk', 'run', 'attack', 'fall'].forEach(n => img(k + '_' + n));
         return { id: a.id, name: a.name, adv: a, k, i, x: 0, anim: 'walk', t: Math.random(), flash: 0, glow: 0, dodge: 0, dir: 1, hp: u ? u.maxHp : 1, maxHp: u ? u.maxHp : 1, mp: u ? u.maxMp : 0, maxMp: u ? u.maxMp : 0, acts: actTimes(F, a.id), down: false, show: 0 }; }),
-      enemies: (F ? F.enemies : []).map((m, i) => ({ n: m.name, boss: m.boss, scale: m.boss ? 140 : 100, im: monImg(m.mon), x: 540 + i * 56, flash: 0, crit: 0, alpha: 1, hp: m.maxHp, maxHp: m.maxHp, shown: 1 })) };
+      enemies: (F ? F.enemies : []).map((m, i) => ({ n: m.name, boss: m.boss, scale: m.boss ? 140 : 100, im: monImg(m.mon), sd: sdOn() ? MONSD[m.mon] : null, mt: 0, act: 'idle', x: 540 + i * 56, flash: 0, crit: 0, alpha: 1, hp: m.maxHp, maxHp: m.maxHp, shown: 1 })) };
     ev.classList.add('on'); requestAnimationFrame(() => ev.classList.add('vis')); updSmall(); render();
   }
   function close() { sel = null; view = null; if (!ev) return; ev.classList.remove('vis'); setTimeout(() => { if (!view) ev.classList.remove('on'); }, 200); ui.querySelector('#hudExp').classList.remove('small'); render(); }
@@ -139,10 +150,16 @@
   const SDRUN = { archer_f: 24, archer_m: 18, cleric_f: 19, cleric_m: 20, mage_f: 26, mage_m: 17, rogue_f: 20, rogue_m: 20, warrior_f: 16, warrior_m: 41 };
   const SDATK = { warrior_m: 'attack_horiz', warrior_f: 'attack_slash', archer_m: 'attack_shoot', archer_f: 'attack_shoot', rogue_m: 'attack_stab', rogue_f: 'attack_stab', mage_m: 'attack_strike', mage_f: 'attack_strike', cleric_m: 'attack_bless', cleric_f: 'attack_bless' };
   const SDIM = {}; const sdi = src => { if (!SDIM[src]) { const i = new Image(); i.src = src; SDIM[src] = i; } return SDIM[src]; };
+  const SDSEARCH = { warrior_m: 1, warrior_f: 1, archer_m: 1, archer_f: 1, rogue_m: 1, rogue_f: 1, mage_m: 1, mage_f: 1, cleric_m: 1, cleric_f: 1 };
+  const WORK_ICON = ['', '🌿', '🔍', '🛡️', '📜'];   // 비전투 수행 중 머리 위 아이콘: 사냥·채집 = 약초 · 조사 = 돋보기 · 호위·구호 = 방패 · 탐사 = 두루마리 (2026-11-16)
+  // 몬스터 SD (2026-11-16): 서 있기 · 공격 반복 / 쓰러짐 한 번. TH = 미니 뷰에서의 키(px), 예전 도트 키의 약 1.2배
+  const MONSD = { mon_01: ['dog', 46], mon_02: ['thief', 64], mon_03: ['slime', 40], mon_04: ['wolf', 52], mon_05: ['wolf_alpha', 64], mon_06: ['goblin', 56], mon_07: ['boar', 54], mon_08: ['bandit', 70] };
+  const monSheet = (k, act) => ({ im: sdi('assets/expedition_sd/mon_' + k + '_' + act + '.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: act === 'idle' ? 10 : 16 });
   function sdSheet(k, anim) {
     if (anim === 'fall') return { im: sdi('assets/expedition_sd/' + k + '_fall.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: 16, once: true };   // 쓰러짐: 한 번 재생 후 누운 채 유지
     if (anim === 'walk') return { im: sdi('assets/lobby_iso/chr/' + k + '_walk.webp'), fw: 160, fh: 200, cols: 12, n: 24, ax: 80, ay: 197, st: 129, fps: 24 };   // 로비 걷기 시트(오른쪽 3/4)
     if (anim === 'run') return SDRUN[k] ? { im: sdi('assets/expedition_sd/run_' + k + '.webp'), fw: 258, fh: 322, cols: 10, n: SDRUN[k], ax: 129, ay: 317, st: 208, fps: 24 } : null;
+    if (anim === 'search' && SDSEARCH[k]) return { im: sdi('assets/expedition_sd/' + k + '_search.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: 12 };   // 탐색(비전투 수행, 반복) 2026-11-16
     if (anim === 'attack' && SDATK[k]) return { im: sdi('assets/expedition_sd/' + k + '_' + SDATK[k] + '.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: 16 };
     return { im: sdi('assets/lobby_iso/chr/' + k + '_idle.webp'), fw: 160, fh: 200, cols: 12, n: 36, ax: 80, ay: 197, st: 129, fps: 12 };
   }
@@ -163,7 +180,7 @@
   }
   function drawActor(a, x) {
     if (sdOn() && drawActorSD(a, x)) return;
-    const [cw, ch, px, n, ms, loop] = SHEET[a.anim], im = IM[a.k + '_' + (a.anim === 'stand' ? 'walk' : a.anim)]; if (!im || !im.complete || !im.naturalWidth) return;
+    const an = a.anim === 'search' ? 'stand' : a.anim, [cw, ch, px, n, ms, loop] = SHEET[an], im = IM[a.k + '_' + (an === 'stand' ? 'walk' : an)]; if (!im || !im.complete || !im.naturalWidth) return;
     let f = a.anim === 'stand' ? 0 : Math.floor(a.t * 1000 / ms); f = loop ? f % n : Math.min(f, n - 1);
     tmp.width = cw; tmp.height = ch; tg.clearRect(0, 0, cw, ch); tg.drawImage(im, f * cw, 0, cw, ch, 0, 0, cw, ch);
     const tint = (c, k) => { tg.globalCompositeOperation = 'source-atop'; tg.fillStyle = c.replace('A', k); tg.fillRect(0, 0, cw, ch); tg.globalCompositeOperation = 'source-over'; };
@@ -204,7 +221,7 @@
     if (x.by && x.mp != null) { const b = A(x.by); if (b) b.mp = x.mp; }
     if (x.t === 'hit') { const m = E(x.to); if (!m) return; m.hp = x.hp; if (fx) { m.flash = 0.25; if (x.c) m.crit = 0.4; if (x.d != null) v.nums.push({ who: m, e: 1, txt: String(x.d), crit: !!x.c, t: 0, ox: Math.random() * 14 - 7 }); } }
     else { const a = A(x.to); if (!a) return;
-      if (x.t === 'hurt') { a.hp = x.hp; if (fx && a.hp > 0) vTalk(v, 'battle_hit', other(v, a), a); if (fx) { a.flash = 0.3; if (x.d != null) v.nums.push({ who: a, txt: String(x.d), t: 0, ox: Math.random() * 10 - 5 }); } }
+      if (x.t === 'hurt') { if (fx) { const live = v.enemies.filter(m => m.hp > 0 && m.sd); if (live.length) { const m = live[Math.floor(Math.random() * live.length)]; m.act = 'attack'; m.mt = 0; } } a.hp = x.hp; if (fx && a.hp > 0) vTalk(v, 'battle_hit', other(v, a), a); if (fx) { a.flash = 0.3; if (x.d != null) v.nums.push({ who: a, txt: String(x.d), t: 0, ox: Math.random() * 10 - 5 }); } }
       else if (x.t === 'miss') { if (fx) a.dodge = 0.3; }
       else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx && x.t === 'heal' && x.by && x.by !== x.to) vTalk(v, 'battle_heal', A(x.by), a); if (fx) { a.glow = 0.5; if (x.d != null && x.d > 0) v.nums.push({ who: a, txt: '+' + x.d, heal: true, t: 0, ox: Math.random() * 10 - 5 }); for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
       else if (x.t === 'down') { a.hp = 0; a.down = true; a.anim = 'fall'; a.t = 0; } }
@@ -228,19 +245,21 @@
     v.fresh = false;
     g.clearRect(0, 0, EVW, EVH);
     v.cam += (P === 'move' ? 1 : 0) * 48 * dt;
-    for (const [k, x0] of [['o_pine', 20], ['o_oak', 150], ['o_pine', 260], ['o_pine', 330], ['o_oak', 420], ['o_pine', 500]]) {
+    const bg = BG[BGQ[x.q.type]] || BG.forest;
+    for (const [k, x0] of bg.props) {
       const im = IM[k]; if (!im.complete || !im.naturalWidth) continue; const xx = ((x0 - v.cam * 0.4) % 560 + 560) % 560 - 60;
       g.globalAlpha = .45; g.drawImage(im, xx, SURF + 2 - im.height * 0.8, im.width * 0.8, im.height * 0.8); g.globalAlpha = 1;
     }
     const c0 = Math.floor(v.cam / 32);
-    for (let i = c0; i <= c0 + 16; i++) { const xx = i * 32 - Math.round(v.cam), h = (i * 7919) % 97, a = IM[h % 3 ? 'fdirt_a' : 'fdirt_b'], b = IM[h % 4 ? 'forest_a' : 'forest_b'];
+    for (let i = c0; i <= c0 + 16; i++) { const xx = i * 32 - Math.round(v.cam), h = (i * 7919) % 97, a = IM[bg.low[h % bg.low.length]];
+      let b = IM[bg.top[h % bg.top.length]]; if (bg.from) { if (i < 6) b = IM[BG[bg.from].top[h % 3]]; else if (i === 6) b = IM.town_to_grass; }   // 호위: 마을에서 출발해 풀밭 길로
       if (a.naturalWidth) g.drawImage(a, xx, SURF + 4 + 32); if (b.naturalWidth) g.drawImage(b, xx, SURF + 4 - 12 - 8); }
     // 배우
     v.actors.forEach(a => {
       const home = LEAD_X - a.i * GAP; a.t += dt;
       if (a.down) { a.x = a.x || home; if (a.anim !== 'fall') { a.anim = 'fall'; a.t = 0; } }
       else if (P === 'move' || P === 'meet') { a.anim = 'walk'; a.x = home; a.dir = 1; }
-      else if (P === 'fight') { a.x = home; a.anim = v.combat ? 'attack' : 'stand';
+      else if (P === 'fight') { a.x = home; a.anim = v.combat ? 'attack' : 'search';
         if (!v.combat && Math.random() < dt * 1.5) v.sparks.push({ x: home + 10 + Math.random() * 30, y: SURF - 6, vy: -25 - Math.random() * 15, life: 0.8, c: '#ffe58a' }); }
       else { const walkBack = !v.combat && !ok;   // 결과: 성공 → 오른쪽으로 떠남, 실패 → 왼쪽으로 후퇴(비전투는 걸어서 돌아감)
         if (ok) { a.anim = 'run'; a.dir = 1; a.x = (a.x || home) + 150 * dt; } else { a.anim = walkBack ? 'walk' : 'run'; a.dir = -1; a.x = (a.x || home) - (walkBack ? 60 : 150) * dt; } }
@@ -248,16 +267,24 @@
       a.show += ((v.combat && (P === 'fight' || P === 'result') ? 1 : 0) - a.show) * Math.min(1, dt * 6);
     });
     // 적: x=316부터 오른쪽 끝(478)까지. 넘치면 겹쳐서 줄이고, 홀수 번째는 4px 뒤(위)에 서서 덜 겹쳐 보이게. 그림이 있으면 그림 크기 그대로(도트 1:1), 없으면 상자(보스 140%)
-    const ws = v.enemies.map(m => ready(m.im) ? m.im.naturalWidth : Math.round(40 * m.scale / 100)), tot = ws.reduce((t, w) => t + w, 0) + 4 * (ws.length - 1), shrink = ws.length > 1 ? Math.min(0, (162 - tot) / (ws.length - 1)) : 0, XS = [];
+    const ws = v.enemies.map(m => m.sd ? Math.round(m.sd[1] * 1.25 * (m.boss ? 1.25 : 1)) : ready(m.im) ? m.im.naturalWidth : Math.round(40 * m.scale / 100)), tot = ws.reduce((t, w) => t + w, 0) + 4 * (ws.length - 1), shrink = ws.length > 1 ? Math.min(0, (162 - tot) / (ws.length - 1)) : 0, XS = [];
     ws.reduce((xx, w, i) => (XS[i] = xx, xx + w + 4 + shrink), 316);
     const drawOrder = v.enemies.map((m, i) => i).sort((a, b) => (b % 2) - (a % 2) || a - b);   // 뒤(홀수) 먼저
     drawOrder.forEach(i => { const m = v.enemies[i];
       if (P === 'move') m.x = 540 + i * 56; else m.x += (XS[i] - m.x) * Math.min(1, dt * 3);
       m.flash = Math.max(0, m.flash - dt); m.crit = Math.max(0, m.crit - dt); m.shown += (m.hp / m.maxHp - m.shown) * Math.min(1, dt * 8);
-      if (m.hp <= 0) m.alpha = Math.max(0, m.alpha - dt * 1.2); if (m.alpha <= 0) return;
-      const pic = ready(m.im), w = ws[i], h = pic ? m.im.naturalHeight : Math.round(54 * m.scale / 100), xx = Math.round(m.x), y = (pic ? SURF + 3 : SURF) - h - (i % 2 ? 4 : 0);
+      m.mt += dt; if (m.hp <= 0 && m.sd && m.act !== 'fall') { m.act = 'fall'; m.mt = 0; } if (m.act === 'attack' && m.mt > 1) { m.act = 'idle'; m.mt = 0; }
+      if (m.hp <= 0 && !(m.sd && m.mt < 1.6)) m.alpha = Math.max(0, m.alpha - dt * 1.2); if (m.alpha <= 0) return;
+      const pic = ready(m.im), w = ws[i], h = m.sd ? Math.round(m.sd[1] * (m.boss ? 1.25 : 1)) : pic ? m.im.naturalHeight : Math.round(54 * m.scale / 100), xx = Math.round(m.x), y = (pic || m.sd ? SURF + 3 : SURF) - h - (i % 2 ? 4 : 0);
       g.globalAlpha = m.alpha;
-      if (pic) {   // 그림: 맞으면 붉게, 치명타는 밝게 (모험가와 같은 방식)
+      const ms = m.sd ? monSheet(m.sd[0], m.act) : null;
+      if (ms && ready(ms.im)) {   // 몬스터 SD: 발 기준으로 그림, 맞으면 붉게 · 치명타는 밝게
+        const sc = m.sd[1] * (m.boss ? 1.25 : 1) / ms.st, fw = Math.ceil(ms.fw * sc), fh = Math.ceil(ms.fh * sc), f = m.act === 'fall' ? Math.min(ms.n - 1, Math.floor(m.mt * ms.fps)) : Math.floor(m.mt * ms.fps) % ms.n;
+        tmp.width = fw; tmp.height = fh; tg.clearRect(0, 0, fw, fh); tg.imageSmoothingQuality = 'high'; tg.drawImage(ms.im, (f % ms.cols) * ms.fw, Math.floor(f / ms.cols) * ms.fh, ms.fw, ms.fh, 0, 0, fw, fh);
+        const c = m.crit > 0 ? 'rgba(255,244,194,' + (0.8 * Math.min(1, m.crit * 4)) + ')' : m.flash > 0 ? 'rgba(255,40,30,' + (0.65 * Math.min(1, m.flash * 4)) + ')' : null;
+        if (c) { tg.globalCompositeOperation = 'source-atop'; tg.fillStyle = c; tg.fillRect(0, 0, fw, fh); tg.globalCompositeOperation = 'source-over'; }
+        g.drawImage(tmp, Math.round(xx + w / 2 - ms.ax * sc), Math.round(SURF + 1 - (i % 2 ? 4 : 0) - ms.ay * sc));
+      } else if (pic) {   // 그림: 맞으면 붉게, 치명타는 밝게 (모험가와 같은 방식)
         tmp.width = w; tmp.height = h; tg.clearRect(0, 0, w, h); tg.drawImage(m.im, 0, 0);
         const c = m.crit > 0 ? 'rgba(255,244,194,' + (0.8 * Math.min(1, m.crit * 4)) + ')' : m.flash > 0 ? 'rgba(255,40,30,' + (0.65 * Math.min(1, m.flash * 4)) + ')' : null;
         if (c) { tg.globalCompositeOperation = 'source-atop'; tg.fillStyle = c; tg.fillRect(0, 0, w, h); tg.globalCompositeOperation = 'source-over'; }
@@ -271,6 +298,9 @@
     // 모험가 막대: 위 노랑 = 다음 행동까지 게이지 / 가운데 빨강 = 체력 / 아래 파랑 = 마력. 길이는 몬스터 막대와 같게
     const BW = v.enemies.length ? Math.max(24, Math.round((ws.find((w, i) => !v.enemies[i].boss) || ws[0]))) : 28;
     v.actors.slice().reverse().forEach(a => { drawActor(a, a.x);
+      if (!v.combat && P === 'fight' && !a.down && WORK_ICON[x.q.type]) { const bob = Math.sin(v.t * 3 + a.i) * 2, ix = Math.round(a.x), iy = SURF - 128 + bob;   // 머리 위 의뢰 종류 아이콘
+        g.fillStyle = 'rgba(255,250,240,.92)'; g.strokeStyle = '#7a5032'; g.lineWidth = 1.5; g.beginPath(); g.arc(ix, iy, 10, 0, Math.PI * 2); g.fill(); g.stroke();
+        g.font = '13px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#000'; g.fillText(WORK_ICON[x.q.type], ix, iy + 1); }
       if (a.show > 0.02 && !(a.down && P === 'result' && a.t > 1.5)) {
         const bx = Math.round(a.x) - Math.round(BW / 2); g.globalAlpha = a.show;
         let gv = 0;

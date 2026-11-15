@@ -17,6 +17,7 @@
     마궁사: 'arcanearcher', 수도사: 'monk', 추적자: 'tracker', 점성술사: 'astrologer', 연금술사: 'alchemist', 광대: 'jester' };
   const WALK_SPEED = 150;          // 화면 px/초 (걷기 시트 24프레임 = 30fps 로 재생하면 발이 미끄러지지 않는 속도)
   const WALK_FPS = 30, WALK_FRAMES = 24, IDLE_FRAMES = 36, IDLE_FPS = 12, STAND_H = 150;
+  const EAT_N = 24, EAT_FPS = 12;   // 먹기 · 맥주 시트 (lobby_eat/)
   const faceLeft = (dx, prev) => Math.abs(dx) < 1 ? prev : dx < 0;
   const D = { actors: new Map(), seats: [], winUse: { meal: [], quest: [], sale: [] }, speed: 1, t: 0 };
   const sexOf = a => (a.id % 2 ? 'm' : 'f');
@@ -203,7 +204,7 @@
     // 4-1) 술 주문 (2026-11-12): 규칙(game_core.js)이 이번 주에 술을 산 모험가(s.drinks)만 식당 창구에서 주문 → 화면과 주점 수입이 일치
     for (const id of s.drinks || []) {
       const a = find(id), ac = D.actors.get(id); if (!a || !ac || busy.has(id) || ac.tasks.some(t => t.k === 'remove')) continue;
-      T(ac, 'wait', { t: 1 + Math.random() * 6 }); LAB(ac, '주문 중'); visitWindow(ac, 'meal', { mode: 'talk', text: Speech.lina('lina_drink'), dur: SV }, Speech.line(a, 'drink')); settle(ac);
+      ac.food = 'beer'; T(ac, 'wait', { t: 1 + Math.random() * 6 }); LAB(ac, '주문 중'); visitWindow(ac, 'meal', { mode: 'talk', text: Speech.lina('lina_drink'), dur: SV }, Speech.line(a, 'drink')); settle(ac);
     }
     // 5) 떠남 (마을 밖으로)
     for (const [id, ac] of D.actors) {
@@ -359,10 +360,21 @@
           if (sp.mode === 'down') fi = Math.min(n - 1, Math.floor(sp.t * I.SIT.fps));
           else if (sp.mode === 'up') fi = Math.max(0, n - 1 - Math.floor(sp.t * I.SIT.fps));
           else fi = n - 1;
+          // 앉아 쉬는 동안 가끔 먹기 · 맥주 (2026-11-16): 몇 초마다 무작위로 한 번 재생. 접시 · 잔이 툭 나타나지 않게 앞뒤 0.2초 겹쳐 보여 줌
+          //   이번 주에 술을 산 모험가(ac.food = 'beer')는 맥주 75%, 나머지는 식사 75%
+          let eatImg = null, efi = 0, ek = 0;
+          if (sp.mode === 'idle') {
+            if (sp.nx == null) sp.nx = D.t + 2 + Math.random() * 6;
+            if (!sp.ea && D.t >= sp.nx) { const v = Math.random() < (ac.food === 'beer' ? 0.75 : 0.25) ? 'beer' : 'eat'; if (sheet(ac, v)) sp.ea = { v, t0: D.t }; else sp.nx = D.t + 10; }
+            if (sp.ea) { const et = D.t - sp.ea.t0, f = Math.floor(et * EAT_FPS);
+              if (f >= EAT_N) { sp.ea = null; sp.nx = D.t + 5 + Math.random() * 9; }
+              else { eatImg = sheet(ac, sp.ea.v); efi = f; ek = Math.min(1, et / 0.2, (EAT_N / EAT_FPS - et) / 0.2); } }
+          }
           const bob = sp.mode === 'idle' ? Math.sin(D.t * 2.2 + ac.id) * 0.7 : 0;
           const k = sp.mode === 'down' && ac.xfIn != null ? Math.min(1, (D.t - ac.xfIn) / XF) : 1;   // 앉기 시작: 서 있는 모습이 사라지며 앉기 그림이 나타남
           if (k < 1) standDraw(1);   // 아래층은 그대로, 위층만 서서히 나타남(둘 다 반투명이 되어 흐려지는 현상 방지)
-          I.sitFrame(g, sitImg, fi, sp.ax, sp.ay + bob, sp.flip, k);
+          if (eatImg && ek >= 1) I.sitFrame(g, eatImg, efi, sp.ax, sp.ay + bob, sp.flip, k);
+          else { I.sitFrame(g, sitImg, fi, sp.ax, sp.ay + bob, sp.flip, k); if (eatImg) I.sitFrame(g, eatImg, efi, sp.ax, sp.ay + bob, sp.flip, ek); }
         } else {
           const xo = ac.xfOut;
           const k = xo ? Math.min(1, (D.t - xo.t0) / XF) : 1;   // 일어서기 끝: 앉기 첫 그림이 사라지며 서 있는 모습이 나타남

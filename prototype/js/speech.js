@@ -29,7 +29,8 @@
     return set.length ? set[Math.floor(Math.random() * set.length)][0] : '';
   }
   function talk(a, b, sit, rel, q) {   // q: 의뢰 이름 (출발 대화 {q})
-    const fill = s => s.replace(/\{a\}/g, a.name).replace(/\{b\}/g, b.name).replace(/\{q\}/g, q || '이번 의뢰');
+    const V = { a: a.name, b: b.name, q: q || '이번 의뢰' };
+    const fill = s => s.replace(/\{([abq])(?::([^}]+))?\}/g, (m0, k, sfx) => { const v = V[k]; if (!sfx) return v; const [x, y] = sfx.split('/'); const c = v.charCodeAt(v.length - 1); return v + (c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0 ? x : y); });   // {a:이/가} 같은 조사 처리 (2026-11-16)
     const o = pick('open', sit, tone(a), rel), r = pick('reply', sit, tone(b), rel); if (!o || !r) return null;
     const c = pick('close', sit, tone(a), rel);
     return [fill(o), fill(r)].concat(c ? [fill(c)] : []);

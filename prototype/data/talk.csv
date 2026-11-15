@@ -172,7 +172,7 @@ return_fail,reply,careful,,무사해서 다행이에요.,귀환 실패 · 대답
 return_fail,reply,careful,,상처부터 치료해요.,귀환 실패 · 대답 · 조심
 return_fail,reply,friendly,,"응… 고마워, {a}.",귀환 실패 · 대답 · 다정
 return_fail,reply,friendly,,같이 다시 힘내자!,귀환 실패 · 대답 · 다정
-return_fail,reply,friendly,,{a}가 있어서 다행이야.,귀환 실패 · 대답 · 다정
+return_fail,reply,friendly,,"네가 있어서 다행이야, {a}.",귀환 실패 · 대답 · 다정
 return_fail,reply,loner,,…알아.,귀환 실패 · 대답 · 무뚝뚝
 return_fail,reply,loner,,…흥.,귀환 실패 · 대답 · 무뚝뚝
 return_fail,reply,loner,,…시끄러워.,귀환 실패 · 대답 · 무뚝뚝

@@ -1,0 +1,33 @@
+{
+ "name": "archer_f_search",
+ "sheet": "archer_f_search.webp",
+ "frames": 16,
+ "fw": 256,
+ "fh": 220,
+ "cols": 8,
+ "feet_xy_in_frame": [
+  128,
+  197
+ ],
+ "fps": 12,
+ "loop": true,
+ "source": "search_archer_f_s9060_00001_.mp4",
+ "source_frame_indices": [
+  0,
+  3,
+  6,
+  9,
+  12,
+  15,
+  18,
+  21,
+  24,
+  27,
+  30,
+  33,
+  36,
+  39,
+  42,
+  45
+ ]
+}

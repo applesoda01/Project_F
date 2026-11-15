@@ -1499,7 +1499,8 @@
   // 대화 장면 (data/dialog.csv): 장면 이름과 {변수} 값으로 [{face, text}] 를 만든다
   UI.lines = function (id, vars) {
     const D = (root.GAME_DATA && root.GAME_DATA.dialog) || {};
-    return (D[id] || []).map(l => ({ face: l.face, text: l.text.replace(/\{(\w+)\}/g, (m0, k) => vars && vars[k] != null ? vars[k] : m0) }));
+    const josaFill = (k, sfx, v) => { if (!sfx) return v; const [a, b] = sfx.split('/'); const c = String(v).charCodeAt(String(v).length - 1); const bat = c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0; return v + (bat ? a : b); };   // {cls:이에요/예요} → 받침이면 앞, 없으면 뒤 (2026-11-16 대사 검수 D12 · T175)
+    return (D[id] || []).map(l => ({ face: l.face, text: l.text.replace(/\{(\w+)(?::([^}]+))?\}/g, (m0, k, sfx) => vars && vars[k] != null ? josaFill(k, sfx, vars[k]) : m0) }));
   };
   UI.say = function (lines) { // [{face:'smile', text:'…'}, …]
     Dlg.lines.push(...lines);
