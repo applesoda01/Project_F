@@ -49,6 +49,10 @@ jobs:
           name: 최신빌드
           path: prototype
           retention-days: 14
+      - name: 기획 안내서(mdBook) 만들기 → 주소/book/
+        run: |
+          curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.40/mdbook-v0.4.40-x86_64-unknown-linux-gnu.tar.gz | tar -xz
+          ./mdbook build docs/book -d "$GITHUB_WORKSPACE/prototype/book"
       - name: Pages용 업로드
         uses: actions/upload-pages-artifact@v3
         with:

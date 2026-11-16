@@ -1,0 +1,51 @@
+# 부록 B. 주요 설정값
+
+**설정값의 원본은 `prototype/data/balance.csv`입니다.** 고치면 `python prototype/tools/data_build.py`로 게임 데이터에 반영됩니다. 아래는 2026-11-16 값입니다.
+
+## 경제 (`econ`)
+
+| 항목 | 값 | 뜻 |
+| --- | --- | --- |
+| startGold | 500 | 시작 금고 |
+| feeBase | 0.1 | 중계료율 |
+| subsidy | 300 · 500 · 800 · 1,200 · 2,000 · 3,000 · 4,500 | 월 보조금 (F~S) |
+| buildCost | 0 · 2,000 · 4,000 · 8,000 · 15,000 · 30,000 | 시설 건설비 |
+| officeCost | 1,000 | 집무실 |
+| upgradeCost | 500 · 1,000 · … | 시설 업그레이드 (F 500 · E 1,000 확정) |
+| scoutFee | 20 · 40 · 80 · 150 · 250 · 400 · 600 | 지명 섭외비 (모험가 등급별) |
+| drinkMargin | 2 · 3 · 4 … | 술 1잔 마진 |
+| resaleRate | 0.08 | 소재 자동 차익 |
+| mealPriceRate · mealMargin | 0.25 · 0.6 | 식사 가격 · 길드 마진 |
+| mealBuyRate | 0.3 · 0.6 · 0.9 | 식당 이용 확률 (절약 · 보통 · 낭비) |
+| upkeepRate | 0 | 유지비 (삭제) |
+
+## 의뢰 (`quest`)
+
+| 항목 | 값 |
+| --- | --- |
+| reward | 100 · 150 · 200 · 500 · 600 · 800 · 1,500 |
+| perMonth | 5 |
+| boardCap | 18 |
+| expireWeeks | 4 |
+| trustSucc · trustFail · trustExpire | +1 · −2 · −1 |
+
+## 모험가 · 성장
+
+| 항목 | 값 |
+| --- | --- |
+| startCount | 2 |
+| departTh | 0.95 · 0.85 · 0.65 (신중 · 보통 · 무모) |
+| seekTh | 0.50 · 0.70 · 0.85 (독불장군 · 보통 · 사교적) |
+| xpBase · xpGradeMult | 240 · 2 |
+| lvCap | 30 · 40 · 50 |
+| gradeStat | 0 · 3 · 4 · 5 · 6 · 8 · 10 |
+
+## 장비 · 마을
+
+| 항목 | 값 |
+| --- | --- |
+| weaponPrice | 150 · 300 · 500 · 1,500 · 2,400 · 3,750 · 7,500 |
+| weaponAtk | 10 · 18 · 28 · 40 · 55 · 72 · 92 |
+| town.startPop | 150 |
+| town.stages | 300 · 1,000 · 2,000 · 3,500 |
+| town.inflowMult | 1 · 1.3 · 1.6 · 2 · 2.5 |
