@@ -6,6 +6,12 @@
   'use strict';
   const Gm = root.GuildGame, GR = Gm.GR;
   const fmt = n => Math.round(n).toLocaleString();
+  // 2026-11-16 상단 HUD 오버 설명: 브라우저 기본 풍선(title) 대신 모험가 성향 쪽지와 같은 크림색 카드
+  // 길드 승급 조건 (design_v0.1.md 승급 표). 길드 승급은 아직 게임에 없어서 문구 끝에 밝힘 (working_rules 7: 구현 전 효과는 표시)
+  const GUILD_UP = ['E급 승급: 보스급 의뢰 2건 → 침공 방어', 'D급 승급: 보스급 의뢰 3건 + 모험가 관리소 → 침공 방어', 'C급 승급: 보스급 의뢰 3건 + 훈련장 → 침공 방어', 'B급 승급: 보스급 의뢰 4건 + 의무실 → 침공 방어',
+    'A급 승급: 보스급 의뢰 4건 + 해체장 → 침공 방어', 'S급 승급: 보스급 의뢰 5건 + 명예의 전당 + S급 후보 2명 → 침공 방어'].map(t => t + '\n(승급은 아직 게임에 적용되지 않음)').concat(['최고 등급']);
+  const TRUST_TXT = ['들어오는 의뢰가 크게 줄고, 보상·경험치도 감소', '들어오는 의뢰가 줄고, 보상·경험치 소폭 감소', '들어오는 의뢰와 보상·경험치 모두 평소 수준', '들어오는 의뢰가 늘고, 보상·경험치 소폭 증가', '들어오는 의뢰가 크게 늘고, 보상·경험치 증가'];
+  function hudTip(el, txt) { if (!el) return; el.removeAttribute('title'); el.classList.add('has-htip'); let t = el.querySelector(':scope > .htip'); if (!t) { t = document.createElement('i'); t.className = 'htip'; el.appendChild(t); } if (t.textContent !== txt) t.textContent = txt; }
   const badge = g => `<i class="ux-grade" style="background-image:url(assets/ui/hud/badge_${GR[g]}.png)" title="${GR[g]}급"></i>`;   // HUD 등급 배지 (시설·음식·전직 제안 공통)
   const UI = {};
   let s, stage, q, popup = null, openAdv = null, hooks = {};
@@ -55,14 +61,14 @@
   UI.hud = function () {
     { const sb = q('#mSellBtn'); if (sb) sb.classList.toggle('lock', !s.built['판매창구']); }   // 판매창구를 짓기 전에는 회색
     q('#hDate').textContent = Gm.dateLabel(s.week);
-    q('#hGrade').style.backgroundImage = 'url(assets/ui/hud/badge_' + GR[s.grade] + '.png)'; q('#hGrade').title = '길드 등급 ' + GR[s.grade];
+    q('#hGrade').style.backgroundImage = 'url(assets/ui/hud/badge_' + GR[s.grade] + '.png)'; hudTip(q('#hGrade'), '길드 등급 ' + GR[s.grade] + '\n' + GUILD_UP[s.grade]);
     q('#hGold').textContent = fmt(s.gold); q('#hGold').classList.toggle('neg', s.gold < 0);
     q('#hTrust').textContent = Math.round(s.trust);
     { const t = Math.max(0, Math.min(100, s.trust)), st = Math.min(4, Math.floor(t / 20)), bar = q('#hTrustBar'), face = q('#hTrustFace'), box = q('#hTrustBox');   // 신뢰도: 리나 표정(5단계) + 50 기준 양쪽 막대(붉은색 → 초록)
       const NAME = ['화남', '불만', '보통', '만족', '아주 만족'], QN = ['30~50', '45~65', '65~85', '80~100', '100~120'], QR = ['80~90', '85~95', '95~105', '105~115', '110~120'];
       if (face && face.dataset.st !== String(st)) { face.dataset.st = st; face.src = 'assets/ui/hud/trust/trust_' + st + '.png'; }
       if (bar) { const d = (t - 50) / 50; bar.style.left = d >= 0 ? '50%' : (50 + d * 50) + '%'; bar.style.width = Math.abs(d) * 50 + '%'; bar.style.background = `hsl(${Math.round(t * 1.2)},62%,42%)`; }
-      if (box) box.title = `신뢰도 ${Math.round(t)} · ${st + 1}단계 ${NAME[st]}\n의뢰 수 ${QN[st]}% · 보상·경험치 ${QR[st]}%`; }
+      if (box) hudTip(box, `${NAME[st]}\n${TRUST_TXT[st]}`); }   // 2026-11-16: 숫자 대신 말로
     { const A = s.cfg.adv || {}, step = A.fameStep || 10, f = s.fame || 0, n = s.advs.filter(a => a.alive).length;   // 명성: 다음 모험가까지 막대 · 모험가: 인원 / 등급 상한
       const cap = Gm.advCap(s), GL = 'FEDCBAS'[s.grade] || 'F', full = n >= cap;
       const into = f - Math.floor(f / step) * step, left = Math.ceil((step - into) * 10) / 10;
@@ -70,11 +76,11 @@
       const fb = q('#hFameBar'), fw = q('#hFameBarW'), fx = q('#hFameBox');
       if (fb) fb.style.width = (full ? 100 : into / step * 100) + '%';
       if (fw) fw.classList.toggle('cap', full);
-      if (fx) fx.title = full ? `명성 ${Math.floor(f)} · 모험가가 등급 상한(${cap}명)이라 새 모험가가 오지 않음\n길드 등급이 오르면 다시 찾아옴` : `명성 ${Math.floor(f)} · 명성 ${step}마다 새 모험가 1명\n다음 모험가까지 명성 ${left}`;
+      if (fx) hudTip(fx, full ? `모험가 상한이라 새 모험가가 오지 않음\n길드 등급이 오르면 다시 찾아옴` : `다음 모험가까지 명성 ${left}`);
       q('#hAdv').textContent = n;
       const ac = q('#hAdvCap'), ax = q('#hAdvBox');
       if (ac) { ac.textContent = ' / ' + cap; ac.classList.toggle('full', full); }
-      if (ax) ax.title = `모험가 ${n}명 · ${GL}급 길드 상한 ${cap}명`; }
+      if (ax) hudTip(ax, `상한 ${cap}명`); }
     q('#bBoard').textContent = s.board.length; q('#bBoard').hidden = !s.board.length;
     const np = (s.proposals || []).length; q('#bParty').textContent = np ? '★' + np : ''; q('#bParty').hidden = !np; q('#bPromo').hidden = !np; q('#bPromo').textContent = `전직 제안 ${np}건`;
     if (popup) renderPopup();
