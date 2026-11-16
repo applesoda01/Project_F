@@ -233,7 +233,9 @@
 @media (prefers-reduced-motion:reduce){.bk-av .av-tb.flip{animation:none}}
 
 /* 명부 줄 (2026-11-13 시안 2): 두 줄 장부 줄 + 가운데 상태 아이콘 3개(건강·배고픔·피로) + 애착 단계 + Lv. 머리글·칸 선 없음 */
-.bk-av .av-list .ux-row{grid-template-columns:52px minmax(0,1fr) auto auto 56px;gap:12px}
+.bk-av .av-list .ux-row{grid-template-columns:52px minmax(0,1fr) 28px auto auto 56px;gap:10px}
+.bk-av .av-list .ux-row .av-gr{width:28px;height:28px;align-self:center}   /* 2026-11-16 명부 줄 등급 배지 (이름 오른쪽) */
+.bk-av .av-list .ux-row .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bk-av .av-list .nm .ttl{font-style:normal;font-size:12px;font-weight:700;color:#a8721a;background:rgba(232,180,74,.18);border:1px solid rgba(168,114,26,.35);border-radius:4px;padding:0 4px;margin-right:2px}
 .bk-av .cond{display:flex;align-items:center;gap:10px}
 .bk-av .cs{display:inline-flex;align-items:center;gap:3px;min-width:66px;font-size:13px;font-weight:700;white-space:nowrap}

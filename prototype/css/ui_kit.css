@@ -664,7 +664,9 @@ span.kslot{cursor:default}
 #gupLay .gup-st i{font-style:normal;color:var(--ux-muted)}#gupLay .gup-st u{text-decoration:none;color:#3b8a2a;font-weight:700;margin-left:2px}
 #gupLay .gup-lina{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 16px;font-size:17px;color:#5a3a22}
 #gupLay .gup-lf{width:40px;height:40px;border-radius:50%;flex:none;border:2px solid #c9963e;background:#efe2cf url(../assets/npc/lina_face_laugh.png) no-repeat;background-size:auto 266px;background-position:-48px -47px}
-#gupLay .gup-ok{min-width:140px;font-size:18px}
+#gupLay .gup-box{cursor:pointer}
+#gupLay .gup-bar{position:absolute;left:40px;right:40px;bottom:14px;height:4px;border-radius:2px;background:rgba(168,114,26,.55);transform-origin:left center;animation:gupBar linear forwards}   /* 2026-11-16 자동 닫힘까지 남은 시간 */
+@keyframes gupBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 @keyframes gupIn{0%{transform:scale(.6);opacity:0}100%{transform:none;opacity:1}}
 @keyframes gupStamp{0%{transform:scale(2.4) rotate(-18deg);opacity:0}100%{transform:none;opacity:1}}
 @keyframes gupPop{0%{transform:translateY(8px) scale(.8);opacity:0}100%{transform:none;opacity:1}}

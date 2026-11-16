@@ -110,6 +110,8 @@
   }
 
   // ---------- 미니 뷰 ----------
+  const NUM_T = 1.4;   // 피해 숫자 보이는 시간(초)
+  const numK = (v, who) => v.nums.filter(o => o.who === who && o.t < 1.0).length % 3;   // 같은 대상에 1초 안에 또 뜨면 한 줄 위로 (최대 3줄)
   function timeline(F) {
     if (!F || !F.log) return []; const R = F.rounds || 1, by = {};
     for (const x of F.log) (by[x.r] = by[x.r] || []).push(x);
@@ -219,11 +221,11 @@
   function apply(v, x, fx) {
     const A = id => v.actors.find(a => a.id === id), E = i => v.enemies[i];
     if (x.by && x.mp != null) { const b = A(x.by); if (b) b.mp = x.mp; }
-    if (x.t === 'hit') { const m = E(x.to); if (!m) return; m.hp = x.hp; if (fx) { m.flash = 0.25; if (x.c) m.crit = 0.4; if (x.d != null) v.nums.push({ who: m, e: 1, txt: String(x.d), crit: !!x.c, t: 0, ox: Math.random() * 14 - 7 }); } }
+    if (x.t === 'hit') { const m = E(x.to); if (!m) return; m.hp = x.hp; if (fx) { m.flash = 0.25; if (x.c) m.crit = 0.4; if (x.d != null) v.nums.push({ who: m, e: 1, txt: String(x.d), crit: !!x.c, t: 0, k: numK(v, m), ox: Math.random() * 10 - 5 }); } }
     else { const a = A(x.to); if (!a) return;
-      if (x.t === 'hurt') { if (fx) { const live = v.enemies.filter(m => m.hp > 0 && m.sd); if (live.length) { const m = live[Math.floor(Math.random() * live.length)]; m.act = 'attack'; m.mt = 0; } } a.hp = x.hp; if (fx && a.hp > 0) vTalk(v, 'battle_hit', other(v, a), a); if (fx) { a.flash = 0.3; if (x.d != null) v.nums.push({ who: a, txt: String(x.d), t: 0, ox: Math.random() * 10 - 5 }); } }
+      if (x.t === 'hurt') { if (fx) { const live = v.enemies.filter(m => m.hp > 0 && m.sd); if (live.length) { const m = live[Math.floor(Math.random() * live.length)]; m.act = 'attack'; m.mt = 0; } } a.hp = x.hp; if (fx && a.hp > 0) vTalk(v, 'battle_hit', other(v, a), a); if (fx) { a.flash = 0.3; if (x.d != null) v.nums.push({ who: a, txt: String(x.d), t: 0, k: numK(v, a), ox: Math.random() * 6 - 3 }); } }
       else if (x.t === 'miss') { if (fx) a.dodge = 0.3; }
-      else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx && x.t === 'heal' && x.by && x.by !== x.to) vTalk(v, 'battle_heal', A(x.by), a); if (fx) { a.glow = 0.5; if (x.d != null && x.d > 0) v.nums.push({ who: a, txt: '+' + x.d, heal: true, t: 0, ox: Math.random() * 10 - 5 }); for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
+      else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx && x.t === 'heal' && x.by && x.by !== x.to) vTalk(v, 'battle_heal', A(x.by), a); if (fx) { a.glow = 0.5; if (x.d != null && x.d > 0) v.nums.push({ who: a, txt: '+' + x.d, heal: true, t: 0, k: numK(v, a), ox: Math.random() * 6 - 3 }); for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
       else if (x.t === 'down') { a.hp = 0; a.down = true; a.anim = 'fall'; a.t = 0; } }
   }
   function drawScene(dt) {
@@ -255,23 +257,27 @@
       let b = IM[bg.top[h % bg.top.length]]; if (bg.from) { if (i < 6) b = IM[BG[bg.from].top[h % 3]]; else if (i === 6) b = IM.town_to_grass; }   // 호위: 마을에서 출발해 풀밭 길로
       if (a.naturalWidth) g.drawImage(a, xx, SURF + 4 + 32); if (b.naturalWidth) g.drawImage(b, xx, SURF + 4 - 12 - 8); }
     // 배우
+    const upA = v.actors.filter(o => !o.down);   // 2026-11-16: 앞열이 쓰러지면 뒤 사람이 한 칸씩 앞으로 (살아 있는 순서대로 자리)
     v.actors.forEach(a => {
-      const home = LEAD_X - a.i * GAP; a.t += dt;
+      const home = LEAD_X - a.i * GAP, rk = upA.indexOf(a), slot = LEAD_X - (rk < 0 ? a.i : rk) * GAP; a.t += dt;
       if (a.down) { a.x = a.x || home; if (a.anim !== 'fall') { a.anim = 'fall'; a.t = 0; } }
       else if (P === 'move' || P === 'meet') { a.anim = 'walk'; a.x = home; a.dir = 1; }
-      else if (P === 'fight') { a.x = home; a.anim = v.combat ? 'attack' : 'search';
-        if (!v.combat && Math.random() < dt * 1.5) v.sparks.push({ x: home + 10 + Math.random() * 30, y: SURF - 6, vy: -25 - Math.random() * 15, life: 0.8, c: '#ffe58a' }); }
+      else if (P === 'fight' && v.combat && a.x && Math.abs(slot - a.x) > 1.5) { const d = slot - a.x; a.x += Math.sign(d) * Math.min(Math.abs(d), 70 * dt); a.anim = 'walk'; a.dir = 1; }   // 빈자리로 걸어감
+      else if (P === 'fight') { a.x = slot; a.anim = v.combat ? 'attack' : 'search';
+        if (!v.combat && Math.random() < dt * 7) v.sparks.push({ x: slot + 12 + Math.random() * 30, y: SURF - 4 - Math.random() * 6, vy: -24 - Math.random() * 26, life: 0.8 + Math.random() * 0.6, c: Math.random() < 0.45 ? '#ffffff' : '#fff1a8', star: Math.random() < 0.45 }); }   // 2026-11-16: 탐색지 반짝임 강화 (1.5 → 7개/초, 별 모양 섞음)
       else { const walkBack = !v.combat && !ok;   // 결과: 성공 → 오른쪽으로 떠남, 실패 → 왼쪽으로 후퇴(비전투는 걸어서 돌아감)
         if (ok) { a.anim = 'run'; a.dir = 1; a.x = (a.x || home) + 150 * dt; } else { a.anim = walkBack ? 'walk' : 'run'; a.dir = -1; a.x = (a.x || home) - (walkBack ? 60 : 150) * dt; } }
       a.flash = Math.max(0, a.flash - dt); a.glow = Math.max(0, a.glow - dt); a.dodge = Math.max(0, a.dodge - dt);
       a.show += ((v.combat && (P === 'fight' || P === 'result') ? 1 : 0) - a.show) * Math.min(1, dt * 6);
     });
     // 적: x=316부터 오른쪽 끝(478)까지. 넘치면 겹쳐서 줄이고, 홀수 번째는 4px 뒤(위)에 서서 덜 겹쳐 보이게. 그림이 있으면 그림 크기 그대로(도트 1:1), 없으면 상자(보스 140%)
-    const ws = v.enemies.map(m => m.sd ? Math.round(m.sd[1] * 1.25 * (m.boss ? 1.25 : 1)) : ready(m.im) ? m.im.naturalWidth : Math.round(40 * m.scale / 100)), tot = ws.reduce((t, w) => t + w, 0) + 4 * (ws.length - 1), shrink = ws.length > 1 ? Math.min(0, (162 - tot) / (ws.length - 1)) : 0, XS = [];
-    ws.reduce((xx, w, i) => (XS[i] = xx, xx + w + 4 + shrink), 316);
+    // 2026-11-16: 쓰러진 적은 그 자리에 두고, 살아 있는 적만 왼쪽(316)부터 다시 줄 세움 → 앞 적이 쓰러지면 뒤 적이 앞으로 나옴
+    const live = v.enemies.map(m => m.hp > 0);
+    const ws = v.enemies.map(m => m.sd ? Math.round(m.sd[1] * 1.25 * (m.boss ? 1.25 : 1)) : ready(m.im) ? m.im.naturalWidth : Math.round(40 * m.scale / 100)), lw = ws.filter((w, i) => live[i]), tot = lw.reduce((t, w) => t + w, 0) + 4 * (lw.length - 1), shrink = lw.length > 1 ? Math.min(0, (162 - tot) / (lw.length - 1)) : 0, XS = [];
+    ws.reduce((xx, w, i) => live[i] ? (XS[i] = xx, xx + w + 4 + shrink) : (XS[i] = null, xx), 316);
     const drawOrder = v.enemies.map((m, i) => i).sort((a, b) => (b % 2) - (a % 2) || a - b);   // 뒤(홀수) 먼저
     drawOrder.forEach(i => { const m = v.enemies[i];
-      if (P === 'move') m.x = 540 + i * 56; else m.x += (XS[i] - m.x) * Math.min(1, dt * 3);
+      if (P === 'move') m.x = 540 + i * 56; else if (XS[i] != null) m.x += (XS[i] - m.x) * Math.min(1, dt * 2.5);
       m.flash = Math.max(0, m.flash - dt); m.crit = Math.max(0, m.crit - dt); m.shown += (m.hp / m.maxHp - m.shown) * Math.min(1, dt * 8);
       m.mt += dt; if (m.hp <= 0 && m.sd && m.act !== 'fall') { m.act = 'fall'; m.mt = 0; } if (m.act === 'attack' && m.mt > 1) { m.act = 'idle'; m.mt = 0; }
       if (m.hp <= 0 && !(m.sd && m.mt < 1.6)) m.alpha = Math.max(0, m.alpha - dt * 1.2); if (m.alpha <= 0) return;
@@ -301,10 +307,10 @@
       if (!v.combat && P === 'fight' && !a.down && WORK_ICON[x.q.type]) { const bob = Math.sin(v.t * 3 + a.i) * 2, ix = Math.round(a.x), iy = SURF - 128 + bob;   // 머리 위 의뢰 종류 아이콘
         g.fillStyle = 'rgba(255,250,240,.92)'; g.strokeStyle = '#7a5032'; g.lineWidth = 1.5; g.beginPath(); g.arc(ix, iy, 10, 0, Math.PI * 2); g.fill(); g.stroke();
         g.font = '13px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#000'; g.fillText(WORK_ICON[x.q.type], ix, iy + 1); }
-      if (a.show > 0.02 && !(a.down && P === 'result' && a.t > 1.5)) {
+      if (a.show > 0.02 && !a.down) {   // 2026-11-16: 쓰러진 모험가의 막대는 숨김 (자리를 채운 동료 막대와 겹침)
         const bx = Math.round(a.x) - Math.round(BW / 2); g.globalAlpha = a.show;
         let gv = 0;
-        if (v.combat && !a.down && P === 'fight') { const T = a.acts; let k = 0; while (k < T.length && T[k] <= fp) k++; const nx = T[k], pv = k ? T[k - 1] : 0; gv = nx == null ? 0 : Math.max(0, Math.min(1, (fp - pv) / Math.max(1e-6, nx - pv))); }
+        if (v.combat && !a.down && P === 'fight') { const T = a.acts; let k = 0; while (k < T.length && T[k] <= fp) k++; const nx = T[k], pv = k ? T[k - 1] : 0; const nx2 = nx == null ? 1 : nx; gv = Math.max(0, Math.min(1, (fp - pv) / Math.max(1e-6, nx2 - pv))); }   // 2026-11-16: 마지막 행동 뒤에도 비워 두지 않고 전투 끝까지 차오름
         if (!v.combat) gv = P === 'result' ? 1 : P === 'fight' ? Math.max(0, Math.min(1, (p - 0.5) / 0.35)) : 0;   // 수행 의뢰: 수행 구간 진행도만큼 차오름
         bar(bx, SURF - 112, BW, 4, gv, () => '#ffd23a');
         bar(bx, SURF - 106, BW, 4, a.hp / a.maxHp, () => '#e8443a');
@@ -312,12 +318,22 @@
         g.globalAlpha = 1; } });
     drawSay(v, dt);
     // 피해·회복 숫자: 대상 머리 위로 떠올랐다가 사라짐 (치명타는 크고 금색, 아군이 맞으면 붉게, 회복은 초록)
-    v.nums = v.nums.filter(n => (n.t += dt) < 1.1);
-    for (const n of v.nums) { const tx = n.e ? n.who.cx : n.who.x, ty = (n.e ? n.who.top : SURF - 118) - n.t * 22 - (n.crit ? 4 : 0); if (tx == null || ty == null) continue;
-      g.globalAlpha = Math.max(0, Math.min(1, (1.1 - n.t) * 2.2)); g.font = 'bold ' + (n.crit ? 15 : 12) + 'px "MaruBuri",sans-serif'; g.textAlign = 'center'; g.lineJoin = 'round'; g.lineWidth = 3; g.strokeStyle = '#120a06';
-      const txt = n.crit ? n.txt + '!' : n.txt; g.strokeText(txt, tx + n.ox, ty); g.fillStyle = n.heal ? '#9dffb0' : n.crit ? '#ffd95a' : n.e ? '#ffffff' : '#ff6b5b'; g.fillText(txt, tx + n.ox, ty); } g.globalAlpha = 1;
+    v.nums = v.nums.filter(n => (n.t += dt) < NUM_T);
+    // 2026-11-16: 적 숫자는 이름표보다 위, 아군 숫자는 머리 옆(말풍선 · 체력 바와 안 겹치게), 14px · 1.4초, 같은 대상에 연달아 뜨면 한 줄씩 위로
+    for (const n of v.nums) { const tx = n.e ? n.who.cx : n.who.x + 24, ty = (n.e ? n.who.top - 14 - n.t * 18 : SURF - 58 - n.t * 12) - (n.k || 0) * 13 - (n.crit ? 4 : 0); if (tx == null || ty == null || isNaN(tx)) continue;
+      g.globalAlpha = Math.max(0, Math.min(1, (NUM_T - n.t) * 2.5)); g.font = 'bold ' + (n.crit ? 17 : 14) + 'px "MaruBuri",sans-serif'; g.textAlign = 'center'; g.lineJoin = 'round'; g.lineWidth = 4; g.strokeStyle = '#120a06';
+      const txt = n.crit ? n.txt + '!' : n.txt; g.strokeText(txt, tx + n.ox, ty); g.fillStyle = n.heal ? '#9dffb0' : n.crit ? '#ffd95a' : n.e ? '#fff1c2' : '#ff6b5b'; g.fillText(txt, tx + n.ox, ty); } g.globalAlpha = 1;
+    // 2026-11-16: 탐색지 바닥 빛 — 비전투 수행 중 살펴보는 자리마다 숨 쉬듯 밝아지는 빛무리
+    if (P === 'fight' && !v.combat) { g.save(); g.globalCompositeOperation = 'lighter';
+      for (const a of v.actors) { if (a.down || a.x == null) continue; const cx = a.x + 27, cy = SURF - 3, pu = 0.5 + 0.5 * Math.sin(v.t * 3.2 + a.i * 1.7), r = 22 + pu * 10;
+        const gr = g.createRadialGradient(cx, cy, 0, cx, cy, r); gr.addColorStop(0, `rgba(255,255,235,${0.8 + pu * 0.2})`); gr.addColorStop(0.3, `rgba(255,240,160,${0.5 + pu * 0.25})`); gr.addColorStop(0.65, `rgba(255,214,90,${0.2 + pu * 0.15})`); gr.addColorStop(1, 'rgba(255,200,60,0)');
+        g.fillStyle = gr; g.beginPath(); g.ellipse(cx, cy, r, r * 0.45, 0, 0, Math.PI * 2); g.fill();
+        const hh = 30 + pu * 14, lg = g.createLinearGradient(0, cy, 0, cy - hh); lg.addColorStop(0, `rgba(255,246,190,${0.45 + pu * 0.25})`); lg.addColorStop(1, 'rgba(255,240,170,0)');   // 위로 솟는 빛기둥
+        g.fillStyle = lg; g.beginPath(); g.moveTo(cx - 9, cy); g.lineTo(cx + 9, cy); g.lineTo(cx + 5, cy - hh); g.lineTo(cx - 5, cy - hh); g.closePath(); g.fill(); }
+      g.restore(); }
     v.sparks = v.sparks.filter(s => (s.life -= dt) > 0);
-    for (const s of v.sparks) { s.y += s.vy * dt; g.globalAlpha = Math.min(1, s.life * 2); g.fillStyle = s.c; g.fillRect(Math.round(s.x), Math.round(s.y), 2, 2); } g.globalAlpha = 1;
+    for (const s of v.sparks) { s.y += s.vy * dt; g.globalAlpha = Math.min(1, s.life * 2); g.fillStyle = s.c; const sx = Math.round(s.x), sy = Math.round(s.y);
+      if (s.star) { g.fillRect(sx - 2, sy, 5, 1); g.fillRect(sx, sy - 2, 1, 5); g.fillRect(sx - 1, sy - 1, 3, 3); } else g.fillRect(sx, sy, 2, 2); } g.globalAlpha = 1;
     // 문구
     const downN = x.fight ? x.fight.units.filter(u => u.down).map(u => (v.actors.find(a => a.id === u.id) || {}).name).filter(Boolean) : [];
     let msg;

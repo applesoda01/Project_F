@@ -194,12 +194,13 @@
 
   // ---------- 모험가 승급 축하 카드 (2026-11-12) ----------
   // 같은 주에 승급한 모험가를 카드 하나에 모음. 게임은 멈추지 않고, 확인을 누르거나 바깥을 누르면 닫힘. 여러 주가 쌓이면 차례로 보여 줌
-  const gupQ = []; let gupEl = null;
+  const gupQ = []; let gupEl = null, gupTimer = 0;
+  const GUP_MS = 3500;   // 2026-11-16: 승급 카드는 [확인] 없이 3.5초 뒤 저절로 닫힘 (누르면 바로 다음으로)
   const STAT_NM = ['힘', '민첩', '지력', '정신', '기교'];
   function gupShow(list) { gupQ.push(list); if (!gupEl || !gupEl.classList.contains('on')) gupNext(); }
   function gupNext() {
-    const list = gupQ.shift(); if (!list) { if (gupEl) gupEl.classList.remove('on'); return; }
-    if (!gupEl) { gupEl = document.createElement('div'); gupEl.id = 'gupLay'; stage.ui.appendChild(gupEl); gupEl.addEventListener('pointerdown', e => { if (e.target === gupEl || e.target.closest('[data-gup-ok]')) gupNext(); }); }
+    clearTimeout(gupTimer); const list = gupQ.shift(); if (!list) { if (gupEl) gupEl.classList.remove('on'); return; }
+    if (!gupEl) { gupEl = document.createElement('div'); gupEl.id = 'gupLay'; stage.ui.appendChild(gupEl); gupEl.addEventListener('pointerdown', e => { if (e.target === gupEl || e.target.closest('.gup-box')) gupNext(); }); }
     const advs = list.map(x => Object.assign({ a: s.advs.find(b => b.id === x.id) }, x)).filter(x => x.a);
     if (!advs.length) { gupNext(); return; }
     const g = Math.max(...advs.map(x => x.g)), L = GR[g], bonus = advs[0].bonus, one = advs.length === 1 ? advs[0].a : null;
@@ -210,8 +211,8 @@
       <h2>${L}급 승급!</h2><div class="gup-ps">${people}</div>
       <div class="gup-sub">능력치 5개에 각각 +${bonus}</div><div class="gup-sts">${stats}</div>
       <p class="gup-lina"><span class="gup-lf"></span>축하해요, ${who}! 이제 ${L}급 모험가예요.</p>
-      <button class="ux-btn gup-ok" data-gup-ok>확인</button></div>`;
-    gupEl.classList.remove('on'); void gupEl.offsetWidth; gupEl.classList.add('on');
+      <i class="gup-bar" style="animation-duration:${GUP_MS}ms"></i></div>`;
+    gupEl.classList.remove('on'); void gupEl.offsetWidth; gupEl.classList.add('on'); gupTimer = setTimeout(gupNext, GUP_MS);
   }
   UI.gupShow = gupShow;   // 시험용
 
@@ -734,6 +735,7 @@
     renderPopup();
   });
   const stOf = a => a.state === 'quest' ? 'quest' : a.state === 'town' ? 'town' : a.state === 'injured' ? 'injured' : 'away';
+  const ST_SHORT = { quest: '의뢰 중', town: '길드', injured: '부상', away: '마을 밖' };   // 2026-11-16 명부 줄은 짧게 (한 줄에 들어가게)
   const ST_TXT = { quest: '의뢰 중', town: '길드에 있음', injured: '부상 회복', away: '마을 밖' };
   const stTag = a => { const k = stOf(a), w = Math.max(0, a.until - s.week); return `<span class="ux-tag ${k}">● ${ST_TXT[k]}${k === 'quest' ? (w ? ' ' + w + '주' : ' · 이번 주 귀환') : k === 'injured' ? ' ' + w + '주' : ''}</span>`; };   // 2026-11-12: 남은 0주 → "이번 주 귀환"
   const ITEMS_ = ((root.GAME_DATA || {}).content || {}).items || [];
@@ -791,7 +793,7 @@
     let h = `<div class="bk2 bk-av ${root.BOOK_ATT || 'att-b'}"><section class="bk-l"><div class="ux-h">모험가 명부 <small>${list.length} / ${Gm.advCap(s)}명</small></div><div class="av-list ${root.BOOK_ADV_LIST || 'st-d'}">`;
     for (const a of list) { const pc = pty.get(a.id) && pty.get(a.id).col, on = sampleOn(a), t = ttlName(on);
       h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${pc ? 'pty' : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"${pc ? ` style="--pc:${pc}"` : ''}><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}</span>
-      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}</span><span class="sub">${a.cls} · ${ST_TXT[stOf(a)]}${stOf(a) === 'injured' ? ' ' + Math.max(0, a.until - s.week) + '주' : ''}</span></span>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
+      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}</span><span class="sub">${a.cls} · ${ST_SHORT[stOf(a)]}${stOf(a) === 'injured' ? ' ' + Math.max(0, a.until - s.week) + '주' : ''}</span></span><i class="ux-grade av-gr" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)" title="${GR[a.grade]}급"></i>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
     const a = s.advs.find(x => x.id === openAdv);
     return h + `</div></section><section class="bk-r av-main">${a ? advDetail(a) : '<div class="ux-empty">모험가가 없습니다.</div>'}</section><div class="qtip avtip" id="avTip"></div></div>`;
   }
