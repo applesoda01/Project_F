@@ -142,7 +142,7 @@
   }
   // 2026-11-12 채팅 로그 개선: 시스템 기록 앞에 종류 꼬리표, 대화 줄에 얼굴 · 이름 · 직업 Lv (이름·얼굴을 누르면 모험가 정보)
   const LOG_TAG = { depart: ['출발', 't-go'], success: ['성공', 't-ok'], fail: ['실패', 't-bad'], injury: ['부상', 't-bad'], death: ['사망', 't-bad'], arrive: ['도착', 't-new'], leave: ['떠남', 't-gray'],
-    req: ['부탁', 't-new'], ledger: ['결산', 't-gold'], build: ['건설', 't-gray'], unlock: ['발견', 't-gold'], grow: ['성장', 't-ok'], promo: ['전직', 't-new'], expire: ['기한', 't-gray'], withdraw: ['취소', 't-gray'] };
+    req: ['부탁', 't-new'], main: ['메인', 't-gold'], ledger: ['결산', 't-gold'], build: ['건설', 't-gray'], unlock: ['발견', 't-gold'], grow: ['성장', 't-ok'], promo: ['전직', 't-new'], expire: ['기한', 't-gray'], withdraw: ['취소', 't-gray'] };
   UI.logLine = function (text, kind) { // 시스템 기록
     const el = document.createElement('div'); el.className = 'ln k-' + (kind || 'info');
     const tg = LOG_TAG[kind]; if (tg) { const i = document.createElement('i'); i.className = 'tag ' + tg[1]; i.textContent = tg[0]; el.append(i); }
@@ -287,12 +287,22 @@
     const Lq = (Gm.QLINES[key] || {})[ev] || [], a = who != null ? s.advs.find(x => x.id === who) : null, nm = a ? a.name : '모험가';
     return Lq.map(([sp, face, text]) => ({ name: sp === '{이름}' ? nm : sp, face: sp === '리나' ? (face === 'default' ? 'smile' : face) : 'smile', text: text.replace(/\{이름\}/g, nm), adv: sp === '{이름}' ? a : null }));
   }
+  function mainCardHtml() {   // 메인 퀘스트(침공) 카드: 리퀘스트 장 맨 위 (2026-11-16)
+    if (!Gm.mainView) return ''; const m = Gm.mainView(s); if (m.state === 'none' || m.state === 'done') return '';
+    const waves = m.waves.map(w => `${esc(w.name)} ${w.boss ? '(보스)' : '×' + w.n}`).join(' → ');
+    let body = '';
+    if (m.state === 'offer') { const p = Math.round(Gm.mainPredict(s, 20) * 100);
+      body = `<p>몬스터가 마을 왼쪽 다리로 쳐들어옵니다. 모두 막아 내면 <b>E급으로 승급</b>합니다.</p><p class="mw">${waves}</p><p>받으면 <b>${m.lead}주 뒤</b> 침공 · 침공 ${m.block}주 전부터 의뢰 출발 금지 · 지금 전력 <b>${m.defenders}명</b> · 예상 승률 <b class="${p >= 60 ? 'ok' : p >= 40 ? 'mid' : 'bad'}">${p}%</b></p><p class="ms">성공: ${fmt(m.gold)}G · 명성 +${m.fame} · 모험가 관리소 해금 / 실패: 인구 −${m.popLoss}% · 신뢰도 −${m.trustLoss}, ${m.retry}주 뒤 재도전</p><button class="ux-btn ux-btn-primary" data-rqact="main">받기</button>${m.last && !m.last.win ? `<span class="ms">지난 도전: ${m.last.wave + 1 > m.waves.length - 1 ? '보스' : (m.last.wave + 1) + '차'}에서 패배 (${m.tries}번째)</span>` : ''}`; }
+    else if (m.state === 'set') body = `<p><b>침공까지 ${m.left}주</b>${m.blocked ? ' · <b class="bad">의뢰 출발 금지</b> (모험가가 마을에서 대비합니다)' : ` · 침공 ${m.block}주 전부터 의뢰 출발이 막힙니다`}</p><p class="mw">${waves}</p>`;
+    else body = `<p>영주의 성이 무너졌습니다. <b>${m.cool}주 뒤</b> 다시 도전할 수 있습니다.</p>`;
+    return `<div class="rq-main"><i class="gv">메인</i><b>다리를 지켜라</b>${body}</div>`;
+  }
   function reqHtml() {
     const V = Gm.reqView(s), R = Gm.reqOf(s), hints = Gm.reqHints(s, 2);
     if (!V.some(v => v.r.id === rqSel)) { rqSel = V[0] ? V[0].r.id : null; rqMsg = ''; }
     for (const v of V) if (v.r.id === rqSel) v.r.isNew = false;
     const stTxt = v => v.lock ? `<i class="st lock">${v.d.season.length && !v.d.season.includes(Gm.seasonOf(s.week)) ? v.d.season.map(x => Gm.SEASON_NAME[x]).join(' · ') + '에 진행' : '집무실 필요'}</i>` : RQ_STATE[v.r.state] ? `<i class="st go">${RQ_STATE[v.r.state]}</i>` : v.r.isNew ? '<i class="st new">새 부탁</i>' : (v.nominated ? `<i class="st">${v.r.party.length ? '지명 중' : '지명 기다림'}</i>` : v.d.type === 'install' ? '<i class="st">설치 기다림</i>' : `<i class="st ${v.canPay ? 'ok' : ''}">${v.canPay ? '낼 수 있음' : '준비 부족'}</i>`);
-    let L = `<div class="ux-h">받은 부탁 <small>${V.length} / ${Gm.REQ_CFG.maxOpen}건 · 들어준 부탁 ${Object.values(R.done).reduce((t, x) => t + x.n, 0)}건</small></div><div class="rq-list">`;
+    let L = mainCardHtml() + `<div class="ux-h">받은 부탁 <small>${V.length} / ${Gm.REQ_CFG.maxOpen}건 · 들어준 부탁 ${Object.values(R.done).reduce((t, x) => t + x.n, 0)}건</small></div><div class="rq-list">`;
     for (const v of V) L += `<button class="rq-card ${v.r.id === rqSel ? 'on' : ''} ${v.lock ? 'lock' : ''} gv-${v.d.giver}" data-rq="${v.r.id}"><i class="gv">${RQ_GIVER[v.d.giver]}</i><span class="tx"><b>${esc(v.name)}</b><em>${esc(v.giver)} · ${RQ_TYPE[v.d.type]}${v.d.type === 'town' ? ` ${v.r.stage}/2` : ''}</em></span>${stTxt(v)}</button>`;
     if (!V.length) L += '<div class="rq-none">지금은 받은 부탁이 없습니다.<br>마을과 길드가 자라면 사람들이 찾아옵니다.</div>';
     L += `</div><div class="ux-h rq-hh">소문 <small>아직 오지 않은 부탁</small></div><div class="rq-hints">${hints.length ? hints.map(h => `<div class="rq-hint"><b>???</b>${esc(h.hint)}</div>`).join('') : '<div class="rq-hint">들려오는 소문이 없습니다.</div>'}</div>`;
@@ -331,6 +341,7 @@
     return `<div class="bk2 bk-rq"><section class="bk-l">${L}</section><section class="bk-r">${Rr}</section></div>`;
   }
   function rqAct(act) {
+    if (act === 'main') { Gm.mainAccept(s); hooks.changed && hooks.changed(); renderPopup(); return; }
     const v = Gm.reqView(s).find(x => x.r.id === rqSel); if (!v) return;
     const top = s.log[0]; rqMsg = '';
     if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; }
@@ -347,7 +358,7 @@
   }
   // 화면에서 바로 일어난 리퀘스트 기록(완료 · 거절 등)을 로그 · 대사로 흘려보냄 (주 진행 때는 main.js 가 UI.onLogs 로 보냄)
   function rqFlush(top) { const f = []; for (const L of s.log) { if (L === top) break; f.push(L); } if (f.length && f.length < 20) UI.onLogs(f.reverse()); }
-  UI.reqBadge = function () { const n = (s.req ? s.req.open : []).filter(r => r.isNew).length, b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); return n; };
+  UI.reqBadge = function () { const n = (s.req ? s.req.open : []).filter(r => r.isNew).length + (s.main && s.main.state === 'offer' ? 1 : 0), b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); return n; };
   const TITLES = { req: '리퀘스트', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
@@ -605,6 +616,16 @@
   }
   const QTYPE_ = Gm.QTYPE;
   let lgTips = [];
+  function gradeBoxHtml() {   // 경영 장 오른쪽 아래: 길드 승급 조건 (2026-11-16)
+    if (!Gm.mainView) return ''; const m = Gm.mainView(s);
+    if (m.grade > 0) return `<div class="lg-grade"><div class="ux-h">길드 승급 <small>${GR[m.grade]}급</small></div><p class="gd-none">다음 승급 조건은 준비 중입니다.</p></div>`;
+    const ok1 = m.doneN >= m.need, ok2 = m.state === 'done';
+    const st2 = m.state === 'none' ? '부탁을 다 들어주면 영주의 전갈이 옵니다' : m.state === 'offer' ? '<b class="go">리퀘스트 장에서 받을 수 있습니다</b>' : m.state === 'set' ? `<b class="go">침공까지 ${m.left}주</b>` : m.state === 'cool' ? `${m.cool}주 뒤 다시 도전` : '달성';
+    return `<div class="lg-grade"><div class="ux-h">길드 승급 <small>${GR[m.grade]}급 → ${GR[m.grade + 1]}급</small></div>
+      <div class="gd-row ${ok1 ? 'ok' : ''}"><i>${ok1 ? '✔' : '1'}</i><span>리퀘스트 ${m.need}번 들어주기</span><b>${Math.min(m.doneN, m.need)} / ${m.need}</b><em class="gd-bar"><u style="width:${Math.min(100, Math.round(m.doneN / m.need * 100))}%"></u></em></div>
+      <div class="gd-row ${ok2 ? 'ok' : ''} ${ok1 ? '' : 'wait'}"><i>${ok2 ? '✔' : '2'}</i><span>메인 퀘스트 「다리를 지켜라」 달성</span><b></b><em class="gd-st">${st2}</em></div>
+      <p class="gd-rw">승급하면: ${fmt(m.gold)}G · 명성 +${m.fame} · 모험가 관리소 해금 · ${GR[m.grade + 1]}급 의뢰</p></div>`;
+  }
   function ledgerHtml() {
     const cur = s.month, prev = s.lastMonth; lgTips = [];
     const tipId = html => { lgTips.push(html); return lgTips.length - 1; };
@@ -633,8 +654,8 @@
         const tip = `<b>${Gm.dateLabel(m.week - 1).replace(/ \d+주$/, '')}</b><br>수입 ${gG(lgIn(m))} · 지출 ${gG(lgOut(m))}<br>순이익 <b>${gG(v)}</b>${bld ? `<br>⚒ ${(m.builds || []).map(x => FAC_LABEL[x.f] || x.f).join(', ')} 건설` : ''}`;
         h += `<div class="lb" data-lt="${tipId(tip)}"><span class="col"><b class="zl" style="top:${zero}%"></b><i class="${v < 0 ? 'neg' : ''}" style="${v < 0 ? `top:${zero}%` : `bottom:${100 - zero}%`};height:${hgt}%"></i><em class="${v < 0 ? 'neg' : ''}" style="${v < 0 ? `top:calc(${zero + hgt}% + 3px)` : `bottom:calc(${100 - zero + hgt}% + 3px)`}">${fmt(Math.round(v))}</em>${bld ? `<b class="bd" style="top:${v < 0 ? zero : zero - hgt}%" title="건설">⚒</b>` : ''}</span><span class="mo">${lbl}</span></div>`;
       });
-      h += '</div></section>';
-    } else h += '<p class="muted">첫 결산은 다음 달 초에 나옵니다.</p>';
+      h += '</div>' + gradeBoxHtml() + '</section>';
+    } else h += '<section class="lg-chart"><p class="muted">첫 결산은 다음 달 초에 나옵니다.</p>' + gradeBoxHtml() + '</section>';
     return h + '</div><div class="qtip lgtip" id="lgTip"></div>';
   }
   function ledgerTipBind(b) {

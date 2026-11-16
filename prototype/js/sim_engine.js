@@ -524,6 +524,7 @@
 
     function invasionStep() {
       const g = s.grade;
+      if (g === 0 && COMBAT && !(cfg.run && cfg.run.noMain)) return;   // F → E 승급은 메인 퀘스트(mainStep)로 (2026-11-16)
       if (g >= 6 || s.phase !== 'normal' || s.bossDone < P.N[g] || s.invasionCooldown > s.week) return;
       if (g === 5 && s.advs.filter(a => a.alive && !a.external && a.grade >= 5 && a.lv >= 45).length < P.sCandidates) return;
       const enemy = P.invasionScale * typical(g + 1) * 0.5;
@@ -704,6 +705,7 @@
           if (d.type === 'town' && r.stage === 1) r.stage = 2; else complete(r, null);
           continue;
         }
+        if (mqBlocked()) continue;   // 침공 대비 주에는 지명하지 않음 (게임과 같음)
         r.party = r.party.filter(a => a.alive && (a === r.who || a.busy === 0));   // 그사이 다른 의뢰를 떠난 사람은 파티에서 뺌
         const pool = alive().filter(a => a.busy === 0 && !r.party.includes(a) && r.refused.get(a) !== s.week).sort((x, y) => { const k = a => finalStat(a, d.req && d.req[0] === -2 ? a.core : questOf(r).req[0]); return (meets(r, y) - meets(r, x)) || (k(y) - k(x)); });
         const q0 = questOf(r), okNow = () => r.party.length >= d.party[0] && r.party.some(a => meets(r, a)) && r.party.every(a => a.alive && a.busy === 0) && questP(sortRow(r.party), q0) >= RQC.send;
@@ -719,6 +721,52 @@
       }
     }
 
+    // ---------- F급 메인 퀘스트: 침공 "다리를 지켜라" (2026-11-16) — 게임 game_core.js MAIN_CFG · mainFight · mainWeekly와 같은 규칙 ----------
+    const MQC = { need: 8, lead: 2, block: 1, retry: 4, rest: 0.3, revive: 0.4, castle: 1, group: 6, deathLoss: 0.01, popLoss: 0.1, trustLoss: 5, gold: 1000, fame: 10, accept: 0.6, trials: 20,
+      waves: [{ mon: 'mon_04', n: 6, hp: 1, atk: 1 }, { mon: 'mon_04', n: 6, hp: 1.3, atk: 1.2 }, { mon: 'mon_04', n: 6, hp: 1.6, atk: 1.4 }, { mon: 'mon_05', n: 1, hp: 5, atk: 3, boss: true }] };
+    const MQ2 = [{ 0: 50 }, { 1: 50 }, { 4: 50 }, { 2: 50 }, { 3: 50 }, { 0: 35, 1: 35 }, { 0: 40, 2: 30 }, { 0: 30, 3: 40 }, { 0: 30, 4: 40 }, { 1: 40, 2: 30 }, { 1: 35, 3: 35 }, { 1: 30, 4: 40 }, { 2: 40, 3: 30 }, { 2: 35, 4: 35 }, { 3: 30, 4: 40 }];   // 2차 전직 조건 (게임 CLASS2)
+    const MONS = (gameData() && gameData().content && gameData().content.monsters) || [];
+    s.mq = { state: 'none', at: null, cool: 0, tries: 0 }; s.st.mainOffer = null; s.st.mainClear = null; s.st.mainTries = 0;
+    const mqFoes = w => { const M = MONS.find(m => m.id === w.mon) || { hp: 300, atk: 55, def: 20 }; return Array.from({ length: w.n }, () => ({ hp: M.hp * w.hp, atk: M.atk * w.atk, def: M.def || 0, boss: !!w.boss })); };
+    const mqBlocked = () => s.mq.state === 'set' && s.mq.at - s.week <= MQC.block;
+    function mqFight(defs, Rf) {
+      const down = new Set(); let castle = 0;
+      let U = sortRow(defs).map(a => Object.assign(unitOf(a, 0), { pots: 0 }));
+      if (!U.length) return { win: false, down };
+      for (let w = 0; w < MQC.waves.length; w++) {
+        let foes = mqFoes(MQC.waves[w]);
+        for (;;) {
+          const r = CB.fight(U.filter(u => !u.down && u.hp > 0), foes, MQC.group, Rf, 2), by = new Map(r.units.map(u => [u.a, u]));
+          U = U.map(u => { const x = by.get(u.a); return x ? Object.assign(u, { hp: x.down ? 0 : x.hp, down: x.down }) : u; });
+          for (const u of U) if (u.down) down.add(u.a);
+          if (r.win) break;
+          if (castle >= MQC.castle) return { win: false, down };
+          castle++;
+          foes = foes.slice(0, Math.max(1, r.enemyLeft == null ? foes.length : r.enemyLeft)).map(e => Object.assign({}, e));
+          U = U.map(u => Object.assign(u, { hp: u.maxHp * MQC.revive, down: false }));
+        }
+        if (w < MQC.waves.length - 1) U = U.map(u => u.down ? Object.assign(u, { hp: u.maxHp * MQC.revive, down: false }) : Object.assign(u, { hp: Math.min(u.maxHp, u.hp + u.maxHp * MQC.rest) }));
+      }
+      return { win: true, down };
+    }
+    function mainStep() {
+      if (!COMBAT || s.grade > 0 || (cfg.run && cfg.run.noMain)) return; const M = s.mq, al = () => s.advs.filter(a => a.alive && !a.external);
+      if (M.state === 'offer') {   // 자동: 예상 승률이 accept 이상이면 받음
+        const defs = al(), Rp = rng((((seed >>> 0) ^ 0x51ED270B) + s.week * 7919) >>> 0); let win = 0;
+        for (let i = 0; i < MQC.trials; i++) if (mqFight(defs, Rp).win) win++;
+        if (defs.length && win / MQC.trials >= MQC.accept) { M.state = 'set'; M.at = s.week + MQC.lead; }
+      }
+      if (M.state === 'none' && s.st.reqDone >= MQC.need) { M.state = 'offer'; s.st.mainOffer = s.week; }   // 리퀘스트를 need회 들어주면 등장 (게임 mainReady와 같음)
+      else if (M.state === 'cool' && s.week >= M.cool) M.state = 'offer';
+      else if (M.state === 'set' && s.week >= M.at) {
+        const defs = al().filter(a => a.busy === 0), r = mqFight(defs, R); M.tries++; s.st.mainTries++;
+        const wk = Math.max(1, CB.C.injuryWeeks[0] - (has('의무실') ? CB.C.injuryClinic : 0) - (s.deco.has('fireplace') ? cfg.deco.injury : 0));
+        for (const a of defs) { if (!r.down.has(a)) continue; s.st.injuries++; if (!r.win && R() < MQC.deathLoss) { a.alive = false; s.st.questDeaths++; continue; } a.busy += wk; }
+        if (r.win) { M.state = 'done'; s.st.mainClear = s.week; s.grade = 1; s.st.reach[1] = s.week; s.gold += MQC.gold; s.op += MQC.gold; s.fame = Math.min(cfg.fame.cap, s.fame + MQC.fame); }
+        else { s.pop -= Math.floor(s.pop * MQC.popLoss); s.trust = Math.max(0, s.trust - MQC.trustLoss); M.state = 'cool'; M.cool = s.week + MQC.retry; }
+      }
+    }
+
     function weekly() {
       // 훈련
       for (const a of s.advs) {
@@ -729,8 +777,9 @@
       expireQuests();
       generateQuests();   // 2026-11-12: 매주 게시 (예전에는 매달 초에만 = 월 유입의 1/4만 들어왔음)
       s.seatUsed = 0;   // 이번 주 식사한 좌석 수
+      mainStep();         // 메인 퀘스트(침공): 수주 · 등장 · 침공 판정 (게임 autoMain → mainWeekly 순서와 같음)
       reqStep();          // 리퀘스트: 자동 처리 → 지명 파티 출발(게시판보다 먼저) → 등장 판정
-      adventurersChoose();
+      if (!mqBlocked()) adventurersChoose();   // 침공 1주 전: 의뢰 출발 금지
       bossStep();
       invasionStep();
       raidStep();
