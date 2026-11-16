@@ -376,6 +376,94 @@ if os.path.exists(_th):
         try: _rows.append([int(_r['house_id']), int(_r['gx']), int(_r['gy']), int(_r['w']), int(_r['d']), int(_r['등장_단계']), int(_r.get('지붕색(0~3)') or 0)])
         except (KeyError, ValueError): print('  경고: town_houses.csv 의 한 줄을 읽지 못해 건너뜁니다:', dict(_r))
     data['townHouses'] = sorted(_rows, key=lambda r: (r[5], r[0]))
+# 서브 퀘스트(리퀘스트) (2026-11-16, docs/design/sub_quest_F_v1.md · nomination_v1.md): data/named_quests.csv + data/quest_lines.csv
+_nq = os.path.join(DATA, 'named_quests.csv')
+if os.path.exists(_nq):
+    import re as _re
+    _ST = {'str': 0, 'dex': 1, 'int': 2, 'wis': 3, 'tec': 4}
+    _TYPES = ('hunt', 'search', 'deliver', 'donate', 'install', 'town'); _SEAS = ('spring', 'summer', 'autumn', 'winter'); _RISK = {'': 0, 'low': 0, 'mid': 1, 'high': 2}
+    _UNL = ('table', 'plant', 'boardDeco', 'locker', 'banner', 'bench', 'map', 'fireplace', 'trophy'); _OWN = ('', 'any', 'social40', 'calm65', 'wild8')
+    _mats = {m['id'] for m in content['materials']} if content else set(); _mons = {m['name']: m for m in content['monsters']} if content else {}
+    def _pairs(sv, f, ln, col):
+        o = {}
+        for part in [x for x in sv.split(';') if x.strip()]:
+            k, _, v = part.partition(':'); k = k.strip()
+            try: o[k] = int(v)
+            except ValueError: err(f, ln, f"{col} 의 '{part}' 는 이름:정수 여야 합니다"); continue
+        return o
+    _i = lambda v: int(v) if v.strip() else 0
+    nq, _ids = [], set()
+    for _ln, _r in enumerate(csv.DictReader(open(_nq, encoding='utf-8-sig')), start=2):
+        f = 'named_quests.csv'; qid = (_r.get('id') or '').strip()
+        if not qid: continue
+        if qid in _ids: err(f, _ln, f'id {qid} 가 두 번 나옵니다'); continue
+        _ids.add(qid)
+        ty = _r['type'].strip()
+        if ty not in _TYPES: err(f, _ln, f"type '{ty}' 은 {' '.join(_TYPES)} 중 하나여야 합니다"); continue
+        seas = [x for x in _r['season'].split('|') if x.strip()]
+        for x in seas:
+            if x not in _SEAS: err(f, _ln, f"season '{x}' 을 모릅니다")
+        cond = []
+        for part in [x.strip() for x in _r['cond'].split(';') if x.strip()]:
+            m = _re.match(r'^([A-Za-z_.0-9]+)(>=|=)([^*]+)(?:\*(\d+))?$', part)
+            if not m: err(f, _ln, f"cond '{part}' 형식이 틀렸습니다 (예: pop>=200, done=id, lv>=5*2)"); continue
+            k, op, v, n = m.group(1), m.group(2), m.group(3).strip(), int(m.group(4) or 1)
+            if k.startswith('mat.') and content and k[4:] not in _mats: err(f, _ln, f"cond 의 소재 '{k[4:]}' 가 없습니다")
+            if k.startswith('stat.') and k[5:] not in _ST: err(f, _ln, f"cond 의 능력치 '{k[5:]}' 는 {' '.join(_ST)} 중 하나")
+            cond.append([k, op, v if k == 'done' else int(v), n])
+        if _r['owner'].strip() not in _OWN: err(f, _ln, f"owner '{_r['owner']}' 을 모릅니다")
+        party = [int(x) for x in _r['party'].split('-')] if _r['party'].strip() else None
+        if ty in ('hunt', 'search') and not party: err(f, _ln, '지명형(hunt · search)은 party(예: 2-3)가 필요합니다')
+        rq = _r['req'].strip(); req = None
+        if rq == 'owner': req = [-1, 0]
+        elif rq:
+            k, _, v = rq.partition(':')
+            if k == 'core': req = [-2, int(v)]   # 주력 능력치(직업 무관) 값 이상
+            elif k not in _ST: err(f, _ln, f"req '{rq}' 는 능력치:값 (예: str:18) · core:값(주력 능력치) · owner")
+            else: req = [_ST[k], int(v)]
+        foes = []
+        for part in [x for x in _r['foes'].split('|') if x.strip()]:
+            if part.startswith('B:'):
+                _, base, nm = part.split(':'); mo = _mons.get(base)
+                if content and not mo: err(f, _ln, f"foes 의 몬스터 '{base}' 가 없습니다"); continue
+                foes.append({'mon': mo['id'] if mo else '', 'base': base, 'name': nm, 'count': 1, 'boss': True})
+            else:
+                m = _re.match(r'^(.+)x(\d+)$', part); mo = _mons.get(m.group(1)) if m else None
+                if not m or (content and not mo): err(f, _ln, f"foes '{part}' 는 몬스터x수 여야 합니다"); continue
+                foes.append({'mon': mo['id'] if mo else '', 'base': m.group(1), 'name': m.group(1), 'count': int(m.group(2)), 'boss': False})
+        if ty == 'hunt' and not foes: err(f, _ln, '전투(hunt)는 foes 가 필요합니다')
+        cm, rm = _pairs(_r['cost_mat'], f, _ln, 'cost_mat'), _pairs(_r['rw_mat'], f, _ln, 'rw_mat')
+        for k in list(cm) + list(rm):
+            if content and k not in _mats: err(f, _ln, f"소재 '{k}' 가 없습니다")
+        if _r['rw_unlock'].strip() and _r['rw_unlock'].strip() not in _UNL: err(f, _ln, f"rw_unlock '{_r['rw_unlock']}' 을 모릅니다")
+        at = _r['rw_attach'].strip(); att = None
+        if at:
+            w, _, v = at.partition(':')
+            if w not in ('owner', 'party', 'all'): err(f, _ln, f"rw_attach '{at}' 는 owner/party/all:정수")
+            else: att = [w, int(v)]
+        nq.append({'id': qid, 'no': _i(_r['no']), 'name': _r['name'].strip(), 'giver': _r['giver'].strip(), 'npc': _r['npc'].strip(), 'type': ty, 'season': seas, 'cond': cond,
+                   'owner': _r['owner'].strip(), 'goal': _r['goal'].strip(), 'party': party, 'weeks': _i(_r['weeks']) or 1, 'risk': _RISK.get(_r['risk'].strip(), 0), 'req': req, 'r': _i(_r['r']), 'foes': foes,
+                   'cost': {'gold': _i(_r['cost_gold']), 'mats': cm, 'gold2': _i(_r['cost2_gold'])},
+                   'rw': {'gold': _i(_r['rw_gold']), 'fame': _i(_r['rw_fame']), 'trust': _i(_r['rw_trust']), 'pop': _i(_r['rw_pop']), 'attach': att, 'mats': rm, 'unlock': _r['rw_unlock'].strip(), 'town': _r['rw_town'].strip(), 'extra': _pairs(_r['rw_extra'], f, _ln, 'rw_extra')},
+                   'repeat': _r['repeat'].strip() or 'once', 'hint': _r['hint'].strip()})
+    for q_ in nq:
+        for c_ in q_['cond']:
+            if c_[0] == 'done' and c_[2] not in _ids: errors.append(f"named_quests.csv {q_['id']}: cond done={c_[2]} 가 가리키는 퀘스트가 없습니다")
+    ql = {}
+    _qlp = os.path.join(DATA, 'quest_lines.csv')
+    if os.path.exists(_qlp):
+        for _ln, _r in enumerate(csv.DictReader(open(_qlp, encoding='utf-8-sig')), start=2):
+            if not (_r.get('퀘스트') or '').strip(): continue
+            if _r['퀘스트'] not in _ids: errors.append(f"quest_lines.csv {_ln}행: 퀘스트 '{_r['퀘스트']}' 가 named_quests.csv 에 없습니다"); continue
+            ql.setdefault(_r['퀘스트'], {}).setdefault(_r['때'].strip(), []).append([int(_r['순서'] or 0), _r['화자'].strip(), _r['표정'].strip() or 'default', _r['대사'].strip()])
+        for v in ql.values():
+            for k in v: v[k] = [x[1:] for x in sorted(v[k], key=lambda x: x[0])]
+    if errors:
+        print(f'오류 {len(errors)}건 — 파일을 만들지 않았습니다.')
+        for e in errors: print('  -', e)
+        sys.exit(1)
+    data['namedQuests'] = nq; data['questLines'] = ql
+    print(f'서브 퀘스트 {len(nq)}개, 대사 {sum(len(x) for v in ql.values() for x in v.values())}줄')
 print(f'검사 통과: 밸런스 {len(seen)}항목, 의뢰 종류 {len(qtypes)}, 이름 {len(names)}, 요리 {len(meals)}, 스킬 {len(skills)}, '
       f'말풍선 {sum(len(x) for e in speech["L"].values() for x in e.values()) + len(speech["rumor"]) + sum(len(x) for x in speech["lina"].values())}줄, 대화 {sum(len(v) for v in dialog.values())}줄'
       + (f', 편집기 데이터: 소재 {len(content["materials"])}·아이템 {len(content["items"])}·몬스터 {len(content["monsters"])}·퀘스트 {len(content["quests"])}' if content else ', 편집기 데이터 없음(collegium_data.json)')

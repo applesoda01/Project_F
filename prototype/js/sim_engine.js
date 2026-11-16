@@ -54,6 +54,7 @@
         effectCost: [0.10, 0.20, 0.35],
         effectOpen: 0,                             // 시설 효과 개방 (0 = 끔. 2026-11-12: 프로토타입 게임에는 없으므로 시뮬레이터도 끔)
         mealPriceRate: 0.15, mealMargin: 0.60, mealBuyRate: [0.30, 0.60, 0.90],
+        scoutFee: [20, 40, 80, 150, 250, 400, 600],   // 지명 섭외비: 모험가 등급별, 부탁할 때마다 (거절당해도 나감, 2026-11-16)
         officeCost: 1000,                          // 집무실 건설비 (2026-11-12, F급)
         upgradeCost: [500, 1000, 2000, 4000, 8000, 15000, 30000],   // 시설 업그레이드 비용 (시설 등급별)
         upMargin: 5, upSell: 3,                    // 주점 업그레이드 마진 +G, 판매 창구 업그레이드 소재 +G
@@ -433,8 +434,7 @@
     }
 
     function adventurersChoose() {
-      s.seatUsed = 0;   // 이번 주 식사한 좌석 수
-      const idle = s.advs.filter(present);
+      const idle = s.advs.filter(present);   // s.seatUsed 는 weekly 에서 0으로 (지명 출발이 먼저 식사)
       for (const a of idle) {
         if (a.busy > 0 || !a.alive) continue;
         const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
@@ -601,7 +601,7 @@
         for (const h of s.houses) { if (up >= T.upgradePerMonth) break; if (h.lv < st && h.age >= T.upgradeWait) { h.lv++; h.age = 0; up++; } }
         for (const h of s.houses) h.age++;
         const residents = s.advs.filter(a => a.alive && a.attach >= T.residentAttach).length;
-        const want = s.pop + T.baseAdd + s.popAdd + residents * T.perResident; s.popAdd = 0;
+        const want = s.pop + T.baseAdd + s.popAdd + (s.rq ? s.rq.popMonthly : 0) + residents * T.perResident; s.popAdd = 0;
         if (HS.length) { addHouses(want); s.pop = Math.min(want, capAll()); } else s.pop = want; }
       // 애착(마을에 머문 모험가)
       for (const a of s.advs) if (a.alive && a.busy === 0) a.attach = Math.min(100, a.attach + A.attachPerMonthInTown * 0.5);
@@ -633,6 +633,90 @@
       s.op = 0;
     }
 
+
+    // ===== 서브 퀘스트 (리퀘스트) · 지명 (2026-11-16) — 게임 game_core.js 의 req* 규칙 + autoRequests(검증용 자동 처리)와 같은 모델 =====
+    // 등장: 매주 조건을 채운 것 중 하나가 50% (동시에 4개) · 마감 없음 · 계절 퀘스트는 그 계절에만 진행 · 실패해도 다시 도전
+    // 자동 처리: 돈 내기는 내고도 1,500G 남을 때 · 납품은 소재가 있을 때 · 지명은 집무실에서 조건(★) 채운 모험가부터 불러 예상 성공률 60% 이상이면 보냄
+    const NQ = (cfg.run && cfg.run.noRequests) ? [] : (((gameData() || {}).namedQuests) || []), NQ_BY = {}; for (const d of NQ) NQ_BY[d.id] = d;
+    const RQC = { maxOpen: 4, appear: 0.5, base: [0.40, 0.65, 0.90, 1.00], riskMul: [[1.0, 0.8, 0.5], [1.0, 1.0, 0.8], [1.0, 1.1, 1.2]], rowOrder: [0, 4, 1, 3, 2], bossHp: 3, bossAtk: 1.3, reserve: 1500, send: 0.6 };
+    const RQT = { hunt: 0, search: 2 }, RQT_BY = { f_req_bat05: 3, f_req_srch04: 1, f_req_srch01: 3, f_req_srch05: 3, f_req_srch06: 3 };
+    const R2 = rng((seed ^ 0x9E3779B9) >>> 0);   // 게임처럼 리퀘스트 난수는 따로
+    s.rq = { open: [], done: {}, popMonthly: 0 }; s.st.reqAppear = 0; s.st.reqDone = 0; s.st.reqFail = 0; s.st.reqGold = 0;
+    const seasonOf = w => { const mo = (2 + Math.floor(w / WPM)) % 12 + 1; return mo >= 3 && mo <= 5 ? 'spring' : mo >= 6 && mo <= 8 ? 'summer' : mo >= 9 && mo <= 11 ? 'autumn' : 'winter'; };
+    const alive = () => s.advs.filter(a => a.alive);
+    const OWN = { any: a => true, social40: a => a.social === 2 && a.attach >= 40, calm65: a => a.attach >= 65 && a.risk !== 2 && a.social !== 0, wild8: a => (a.risk === 2 || a.social === 0) && a.lv >= 8 };
+    const ownerFor = d => { if (!d.owner) return null; const used = new Set(s.rq.open.map(r => r.who).filter(Boolean)); return alive().filter(a => OWN[d.owner](a) && !used.has(a)).sort((x, y) => y.attach - x.attach || x.id - y.id)[0] || null; };
+    function condOk(c) {
+      const k = c[0], op = c[1], v = c[2], n = c[3], cmp = x => op === '=' ? x === v : x >= v;
+      if (k === 'done') return !!s.rq.done[v];
+      if (k === 'pop') return cmp(Math.round(s.pop)); if (k === 'fame') return cmp(Math.floor(s.fame)); if (k === 'trust') return cmp(Math.floor(s.trust)); if (k === 'gold') return cmp(Math.floor(s.gold));
+      if (k === 'advs') return cmp(alive().length); if (k === 'tables') return cmp(s.tables); if (k === 'decos') return cmp(s.deco.size);
+      if (k === 'wins') return cmp(s.st.combatWin); if (k === 'dishes') return cmp(Object.keys(s.dishes).length); if (k === 'social') return cmp(alive().filter(a => a.social === 2).length);
+      if (k === 'lv') return alive().filter(a => a.lv >= v).length >= n;
+      if (k.indexOf('stat.') === 0) { const i = { str: 0, dex: 1, int: 2, wis: 3, tec: 4 }[k.slice(5)]; return alive().some(a => Math.round(finalStat(a, i)) >= v); }
+      if (k.indexOf('mat.') === 0) return cmp(s.mats[k.slice(4)] || 0);
+      return false;
+    }
+    const yearOf = w => Math.floor(w / WPY);
+    const eligible = d => !s.rq.open.some(r => r.d === d) && !(s.rq.done[d.id] != null && (d.repeat !== 'yearly' || yearOf(s.rq.done[d.id]) >= yearOf(s.week)));
+    const ready = d => d.cond.every(condOk) && (!d.season.length || d.season.includes(seasonOf(s.week))) && (!d.owner || !!ownerFor(d));
+    const nominated = d => d.type === 'hunt' || d.type === 'search';
+    const lockOf = r => (r.d.season.length && !r.d.season.includes(seasonOf(s.week))) || (nominated(r.d) && !has('집무실'));
+    const needOf = r => r.d.type === 'donate' ? { gold: r.d.cost.gold, mats: {} } : r.d.type === 'deliver' ? { gold: 0, mats: r.d.cost.mats } : r.d.type === 'town' ? (r.stage === 1 ? { gold: 0, mats: r.d.cost.mats } : { gold: r.d.cost.gold2, mats: {} }) : { gold: 0, mats: {} };
+    const canPay = r => { const n = needOf(r); return s.gold >= n.gold && Object.keys(n.mats).every(m => (s.mats[m] || 0) >= n.mats[m]); };
+    const meets = (r, a) => !r.d.req ? true : r.d.req[0] === -1 ? a === r.who : Math.round(finalStat(a, r.d.req[0] === -2 ? a.core : r.d.req[0])) >= r.d.req[1];
+    const chanceOf = (r, a) => a === r.who ? 1 : Math.min(1, RQC.base[attachTier(a)] * RQC.riskMul[a.risk][r.d.risk]);
+    function questOf(r) {
+      const d = r.d, si = !d.req || d.req[0] === -2 ? 0 : d.req[0] >= 0 ? d.req[0] : (r.who ? r.who.core : 0), enemies = [], seen = [];
+      if (d.type === 'hunt' && COMBAT) for (const f of d.foes) { const M = ((gameData().content || {}).monsters || []).find(m => m.id === f.mon); if (!M) continue;
+        for (let k = 0; k < f.count; k++) { const e = { hp: M.hp * (f.boss ? RQC.bossHp : 1), atk: M.atk * (f.boss ? RQC.bossAtk : 1), def: M.def || 0, name: f.name, boss: !!f.boss }; enemies.push(e); seen.push(Object.assign({}, e)); } }
+      return { g: 0, type: RQT_BY[d.id] != null ? RQT_BY[d.id] : RQT[d.type], req: [si], r: d.r || Q.ref[0], boss: false, enemies, seen, combat: enemies.length > 0, posted: s.week,
+        T: { reward: d.rw.gold, weeks: d.weeks, death: 0, fameS: d.rw.fame, fameF: 0, trustS: d.rw.trust, trustF: 1, rewards: [] } };
+    }
+    const sortRow = party => party.slice().sort((x, y) => RQC.rowOrder.indexOf(x.core) - RQC.rowOrder.indexOf(y.core));
+    function complete(r, party) {
+      const d = r.d, rw = d.rw;
+      if (!nominated(d)) { if (rw.gold) { s.gold += rw.gold; s.op += rw.gold; }   /* 납품 보상: 운영 순이익에 넣음 (게임 month.reqIn) */ if (rw.fame) s.fame = Math.min(cfg.fame.cap, s.fame + rw.fame); if (rw.trust) s.trust = Math.min(100, s.trust + rw.trust); }
+      if (rw.pop) s.popAdd += rw.pop;
+      if (rw.attach) { const w = rw.attach[0], n = rw.attach[1], list = w === 'all' ? alive() : w === 'party' ? (party || []) : (r.who ? [r.who] : []); for (const a of list) if (a.alive) a.attach = Math.min(100, a.attach + n); }
+      for (const m of Object.keys(rw.mats)) s.mats[m] = (s.mats[m] || 0) + rw.mats[m];
+      if (rw.unlock === 'table') s.tableCap = Math.min(4, s.tableCap + 1);   // 장식은 자동 배치가 사지 않으므로(게임 autoPlace와 같음) 효과 없음
+      const ex = rw.extra || {};
+      if (ex.popMonthly) s.rq.popMonthly += ex.popMonthly;
+      if (ex.recipe) { const dd = DISH.find(x => !s.dishes[x.name] && x.g <= s.grade); if (dd) { s.dishes[dd.name] = s.week; s.meals[dd.g]++; } }
+      if (ex.ownerStat && r.who && r.who.alive) r.who.stats[r.who.core] = Math.min(G.statCap, r.who.stats[r.who.core] + ex.ownerStat);
+      if (ex.ownerXp && r.who && r.who.alive) gainXp(r.who, ex.ownerXp);
+      s.rq.done[d.id] = s.week; s.rq.open.splice(s.rq.open.indexOf(r), 1); s.st.reqDone++;
+    }
+    function reqStep() {
+      if (!NQ.length) return;
+      for (const r of s.rq.open.slice()) {
+        const d = r.d;
+        if (r.who && !r.who.alive) { s.rq.open.splice(s.rq.open.indexOf(r), 1); continue; }
+        if (d.type === 'install') { const m = /^(\w+)(>=|=)(\d+)$/.exec(d.goal || ''); if (m && condOk([m[1], m[2], +m[3], 1])) complete(r, null); continue; }
+        if (nominated(d) && !has('집무실') && s.gold - (E.officeCost || 1000) >= RQC.reserve) { s.gold -= (E.officeCost || 1000); s.built['집무실'] = true; s.st.facWeek['집무실'] = s.week; }
+        if (lockOf(r)) continue;
+        if (!nominated(d)) {
+          const n = needOf(r); if (!canPay(r) || s.gold - n.gold < RQC.reserve) continue;
+          s.gold -= n.gold; s.st.reqGold += n.gold; for (const m of Object.keys(n.mats)) s.mats[m] -= n.mats[m];   // 돈 내기는 건설처럼 운영 순이익(op)에 넣지 않음
+          if (d.type === 'town' && r.stage === 1) r.stage = 2; else complete(r, null);
+          continue;
+        }
+        r.party = r.party.filter(a => a.alive && (a === r.who || a.busy === 0));   // 그사이 다른 의뢰를 떠난 사람은 파티에서 뺌
+        const pool = alive().filter(a => a.busy === 0 && !r.party.includes(a) && r.refused.get(a) !== s.week).sort((x, y) => { const k = a => finalStat(a, d.req && d.req[0] === -2 ? a.core : questOf(r).req[0]); return (meets(r, y) - meets(r, x)) || (k(y) - k(x)); });
+        const q0 = questOf(r), okNow = () => r.party.length >= d.party[0] && r.party.some(a => meets(r, a)) && r.party.every(a => a.alive && a.busy === 0) && questP(sortRow(r.party), q0) >= RQC.send;
+        for (const a of pool) { if (r.party.length >= d.party[1] || okNow()) break; const fee = a === r.who ? 0 : (E.scoutFee || [])[a.grade] || 0; if (s.gold - fee < RQC.reserve) break; s.gold -= fee; s.op -= fee; s.st.scoutGold = (s.st.scoutGold || 0) + fee;   /* 섭외비: 거절당해도 나감, 운영 순이익에 넣음 */ if (R2() < chanceOf(r, a)) r.party.push(a); else r.refused.set(a, s.week); R2(); }
+        if (!okNow()) continue;
+        const party = sortRow(r.party), q = questOf(r);
+        for (const m of party) m.busy = d.weeks;
+        if (runQuest(party, q)) complete(r, party); else { r.party = r.who ? [r.who] : []; s.st.reqFail++; }
+      }
+      if (s.rq.open.length < RQC.maxOpen) {
+        const cands = NQ.filter(d => eligible(d) && ready(d));
+        if (cands.length && R2() < RQC.appear) { const d = cands[Math.floor(R2() * cands.length)], ow = ownerFor(d); s.rq.open.push({ d, stage: 1, who: ow, party: ow && d.party ? [ow] : [], refused: new Map() }); s.st.reqAppear++; }
+      }
+    }
+
     function weekly() {
       // 훈련
       for (const a of s.advs) {
@@ -642,6 +726,8 @@
       }
       expireQuests();
       generateQuests();   // 2026-11-12: 매주 게시 (예전에는 매달 초에만 = 월 유입의 1/4만 들어왔음)
+      s.seatUsed = 0;   // 이번 주 식사한 좌석 수
+      reqStep();          // 리퀘스트: 자동 처리 → 지명 파티 출발(게시판보다 먼저) → 등장 판정
       adventurersChoose();
       bossStep();
       invasionStep();
@@ -654,8 +740,8 @@
     for (let i = 0; i < A.startCount; i++) newAdv({ attach: 20 });
     // 로비 배치 (2026-11-12): 놓인 장식(cfg.run.deco 목록) · 테이블 세트 수. 테이블은 첫 주에 2세트, 이후 매달 금고 여유(구매 뒤 1,000G 이상)가 있으면 1세트씩 4세트까지 (게임 autoPlace와 같음)
     s.deco = new Set((cfg.run && cfg.run.deco) || []); s.tables = 0; s.x2Owed = 0;
-    const buyTables = n0 => { const P = 200, MAX = 2; /* 2026-11-13: 테이블은 처음 2세트까지 (3·4세트는 서브 퀘스트 보상, 시뮬레이터는 보상 없음으로 가정) */ let n = n0; while (n-- > 0 && s.tables < MAX && s.gold >= P) { s.gold -= P; s.tables++; } };
-    const MAX2 = 2; const tablePolicy = first => { if (cfg.run && cfg.run.noTables) return; if (first) buyTables(2); else if (s.tables < MAX2 && s.gold - 200 >= 1000) buyTables(1); };
+    s.tableCap = 2; const buyTables = n0 => { const P = 200, MAX = s.tableCap; /* 2026-11-13: 테이블은 처음 2세트까지. 3·4세트는 서브 퀘스트 보상 (2026-11-16: reqStep 이 tableCap 을 올림) */ let n = n0; while (n-- > 0 && s.tables < MAX && s.gold >= P) { s.gold -= P; s.tables++; } };
+    const tablePolicy = first => { if (cfg.run && cfg.run.noTables) return; if (first) buyTables(2); else if (s.tables < s.tableCap && s.gold - 200 >= 1000) buyTables(1); };
     tablePolicy(true);
 
     const maxW = cfg.run.maxYears * WPY;

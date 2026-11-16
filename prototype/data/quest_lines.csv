@@ -1,0 +1,203 @@
+﻿퀘스트,때,순서,화자,표정,대사
+f_req_inst01,req,1,{이름},default,"마스터, 의뢰 끝나고 돌아오면… 앉을 데가 하나도 없어요."
+f_req_inst01,req,2,{이름},default,"바닥에 앉아서 장부 쓰는 거, 저만 이상하다고 생각하나요?"
+f_req_inst01,req,3,리나,smile,그러고 보니 테이블이 하나도 없네요…
+f_req_inst01,ok,1,{이름},default,"와, 의자다! 오늘은 여기서 밥 먹을래요."
+f_req_inst01,ok,2,리나,smile,이제야 길드 같아 보이네요.
+f_req_don01,req,1,바르톨,default,광장 우물이 지난 비에 그만 주저앉았소.
+f_req_don01,req,2,바르톨,default,"고칠 돈이 400G쯤 드는데, 마을 금고가 텅 비어서… 길드에서 조금만 보태 주겠소?"
+f_req_don01,ok,1,바르톨,default,우물이 다시 찰랑거리오! 물 길으러 오는 사람이 늘었소.
+f_req_don01,ok,2,바르톨,default,"물 좋다는 소문에 이사 오겠다는 집도 생겼다오. 고맙소, 마스터."
+f_req_don02,req,1,한스,default,"길드 테이블, 우리 조합이 짠 거 맞죠? 손님이 꽉 찼던데요."
+f_req_don02,req,2,한스,default,500G만 후원해 주시면 한 세트 더 짜 드릴 수 있어요. 튼튼하게!
+f_req_don02,ok,1,한스,default,세 번째 세트 완성! 팔씨름을 해도 안 부서집니다.
+f_req_don02,ok,2,리나,smile,설비 목록에 테이블이 하나 더 생겼어요.
+f_req_bat01,req,1,굼바,default,밤마다 들개 떼가 우리 양 우리를 빙빙 돌아요.
+f_req_bat01,req,2,굼바,default,잠을 못 자서 제가 양을 세다가 잠들 지경이에요. 두 분만 보내 주세요!
+f_req_bat01,ok,1,굼바,default,어젯밤엔 양 울음소리밖에 안 들렸어요. 꿀잠 잤습니다!
+f_req_bat01,ok,2,굼바,default,고마워서 한스한테 벤치를 하나 부탁했어요. 길드 손님들 기다릴 때 쓰세요.
+f_req_bat01,fail,1,굼바,default,들개가 오히려 더 늘었어요… 다음엔 꼭 부탁해요.
+f_req_bat02,req,1,그레타,default,"고친 우물에서 두레박을 올렸더니, 글쎄 말랑한 게 같이 올라오지 뭐야."
+f_req_bat02,req,2,그레타,default,물맛이 이상해지기 전에 좀 꺼내 주게.
+f_req_bat02,ok,1,그레타,default,이제 물이 맑구먼. 젊은이들 손이 빠르네.
+f_req_bat02,ok,2,그레타,default,동네 사람들한테 길드 칭찬 좀 해 둬야겠어.
+f_req_bat02,fail,1,그레타,default,"아이고, 미끄러워서 놓쳤나 보네. 다음에 또 와 줘."
+f_req_srch01,req,1,그레타,default,우리 집 영감이 숲에 약초 캐러 가서 사흘째 안 돌아와.
+f_req_srch01,req,2,그레타,default,들개 소리가 나는 쪽으로 갔다는구먼… 제발 찾아 주게.
+f_req_srch01,ok,1,그레타,default,영감이 발목만 삐었대. 정말 고맙구먼!
+f_req_srch01,ok,2,그레타,default,마을 사람들이 길드 게시판에 달라고 문장을 새겨 줬어.
+f_req_srch01,fail,1,그레타,default,흔적만 찾았다고…? 한 번만 더 가 주게.
+f_req_del01,req,1,페드로,default,여기가 이 동네 길드요? 짐승 가죽 다섯 장이 급히 필요하오.
+f_req_del01,req,2,페드로,default,값은 후하게 쳐 드리지. 상인은 신용이 생명이니까.
+f_req_del01,ok,1,페드로,default,질 좋은 가죽이군! 다음에 이 길로 지나가면 또 들르겠소.
+f_req_del01,ok,2,리나,smile,단골 상인이 생긴 것 같아요.
+f_req_bat03,req,1,페드로,default,또 왔소. 그런데 오는 길에 도적이 짐마차를 노리더군.
+f_req_bat03,req,2,페드로,default,다음 마을까지 길을 좀 치워 주시오. 두목이 제법 질기오.
+f_req_bat03,ok,1,페드로,default,도적들이 숨겨 둔 궤짝에서 쓸 만한 사물함이 나왔소. 길드에 두시오.
+f_req_bat03,ok,2,페드로,default,이 길이 안전하다는 소문은 내가 내 드리지!
+f_req_bat03,fail,1,페드로,default,짐을 반이나 뺏겼소… 다음엔 더 센 사람을 붙여 주시오.
+f_req_bat04,req,1,굼바,default,외눈 멧돼지란 놈이 밭을 갈아엎고 다녀요. 제가 갈 땐 안 오더니!
+f_req_bat04,req,2,굼바,default,졸개도 둘이나 데리고 다녀요. 든든한 분들로 보내 주세요.
+f_req_bat04,ok,1,굼바,default,드디어 잡았군요! 고기는 길드 식당에 드릴게요.
+f_req_bat04,ok,2,굼바,default,머리는 박제해서… 길드에 장식장째 기증하겠습니다!
+f_req_bat04,fail,1,굼바,default,그놈이 또 도망갔어요. 밭이 남아나질 않네요…
+f_req_srch02,req,1,바르톨,default,"손녀가 다음 달 혼례인데, 냇가에서 반지를 잃어버렸다오."
+f_req_srch02,req,2,바르톨,default,반짝이는 걸 좋아하는 슬라임이 있다던데… 설마 삼킨 건 아니겠지?
+f_req_srch02,ok,1,바르톨,default,찾았구려! 조금 끈적하지만 씻으면 되오.
+f_req_srch02,ok,2,바르톨,default,손녀가 고맙다며 길드 현수막에 수를 놓았소. 꼭 걸어 주시오.
+f_req_srch02,fail,1,바르톨,default,냇가를 다 뒤져도 없다니… 한 번만 더 부탁하오.
+f_req_srch03,req,1,헤르만,default,"흠흠, 고서점에서 이 지도를 샀소. X 표시가 이 근처요."
+f_req_srch03,req,2,헤르만,default,보물이든 아니든 학문적으로 확인해야 하오. 도적이 먼저 노리고 있다니 서둘러야겠군.
+f_req_srch03,ok,1,헤르만,default,보물은 마석 몇 개뿐이었지만… 지도 자체가 귀하오. 길드 벽에 걸어 두시오.
+f_req_srch03,ok,2,헤르만,default,이 지도를 보면 모험가들이 길을 덜 헤맬 거요.
+f_req_srch03,fail,1,헤르만,default,도적들이 먼저 파헤쳤나 보오. 다른 표시를 다시 찾아보지.
+f_req_don03,req,1,세실리아,default,올겨울은 유난히 춥네요. 고아원 장작이 다 떨어졌어요.
+f_req_don03,req,2,세실리아,default,300G면 겨울을 날 수 있을 것 같아요. 아이들을 위해 부탁드려요.
+f_req_don03,ok,1,세실리아,default,아이들이 난롯가에서 노래를 불러요. 정말 감사합니다.
+f_req_don03,ok,2,세실리아,default,석공 아저씨가 남은 돌로 길드에도 벽난로를 놓아 주겠대요.
+f_req_don04,req,1,{이름},default,"마스터, 길드에 초록색이 하나도 없어요!"
+f_req_don04,req,2,{이름},default,화분 하나만 들여요. 제가 물은 꼬박꼬박 줄게요. 150G면 돼요!
+f_req_don04,ok,1,{이름},default,"봐요, 훨씬 생기 있죠? 이름은 '초록이'예요."
+f_req_don04,ok,2,리나,smile,…매일 아침 화분에 인사하는 모험가가 생겼어요.
+f_req_don05,req,1,한스,default,세 번째 세트도 꽉 찼더라고요. 장사 잘되시네요!
+f_req_don05,req,2,한스,default,600G면 마지막 한 세트를 짜 드릴게요. 이번엔 다리를 더 굵게!
+f_req_don05,ok,1,한스,default,네 번째 세트 완성입니다. 이제 로비가 진짜 주점 같네요.
+f_req_don05,ok,2,리나,smile,테이블은 이제 최대 네 세트까지 놓을 수 있어요.
+f_req_don06,req,1,대장장이,default,"대장간 일이 늘어서 고향 견습생들을 부르고 싶은데, 집 지을 땅값이 모자라."
+f_req_don06,req,2,대장장이,default,"800G만 보태 주면, 고향 사람들도 하나둘 데려오겠네."
+f_req_don06,ok,1,대장장이,default,집이 생겼네! 고향에 편지를 썼더니 다들 오고 싶어 해.
+f_req_don06,ok,2,리나,smile,앞으로 매달 이사 오는 사람이 조금씩 늘 거예요.
+f_req_del02,req,1,그레타,default,길드 식당 요리 소문 들었어. 나랑 새 음식 하나 만들어 보겠나?
+f_req_del02,req,2,그레타,default,들버섯 세 개랑 멧돼지 고기 두 덩이만 구해 주게.
+f_req_del02,ok,1,그레타,default,완성이야! 버섯 멧돼지 파이. 만드는 법은 길드에 주지.
+f_req_del02,ok,2,그레타,default,대신 처음 굽는 건 나한테 한 조각 주게.
+f_req_pers01,req,1,{이름},default,마스터… 고향에서 편지가 왔어요. 동생이 아프대요.
+f_req_pers01,req,2,{이름},default,"약초를 구해서 다녀오고 싶은데, 길에 들개가 많아서… 한 명만 같이 가 주면 좋겠어요."
+f_req_pers01,ok,1,{이름},default,동생이 다 나았어요. 마스터 덕분이에요.
+f_req_pers01,ok,2,{이름},default,이제 이 길드가… 제 두 번째 집 같아요.
+f_req_pers01,fail,1,{이름},default,길이 막혀서 못 갔어요… 다음 달에 다시 가 볼게요.
+f_req_pers02,req,1,{이름},default,예전에 같이 다니던 놈이 도적 두목이 됐대.
+f_req_pers02,req,2,{이름},default,"내가 직접 끝낸다. 한 명만 붙여 줘. …아니, 그냥 보내 주기만 해."
+f_req_pers02,ok,1,{이름},default,…끝났어. 이제 미련 없어.
+f_req_pers02,ok,2,{이름},default,"나 같은 놈 받아 준 이 길드, 고맙게 생각해."
+f_req_pers02,fail,1,{이름},default,쳇… 아직 내가 부족했나 보군.
+f_req_town01,req,1,대장장이,default,"모루 하나 메고 떠돌다 보니 여기까지 왔네. 이 마을, 대장간이 없더군."
+f_req_town01,req,2,대장장이,default,고철 조각 열 개랑 참나무 가지 다섯 개만 구해 주면 화로부터 지어 보지.
+f_req_town01,ok,1,대장장이,default,좋은 고철이야. 화로는 됐고… 이제 건물이 문제군.
+f_req_town01,req2,1,대장장이,default,"1,000G만 보태 주면 이 마을에 아예 눌러앉겠네."
+f_req_town01,ok2,1,대장장이,default,"대장간 개업일세! 모험가들 장비, 이제 내가 책임지지."
+f_req_town01,ok2,2,리나,smile,마을에 대장간이 생겼어요. 마을 화면에서 가 볼 수 있어요.
+f_req_town02,req,1,그레타,default,약초 캐는 걸 도와줄 만한 길드라더니. 나도 부탁 하나 하자.
+f_req_town02,req,2,그레타,default,약초 여덟 줌이랑 신선한 물 네 병이면 물약을 달여 볼 수 있어.
+f_req_town02,ok,1,그레타,default,잘 달여졌어. 이제 팔 가게만 있으면 되는데…
+f_req_town02,req2,1,그레타,default,광장 빈터에 작은 가게를 내고 싶구먼. 600G만 보태 주게.
+f_req_town02,ok2,1,그레타,default,물약 상점 문 열었어! 다친 모험가들 오면 할인해 줄게.
+f_req_town02,ok2,2,리나,smile,마을에 물약 상점이 생겼어요.
+f_req_srch04,req,1,굼바,default,봄이라 씨 뿌릴 땅이 산더미예요. 일손이 둘만 있으면 좋겠는데…
+f_req_srch04,req,2,굼바,default,칼 대신 괭이 쥐는 것도 모험이라고 생각해 주세요!
+f_req_srch04,ok,1,굼바,default,덕분에 파종 끝! 가을에 버섯이랑 향신료 넉넉히 드릴게요. 우선 이건 맛보기.
+f_req_srch04,ok,2,리나,smile,다들 흙투성이로 돌아왔어요…
+f_req_srch04,fail,1,굼바,default,괭이질보다 칼질이 쉬우셨나 봐요… 남은 밭은 제가 할게요.
+f_req_don07,req,1,바르톨,default,봄꽃이 피었소. 광장에서 꽃놀이 축제를 열고 싶은데…
+f_req_don07,req,2,바르톨,default,500G만 보태 주면 길드 이름을 현수막 맨 위에 걸겠소.
+f_req_don07,ok,1,바르톨,default,축제 대성공이오! 옆 마을 사람들까지 구경 왔다오.
+f_req_don07,ok,2,리나,smile,축제 구경 왔다가 눌러앉은 사람도 있대요.
+f_req_srch05,req,1,세실리아,default,"고아원 아이들이 강가에서 놀다가, 신발 찾으러 간 아이가 안 돌아왔어요!"
+f_req_srch05,req,2,세실리아,default,슬라임이 사는 여울 쪽이래요. 발 빠른 분을 보내 주세요!
+f_req_srch05,ok,1,세실리아,default,아이가 무사해요! 젖은 신발 두 짝까지 챙겨 오셨네요.
+f_req_srch05,ok,2,세실리아,default,마을 어부님이 고맙다며 물고기를 보내셨어요. 길드 식당에서 써 주세요.
+f_req_srch05,fail,1,세실리아,default,아이는 혼자 돌아왔어요… 다음엔 꼭 강가를 지켜 주세요.
+f_req_bat05,req,1,페드로,default,여름 장터로 가는 상인단과 함께 왔소. 이 근처 길에 도적이 들끓는다더군.
+f_req_bat05,req,2,페드로,default,이름난 길드라 들었소. 두 주만 동행해 주시오.
+f_req_bat05,ok,1,페드로,default,장사가 아주 잘됐소! 호위비에 향신료까지 얹어 드리지.
+f_req_bat05,ok,2,페드로,default,내년 여름에도 이 길로 오겠소.
+f_req_bat05,fail,1,페드로,default,짐 절반을 길에 두고 왔소… 내년엔 더 든든한 사람을 부탁하오.
+f_req_bat06,req,1,바르톨,default,가을 수확제의 꽃은 멧돼지 사냥 대회요!
+f_req_bat06,req,2,바르톨,default,길드에서 힘자랑할 사람들을 보내 주시오. 우승하면 고기는 길드 몫이오.
+f_req_bat06,ok,1,바르톨,default,올해 우승은 길드요! 마을 사람들이 다들 이름을 외웠다오.
+f_req_bat06,ok,2,{이름},default,"하하, 내년에도 내가 우승한다!"
+f_req_bat06,fail,1,바르톨,default,올해는 사냥꾼들한테 졌구려. 내년을 기약합시다.
+f_req_don08,req,1,헤르만,default,"흠흠, 이번엔 이 지방 전설을 모으는 중이오. 길드 이야기도 책에 싣고 싶은데…"
+f_req_don08,req,2,헤르만,default,300G면 길드 연대기를 한 권 써 드리리다. 모험가들이 아주 좋아할 거요.
+f_req_don08,ok,1,헤르만,default,"'변방 길드 연대기' 제1권이오. 어떻소, 마음에 드시오?"
+f_req_don08,ok,2,리나,smile,다들 자기 이름이 나왔는지 찾아보느라 바빠요.
+f_req_srch06,req,1,페드로,default,고갯길에서 내 마차가 눈에 갇혔소. 마부가 아직 거기 있소!
+f_req_srch06,req,2,페드로,default,들개 소리도 들렸소… 추위를 견딜 사람이 가 주시오.
+f_req_srch06,ok,1,페드로,default,마부도 말도 무사하오. 이건 감사의 표시요.
+f_req_srch06,ok,2,페드로,default,이 마을 길드 이야기는 가는 곳마다 하고 다니겠소.
+f_req_srch06,fail,1,페드로,default,눈이 너무 와서 못 갔다니… 날이 개면 다시 부탁하오.
+f_req_del03,req,1,세실리아,default,올겨울엔 아이들과 등불 축제를 열고 싶어요.
+f_req_del03,req,2,세실리아,default,등불 심지로 쓸 마석 세 개와 등갓 천 다섯 장만 구해 주실 수 있을까요?
+f_req_del03,ok,1,세실리아,default,광장이 등불로 가득해요. 아이들이 길드 쪽 등불이 제일 예쁘대요.
+f_req_del03,ok,2,리나,smile,이렇게 따뜻한 겨울은 처음이에요.
+f_req_inst01,refuse,1,{이름},default,"…네, 바닥도 나름 시원하니까요."
+f_req_don01,refuse,1,바르톨,default,"허허, 마을 금고를 다시 털어 봐야겠구려."
+f_req_don02,refuse,1,한스,default,알겠습니다. 나무는 말려 둘 테니 마음 바뀌면 불러 주세요.
+f_req_bat01,refuse,1,굼바,default,그럼 오늘 밤도 제가 양을 세야겠네요…
+f_req_bat02,refuse,1,그레타,default,그럼 내가 국자로 건져 볼 수밖에.
+f_req_srch01,refuse,1,그레타,default,…알았어. 영감은 내가 찾으러 가 보지.
+f_req_del01,refuse,1,페드로,default,아쉽군. 가죽은 다른 마을에서 구하겠소.
+f_req_bat03,refuse,1,페드로,default,"흠, 그럼 길을 돌아서 가야겠군. 사흘은 늦겠소."
+f_req_bat04,refuse,1,굼바,default,올해 감자는 멧돼지가 다 먹겠네요…
+f_req_srch02,refuse,1,바르톨,default,손녀한테는 내가 새 반지를 사 주는 수밖에 없겠구려.
+f_req_srch03,refuse,1,헤르만,default,"흠, 학문의 손실이오. 다른 길드에 물어보지."
+f_req_don03,refuse,1,세실리아,default,괜찮아요. 아이들과 서로 꼭 붙어 자면 되니까요.
+f_req_don04,refuse,1,{이름},default,…그럼 들꽃이라도 꺾어 올게요.
+f_req_don05,refuse,1,한스,default,네 번째 세트는 다음에! 도면은 남겨 두겠습니다.
+f_req_don06,refuse,1,대장장이,default,"그래, 견습생들은 좀 더 기다리라고 하지."
+f_req_del02,refuse,1,그레타,default,버섯 철 지나기 전에 다시 생각해 보게.
+f_req_pers01,refuse,1,{이름},default,…알겠어요. 편지만 먼저 보낼게요.
+f_req_pers02,refuse,1,{이름},default,"흥, 허락 안 해도 언젠가 혼자 간다."
+f_req_town01,refuse,1,대장장이,default,이 마을도 아닌가… 다음 마을로 가 보지.
+f_req_town02,refuse,1,그레타,default,"약초는 말려 둘 테니, 생각 바뀌면 오게."
+f_req_srch04,refuse,1,굼바,default,"괜찮아요, 올해도 허리 한번 혹사하죠!"
+f_req_don07,refuse,1,바르톨,default,올해 꽃놀이는 조촐하게 하겠소.
+f_req_srch05,refuse,1,세실리아,default,…알겠어요. 마을 사람들과 직접 찾아볼게요.
+f_req_bat05,refuse,1,페드로,default,상인단만 보내자니 마음이 무겁구려.
+f_req_bat06,refuse,1,바르톨,default,사냥 대회는 마을 사냥꾼들끼리 하겠소.
+f_req_don08,refuse,1,헤르만,default,연대기에 '책을 거절한 길드'라고 적어 두지. 농담이오.
+f_req_srch06,refuse,1,페드로,default,그럼 눈이 녹기만 기다려야겠소…
+f_req_del03,refuse,1,세실리아,default,올해는 촛불 몇 개로 대신할게요.
+f_req_inst01,expire,1,{이름},default,결국 바닥에서 밥 먹는 게 익숙해졌어요.
+f_req_don01,expire,1,바르톨,default,우물은 마을 사람들이 돌을 날라 겨우 막았소.
+f_req_don02,expire,1,한스,default,나무가 갈라져 버렸어요. 이번 건 없던 일로 하죠.
+f_req_bat01,expire,1,굼바,default,양 두 마리를 잃었어요… 이제 다른 길드에 물어볼게요.
+f_req_bat02,expire,1,그레타,default,우물은 그냥 덮어 버렸어. 아쉽구먼.
+f_req_srch01,expire,1,그레타,default,영감은 혼자 기어서 돌아왔다네. 길드는 안 오더군.
+f_req_del01,expire,1,페드로,default,기다리다 장날이 지났소. 다른 데서 샀다오.
+f_req_bat03,expire,1,페드로,default,다른 길로 돌아서 갔소. 다음에 또 봅시다.
+f_req_bat04,expire,1,굼바,default,밭 절반이 엉망이 됐어요… 올해 농사는 끝이네요.
+f_req_srch02,expire,1,바르톨,default,혼례는 반지 없이 치렀다오. 손녀가 많이 울었소.
+f_req_srch03,expire,1,헤르만,default,지도는 다른 학회에 팔았소. 아쉽게 됐군.
+f_req_don03,expire,1,세실리아,default,봄이 와서 다행이에요. 다들 무사히 겨울을 났어요.
+f_req_don04,expire,1,{이름},default,이제 아무도 초록색 얘기 안 해요.
+f_req_don05,expire,1,한스,default,다른 가게에서 주문이 들어와서요. 그쪽 먼저 짤게요.
+f_req_don06,expire,1,대장장이,default,견습생들은 다른 마을로 갔다네.
+f_req_del02,expire,1,그레타,default,버섯 철이 지나 버렸어. 파이는 내년에나.
+f_req_pers01,expire,1,{이름},default,…동생은 다른 사람이 돌봐 줬대요. 괜찮아요.
+f_req_pers02,expire,1,{이름},default,그놈은 다른 데로 떠났다더군. 쳇.
+f_req_town01,expire,1,대장장이,default,더는 못 기다리겠군. 모루 메고 다시 떠나지.
+f_req_town02,expire,1,그레타,default,약초가 다 말라 버렸어. 가게는 없던 일로 하지.
+f_req_srch04,expire,1,굼바,default,파종 철이 지나 버렸네요. 혼자 다 했어요…
+f_req_don07,expire,1,바르톨,default,꽃이 다 져 버렸구려. 내년을 기약하오.
+f_req_srch05,expire,1,세실리아,default,아이는 마을 사람들이 찾았어요. 그래도 고마워요.
+f_req_bat05,expire,1,페드로,default,상인단은 먼저 떠났소. 장터는 끝났다오.
+f_req_bat06,expire,1,바르톨,default,수확제는 끝났소. 우승은 사냥꾼 조합이 가져갔다오.
+f_req_don08,expire,1,헤르만,default,원고 마감이 지났소. 다음 고장으로 가 보겠소.
+f_req_srch06,expire,1,페드로,default,눈이 녹아서 마부가 혼자 걸어 내려왔소.
+f_req_del03,expire,1,세실리아,default,겨울이 끝나 버렸네요. 등불은 내년에 밝혀요.
+f_req_don07,req_y2,1,바르톨,default,올해도 꽃이 만발했소! 작년 축제 소문이 옆 마을까지 났다오.
+f_req_don07,req_y2,2,바르톨,default,올해도 500G만 보태 주면 현수막 맨 위 자리는 길드 것이오.
+f_req_don07,ok_y2,1,바르톨,default,작년보다 사람이 두 배요! 이제 이 마을 봄 명물이 됐소.
+f_req_don07,ok_y2,2,리나,smile,올해는 모험가들이 꽃 화관을 쓰고 돌아왔어요.
+f_req_bat06,req_y2,1,바르톨,default,"작년 우승팀, 올해도 나오겠지? 사냥꾼 조합이 이를 갈고 있소."
+f_req_bat06,req_y2,2,바르톨,default,이번엔 상대도 만만치 않을 거요. 힘센 사람들로 보내 주시오.
+f_req_bat06,ok_y2,1,바르톨,default,두 해 연속 우승이오! 트로피에 길드 이름을 새겨야겠소.
+f_req_bat06,ok_y2,2,{이름},default,"봤지? 내년에도, 그다음 해에도 내가 우승이다!"
+f_req_del03,req_y2,1,세실리아,default,아이들이 작년 등불 이야기만 해요. 올해도 열어도 될까요?
+f_req_del03,req_y2,2,세실리아,default,올해는 등불을 더 많이 달고 싶어요. 마석이랑 천을 부탁드려요.
+f_req_del03,ok_y2,1,세실리아,default,작년보다 더 밝아요. 마을 사람들도 등불을 하나씩 들고 나왔어요.
+f_req_del03,ok_y2,2,리나,smile,길드 창문에도 아이들이 만든 등불이 걸렸어요.
+f_req_del01,first,1,리나,smile,어서 오세요! 짐이 엄청 많으시네요… 상인이세요?
+f_req_srch03,first,1,리나,smile,"책을 그렇게 많이 들고… 길을 잃으셨어요? 아, 의뢰요?"
+f_req_town01,first,1,리나,smile,"모, 모루를 메고 오셨어요?! 일단 내려놓으세요, 바닥 꺼져요!"

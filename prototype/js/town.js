@@ -87,9 +87,11 @@
   const popStage = s => { let k = 0; for (const t of s.cfg.town.stages) if (s.pop >= t) k++; return k; };
   const curStage = s => override >= 0 ? override : popStage(s);
   const unl = s => (s.townUnlock = s.townUnlock || {});
+  const REQ_BUILD = { smith: 1, potion: 1 };
 
   function status(b, s) {
     const st = curStage(s);
+    if (REQ_BUILD[b.id]) return unl(s)[b.id] ? { on: true, text: '운영 중' } : { on: false, text: '리퀘스트를 들어주면 지어집니다' };   // 2026-11-16: 대장간 · 물약 상점은 서브 퀘스트(#19 · #20)로만 해금 (2026-11-13 결정)
     if (st < b.st) return { on: false, text: `${STAGE_NAMES[b.st]} 단계부터 등장합니다 (현재 ${STAGE_NAMES[st]})` };
     if (b.special && !unl(s)[b.id]) return { on: false, text: '특별 퀘스트를 완료하면 지어집니다' };
     return { on: true, text: '운영 중' };

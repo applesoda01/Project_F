@@ -632,3 +632,54 @@
 /* 책 연출 (2026-11-14, js/book_fx.js): 표지가 덮인 동안 책갈피 · 책끈 숨김 */
 #pop.bfx-closed #bookMarks,#pop.bfx-closed #bookSub,#pop.bfx-closed #bookRibbon{opacity:0}
 #bookMarks,#bookSub,#bookRibbon{transition:opacity .2s}
+
+/* ---------- 리퀘스트 장 (2026-11-16) ---------- */
+.bk-rq.bk2>section{display:flex;flex-direction:column;gap:8px;min-height:0}
+.bk-rq .rq-list{display:flex;flex-direction:column;gap:6px}
+.bk-rq .rq-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:9px 12px;text-align:left;cursor:pointer;background:rgba(255,250,238,.55);border:1.5px solid rgba(110,72,36,.35);border-radius:6px;font:400 15px var(--hf);color:var(--ux-ink)}
+.bk-rq .rq-card:hover{background:rgba(255,246,222,.9)}
+.bk-rq .rq-card.on{background:#fff3cf;border-color:#a8792a;box-shadow:0 0 0 2px rgba(201,150,62,.35)}
+.bk-rq .rq-card.lock{opacity:.72}
+.bk-rq .gv{font:700 13px/1 var(--hf);font-style:normal;padding:6px 8px;border-radius:4px;color:#fff8ea;background:#7a5a3a;white-space:nowrap}
+.bk-rq .gv-adventurer .gv{background:#b38a26}.bk-rq .gv-resident .gv{background:#2f7f7a}.bk-rq .gv-outsider .gv{background:#6a4785}
+.bk-rq .rq-card .tx{display:flex;flex-direction:column;min-width:0}
+.bk-rq .rq-card .tx b{font:700 18px/1.25 var(--hf);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bk-rq .rq-card .tx em{font-style:normal;font-size:13px;color:var(--ux-wood)}
+.bk-rq .st{font:700 13px var(--hf);font-style:normal;color:var(--ux-wood);white-space:nowrap}
+.bk-rq .st.new{color:#fff8ea;background:#b5452f;padding:3px 8px;border-radius:10px}.bk-rq .st.ok{color:#3f7a3a}.bk-rq .st.go{color:#2f6f9a}.bk-rq .st.lock{color:#8a735a}
+.bk-rq .rq-none{padding:26px 10px;text-align:center;font:400 16px/1.7 var(--hf);color:#7a5a3a}.bk-rq .rq-none.big{margin:auto;font-size:19px}
+.bk-rq .rq-hh{margin-top:auto;font-size:15px}
+.bk-rq .rq-hints{display:flex;flex-direction:column;gap:5px;padding-bottom:4px}
+.bk-rq .rq-hint{padding:7px 12px;border:1.5px dashed rgba(110,72,36,.35);border-radius:6px;font:400 14px/1.45 var(--hf);color:#8a735a}
+.bk-rq .rq-hint b{margin-right:8px;color:#a8947a;letter-spacing:1px}
+.bk-rq .rq-head{display:flex;align-items:center;gap:12px;padding:2px 2px 8px;border-bottom:1.5px solid rgba(110,72,36,.3)}
+.bk-rq .rq-head b{display:block;font:700 24px/1.2 var(--hf);color:var(--ux-ink)}.bk-rq .rq-head span{font-size:14px;color:var(--ux-wood)}
+.bk-rq .rq-say{padding:8px 14px;background:rgba(255,250,238,.6);border-left:4px solid rgba(110,72,36,.35);font:400 15px/1.55 var(--hf);color:var(--ux-ink)}
+.bk-rq .rq-say p{margin:2px 0}.bk-rq .rq-say p b{margin-right:8px;color:var(--ux-wood)}
+.bk-rq .rq-lock{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:6px;background:rgba(138,115,90,.16);font:700 15px var(--hf);color:#6b4a2a}
+.bk-rq .rq-sec{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;align-items:start}
+.bk-rq .rq-sec>i{font:700 14px/28px var(--hf);font-style:normal;color:var(--ux-wood)}
+.bk-rq .rq-sec>div{display:flex;flex-wrap:wrap;gap:6px}
+.bk-rq .rq-chip{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border-radius:14px;background:#fffaf0;border:1.5px solid #e2c48a;font:400 14px var(--hf);color:var(--ux-ink);white-space:nowrap}
+.bk-rq .rq-chip img{width:22px;height:22px;object-fit:contain}.bk-rq .rq-chip b{font-weight:700}.bk-rq .rq-chip small{font-size:12px;color:var(--ux-muted)}
+.bk-rq .rq-chip.gold{border-color:#c9963e;background:#fff3cf}.bk-rq .rq-chip.key{border-color:#2f7f7a;background:#e6f3ee}.bk-rq .rq-chip.lack{border-color:#c2705c;background:#fbeae4;color:#8a2f1c}
+.bk-rq .rq-chip.star{border-color:#b38a26}.bk-rq .rq-chip.enemy{border-color:#b98a7a;color:#7a2f1c}
+.bk-rq .rq-act{display:flex;align-items:center;gap:10px;min-height:38px}
+.bk-rq .rq-act .rq-no{margin-left:0;opacity:.85}.bk-rq .rq-msg{font:400 14px var(--hf);color:#7a5032;min-width:0}.bk-rq .rq-note{font:400 14px var(--hf);color:var(--ux-wood)}
+.bk-rq .rq-party{display:flex;align-items:center;gap:6px;min-height:38px;font:400 14px var(--hf);color:var(--ux-wood)}
+.bk-rq .rq-party .pl{font-weight:700;color:var(--ux-ink);margin-right:4px}.bk-rq .rq-party em{font-style:normal}
+.bk-rq .rq-party .pm{flex:0 0 34px;box-sizing:border-box;width:34px;height:34px;border-radius:50%;background-color:#efe2cf;background-repeat:no-repeat;border:2px solid #a8792a}
+.bk-rq .rq-p{margin-left:auto;font:400 15px var(--hf)}.bk-rq .rq-p b{font-size:19px}.bk-rq .rq-p.ok b{color:#3f7a3a}.bk-rq .rq-p.mid b{color:#b07a16}.bk-rq .rq-p.bad b{color:#b5452f}
+.bk-rq .rq-nom{display:flex;flex-direction:column;border-top:1.5px solid rgba(110,72,36,.3)}
+.bk-rq .rq-nom.off{opacity:.6;pointer-events:none}
+.bk-rq .rq-nom .nh,.bk-rq .rq-nom .nr{display:grid;grid-template-columns:minmax(0,1fr) 58px 44px 50px 58px 118px;align-items:center;gap:6px;padding:4px 6px}
+.bk-rq .rq-nom .nh{font:700 13px var(--hf);color:var(--ux-wood)}
+.bk-rq .rq-nom .nr{text-align:left;cursor:pointer;background:none;border:0;border-bottom:1px solid rgba(110,72,36,.18);font:400 15px var(--hf);color:var(--ux-ink)}
+.bk-rq .rq-nom .nr:hover{background:rgba(255,243,207,.8)}.bk-rq .rq-nom .nr.in{background:#eef6e4}.bk-rq .rq-nom .nr.no{color:#a8947a}
+.bk-rq .rq-nom .who{display:flex;align-items:center;gap:8px;min-width:0}.bk-rq .rq-nom .who b{display:block;font:700 16px/1.2 var(--hf)}.bk-rq .rq-nom .who em{font-style:normal;font-size:12px;color:var(--ux-wood)}
+.bk-rq .rq-nom .ux-face{flex:none;width:34px;height:34px;border-radius:50%;background-color:#efe2cf;background-repeat:no-repeat;border:1.5px solid rgba(110,72,36,.5)}
+.bk-rq .rq-nom .star{font-style:normal;color:#c9963e;margin-right:3px}.bk-rq .rq-nom .ch{font-weight:700}.bk-rq .rq-nom .stx{font-size:13px}
+.bk-rq .rq-nom .ok{color:#3f7a3a}.bk-rq .rq-nom .ng{color:#b5452f}
+#bookMarks [data-ch].alert::after{content:"";position:absolute;right:6px;top:4px;width:12px;height:12px;border-radius:50%;background:#e2503a;border:2px solid #fff3d6}
+#dlg{z-index:10}   /* 2026-11-16: 책이 펼쳐져 있어도 리퀘스트 대사가 보이게 (책 #popBack z-index 9와 같은 층, 뒤에 놓여 위에 그려짐) */
+.bk-rq .rq-nom .fee{color:#7a5032}.bk-rq .rq-nom .fee.lack{color:#b5452f}

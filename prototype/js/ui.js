@@ -136,7 +136,7 @@
   }
   // 2026-11-12 채팅 로그 개선: 시스템 기록 앞에 종류 꼬리표, 대화 줄에 얼굴 · 이름 · 직업 Lv (이름·얼굴을 누르면 모험가 정보)
   const LOG_TAG = { depart: ['출발', 't-go'], success: ['성공', 't-ok'], fail: ['실패', 't-bad'], injury: ['부상', 't-bad'], death: ['사망', 't-bad'], arrive: ['도착', 't-new'], leave: ['떠남', 't-gray'],
-    ledger: ['결산', 't-gold'], build: ['건설', 't-gray'], unlock: ['발견', 't-gold'], grow: ['성장', 't-ok'], promo: ['전직', 't-new'], expire: ['기한', 't-gray'], withdraw: ['취소', 't-gray'] };
+    req: ['부탁', 't-new'], ledger: ['결산', 't-gold'], build: ['건설', 't-gray'], unlock: ['발견', 't-gold'], grow: ['성장', 't-ok'], promo: ['전직', 't-new'], expire: ['기한', 't-gray'], withdraw: ['취소', 't-gray'] };
   UI.logLine = function (text, kind) { // 시스템 기록
     const el = document.createElement('div'); el.className = 'ln k-' + (kind || 'info');
     const tg = LOG_TAG[kind]; if (tg) { const i = document.createElement('i'); i.className = 'tag ' + tg[1]; i.textContent = tg[0]; el.append(i); }
@@ -171,6 +171,14 @@
   UI.onLogs = function (logs) { // 새 기록들 (오래된 것부터)
     const gups = logs.filter(L => L.gup).map(L => L.gup); if (gups.length) gupShow(gups);   // 2026-11-12 모험가 승급 축하 카드
     for (const L of logs) {
+      if (L.rq) {   // 리퀘스트: 의뢰 · 완료 · 실패 · 거절 대사 (data/quest_lines.csv). 외지인이 처음 오면 리나 한마디가 앞에 붙음
+        const R0 = Gm.reqOf(s), fr = (Gm.QLINES[L.rq.key] || {}).first; let ls = [];
+        if (L.rq.ev === 'req' && fr && !(R0.first = R0.first || {})[L.rq.key]) { R0.first[L.rq.key] = 1; ls = ls.concat(rqLinesOf(L.rq.key, 'first', L.rq.who)); }
+        ls = ls.concat(rqLinesOf(L.rq.key, L.rq.ev, L.rq.who));
+        if (L.rq.ev === 'ok' && Gm.NQ_BY[L.rq.key].type === 'town') ls = ls.concat(rqLinesOf(L.rq.key, 'req2', L.rq.who));
+        if (ls.length) UI.say(ls);
+        if (popup === 'req') renderPopup(); else UI.reqBadge();
+      }
       UI.logLine(L.text, L.kind); // 로그박스로 흘려보냄 (알림은 전직 제안만 따로 띄움)
       if (L.kind === 'promo' && L.text.includes('제안합니다')) toast(L.text, L.kind);
       if (L.kind === 'ledger' && UI.autoReport) UI.open('ledger');   // 월말: 리나 브리핑 대신 장부 창을 보여 준다
@@ -251,9 +259,88 @@
     L.forEach(x => x && l.appendChild(x)); Rn.forEach(x => x && r.appendChild(x)); w.append(l, r);
     const rest = [...b.children]; b.innerHTML = ''; b.appendChild(w); rest.forEach(x => { if (x.id || x.className.includes('tip')) w.appendChild(x); });   // 툴팁 등은 함께 옮김
   }
-  function reqHtml() {   // 리퀘스트 장: 서브 퀘스트 디자인 전 빈 장 (docs/design/named_sub_quest_v1.md)
-    return `<div class="bk-empty"><div><b>리퀘스트</b>마을 사람·영주·모험가가 맡기는 부탁이<br>이 장에 모입니다.</div><div><b>준비 중</b>서브 퀘스트(기부·납품·토벌 지명 등)를<br>디자인한 뒤 채워집니다.</div></div>`;
+  // ---------- 책: 리퀘스트 장 (2026-11-16, docs/design/sub_quest_F_v1.md · nomination_v1.md) ----------
+  // 왼쪽 = 받은 리퀘스트 목록 + 소문(힌트) / 오른쪽 = 고른 리퀘스트: 사연 · 요구 · 보상 · 돈 내기/납품 또는 지명 창
+  let rqSel = null, rqMsg = '';
+  const RQ_TYPE = { hunt: '전투', search: '탐색', deliver: '납품', donate: '돈 내기', install: '설치 요청', town: '마을 건물' }, RQ_GIVER = { adventurer: '모험가', resident: '마을 사람', outsider: '외지인' };
+  const RQ_STATE = { queued: '다음 주 출발', active: '원정 중' };
+  const rqMat = (id, n, have) => { const m = MATS[id] || { name: id }; return `<span class="rq-chip ${have != null && have < n ? 'lack' : ''}">${m.icon ? `<img src="assets/${m.icon}" alt="">` : ''}${esc(m.name)} ${have != null ? `<b>${Math.min(have, 999)}</b>/` : '×'}${n}</span>`; };
+  function rqRewards(v) {
+    const d = v.d, rw = d.rw, o = [];
+    if (rw.gold) o.push(`<span class="rq-chip gold">${v.nominated ? '보수 ' : ''}${fmt(rw.gold)}G</span>`);
+    if (rw.fame) o.push(`<span class="rq-chip">명성 +${rw.fame}</span>`); if (rw.trust) o.push(`<span class="rq-chip">신뢰도 +${rw.trust}</span>`); if (rw.pop) o.push(`<span class="rq-chip">인구 +${rw.pop}</span>`);
+    if (rw.attach) o.push(`<span class="rq-chip">${rw.attach[0] === 'all' ? '모든 모험가' : rw.attach[0] === 'party' ? '참가자' : esc(v.giver)} 애착 +${rw.attach[1]}</span>`);
+    for (const [m, k] of Object.entries(rw.mats)) o.push(rqMat(m, k));
+    if (rw.unlock) o.push(`<span class="rq-chip key">${rw.unlock === 'table' ? '테이블 1세트 더 놓기' : '새 장식: ' + esc((Gm.DECO_BY[rw.unlock] || {}).name || rw.unlock)}</span>`);
+    if (rw.town) o.push(`<span class="rq-chip key">마을 건물: ${{ smith: '대장간', potion: '물약 상점' }[rw.town] || rw.town}</span>`);
+    const ex = rw.extra || {}; if (ex.popMonthly) o.push(`<span class="rq-chip key">매달 인구 +${ex.popMonthly}</span>`); if (ex.recipe) o.push('<span class="rq-chip key">새 요리 1개</span>'); if (ex.ownerStat) o.push(`<span class="rq-chip">${esc(v.giver)} 주 능력치 +${ex.ownerStat}</span>`); if (ex.ownerXp) o.push(`<span class="rq-chip">${esc(v.giver)} 경험치 +${ex.ownerXp}</span>`);
+    return o.join('');
   }
+  function rqLinesOf(key, ev, who) {   // 대사 묶음 → [{name, face, text, adv}] ({이름} = 의뢰한 모험가)
+    const Lq = (Gm.QLINES[key] || {})[ev] || [], a = who != null ? s.advs.find(x => x.id === who) : null, nm = a ? a.name : '모험가';
+    return Lq.map(([sp, face, text]) => ({ name: sp === '{이름}' ? nm : sp, face: sp === '리나' ? (face === 'default' ? 'smile' : face) : 'smile', text: text.replace(/\{이름\}/g, nm), adv: sp === '{이름}' ? a : null }));
+  }
+  function reqHtml() {
+    const V = Gm.reqView(s), R = Gm.reqOf(s), hints = Gm.reqHints(s, 2);
+    if (!V.some(v => v.r.id === rqSel)) { rqSel = V[0] ? V[0].r.id : null; rqMsg = ''; }
+    for (const v of V) if (v.r.id === rqSel) v.r.isNew = false;
+    const stTxt = v => v.lock ? `<i class="st lock">${v.d.season.length && !v.d.season.includes(Gm.seasonOf(s.week)) ? v.d.season.map(x => Gm.SEASON_NAME[x]).join(' · ') + '에 진행' : '집무실 필요'}</i>` : RQ_STATE[v.r.state] ? `<i class="st go">${RQ_STATE[v.r.state]}</i>` : v.r.isNew ? '<i class="st new">새 부탁</i>' : (v.nominated ? `<i class="st">${v.r.party.length ? '지명 중' : '지명 기다림'}</i>` : v.d.type === 'install' ? '<i class="st">설치 기다림</i>' : `<i class="st ${v.canPay ? 'ok' : ''}">${v.canPay ? '낼 수 있음' : '준비 부족'}</i>`);
+    let L = `<div class="ux-h">받은 부탁 <small>${V.length} / ${Gm.REQ_CFG.maxOpen}건 · 들어준 부탁 ${Object.values(R.done).reduce((t, x) => t + x.n, 0)}건</small></div><div class="rq-list">`;
+    for (const v of V) L += `<button class="rq-card ${v.r.id === rqSel ? 'on' : ''} ${v.lock ? 'lock' : ''} gv-${v.d.giver}" data-rq="${v.r.id}"><i class="gv">${RQ_GIVER[v.d.giver]}</i><span class="tx"><b>${esc(v.name)}</b><em>${esc(v.giver)} · ${RQ_TYPE[v.d.type]}${v.d.type === 'town' ? ` ${v.r.stage}/2` : ''}</em></span>${stTxt(v)}</button>`;
+    if (!V.length) L += '<div class="rq-none">지금은 받은 부탁이 없습니다.<br>마을과 길드가 자라면 사람들이 찾아옵니다.</div>';
+    L += `</div><div class="ux-h rq-hh">소문 <small>아직 오지 않은 부탁</small></div><div class="rq-hints">${hints.length ? hints.map(h => `<div class="rq-hint"><b>???</b>${esc(h.hint)}</div>`).join('') : '<div class="rq-hint">들려오는 소문이 없습니다.</div>'}</div>`;
+    const v = V.find(x => x.r.id === rqSel);
+    if (!v) return `<div class="bk2 bk-rq"><section class="bk-l">${L}</section><section class="bk-r"><div class="rq-none big">부탁을 고르면 여기에 사연과 보상이 보입니다.</div></section></div>`;
+    const d = v.d, r = v.r, ev = d.type === 'town' && r.stage === 2 ? 'req2' : 'req', lines = rqLinesOf(d.id, ev, r.who);
+    let Rr = `<div class="rq-head gv-${d.giver}"><i class="gv">${RQ_GIVER[d.giver]}</i><div><b>${esc(v.name)}</b><span>${esc(v.giver)} · ${RQ_TYPE[d.type]}${d.type === 'town' ? ` (${r.stage} / 2단계)` : ''}${d.season.length ? ' · ' + d.season.map(x => Gm.SEASON_NAME[x]).join(' · ') + '에만' : ''}${d.repeat === 'yearly' ? ' · 매년' : ''}</span></div></div>`;
+    Rr += `<div class="rq-say">${lines.map(l => `<p><b>${esc(l.name)}</b>${esc(l.text)}</p>`).join('')}</div>`;
+    if (v.lock) Rr += `<div class="rq-lock">${esc(v.lock)}${/집무실/.test(v.lock) ? ` <button class="ux-btn sm" data-rqact="office" ${s.gold < Gm.facCost(s, '집무실') ? 'disabled' : ''}>집무실 짓기 <b>${fmt(Gm.facCost(s, '집무실'))}G</b></button>` : ''}</div>`;
+    // 요구
+    let need = '';
+    if (v.need.gold) need += `<span class="rq-chip gold ${s.gold < v.need.gold ? 'lack' : ''}">${fmt(v.need.gold)}G <small>(금고 ${fmt(s.gold)}G)</small></span>`;
+    for (const [m, k] of Object.entries(v.need.mats)) need += rqMat(m, k, s.mats[m] || 0);
+    if (d.type === 'install') need += `<span class="rq-chip ${v.goalOk ? '' : 'lack'}">테이블 1세트 놓기 (시설 장 → 설비)</span>`;
+    if (v.nominated) { const pt = d.party[0] === d.party[1] ? d.party[0] + '명' : d.party[0] + '~' + d.party[1] + '명';
+      need += `<span class="rq-chip">지명 ${pt} · ${d.weeks}주</span>` + (d.req ? `<span class="rq-chip star">★ ${d.req[0] === -1 ? esc(v.giver) + ' 본인' : (d.req[0] === -2 ? '주력 능력치' : Gm.STATS[d.req[0]]) + ' ' + d.req[1] + ' 이상'} 1명</span>` : '') + d.foes.map(f => `<span class="rq-chip enemy">${esc(f.name)}${f.count > 1 ? ' ×' + f.count : ''}${f.boss ? ' (우두머리)' : ''}</span>`).join(''); }
+    Rr += `<div class="rq-sec"><i>요구</i><div>${need}</div></div><div class="rq-sec"><i>보상</i><div>${rqRewards(v)}</div></div>`;
+    // 행동
+    const refuseBtn = r.state === 'open' ? '<button class="ux-btn sm rq-no" data-rqact="refuse">거절</button>' : '';
+    if (!v.nominated) {
+      const lab = d.type === 'install' ? '' : v.need.gold ? `돈 내기 <b>${fmt(v.need.gold)}G</b>` : '납품하기';
+      Rr += `<div class="rq-act">${lab ? `<button class="ux-btn primary" data-rqact="give" ${v.lock || !v.canPay ? 'disabled' : ''}>${lab}</button>` : '<span class="rq-note">설비를 놓으면 바로 완료됩니다.</span>'}${refuseBtn}<span class="rq-msg">${esc(rqMsg)}</span></div>`;
+    } else {
+      const party = Gm.reqPartyOf(s, r), P = Gm.reqPredict(s, r.id), why = r.state === 'open' ? Gm.reqSendWhy(s, r) : null, rows = Gm.reqNomList(s, r.id);
+      const pTxt = P == null ? '' : `<span class="rq-p ${P >= 0.7 ? 'ok' : P >= 0.4 ? 'mid' : 'bad'}">예상 성공률 <b>${Math.round(P * 100)}%</b></span>`;
+      Rr += `<div class="rq-party"><span class="pl">파티 ${party.length} / ${d.party[1]}</span>${party.map(a => `<span class="pm" style="${faceStyle(a, 34, 178, 17)}" title="${esc(a.name)}"></span>`).join('') || '<em>아래에서 모험가를 눌러 부탁하세요 (부탁할 때마다 섭외비가 나갑니다)</em>'}${pTxt}</div>`;
+      Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary" data-rqact="send" ${why ? 'disabled' : ''}>보내기 <small>(다음 주 출발)</small></button>` : r.state === 'queued' ? '<button class="ux-btn" data-rqact="unsend">출발 취소</button>' : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}${refuseBtn}<span class="rq-msg">${esc(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</span></div>`;
+      if (r.state !== 'active') {
+        Rr += `<div class="rq-nom ${r.state !== 'open' || v.lock ? 'off' : ''}"><div class="nh"><span>모험가</span><span>${d.req && d.req[0] >= 0 ? Gm.STATS[d.req[0]] : rows[0] && rows[0].stat != null ? '주력' : ''}</span><span>애착</span><span>수락</span><span>섭외비</span><span>상태</span></div>`;
+        for (const x of rows) { const a = s.advs.find(z => z.id === x.id);
+          const st = x.inParty ? '<b class="ok">✔ 함께 감</b>' : x.busy ? x.busy : x.refused ? '<b class="ng">✖ 이번 주 거절</b>' : x.away ? '마을 밖' : '길드에 있음';
+          Rr += `<button class="nr ${x.inParty ? 'in' : ''} ${x.busy || x.refused ? 'no' : ''}" data-rqnom="${x.id}"><span class="who"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span><b>${esc(x.name)}</b><em>${esc(x.cls)} Lv ${x.lv}</em></span></span><span class="sv">${d.req ? (x.meets ? '<i class="star">★</i>' : '') : ''}${x.stat != null ? x.stat : ''}</span><span>${x.attach}</span><span class="ch">${x.owner ? '본인' : x.chance + '%'}</span><span class="fee ${!x.inParty && x.fee > s.gold ? 'lack' : ''}">${x.inParty || !x.fee ? '—' : x.fee + 'G'}</span><span class="stx">${st}</span></button>`; }
+        Rr += '</div>';
+      }
+    }
+    return `<div class="bk2 bk-rq"><section class="bk-l">${L}</section><section class="bk-r">${Rr}</section></div>`;
+  }
+  function rqAct(act) {
+    const v = Gm.reqView(s).find(x => x.r.id === rqSel); if (!v) return;
+    const top = s.log[0]; rqMsg = '';
+    if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; }
+    else if (act === 'refuse') Gm.reqRefuse(s, v.r.id);
+    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) rqMsg = '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; }
+    else if (act === 'unsend') Gm.reqUnsend(s, v.r.id);
+    else if (act === 'office') Gm.build(s, '집무실');
+    rqFlush(top); hooks.changed(); renderPopup();
+  }
+  function rqNom(aid) {
+    const a = s.advs.find(x => x.id === aid), res = Gm.reqNominate(s, rqSel, aid); if (!a) return;
+    rqMsg = res.removed ? `${a.name}: 파티에서 뺐습니다.` : res.why ? `${a.name}: ${res.why}` : `${a.name}: ${res.ok ? '✔' : '✖'} "${res.line}"${res.fee ? ` (섭외비 −${res.fee}G)` : ''}`;
+    hooks.changed(); renderPopup();
+  }
+  // 화면에서 바로 일어난 리퀘스트 기록(완료 · 거절 등)을 로그 · 대사로 흘려보냄 (주 진행 때는 main.js 가 UI.onLogs 로 보냄)
+  function rqFlush(top) { const f = []; for (const L of s.log) { if (L === top) break; f.push(L); } if (f.length && f.length < 20) UI.onLogs(f.reverse()); }
+  UI.reqBadge = function () { const n = (s.req ? s.req.open : []).filter(r => r.isNew).length, b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); return n; };
   const TITLES = { req: '리퀘스트', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
@@ -285,7 +372,7 @@
     else if (popup === 'codex') { b.innerHTML = codexHtml(); mgBook(b, 'codex'); }
     else if (popup === 'sell') { b.innerHTML = sellHtml(); mgBook(b, 'sell'); }
     else if (popup === 'opts') b.innerHTML = optsHtml();
-    else if (popup === 'req') b.innerHTML = reqHtml();
+    else if (popup === 'req') { const keep = sel => { const el = b.querySelector(sel); return el ? el.scrollTop : 0; }, y1 = keep('.bk-rq .bk-r'), y2 = keep('.rq-list'), sel0 = b.dataset.rsel; b.innerHTML = reqHtml(); const r1 = b.querySelector('.bk-rq .bk-r'), l1 = b.querySelector('.rq-list'); if (r1 && sel0 === String(rqSel)) r1.scrollTop = y1; if (l1) l1.scrollTop = y2; b.dataset.rsel = rqSel; UI.reqBadge(); }
   }
 
   // 소재 판매 창구 (docs/balance/economy_v1.md 6절, 시설 팝업 '판매하기'로 열기): 보관 소재를 직접 팖. 음식이 아닌 소재 먼저, 음식 소재는 "요리 재료"
@@ -489,8 +576,8 @@
   }
   // ---------- 장부: 수입 · 지출 (지난달 | 이번 달) + 12개월 순이익 그래프 (docs/design/popup_ledger.md) ----------
   // 순이익 = 수입 − 지출(시설 건설비·기타). 관문 1의 "운영 순이익(m.net)"은 건설비를 빼고 계산하므로 따로 둠
-  const LG_IN = [['fee', '중계료'], ['resale', '소재 판매 차익'], ['meal', '식사 판매'], ['tavern', '주점 매출'], ['subsidy', '왕국 보조금']];
-  const LG_OUT = [['build', '시설 건설비'], ['other', '기타']];
+  const LG_IN = [['fee', '중계료'], ['resale', '소재 판매 차익'], ['meal', '식사 판매'], ['tavern', '주점 매출'], ['reqIn', '리퀘스트 보상'], ['subsidy', '왕국 보조금']];
+  const LG_OUT = [['build', '시설 건설비'], ['scout', '지명 섭외비'], ['other', '기타']];
   const LG_EOM = { subsidy: 1 };   // 월말 결산 때 한꺼번에 들어오는 항목 (주점 매출은 2026-11-12부터 매주 술 1잔 단위라 제외)
   const lgIn = m => LG_IN.reduce((t, [k]) => t + (m[k] || 0), 0), lgOut = m => LG_OUT.reduce((t, [k]) => t + (m[k] || 0), 0), lgNet = m => lgIn(m) + lgOut(m);
   const gG = v => `${v < 0 ? '−' : ''}${fmt(Math.abs(Math.round(v)))}G`;
@@ -501,6 +588,8 @@
     if (k === 'meal') { const d = m.dishes || {}, ks = Object.keys(d); return ks.length ? ks.map(n => `${esc(n)} <b>${d[n]}그릇</b>`).join('<br>') : (m.dishes ? '판매 없음' : '내역 없음 (예전 기록)'); }
     if (k === 'tavern') return `술 <b>${m.drinks || 0}잔</b> 판매 · 1잔 마진 ${GR[s.grade]}급 ${(s.cfg.econ.drinkMargin || [2])[s.grade] || 2}G${Gm.upg(s, '주점') ? ' + 업그레이드 5G' : ''}`;   // 2026-11-12: 매주 술 1잔 단위
     if (k === 'subsidy') { const g = cur ? s.grade : (m.grade != null ? m.grade : s.grade); return `${cur ? '월말 결산 때 들어옵니다 · ' : ''}${GR[g]}급 길드 월 <b>${fmt(E.subsidy[g])}G</b>`; }
+    if (k === 'reqIn') { const b = m.reqs || []; return b.length ? b.map(x => `${esc(x.n)} <b>${gG(x.g)}</b>`).join('<br>') : '없음'; }
+    if (k === 'scout') return m.scoutN ? `모험가 <b>${m.scoutN}번</b> 부탁 (거절당해도 나갑니다)` : '없음';
     if (k === 'build') { const b = m.builds || []; return b.length ? b.map(x => `${esc(FAC_LABEL[x.f] || x.f)} <b>${gG(-x.c)}</b>`).join('<br>') : '없음'; }
     if (k === 'other') { const w = m.wd || []; return w.length ? w.map(x => `${x.name ? esc(x.name) : `${GR[x.g]}급 ${QTYPE_[x.type]} 의뢰`} 취소 <b>${gG(-x.cost)}</b>`).join('<br>') : '없음'; }
     return '';
@@ -1442,7 +1531,10 @@
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
-      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
+      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs], [data-rq], [data-rqact], [data-rqnom]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
+      if (t.dataset.rq) { rqSel = t.dataset.rq; rqMsg = ''; renderPopup(); return; }
+      if (t.dataset.rqact) { rqAct(t.dataset.rqact); return; }
+      if (t.dataset.rqnom) { rqNom(+t.dataset.rqnom); return; }
       if (t.dataset.fbs) { fbSel = t.dataset.fbs; renderPopup(); return; }
       if (t.dataset.tsel) { t.closest('.av-ttl').classList.toggle('open'); return; }
       if (t.dataset.tpick != null) { const a = s.advs.find(x => x.id === openAdv); if (a) { const k = +t.dataset.tpick; if (k < 0) delete a.title; else a.title = k; } renderPopup(); return; }
@@ -1480,7 +1572,7 @@
     const b = q('#popBody'); b.innerHTML = '<p class="muted">100판을 돌려 계산하는 중…</p>';
     setTimeout(() => {
       const Sim = root.GuildSim, N = 100; let op = 0, d = 0, f = 0;
-      for (let i = 0; i < N; i++) { const g = Gm.newGame(Sim.defaults(), 7000 + i); Gm.autoPlace(g, true); for (let w = 0; w < 48; w++) { Gm.stepWeek(g); Gm.autoCook(g); /* 요리: 재료가 모이면 바로 만든다고 가정 (시뮬레이터와 같음) */ if (g.week % Gm.WPM === 0) Gm.autoPlace(g, false); /* 테이블 자동 배치 (tools/gate1_check.js와 같음) */ } op += g.history.reduce((t, m) => t + m.net, 0) / g.history.length; d += g.stats.done; f += g.stats.fail; }
+      for (let i = 0; i < N; i++) { const g = Gm.newGame(Sim.defaults(), 7000 + i); Gm.autoPlace(g, true); for (let w = 0; w < 48; w++) { Gm.autoRequests(g); /* 리퀘스트 자동 처리 (2026-11-16, 시뮬레이터 reqStep과 같은 규칙) */ Gm.stepWeek(g); Gm.autoCook(g); /* 요리: 재료가 모이면 바로 만든다고 가정 (시뮬레이터와 같음) */ if (g.week % Gm.WPM === 0) Gm.autoPlace(g, false); /* 테이블 자동 배치 (tools/gate1_check.js와 같음) */ } op += g.history.reduce((t, m) => t + m.net, 0) / g.history.length; d += g.stats.done; f += g.stats.fail; }
       const cfg = Sim.defaults(); cfg.run.maxYears = 1; let o2 = 0, d2 = 0, f2 = 0;
       for (let i = 0; i < N; i++) { const r = Sim.simulate(cfg, 'balanced', 7000 + i); o2 += r.firstNetF.reduce((a, c) => a + c, 0) / r.firstNetF.length; d2 += r.qDone; f2 += r.qFail; }
       const gOp = op / N, sOp = o2 / N, gS = d / (d + f), sS = d2 / (d2 + f2);
@@ -1540,8 +1632,10 @@
     Dlg.open = true; Dlg.cur = L; Dlg.shown = 0; Dlg.t = 0; Dlg.hold = 0;
     const first = !stage.ui.classList.contains('dlgOn');
     if (first) { Dlg.wait = DLG_WAIT; Dlg.t = 0; } else q('#dlg').classList.add('open');
-    q('#logBox').classList.add('hide'); stage.ui.classList.add('dlgOn'); UI.chat('리나', L.text, 'lina');
-    setFace(L.face);
+    q('#logBox').classList.add('hide'); stage.ui.classList.add('dlgOn');
+    const spk = L.name || '리나'; q('#dlgName').textContent = spk; UI.chat(spk, L.text, spk === '리나' ? 'lina' : null, L.adv || null);   // 2026-11-16: 리나가 아닌 화자(의뢰인 · 모험가)는 이름표만 (NPC 초상은 그림이 들어오면 연결)
+    if (spk === '리나') setFace(L.face); else { q('#dlgStand').hidden = true; q('#dlgFace').hidden = true; }
+    q('#dlg').classList.toggle('noface', spk !== '리나');
     q('#dlgText').textContent = ''; q('#dlgNext').hidden = true;
   }
   UI.advance = function () {

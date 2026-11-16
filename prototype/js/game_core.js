@@ -52,13 +52,13 @@
   function hasBatchim(w) { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; }
   function J(w, a, b) { return w + (hasBatchim(w) ? a : b); }
   const names = party => party.map(m => m.name).join('·');
-  function blankLedger() { return { fee: 0, resale: 0, meal: 0, tavern: 0, subsidy: 0, upkeep: 0, other: 0, quests: 0, success: 0, popAdd: 0, build: 0, dishes: {}, wd: [], builds: [], inTown: 0 }; }   // build·dishes·wd·builds·inTown: 장부 화면 내역용 (운영 순이익 net에는 건설비를 넣지 않음 = 관문 1 기준)
+  function blankLedger() { return { fee: 0, resale: 0, meal: 0, tavern: 0, subsidy: 0, upkeep: 0, other: 0, reqIn: 0, scout: 0, quests: 0, success: 0, popAdd: 0, build: 0, dishes: {}, wd: [], builds: [], inTown: 0 }; }   // build·dishes·wd·builds·inTown: 장부 화면 내역용 (운영 순이익 net에는 건설비를 넣지 않음 = 관문 1 기준)
   const ri = (s, n) => Math.floor(s.R() * n);
   // 기록용 의뢰 이름: 편집기에서 지은 이름이 있으면 「이름」, 기본 이름(○○ F급 의뢰)이면 등급·유형
   function qn(q) { return q.name && !/급 의뢰/.test(q.name) ? `${GR[q.g]}급 「${q.name}」` : `${GR[q.g]}급 ${QTYPE[q.type]}`; }
   // 도감: 의뢰를 다녀오면(성공·실패 모두) 그 의뢰의 몬스터를 만난 것으로 기록
   function seeMons(s, q) {
-    s.seenMons = s.seenMons || {}; const T = QBYID[q.tid]; if (!T) return;
+    s.seenMons = s.seenMons || {}; const T = QBYID[q.tid] || (q.rq ? { enemies: q.enemies } : null); if (!T) return;
     for (const e of T.enemies || []) if (e.mon && !s.seenMons[e.mon]) { s.seenMons[e.mon] = s.week; log(s, `처음 보는 몬스터를 만났습니다: ${e.name || e.mon}`, 'unlock'); }
   }
   function log(s, text, kind, extra) { s.log.unshift(Object.assign({ week: s.week, text, kind: kind || 'info' }, extra || {})); if (s.log.length > 600) s.log.pop(); }   // 기록 600개 = 약 2년치 (길드 기록 팝업)
@@ -411,8 +411,7 @@
 
 
   function departures(s) {
-    s.seatUsed = 0;   // 이번 주 식사한 좌석 수
-    const Q = s.cfg.quest, E = s.cfg.econ;
+    const Q = s.cfg.quest, E = s.cfg.econ;   // s.seatUsed(이번 주 식사한 좌석 수)는 stepWeek에서 0으로 (지명 출발이 먼저 식사하므로)
     for (const a of s.advs) { if (!a.alive || a.state === 'quest') continue; if (a.state === 'injured' && s.week < a.until) continue; a.state = present(s, a) ? 'town' : 'away'; if (a.state === 'town') a.lastSeen = s.week; }   // lastSeen: 마지막으로 길드에 온 주
     const idle = s.advs.filter(a => a.state === 'town');
     for (const a of idle) {
@@ -431,6 +430,18 @@
         }
         if (pp < th) continue;
         s.board.splice(s.board.indexOf(q), 1);
+        launchParty(s, q, party, pp);
+        break;
+      }
+    }
+    // 술 (2026-11-12): 이번 주 마을에 남은 모험가가 씀씀이 성향별 확률(식사와 같은 econ.mealBuyRate)로 1잔. 길드 마진 econ.drinkMargin[길드 등급]
+    const DM = E.drinkMargin || [2, 3, 4, 5, 6, 7, 8]; s.drinks = [];
+    for (const a of s.advs) if (a.alive && a.state === 'town' && s.R() < E.mealBuyRate[a.spend]) { const m = (DM[s.grade] || DM[0]) + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += m; s.month.tavern += m; s.month.drinks = (s.month.drinks || 0) + 1; s.drinks.push(a.id); }
+  }
+  function launchParty(s, q, party, pp) {   // 2026-11-16: 게시판 출발과 지명(리퀘스트) 출발이 같은 처리를 씀
+    const Q = s.cfg.quest, E = s.cfg.econ;
+    {
+      {
         // 출발 전 식사
         let eaters = 0; const dish = dishFor(s, q), ate = new Set();
         if (dish) for (const m of party) {
@@ -457,13 +468,9 @@
         const ok = fight ? fight.win : s.R() < p, rate = Math.round(pp * 100);
         for (const m of party) { m.state = 'quest'; m.until = s.week + weeks; }
         s.active.push({ q, party: party.map(m => m.id), p, ok, rate, start: s.week, weeks, back: s.week + weeks, ate: eaters, dish: dish && eaters ? dish.name : null, fight });
-        log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰를 맡아 떠났습니다.${eaters ? ` (출발 전 ${dish.name} ${eaters}명)` : ''}`, 'depart', { who: party.map(x => x.name) });
-        break;
+        log(s, `${J(names(party), '이', '가')} ${qn(q)} ${q.rq ? '리퀘스트' : '의뢰'}를 맡아 떠났습니다.${eaters ? ` (출발 전 ${dish.name} ${eaters}명)` : ''}`, 'depart', { who: party.map(x => x.name) });
       }
     }
-    // 술 (2026-11-12): 이번 주 마을에 남은 모험가가 씀씀이 성향별 확률(식사와 같은 econ.mealBuyRate)로 1잔. 길드 마진 econ.drinkMargin[길드 등급]
-    const DM = E.drinkMargin || [2, 3, 4, 5, 6, 7, 8]; s.drinks = [];
-    for (const a of s.advs) if (a.alive && a.state === 'town' && s.R() < E.mealBuyRate[a.spend]) { const m = (DM[s.grade] || DM[0]) + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += m; s.month.tavern += m; s.month.drinks = (s.month.drinks || 0) + 1; s.drinks.push(a.id); }
   }
 
   function returns(s) {
@@ -500,6 +507,7 @@
         log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 실패했습니다.`, 'fail', { who: party.map(x => x.name) });
       }
       for (const a of party) { a.state = 'town'; a.until = 0; }
+      if (q.rq) reqReturn(s, x, ok, party);   // 리퀘스트(지명) 귀환: 보상 · 실패 처리
       if (F) for (const u of F.units) {   // 전투의 대가: 물약 소모, 쓰러진 사람은 사망 판정 → 살면 부상
         const a = party.find(m => m && m.id === u.id); if (!a) continue;
         a.pots = u.pots; s.stats.potions += u.used;
@@ -521,6 +529,7 @@
     s.month.inTown = inTown;   // 주점 매출은 2026-11-12부터 매주 술 1잔 단위 (departures 끝)
     let up = 0; for (const f of Object.keys(s.built)) up += (FAC_COST[f] != null ? E.buildCost[FAC_COST[f]] : 0) * E.upkeepRate;
     s.gold -= up; s.month.upkeep -= up;
+    if (s.req && s.req.popMonthly) s.month.popAdd = (s.month.popAdd || 0) + s.req.popMonthly;   // 리퀘스트 보상: 매달 인구 +N (영구)
     townMonthly(s);   // 2026-11-13: 정수 가산형 인구 + 민가
     for (const a of s.advs) if (a.alive && a.state !== 'quest') a.attach = Math.min(100, a.attach + A.attachPerMonthInTown * 0.5);
     for (const a of s.advs) if (a.alive && a.attach < A.leaveAttach && s.week - a.joined > A.leaveAfterYears * WPY && a.state !== 'quest') { a.alive = false; log(s, `${J(a.name, '이', '가')} 이 마을을 떠났습니다. (애착도 ${Math.round(a.attach)})`, 'leave', { who: [a.name] }); }
@@ -535,7 +544,7 @@
       if (a.wallet >= price * (1 + GE.reserveMult[a.spend] * 0.5)) { a.wallet -= price; a.gear = ng; log(s, `${J(a.name, '이', '가')} ${GR[ng]}급 장비를 샀습니다. (${Math.round(price)}G)`, 'grow', { who: [a.name] }); }
     }
     proposeClasses(s);
-    const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other;
+    const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other + (s.month.reqIn || 0) + (s.month.scout || 0);   // 2026-11-16: 리퀘스트 보상(납품 금화) · 지명 섭외비 포함
     s.month.net = net; s.month.grade = s.grade; s.month.feeRate = feeRate(s);
     s.lastMonth = s.month; s.history.push(Object.assign({ week: s.week }, s.month));
     log(s, `${dateLabel(s.week)} 결산: 운영 순이익 ${Math.round(net)}G (의뢰 ${s.month.quests}건, 성공 ${s.month.success}건)`, 'ledger', { net: Math.round(net), nq: s.month.quests, nok: s.month.success });
@@ -632,16 +641,225 @@
     s.gold -= c; s.month.build = (s.month.build || 0) - c; (s.month.builds = s.month.builds || []).push({ f, c }); s.built[f] = true; log(s, `${J(f, '을', '를')} 지었습니다. (${c}G)`, 'build'); return true;
   }
 
+
+  // ===== 서브 퀘스트 (리퀘스트) · 지명 (2026-11-16, docs/design/sub_quest_F_v1.md · nomination_v1.md 7장) =====
+  // 데이터: data/named_quests.csv · quest_lines.csv → GAME_DATA.namedQuests · questLines
+  // 규칙: 매주 조건을 채운 퀘스트 중 하나가 50%로 등장(동시에 4개) · 마감 없음 · 계절 퀘스트는 그 계절에만 진행(사라지지 않음) · 실패해도 다시 도전
+  // 지명: 파티 중 1명만 조건 능력치 충족 · 수락 = 애착 단계 × 위험 · 거절해도 다음 주에 다시 지명 · 보상은 게시판처럼 보수 몫 · 대열은 자동(직업 순)
+  const NQ = GD.namedQuests || [], NQ_BY = Object.fromEntries(NQ.map(d => [d.id, d])), QLINES = GD.questLines || {};
+  const REQ_CFG = { maxOpen: 4, appear: 0.5, refuseCool: 12, base: [0.40, 0.65, 0.90, 1.00], riskMul: [[1.0, 0.8, 0.5], [1.0, 1.0, 0.8], [1.0, 1.1, 1.2]], rowOrder: [0, 4, 1, 3, 2], bossHp: 3, bossAtk: 1.3, autoReserve: 1500, autoSend: 0.6 };
+  const REQ_QTYPE = { hunt: 0, search: 2 }, REQ_QTYPE_BY = { f_req_bat05: 3, f_req_srch04: 1, f_req_srch01: 3, f_req_srch05: 3, f_req_srch06: 3 };   // 미니 뷰 배경 · 성장 능력치용 의뢰 종류
+  const SEASONS = ['spring', 'summer', 'autumn', 'winter'], SEASON_NAME = { spring: '봄', summer: '여름', autumn: '가을', winter: '겨울' };
+  const seasonOf = w => { const mo = (2 + Math.floor(Math.max(0, w) / WPM)) % 12 + 1; return mo >= 3 && mo <= 5 ? 'spring' : mo >= 6 && mo <= 8 ? 'summer' : mo >= 9 && mo <= 11 ? 'autumn' : 'winter'; };   // 길드 · 마을 달력과 같음 (3월 시작)
+  const reqOf = s => (s.req = s.req || { open: [], done: {}, cool: {}, popMonthly: 0, rng: ((s.seed >>> 0) ^ 0x9E3779B9) >>> 0, next: 1 });
+  function reqR(s) { const q = reqOf(s); q.rng = (q.rng + 0x6D2B79F5) >>> 0; let t = q.rng; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }   // 게임 난수와 따로 굴림 (리퀘스트가 게시판 결과를 흔들지 않게)
+  const aliveAdvs = s => s.advs.filter(a => a.alive);
+  const reqBusy = (s, a) => a.state === 'quest' ? '원정 중' : (a.state === 'injured' && s.week < a.until) ? '부상' : null;
+  const OWNER = {
+    any: a => true, social40: a => a.social === 2 && a.attach >= 40, calm65: a => a.attach >= 65 && a.risk !== 2 && a.social !== 0, wild8: a => (a.risk === 2 || a.social === 0) && a.lv >= 8 };
+  function reqOwnerFor(s, d) { if (!d.owner) return null; const used = new Set(reqOf(s).open.map(r => r.who).filter(Boolean)); return aliveAdvs(s).filter(a => OWNER[d.owner](a) && !used.has(a.id)).sort((x, y) => y.attach - x.attach || x.id - y.id)[0] || null; }
+  function condOk(s, c) {
+    const [k, op, v, n] = c, cmp = x => op === '=' ? x === v : x >= v;
+    if (k === 'done') return !!reqOf(s).done[v];
+    if (k === 'pop') return cmp(Math.round(s.pop)); if (k === 'fame') return cmp(Math.floor(s.fame || 0)); if (k === 'trust') return cmp(Math.floor(s.trust)); if (k === 'gold') return cmp(Math.floor(s.gold));
+    if (k === 'advs') return cmp(aliveAdvs(s).length); if (k === 'tables') return cmp(placedN(s, 'table')); if (k === 'decos') return cmp(s.place.items.filter(it => it.id !== 'table').length);
+    if (k === 'wins') return cmp(s.stats.combatWin || 0); if (k === 'dishes') return cmp(Object.keys(s.dishes || {}).length); if (k === 'social') return cmp(aliveAdvs(s).filter(a => a.social === 2).length);
+    if (k === 'lv') return aliveAdvs(s).filter(a => a.lv >= v).length >= n;
+    if (k.startsWith('stat.')) { const i = { str: 0, dex: 1, int: 2, wis: 3, tec: 4 }[k.slice(5)]; return aliveAdvs(s).some(a => Math.round(finalStat(s, a, i)) >= v); }
+    if (k.startsWith('mat.')) return cmp(s.mats[k.slice(4)] || 0);
+    return false;
+  }
+  const reqYear = w => Math.floor(w / WPY);
+  function reqEligible(s, d) {   // 아직 나올 수 있는 퀘스트인가 (이미 열렸거나, 한 번만인데 끝났거나, 매년인데 올해 끝낸 것은 제외)
+    const R = reqOf(s); if (R.open.some(r => r.key === d.id)) return false;
+    const dn = R.done[d.id]; if (dn && (d.repeat !== 'yearly' || reqYear(dn.week) >= reqYear(s.week))) return false;
+    return true;
+  }
+  function reqProgress(s, d) {   // [채운 조건 수, 전체 조건 수] — 힌트 순서 · 등장 판정
+    let met = 0, tot = 0;
+    for (const c of d.cond) { tot++; if (condOk(s, c)) met++; }
+    if (d.season.length) { tot++; if (d.season.includes(seasonOf(s.week))) met++; }
+    if (d.owner) { tot++; if (reqOwnerFor(s, d)) met++; }
+    return [met, tot];
+  }
+  function reqHints(s, n) { return NQ.filter(d => reqEligible(s, d) && !((reqOf(s).cool[d.id] || 0) > s.week)).map(d => { const [m, t] = reqProgress(s, d); return { key: d.id, hint: d.hint, ratio: t ? m / t : 1, ready: m === t }; }).sort((x, y) => y.ratio - x.ratio).slice(0, n || 2); }
+  const reqName = (s, r) => { const d = NQ_BY[r.key], a = r.who != null && s.advs.find(x => x.id === r.who); return d.name.replace('{이름}', a ? a.name : '모험가'); };
+  const reqGiver = (s, r) => { const d = NQ_BY[r.key], a = r.who != null && s.advs.find(x => x.id === r.who); return d.npc === '{이름}' ? (a ? a.name : '모험가') : d.npc; };
+  const reqLog = (s, r, ev, text, extra) => log(s, text, 'req', Object.assign({ rq: { key: r.key, ev, who: r.who != null ? r.who : null, name: reqName(s, r) } }, extra || {}));
+  function reqAppear(s) {
+    const R = reqOf(s); if (!NQ.length || R.open.length >= REQ_CFG.maxOpen) return null;
+    const cands = NQ.filter(d => reqEligible(s, d) && !((R.cool[d.id] || 0) > s.week) && (() => { const [m, t] = reqProgress(s, d); return m === t; })());
+    if (!cands.length || reqR(s) >= REQ_CFG.appear) return null;
+    const d = cands[Math.floor(reqR(s) * cands.length)], ow = reqOwnerFor(s, d);
+    const r = { id: 'r' + (R.next++), key: d.id, state: 'open', stage: 1, who: ow ? ow.id : null, party: ow && d.party ? [ow.id] : [], refused: {}, at: s.week, isNew: true, fails: 0 };
+    R.open.push(r);
+    reqLog(s, r, R.done[d.id] && QLINES[d.id] && QLINES[d.id].req_y2 ? 'req_y2' : 'req', `${J(reqGiver(s, r), '이', '가')} 리퀘스트를 맡겼습니다: 「${reqName(s, r)}」`);
+    return r;
+  }
+  const reqNominated = d => d.type === 'hunt' || d.type === 'search';
+  function reqLock(s, r) {   // 지금 진행할 수 없는 까닭 (없으면 null)
+    const d = NQ_BY[r.key];
+    if (d.season.length && !d.season.includes(seasonOf(s.week))) return `${d.season.map(x => SEASON_NAME[x]).join(' · ')}에만 진행할 수 있습니다`;
+    if (reqNominated(d) && !s.built['집무실']) return '집무실을 지으면 받을 수 있습니다';
+    return null;
+  }
+  function reqGoalOk(s, d) { const m = /^(\w+)(>=|=)(\d+)$/.exec(d.goal || ''); return !!m && condOk(s, [m[1], m[2], +m[3], 1]); }
+  function reqNeed(s, r) {   // 지금 단계에서 내야 하는 것: { gold, mats } (지명 · 설치는 비어 있음)
+    const d = NQ_BY[r.key];
+    if (d.type === 'donate') return { gold: d.cost.gold, mats: {} };
+    if (d.type === 'deliver') return { gold: 0, mats: d.cost.mats };
+    if (d.type === 'town') return r.stage === 1 ? { gold: 0, mats: d.cost.mats } : { gold: d.cost.gold2, mats: {} };
+    return { gold: 0, mats: {} };
+  }
+  function reqCanPay(s, r) { const n = reqNeed(s, r); return s.gold >= n.gold && Object.entries(n.mats).every(([m, k]) => (s.mats[m] || 0) >= k); }
+  function reqGive(s, rid) {   // 돈 내기 · 납품 (건물 해금은 1단계 납품 → 2단계 돈 내기)
+    const R = reqOf(s), r = R.open.find(x => x.id === rid); if (!r || r.state !== 'open') return false;
+    const d = NQ_BY[r.key]; if (!['donate', 'deliver', 'town'].includes(d.type) || reqLock(s, r) || !reqCanPay(s, r)) return false;
+    const n = reqNeed(s, r);
+    if (n.gold) { s.gold -= n.gold; s.month.build = (s.month.build || 0) - n.gold; (s.month.builds = s.month.builds || []).push({ f: '리퀘스트 「' + reqName(s, r) + '」', c: n.gold }); }   // 장부: 건설 · 설비 줄 (운영 순이익에는 넣지 않음)
+    for (const [m, k] of Object.entries(n.mats)) s.mats[m] -= k;
+    if (d.type === 'town' && r.stage === 1) { r.stage = 2; reqLog(s, r, 'ok', `「${reqName(s, r)}」 첫 부탁을 들어주었습니다. 다음 부탁: ${d.cost.gold2}G`); return true; }
+    reqComplete(s, r, null); return true;
+  }
+  function reqRefuse(s, rid) {   // 마스터가 거절: 목록에서 빠지고 12주 뒤에 다시 올 수 있음
+    const R = reqOf(s), k = R.open.findIndex(x => x.id === rid); if (k < 0 || R.open[k].state !== 'open') return false;
+    const r = R.open.splice(k, 1)[0]; R.cool[r.key] = s.week + REQ_CFG.refuseCool; reqLog(s, r, 'refuse', `「${reqName(s, r)}」 리퀘스트를 거절했습니다.`); return true;
+  }
+  function reqComplete(s, r, party) {
+    const R = reqOf(s), d = NQ_BY[r.key], rw = d.rw, nom = reqNominated(d), got = [];
+    if (!nom) {   // 지명형의 금화 · 명성 · 신뢰도는 귀환 처리(게시판과 같은 길)에서 이미 반영
+      if (rw.gold) { s.gold += rw.gold; s.month.reqIn = (s.month.reqIn || 0) + rw.gold; (s.month.reqs = s.month.reqs || []).push({ n: reqName(s, r), g: rw.gold }); got.push(rw.gold + 'G'); }
+      if (rw.fame) s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + rw.fame);
+      if (rw.trust) s.trust = Math.min(100, s.trust + rw.trust);
+    }
+    if (rw.fame) got.push('명성 +' + rw.fame); if (rw.trust) got.push('신뢰도 +' + rw.trust);
+    if (rw.pop) { s.month.popAdd = (s.month.popAdd || 0) + rw.pop; got.push('인구 +' + rw.pop); }
+    if (rw.attach) { const [w, n] = rw.attach, list = w === 'all' ? aliveAdvs(s) : w === 'party' ? (party || []) : s.advs.filter(a => a.id === r.who); for (const a of list) if (a && a.alive) a.attach = Math.min(100, a.attach + n); got.push((w === 'all' ? '모든 모험가' : w === 'party' ? '참가자' : reqGiver(s, r)) + ' 애착 +' + n); }
+    for (const [m, k] of Object.entries(rw.mats)) { s.mats[m] = (s.mats[m] || 0) + k; s.knownMats[m] = true; got.push((MAT[m] ? MAT[m].name : m) + ' ' + k); }
+    const dn = R.done[d.id]; R.done[d.id] = { week: s.week, n: (dn ? dn.n : 0) + 1 };
+    const k = R.open.indexOf(r); if (k >= 0) R.open.splice(k, 1);
+    const ev = d.type === 'town' ? 'ok2' : dn && QLINES[d.id] && QLINES[d.id].ok_y2 ? 'ok_y2' : 'ok';
+    reqLog(s, r, ev, `리퀘스트 「${reqName(s, r)}」 완료!${got.length ? ' (' + got.join(' · ') + ')' : ''}`);
+    if (rw.unlock) unlockReward(s, rw.unlock);
+    if (rw.town) { (s.townUnlock = s.townUnlock || {})[rw.town] = true; log(s, `마을에 새 건물이 생겼습니다: ${{ smith: '대장간', potion: '물약 상점' }[rw.town] || rw.town}`, 'unlock'); }
+    const ex = rw.extra || {}, ow = s.advs.find(a => a.id === r.who);
+    if (ex.popMonthly) { R.popMonthly += ex.popMonthly; log(s, `마을 인구가 매달 ${ex.popMonthly}명씩 더 늘어납니다.`, 'town'); }
+    if (ex.recipe) { const dd = DISH.find(x => !s.dishes[x.name] && x.g <= s.grade); if (dd) { s.dishes[dd.name] = s.week; syncMeals(s); for (const m of dd.mats) s.knownMats[m] = true; log(s, `새 요리를 배웠습니다: ${dd.name}`, 'unlock'); } }
+    if (ex.ownerStat && ow && ow.alive) { ow.stats[ow.core] = Math.min(s.cfg.growth.statCap, ow.stats[ow.core] + ex.ownerStat); log(s, `${ow.name}의 ${STATS[ow.core]}이(가) ${ex.ownerStat} 올랐습니다.`, 'grow', { who: [ow.name] }); }
+    if (ex.ownerXp && ow && ow.alive) gainXp(s, ow, ex.ownerXp);
+  }
+  // ----- 지명 -----
+  const scoutFee = (s, r, a) => a.id === r.who ? 0 : ((s.cfg.econ.scoutFee || [])[a.grade] || 0);   // 지명 섭외비: 모험가 등급별, 부탁할 때마다 (거절당해도 나감). 의뢰한 본인은 없음
+  function reqChance(s, r, a) { const d = NQ_BY[r.key]; if (a.id === r.who) return 1; return Math.min(1, REQ_CFG.base[attachTier(a)] * REQ_CFG.riskMul[a.risk][d.risk]); }
+  const reqStatI = (s, r, a) => { const d = NQ_BY[r.key]; if (!d.req) return null; if (d.req[0] >= 0) return d.req[0]; if (d.req[0] === -2) return a ? a.core : 0; const ow = s.advs.find(x => x.id === r.who); return ow ? ow.core : 0; };   // req[0]: 0~4 능력치 · -1 의뢰한 본인 · -2 주력 능력치(직업 무관)
+  function reqMeets(s, r, a) { const d = NQ_BY[r.key]; if (!d.req) return true; if (d.req[0] === -1) return a.id === r.who; return Math.round(finalStat(s, a, d.req[0] === -2 ? a.core : d.req[0])) >= d.req[1]; }
+  const reqSorted = party => party.slice().sort((x, y) => REQ_CFG.rowOrder.indexOf(x.core) - REQ_CFG.rowOrder.indexOf(y.core));   // 대열: 항상 자동(직업 순 — 전사 · 도적 · 궁수 · 성직자 · 마법사)
+  function reqQuest(s, r, peek) {   // 지명 퀘스트를 게시판 의뢰와 같은 모양으로 만듦 (peek: 예상 성공률 계산용, 번호를 쓰지 않음)
+    const d = NQ_BY[r.key], si = reqStatI(s, r);
+    const q = { id: peek ? -1 : s.nextId++, g: 0, type: REQ_QTYPE_BY[d.id] != null ? REQ_QTYPE_BY[d.id] : REQ_QTYPE[d.type], req: [si == null ? 0 : si], r: d.r || s.cfg.quest.ref[0], reward: d.rw.gold, posted: s.week,
+      name: reqName(s, r), weeks: d.weeks, fameS: d.rw.fame, fameF: 0, trustS: d.rw.trust, trustF: 1, death: d.risk >= 2 ? null : 0, rq: r.id, rqKey: d.id };
+    if (q.death == null) delete q.death;
+    if (d.type === 'hunt' && COMBAT) {
+      q.enemies = []; q.seen = [];
+      for (const f of d.foes) { const M = (GD.content.monsters || []).find(m => m.id === f.mon); if (!M) continue;
+        for (let k = 0; k < f.count; k++) { const e = { hp: M.hp * (f.boss ? REQ_CFG.bossHp : 1), atk: M.atk * (f.boss ? REQ_CFG.bossAtk : 1), def: M.def || 0, name: f.name, mon: f.mon, boss: !!f.boss }; q.enemies.push(e); q.seen.push({ hp: e.hp, atk: e.atk, def: e.def, name: e.name, boss: e.boss }); } }
+    }
+    return q;
+  }
+  function reqPartyOf(s, r) { return r.party.map(id => s.advs.find(a => a.id === id)).filter(a => a && a.alive); }
+  function reqPredict(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); if (!r) return null; const party = reqSorted(reqPartyOf(s, r)); return party.length ? questP(s, party, reqQuest(s, r, true)) : null; }
+  function reqNomList(s, rid) {   // 지명 창 목록: 조건(★) · 상태 · 수락 확률
+    const r = reqOf(s).open.find(x => x.id === rid); if (!r) return [];
+    const d = NQ_BY[r.key];
+    return aliveAdvs(s).map(a => ({ id: a.id, name: a.name, cls: a.cls, core: a.core, lv: a.lv, grade: a.grade, attach: Math.round(a.attach), stat: reqStatI(s, r, a) == null ? null : Math.round(finalStat(s, a, reqStatI(s, r, a))), need: d.req && d.req[0] !== -1 ? d.req[1] : null,
+      meets: reqMeets(s, r, a), fee: scoutFee(s, r, a), busy: reqBusy(s, a), chance: Math.round(reqChance(s, r, a) * 100), inParty: r.party.includes(a.id), refused: r.refused[a.id] === s.week, away: a.state === 'away', owner: a.id === r.who }))
+      .sort((x, y) => (y.owner - x.owner) || (y.inParty - x.inParty) || (y.meets - x.meets) || ((y.stat || 0) - (x.stat || 0)) || (x.id - y.id));
+  }
+  function reqNominate(s, rid, aid) {   // 누르면 그 자리에서 수락 · 거절이 정해짐. 다시 누르면 파티에서 뺌
+    const r = reqOf(s).open.find(x => x.id === rid), a = s.advs.find(x => x.id === aid); if (!r || !a || r.state !== 'open') return { ok: false, why: '지금은 바꿀 수 없습니다' };
+    const d = NQ_BY[r.key]; if (!reqNominated(d)) return { ok: false, why: '지명이 필요 없는 리퀘스트입니다' };
+    const lock = reqLock(s, r); if (lock) return { ok: false, why: lock };
+    if (r.party.includes(aid)) { if (aid === r.who) return { ok: false, why: '의뢰한 본인은 꼭 함께 갑니다' }; r.party = r.party.filter(x => x !== aid); return { ok: true, removed: true }; }
+    const busy = reqBusy(s, a); if (busy) return { ok: false, why: busy };
+    if (r.refused[aid] === s.week) return { ok: false, why: '이번 주에는 거절했습니다 (다음 주에 다시 부탁할 수 있어요)' };
+    if (r.party.length >= d.party[1]) return { ok: false, why: '파티가 가득 찼습니다' };
+    const fee = scoutFee(s, r, a); if (s.gold < fee) return { ok: false, why: `섭외비 ${fee}G가 부족합니다` };
+    if (fee) { s.gold -= fee; s.month.scout = (s.month.scout || 0) - fee; s.month.scoutN = (s.month.scoutN || 0) + 1; }   // 섭외비는 부탁하는 순간 나감 (거절당해도 돌려받지 않음)
+    const yes = reqR(s) < reqChance(s, r, a);
+    if (yes) r.party.push(aid); else r.refused[aid] = s.week;
+    const L = yes ? ['맡겨 주세요!', '좋아요, 가죠.', '마스터 부탁이라면야.'] : ['이번엔 좀…', '죄송해요, 다음에요.', '그건 내키지 않네요.'];
+    return { ok: yes, asked: true, fee, line: L[Math.floor(reqR(s) * L.length)] };
+  }
+  function reqSendWhy(s, r) {   // 보낼 수 없는 까닭 (없으면 null)
+    const d = NQ_BY[r.key], party = reqPartyOf(s, r), lock = reqLock(s, r);
+    if (lock) return lock;
+    if (party.length < d.party[0]) return `${d.party[0]}명 이상 지명해야 합니다`;
+    if (!party.some(a => reqMeets(s, r, a))) return '조건(★)을 채운 모험가가 1명 있어야 합니다';
+    const b = party.find(a => reqBusy(s, a)); if (b) return `${b.name}: ${reqBusy(s, b)}`;
+    return null;
+  }
+  function reqSend(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); if (!r || r.state !== 'open' || !reqNominated(NQ_BY[r.key]) || reqSendWhy(s, r)) return false; r.state = 'queued'; return true; }
+  function reqUnsend(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); if (!r || r.state !== 'queued') return false; r.state = 'open'; return true; }
+  function reqLaunch(s) {   // 주 진행: 보내기로 한 지명 파티가 게시판보다 먼저 출발
+    for (const r of reqOf(s).open) {
+      if (r.state !== 'queued') continue;
+      r.party = reqPartyOf(s, r).map(a => a.id);
+      if (reqSendWhy(s, r)) { r.state = 'open'; log(s, `「${reqName(s, r)}」 지명 파티가 출발하지 못했습니다. (${reqSendWhy(s, r)})`, 'sys'); continue; }
+      const party = reqSorted(reqPartyOf(s, r)), q = reqQuest(s, r, false);
+      r.state = 'active'; r.qid = q.id; launchParty(s, q, party, questP(s, party, q));
+    }
+  }
+  function reqReturn(s, x, ok, party) {
+    const r = reqOf(s).open.find(y => y.id === x.q.rq); if (!r) return;
+    if (ok) { reqComplete(s, r, party.filter(Boolean)); return; }
+    r.state = 'open'; r.fails = (r.fails || 0) + 1; r.party = r.who != null ? [r.who] : []; delete r.qid;
+    reqLog(s, r, 'fail', `리퀘스트 「${reqName(s, r)}」에 실패했습니다. 다시 도전할 수 있습니다.`);
+  }
+  function reqWeekly(s) {
+    const R = reqOf(s);
+    for (const r of R.open.slice()) {   // 의뢰한 모험가가 떠났거나 죽으면 그 리퀘스트는 사라짐
+      if (r.who != null && r.state !== 'active') { const a = s.advs.find(x => x.id === r.who); if (!a || !a.alive) { R.open.splice(R.open.indexOf(r), 1); log(s, `「${reqName(s, r)}」 리퀘스트가 사라졌습니다. (의뢰한 모험가가 길드에 없음)`, 'sys'); continue; } }
+      const d = NQ_BY[r.key]; if (d.type === 'install' && r.state === 'open' && reqGoalOk(s, d)) reqComplete(s, r, null);   // 설치 요청: 놓으면 완료
+    }
+    reqLaunch(s);
+    reqAppear(s);
+  }
+  function reqCheck(s) { const R = reqOf(s); let n = 0; for (const r of R.open.slice()) { const d = NQ_BY[r.key]; if (d.type === 'install' && r.state === 'open' && reqGoalOk(s, d)) { reqComplete(s, r, null); n++; } } return n; }   // 화면에서 설비를 놓은 직후 확인용
+  function reqView(s) {   // 화면용 목록
+    return reqOf(s).open.map(r => { const d = NQ_BY[r.key]; return { r, d, name: reqName(s, r), giver: reqGiver(s, r), lock: reqLock(s, r), need: reqNeed(s, r), canPay: reqCanPay(s, r), nominated: reqNominated(d), goalOk: d.type === 'install' ? reqGoalOk(s, d) : null }; });
+  }
+  // 검증용 자동 처리 (관문 1 · 개발 패널): 시뮬레이터 reqPolicy와 같은 규칙. 돈 내기는 내고도 1,500G가 남을 때, 납품은 소재가 있을 때,
+  // 지명은 집무실(없으면 같은 여유 기준으로 지음)에서 조건을 채운 모험가부터 예상 성공률이 60%를 넘을 때까지 불러 보냄
+  function autoRequests(s) {
+    const R = reqOf(s), keep = REQ_CFG.autoReserve;
+    for (const r of R.open.slice()) {
+      const d = NQ_BY[r.key]; if (r.state !== 'open') continue;
+      if (reqNominated(d) && !s.built['집무실'] && s.gold - facCost(s, '집무실') >= keep) build(s, '집무실');
+      if (reqLock(s, r)) continue;
+      if (!reqNominated(d)) { const n = reqNeed(s, r); if ((n.gold || Object.keys(n.mats).length) && reqCanPay(s, r) && s.gold - n.gold >= keep) reqGive(s, r.id); continue; }
+      r.party = r.party.filter(id => id === r.who || !reqBusy(s, s.advs.find(x => x.id === id) || {}));   // 그사이 다른 의뢰를 떠난 사람은 파티에서 뺌
+      const rows = reqNomList(s, r.id).filter(x => !x.busy && !x.inParty && !x.refused).sort((x, y) => (y.meets - x.meets) || ((y.stat || 0) - (x.stat || 0)));
+      for (const x of rows) {
+        const party = reqPartyOf(s, r); if (party.length >= d.party[1]) break;
+        if (party.length >= d.party[0] && party.some(a => reqMeets(s, r, a)) && reqPredict(s, r.id) >= REQ_CFG.autoSend) break;
+        if (s.gold - x.fee < keep) break;   // 섭외비를 내고도 여유가 남을 때만
+        reqNominate(s, r.id, x.id);
+      }
+      if (!reqSendWhy(s, r) && reqPredict(s, r.id) >= REQ_CFG.autoSend) reqSend(s, r.id);
+    }
+  }
   function stepWeek(s) {
     expireQuests(s);
     generateQuests(s);   // 2026-11-12: 매주 게시 (예전에는 매달 초에만 = 월 유입의 1/4만 들어왔음)
     returns(s);
+    s.seatUsed = 0;   // 이번 주 식사한 좌석 수
+    reqWeekly(s);     // 리퀘스트: 등장 판정 · 설치 요청 확인 · 지명 파티 출발(게시판보다 먼저)
     departures(s);
     s.week++;
     if (s.week % WPM === 0) monthly(s);
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
