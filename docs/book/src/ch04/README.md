@@ -11,5 +11,6 @@
 - [의뢰 유입과 게시판](board.md)
 - [의뢰 유형과 성공 판정](judge.md)
 - [리퀘스트(서브 퀘스트)](requests.md)
+- [F급 리퀘스트 28개와 의뢰인](requests-list.md)
 - [지명 퀘스트](nomination.md)
 - [메인 퀘스트](main.md)

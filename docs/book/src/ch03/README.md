@@ -16,5 +16,7 @@ flowchart LR
 
 - [능력치 · 레벨 · 등급](stats.md)
 - [직업과 전직](jobs.md)
+- [스킬과 성장 경로](skills.md)
 - [성향과 애착도](personality.md)
 - [합류 · 파티 · 사망과 계승](lifecycle.md)
+- [모험가끼리 대화 · 몸 상태 · 칭호](talk.md)

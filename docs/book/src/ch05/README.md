@@ -5,3 +5,4 @@
 - [전투 규칙](rules.md)
 - [출발 판단과 성공률](departure.md)
 - [침공: 다리를 지켜라](invasion.md)
+- [습격 · 마인 · 무술 대회](extra.md)
