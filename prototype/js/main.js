@@ -202,12 +202,14 @@
     requestAnimationFrame(frame);
   }
 
-  $('loadMsg').textContent = '리소스 불러오는 중…';
-  Assets.load(window.ASSET_MANIFEST, st => { $('loadMsg').textContent = `리소스 ${st.ok + st.temp} / ${st.total}`; }).then(() => {
+  if (/[?&]dev=1/.test(location.search)) document.body.classList.add('dev');   // 개발용 버튼 보이기 (2026-11-16)
+  $('loadMsg').textContent = '그림 불러오는 중…';
+  Assets.load(window.ASSET_MANIFEST, st => { const n = st.ok + st.temp, p = st.total ? Math.round(n / st.total * 100) : 0; $('loadBar').style.width = p + '%'; $('loadMsg').textContent = `그림 불러오는 중 ${p}%  (${n} / ${st.total})`; }).then(() => {
     const st = Assets.stats;
     q('#dAssets').textContent = `리소스 ${st.ok}개 · 임시 그래픽 ${st.temp}개`;
     q('#dAssets').title = st.missing.length ? '임시: ' + st.missing.join(', ') : '모든 파일을 찾았습니다';
     $('loading').remove();
+    Assets.loadLazy(window.ASSET_MANIFEST);   // 마을 주민 걷기 그림 등 큰 그림은 타이틀 뒤에 받음
     Lobby.update(s, 0); Director.init(s); UI.hud();
     requestAnimationFrame(frame);
     const go = () => { started = true; UI.say(UI.lines('start')); };

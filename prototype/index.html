@@ -263,7 +263,16 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 .opt{background:#fff;border:2px solid rgba(90,58,34,.25);border-radius:12px;padding:10px 14px;font-size:17px;display:flex;flex-direction:column;gap:5px}
 .ot{display:flex;align-items:center;gap:8px;font-size:21px}.tagx{font-size:14px;background:#efe3c8;border-radius:8px;padding:2px 8px;color:var(--muted)}
 .sbtn.big{font-size:18px;padding:8px 14px;margin-top:6px;background:var(--wood2);color:#fff3d6}
-#loading{position:fixed;inset:0;display:grid;place-items:center;color:#fbefd6;font-size:18px}
+#loading{position:fixed;inset:0;display:grid;place-items:center;color:#fbefd6;font-size:18px;z-index:50;background:radial-gradient(ellipse at 50% 40%,#5a3d24 0%,#2e1f13 62%,#1a110a 100%)}
+#loading .ld-box{width:min(560px,86vw);text-align:center}
+#loading h1{margin:0;font-size:44px;letter-spacing:4px;color:#f6dfaf;text-shadow:0 3px 0 #1a110a,0 0 24px rgba(232,180,74,.35)}
+#loading .ld-sub{margin:6px 0 34px;font-size:16px;letter-spacing:2px;color:#cfae7a}
+#loading .ld-bar{height:14px;border-radius:7px;background:rgba(0,0,0,.45);border:1px solid rgba(232,180,74,.45);overflow:hidden}
+#loading .ld-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c9862e,#f0c766);border-radius:7px;transition:width .25s ease}
+#loading #loadMsg{display:block;margin-top:12px;font-size:16px;color:#f0dcb6}
+#loading .ld-tip{margin-top:26px;font-size:14px;line-height:1.6;color:#b99a72}
+/* 개발용 버튼은 주소에 ?dev=1을 붙였을 때만 보임 (2026-11-16, 동료 시연용) */
+body:not(.dev) #devToggle,body:not(.dev) #dev,body:not(.dev) #titleSkip,body:not(.dev) #tDev{display:none!important}
 
 /* ---- 팝업 창·대사창: 의뢰서 종이 패널 + 제목 판 + 섹션 머리 띠 (Gemini 제작) ---- */
 #pop{--pb:46px;width:1240px;height:820px;top:47%;overflow:visible;background:none;border:var(--pb) solid transparent;border-image:url(assets/ui/pop/panel_paper.png) 60 fill/var(--pb) stretch;border-radius:0;box-shadow:none;filter:drop-shadow(0 10px 18px rgba(40,22,10,0.38))}
@@ -348,7 +357,7 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 </style>
 <link rel="stylesheet" href="css/ui_kit.css"><link rel="stylesheet" href="css/book.css"></head><body>
 <div id="game"></div>
-<div id="loading"><span id="loadMsg"></span></div>
+<div id="loading"><div class="ld-box"><h1>이세계 모험가 길드</h1><p class="ld-sub">2차 프로토타입</p><div class="ld-bar"><i id="loadBar"></i></div><span id="loadMsg"></span><p class="ld-tip">처음 열 때는 그림을 받느라 시간이 조금 걸립니다.<br>두 번째부터는 금방 열립니다.</p></div></div>
 <template id="uiTpl">
   <div id="hudTL"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><span id="hGrade"></span><span class="dt"><span class="date" id="hDate"></span><div class="weekbar"><i id="hWeekBar"></i></div><div class="wkrow"><img id="hTime" alt="" draggable="false" src="assets/ui/hud/time_sun.png" data-k="sun"></div></span><span class="sep"></span><span class="stat"><img src="assets/ui/hud/icon_coin.png" alt=""><span><span class="lb">금고</span><span class="val"><b id="hGold"></b><small> G</small></span></span></span><span class="sep"></span><span class="stat" id="hTrustBox" title=""><img id="hTrustFace" class="tface" src="assets/ui/hud/trust/trust_2.png" alt=""><span><span class="lb">신뢰도</span><span class="val"><b id="hTrust"></b></span><span class="tbar"><i id="hTrustBar"></i></span></span></span><span class="sep"></span><span class="stat" id="hFameBox" title=""><img src="assets/ui/hud/icon_star.png" alt=""><span><span class="lb">명성</span><span class="val"><b id="hFame"></b></span><span class="fbar" id="hFameBarW"><i id="hFameBar"></i></span></span></span><span class="sep"></span><span class="stat" id="hAdvBox" title=""><img src="assets/ui/hud/icon_adventurer.png" alt=""><span><span class="lb">모험가</span><span class="val"><b id="hAdv"></b><small class="cap" id="hAdvCap"></small></span></span></span></div></div>
   <div id="hudTR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><button class="btn" id="ppBtn" title="일시정지·재생 (스페이스)"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg></button><span class="more"><button class="chip on" data-speed="1"><b>1×</b></button><button class="chip" data-speed="2"><b>2×</b></button><button class="chip" data-speed="4"><b>4×</b></button></span></div></div>

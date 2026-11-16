@@ -27,7 +27,7 @@
   }
 
   Assets.load = function (manifest, onProgress) {
-    const keys = Object.keys(manifest.items);
+    const keys = Object.keys(manifest.items).filter(k => !manifest.items[k].lazy || Assets.forceTemp);   // lazy 항목은 loadLazy로 나중에
     Assets.stats = { ok: 0, temp: 0, total: keys.length, missing: [] };
     return Promise.all(keys.map(key => new Promise(done => {
       const it = manifest.items[key];
@@ -41,6 +41,17 @@
       img.onload = () => finish(img, true);
       img.onerror = () => it.optional ? (Assets.items[key] = Object.assign({}, it, { img: null, ok: false }), Assets.stats.total--, done()) : finish(placeholder(key, it), false);
       img.src = (root.ASSET_INLINE && root.ASSET_INLINE[it.src]) || manifest.base + it.src;
+    })));
+  };
+
+  // 나중에 받기 (2026-11-16): 첫 화면에 필요 없는 큰 그림. 다 받기 전에는 Assets.has(key)가 false라 그리는 쪽이 대신 그림을 씀
+  Assets.loadLazy = function (manifest) {
+    const keys = Object.keys(manifest.items).filter(k => manifest.items[k].lazy && !Assets.items[k]);
+    return Promise.all(keys.map(key => new Promise(done => {
+      const it = manifest.items[key], img = new Image();
+      img.onload = () => { Assets.items[key] = Object.assign({}, it, { img, ok: true }); done(); };
+      img.onerror = () => { Assets.items[key] = Object.assign({}, it, { img: null, ok: false }); done(); };
+      img.src = manifest.base + it.src;
     })));
   };
 
