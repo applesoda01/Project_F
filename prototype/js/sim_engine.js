@@ -641,7 +641,7 @@
     // 등장: 매주 조건을 채운 것 중 하나가 50% (동시에 4개) · 마감 없음 · 계절 퀘스트는 그 계절에만 진행 · 실패해도 다시 도전
     // 자동 처리: 돈 내기는 내고도 1,500G 남을 때 · 납품은 소재가 있을 때 · 지명은 집무실에서 조건(★) 채운 모험가부터 불러 예상 성공률 60% 이상이면 보냄
     const NQ = (cfg.run && cfg.run.noRequests) ? [] : (((gameData() || {}).namedQuests) || []), NQ_BY = {}; for (const d of NQ) NQ_BY[d.id] = d;
-    const RQC = { maxOpen: 4, appear: 0.5, base: [0.40, 0.65, 0.90, 1.00], riskMul: [[1.0, 0.8, 0.5], [1.0, 1.0, 0.8], [1.0, 1.1, 1.2]], rowOrder: [0, 4, 1, 3, 2], bossHp: 3, bossAtk: 1.3, reserve: 400, send: 0.6 };
+    const RQC = { maxOpen: Infinity, appear: 0.5, base: [0.40, 0.65, 0.90, 1.00], riskMul: [[1.0, 0.8, 0.5], [1.0, 1.0, 0.8], [1.0, 1.1, 1.2]], rowOrder: [0, 4, 1, 3, 2], bossHp: 3, bossAtk: 1.3, reserve: 400, send: 0.6 };
     const RQT = { hunt: 0, search: 2 }, RQT_BY = { f_req_bat05: 3, f_req_srch04: 1, f_req_srch01: 3, f_req_srch05: 3, f_req_srch06: 3 };
     const R2 = rng((seed ^ 0x9E3779B9) >>> 0);   // 게임처럼 리퀘스트 난수는 따로
     s.rq = { open: [], done: {}, popMonthly: 0 }; s.st.reqAppear = 0; s.st.reqDone = 0; s.st.reqFail = 0; s.st.reqGold = 0;
