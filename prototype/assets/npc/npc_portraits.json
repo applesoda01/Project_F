@@ -1,0 +1,134 @@
+{
+ "note": "리퀘스트 의뢰인 NPC 대화 초상 (2026-11-14 제작, 11-16 저장소에 넣음). 리나(lina_stand · lina_blink)와 같은 방식: 상반신 위에 눈 조각을 겹쳐 그림. 눈 조각 = 가로 3칸(뜸 · 반쯤 · 감김) 1줄, eye = [x, y, w, h] (상반신 그림 안 위치 · 칸 크기)",
+ "blink": {
+  "sequence": [
+   1,
+   2,
+   1,
+   0
+  ],
+  "note": "리나와 같은 깜빡임 (ui.js BLINK_SEQ)"
+ },
+ "npc": {
+  "npc_chief": {
+   "name": "바르톨",
+   "stand": "npc/npc_chief_stand.webp",
+   "blink": "npc/npc_chief_blink.webp",
+   "size": [
+    499,
+    640
+   ],
+   "eye": [
+    187,
+    69,
+    125,
+    61
+   ]
+  },
+  "npc_farmer": {
+   "name": "굼바",
+   "stand": "npc/npc_farmer_stand.webp",
+   "blink": "npc/npc_farmer_blink.webp",
+   "size": [
+    476,
+    640
+   ],
+   "eye": [
+    195,
+    82,
+    127,
+    64
+   ]
+  },
+  "npc_carpenter": {
+   "name": "한스",
+   "stand": "npc/npc_carpenter_stand.webp",
+   "blink": "npc/npc_carpenter_blink.webp",
+   "size": [
+    499,
+    640
+   ],
+   "eye": [
+    186,
+    74,
+    129,
+    74
+   ]
+  },
+  "npc_nun": {
+   "name": "세실리아",
+   "stand": "npc/npc_nun_stand.webp",
+   "blink": "npc/npc_nun_blink.webp",
+   "size": [
+    310,
+    640
+   ],
+   "eye": [
+    79,
+    124,
+    130,
+    73
+   ]
+  },
+  "npc_granny": {
+   "name": "그레타",
+   "stand": "npc/npc_granny_stand.webp",
+   "blink": "npc/npc_granny_blink.webp",
+   "size": [
+    474,
+    640
+   ],
+   "eye": [
+    185,
+    131,
+    127,
+    59
+   ]
+  },
+  "npc_merchant": {
+   "name": "페드로",
+   "stand": "npc/npc_merchant_stand.webp",
+   "blink": "npc/npc_merchant_blink.webp",
+   "size": [
+    499,
+    640
+   ],
+   "eye": [
+    185,
+    120,
+    131,
+    71
+   ]
+  },
+  "npc_scholar": {
+   "name": "헤르만",
+   "stand": "npc/npc_scholar_stand.webp",
+   "blink": "npc/npc_scholar_blink.webp",
+   "size": [
+    499,
+    640
+   ],
+   "eye": [
+    186,
+    101,
+    129,
+    65
+   ]
+  },
+  "npc_smith": {
+   "name": "대장장이",
+   "stand": "npc/npc_smith_stand.webp",
+   "blink": "npc/npc_smith_blink.webp",
+   "size": [
+    500,
+    640
+   ],
+   "eye": [
+    186,
+    105,
+    130,
+    78
+   ]
+  }
+ }
+}
