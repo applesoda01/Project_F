@@ -9,6 +9,7 @@
     - [한 장으로 보는 게임](ch01/concept.md)
     - [핵심 수치 다섯 가지](ch01/numbers.md)
     - [프로토타입 범위와 현재 상태](ch01/scope.md)
+    - [레퍼런스 게임](ch01/references.md)
 - [한 판의 흐름](ch02/README.md)
     - [핵심 루프: 한 주에 일어나는 일](ch02/loop.md)
     - [시간: 주 · 달 · 해](ch02/time.md)
