@@ -337,7 +337,7 @@
   // 왼쪽 = 받은 리퀘스트 목록 + 소문(힌트) / 오른쪽 = 고른 리퀘스트: 사연 · 요구 · 보상 · 돈 내기/납품 또는 지명 창
   let rqSel = null, rqMsg = '';
   const RQ_TYPE = { hunt: '전투', search: '탐색', deliver: '납품', donate: '돈 내기', install: '설치 요청', town: '마을 건물' }, RQ_GIVER = { adventurer: '모험가', resident: '마을 사람', outsider: '외지인' };
-  const RQ_STATE = { queued: '다음 주 출발', active: '원정 중' };
+  const RQ_STATE = { queued: '다음 주 출발', active: '원정 중' };   // queued인데 예약자가 아직 밖이면 '모이면 출발' (stTxt)
   const rqMat = (id, n, have) => { const m = MATS[id] || { name: id }; return `<span class="rq-chip ${have != null && have < n ? 'lack' : ''}">${m.icon ? `<img src="assets/${m.icon}" alt="">` : ''}${esc(m.name)} ${have != null ? `<b>${Math.min(have, 999)}</b>/` : '×'}${n}</span>`; };
   function rqRewards(v) {
     const d = v.d, rw = d.rw, o = [];
@@ -409,7 +409,7 @@
     const V = Gm.reqView(s), R = Gm.reqOf(s), hints = Gm.reqHints(s, 2);
     if (!V.some(v => v.r.id === rqSel)) { rqSel = V[0] ? V[0].r.id : null; rqMsg = ''; }
     for (const v of V) if (v.r.id === rqSel) v.r.isNew = false;
-    const stTxt = v => v.lock ? `<i class="st lock">${v.d.season.length && !v.d.season.includes(Gm.seasonOf(s.week)) ? v.d.season.map(x => Gm.SEASON_NAME[x]).join(' · ') + '에 진행' : '집무실 필요'}</i>` : RQ_STATE[v.r.state] ? `<i class="st go">${RQ_STATE[v.r.state]}</i>` : v.r.isNew ? '<i class="st new">새 부탁</i>' : (v.nominated ? `<i class="st">${v.r.party.length ? '지명 중' : '지명 기다림'}</i>` : v.d.type === 'install' ? '<i class="st">설치 기다림</i>' : `<i class="st ${v.canPay ? 'ok' : ''}">${v.canPay ? '낼 수 있음' : '준비 부족'}</i>`);
+    const stTxt = v => v.lock ? `<i class="st lock">${v.d.season.length && !v.d.season.includes(Gm.seasonOf(s.week)) ? v.d.season.map(x => Gm.SEASON_NAME[x]).join(' · ') + '에 진행' : '집무실 필요'}</i>` : RQ_STATE[v.r.state] ? `<i class="st go">${v.r.state === 'queued' && Gm.reqWaitOf(s, v.r).length ? '모이면 출발' : RQ_STATE[v.r.state]}</i>` : v.r.isNew ? '<i class="st new">새 부탁</i>' : (v.nominated ? `<i class="st">${v.r.party.length ? '지명 중' : '지명 기다림'}</i>` : v.d.type === 'install' ? '<i class="st">설치 기다림</i>' : `<i class="st ${v.canPay ? 'ok' : ''}">${v.canPay ? '낼 수 있음' : '준비 부족'}</i>`);
     let L = mainCardHtml() + `<div class="ux-h">받은 부탁 <small>${V.length}건 · 들어준 부탁 ${Object.values(R.done).reduce((t, x) => t + x.n, 0)}건</small></div><div class="rq-list">`;
     for (const v of V) L += `<button class="rq-card ${v.r.id === rqSel ? 'on' : ''} ${v.lock ? 'lock' : ''} gv-${v.d.giver}" data-rq="${v.r.id}"><i class="gv">${RQ_GIVER[v.d.giver]}</i><span class="tx"><b>${esc(v.name)}</b><em>${esc(v.giver)} · ${RQ_TYPE[v.d.type]}${v.d.type === 'town' ? ` ${v.r.stage}/2` : ''}</em></span>${stTxt(v)}</button>`;
     if (!V.length) L += '<div class="rq-none">지금은 받은 부탁이 없습니다.<br>마을과 길드가 자라면 사람들이 찾아옵니다.</div>';
@@ -436,12 +436,12 @@
       const party = Gm.reqPartyOf(s, r), P = Gm.reqPredict(s, r.id), why = r.state === 'open' ? Gm.reqSendWhy(s, r) : null, rows = Gm.reqNomList(s, r.id);
       const pTxt = P == null ? '' : `<span class="rq-p ${P >= 0.7 ? 'ok' : P >= 0.4 ? 'mid' : 'bad'}">예상 성공률 <b>${Math.round(P * 100)}%</b></span>`;
       Rr += `<div class="rq-party"><span class="pl">파티 ${party.length} / ${d.party[1]}</span>${party.map(a => `<span class="pm" style="${faceStyle(a, 34, 178, 17)}" title="${esc(a.name)}"></span>`).join('') || '<em>아래에서 모험가를 눌러 부탁하세요 (부탁할 때마다 섭외비가 나갑니다)</em>'}${pTxt}</div>`;
-      Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary" data-rqact="send" ${why ? 'disabled' : ''}>보내기 <small>(다음 주 출발)</small></button>` : r.state === 'queued' ? '<button class="ux-btn" data-rqact="unsend">출발 취소</button>' : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}<span class="rq-msg">${esc(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</span></div>`;
+      Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary" data-rqact="send" ${why ? 'disabled' : ''}>보내기 <small>(${Gm.reqWaitOf(s, r).length ? '모두 돌아오면 출발' : '다음 주 출발'})</small></button>` : r.state === 'queued' ? `<button class="ux-btn" data-rqact="unsend">출발 취소</button>${Gm.reqWaitOf(s, r).length ? `<span class="rq-note">예약: ${esc(josa(Gm.reqWaitOf(s, r).map(a => a.name).join(' · '), '이', '가'))} 돌아오면 그다음 주에 출발해요. 그동안 파티원은 게시판 의뢰를 받지 않아요.</span>` : ''}` : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}<span class="rq-msg">${esc(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</span></div>`;
       if (r.state !== 'active') {
         Rr += `<div class="rq-nom ${r.state !== 'open' || v.lock ? 'off' : ''}"><div class="nh"><span>모험가</span><span>${d.req && d.req[0] >= 0 ? Gm.STATS[d.req[0]] : rows[0] && rows[0].stat != null ? '주력' : ''}</span><span>애착</span><span>수락</span><span>섭외비</span><span>상태</span></div>`;
         for (const x of rows) { const a = s.advs.find(z => z.id === x.id);
-          const st = x.inParty ? '<b class="ok">✔ 함께 감</b>' : x.busy ? x.busy : x.refused ? '<b class="ng">✖ 이번 주 거절</b>' : x.back ? '이번 주 귀환' : x.away ? '마을 밖' : '길드에 있음';
-          Rr += `<button class="nr ${x.inParty ? 'in' : ''} ${x.busy || x.refused ? 'no' : ''}" data-rqnom="${x.id}"><span class="who"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span><b>${esc(x.name)}</b><em>${esc(x.cls)} Lv ${x.lv}</em></span></span><span class="sv">${d.req ? (x.meets ? '<i class="star">★</i>' : '') : ''}${x.stat != null ? x.stat : ''}</span><span>${x.attach}</span><span class="ch">${x.owner ? '본인' : x.chance + '%'}</span><span class="fee ${!x.inParty && x.fee > s.gold ? 'lack' : ''}">${x.inParty || !x.fee ? '—' : x.fee + 'G'}</span><span class="stx">${st}</span></button>`; }
+          const st = x.inParty ? (x.busy ? `<b class="ok">✔ 예약 (${x.busy})</b>` : '<b class="ok">✔ 함께 감</b>') : x.busy ? `${x.busy} · 예약 가능` : x.refused ? '<b class="ng">✖ 이번 주 거절</b>' : x.back ? '이번 주 귀환' : x.away ? '마을 밖' : '길드에 있음';
+          Rr += `<button class="nr ${x.inParty ? 'in' : ''} ${x.refused ? 'no' : ''}" data-rqnom="${x.id}"><span class="who"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span><b>${esc(x.name)}</b><em>${esc(x.cls)} Lv ${x.lv}</em></span></span><span class="sv">${d.req ? (x.meets ? '<i class="star">★</i>' : '') : ''}${x.stat != null ? x.stat : ''}</span><span>${x.attach}</span><span class="ch">${x.owner ? '본인' : x.chance + '%'}</span><span class="fee ${!x.inParty && x.fee > s.gold ? 'lack' : ''}">${x.inParty || !x.fee ? '—' : x.fee + 'G'}</span><span class="stx">${st}</span></button>`; }
         Rr += '</div>';
       }
     }
@@ -453,7 +453,7 @@
     const top = s.log[0]; rqMsg = '';
     if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; else rqStamp('들어주기', v.name); }
     else if (act === 'refuse') Gm.reqRefuse(s, v.r.id);
-    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; rqStamp('보내기', v.name); } }
+    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = Gm.reqWaitOf(s, v.r).length ? '' : '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; rqStamp('보내기', v.name); } }
     else if (act === 'unsend') Gm.reqUnsend(s, v.r.id);
     else if (act === 'office') Gm.build(s, '집무실');
     rqFlush(top); hooks.changed(); renderPopup();

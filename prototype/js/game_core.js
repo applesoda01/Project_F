@@ -413,9 +413,9 @@
 
   function departures(s) {
     const Q = s.cfg.quest, E = s.cfg.econ;   // s.seatUsed(이번 주 식사한 좌석 수)는 stepWeek에서 0으로 (지명 출발이 먼저 식사하므로)
-    for (const a of s.advs) { if (!a.alive || a.state === 'quest') continue; if (a.state === 'injured' && s.week < a.until) continue; a.state = present(s, a) ? 'town' : 'away'; if (a.state === 'town') a.lastSeen = s.week; }   // lastSeen: 마지막으로 길드에 온 주
+    for (const a of s.advs) { if (!a.alive || a.state === 'quest') continue; if (a.state === 'injured' && s.week < a.until) continue; a.state = present(s, a) || reqReserved(s, a) ? 'town' : 'away'; if (a.state === 'town') a.lastSeen = s.week; }   // lastSeen: 마지막으로 길드에 온 주
     if (mainBlocked(s)) return;   // 침공 1주 전: 의뢰 출발 금지 (2026-11-16)
-    const idle = s.advs.filter(a => a.state === 'town');
+    const idle = s.advs.filter(a => a.state === 'town' && !reqReserved(s, a));   // 지명 예약자는 게시판 의뢰를 받지 않음
     for (const a of idle) {
       if (a.state !== 'town') continue;
       const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
@@ -784,7 +784,7 @@
     const d = NQ_BY[r.key]; if (!reqNominated(d)) return { ok: false, why: '지명이 필요 없는 리퀘스트입니다' };
     const lock = reqLock(s, r); if (lock) return { ok: false, why: lock };
     if (r.party.includes(aid)) { if (aid === r.who) return { ok: false, why: '의뢰한 본인은 꼭 함께 갑니다' }; r.party = r.party.filter(x => x !== aid); return { ok: true, removed: true }; }
-    const busy = reqBusy(s, a); if (busy) return { ok: false, why: busy };
+    // 2026-11-16 예약 지명: 원정 중 · 부상 중인 모험가도 부탁할 수 있음(수락 판정 · 섭외비는 지금). '마을 밖'은 예전처럼 바로 부탁 가능(그 주 길드에 없을 뿐)
     if (r.refused[aid] === s.week) return { ok: false, why: '이번 주에는 거절했습니다 (다음 주에 다시 부탁할 수 있어요)' };
     if (r.party.length >= d.party[1]) return { ok: false, why: '파티가 가득 찼습니다' };
     const fee = scoutFee(s, r, a); if (s.gold < fee) return { ok: false, why: `섭외비 ${fee}G가 부족합니다` };
@@ -800,9 +800,10 @@
     if (mainBlocked(s)) return '침공 대비 중에는 출발할 수 없습니다';
     if (party.length < d.party[0]) return `${d.party[0]}명 이상 지명해야 합니다`;
     if (!party.some(a => reqMeets(s, r, a))) return '조건(★)을 채운 모험가가 1명 있어야 합니다';
-    const b = party.find(a => reqBusy(s, a)); if (b) return `${b.name}: ${reqBusy(s, b)}`;
-    return null;
+    return null;   // 2026-11-16 예약 지명: 원정 중 · 부상 중인 파티원이 있어도 보낼 수 있음 → 모두 돌아온 주에 출발 (reqLaunch)
   }
+  const reqWaitOf = (s, r) => reqPartyOf(s, r).filter(a => reqBusy(s, a));   // 예약: 아직 돌아오지 않은 파티원
+  const reqReserved = (s, a) => reqOf(s).open.some(r => r.state === 'queued' && r.party.includes(a.id));   // 보내기를 누른 지명 파티의 예약자 = 돌아와도 게시판 의뢰를 받지 않고 기다림
   function reqSend(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); if (!r || r.state !== 'open' || !reqNominated(NQ_BY[r.key]) || reqSendWhy(s, r)) return false; r.state = 'queued'; return true; }
   function reqUnsend(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); if (!r || r.state !== 'queued') return false; r.state = 'open'; return true; }
   function reqLaunch(s) {   // 주 진행: 보내기로 한 지명 파티가 게시판보다 먼저 출발
@@ -810,6 +811,10 @@
       if (r.state !== 'queued') continue;
       r.party = reqPartyOf(s, r).map(a => a.id);
       if (reqSendWhy(s, r)) { r.state = 'open'; log(s, `「${reqName(s, r)}」 지명 파티가 출발하지 못했습니다. (${reqSendWhy(s, r)})`, 'sys'); continue; }
+      const wt = reqWaitOf(s, r);
+      if (wt.length && r.auto) { r.state = 'open'; delete r.auto; log(s, `「${reqName(s, r)}」 지명 파티가 출발하지 못했습니다. (${wt[0].name}: ${reqBusy(s, wt[0])})`, 'sys'); continue; }   // 자동 처리(관문 1 · 시뮬레이터와 같은 규칙)는 예약을 쓰지 않음
+      if (wt.length) continue;   // 예약: 원정 · 부상에서 모두 돌아올 때까지 기다림
+      delete r.auto;
       const party = reqSorted(reqPartyOf(s, r)), q = reqQuest(s, r, false);
       r.state = 'active'; r.qid = q.id; launchParty(s, q, party, questP(s, party, q));
     }
@@ -853,7 +858,7 @@
         if (s.gold - x.fee < keep) break;   // 섭외비를 내고도 여유가 남을 때만
         reqNominate(s, r.id, x.id);
       }
-      if (!reqSendWhy(s, r) && reqPredict(s, r.id) >= REQ_CFG.autoSend) reqSend(s, r.id);
+      if (!reqSendWhy(s, r) && !reqWaitOf(s, r).length && reqPredict(s, r.id) >= REQ_CFG.autoSend && reqSend(s, r.id)) r.auto = true;   // 자동 처리는 예약(밖에 있는 사람 기다리기)을 쓰지 않음 = 시뮬레이터 reqPolicy와 같음
     }
   }
   // ---------- F급 메인 퀘스트: 침공 "다리를 지켜라" (2026-11-16, docs/design/raid_invasion_v2.md) ----------
@@ -1012,6 +1017,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
