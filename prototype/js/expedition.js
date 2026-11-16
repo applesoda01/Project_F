@@ -97,7 +97,7 @@
       r.onmouseenter = () => {
         tip.style.display = 'block'; tip.style.top = (PANEL.y + r.offsetTop - list.scrollTop) + 'px';
         const en = x.fight ? groupName(x.fight.enemies) : null;
-        tip.innerHTML = `<b>${q.name || QTYPE[q.type] + ' 의뢰'}</b> (${GR[q.g]}급 ${QTYPE[q.type]})<br>예상 성공률 ${Math.min(100, rate)}%<br>${en ? '적: ' + en : '비전투 의뢰'}<br>파티: ${party.map(a => `${a.name}(${a.cls} Lv${a.lv})`).join(', ')}`;
+        tip.innerHTML = `<b>${q.name || QTYPE[q.type] + ' 의뢰'}</b> (${GR[q.g]}급 ${QTYPE[q.type]})<br>예상 성공률 ${Math.min(100, rate)}%<br>${en ? '적: ' + en : '비전투 의뢰'}<br>파티: ${party.map(a => `<span style="white-space:nowrap">${a.name}(${a.cls} Lv${a.lv})</span>`).join(', ')}`;
       };
       r.onmouseleave = () => { tip.style.display = 'none'; };
       list.appendChild(r);
