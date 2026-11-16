@@ -674,5 +674,5 @@ span.kslot{cursor:default}
 
 /* 2026-11-16 상단 HUD 오버 설명 (모험가 성향 쪽지와 같은 디자인) */
 .has-htip{position:relative;cursor:help}
-.has-htip>.htip{display:none;position:absolute;left:0;top:calc(100% + 24px);z-index:20;width:max-content;max-width:340px;padding:9px 13px;border-radius:8px;background:#fffaf0;border:1px solid rgba(110,72,36,.4);box-shadow:0 3px 8px rgba(60,36,16,.25);font:700 15px/1.5 "MaruBuri","Malgun Gothic",sans-serif;font-style:normal;color:#4a2e18;white-space:pre-line;text-align:left;pointer-events:none;transform:none}
+.has-htip>.htip{display:none;position:absolute;left:0;top:calc(100% + 24px);z-index:20;width:max-content;max-width:440px;word-break:keep-all;padding:9px 13px;border-radius:8px;background:#fffaf0;border:1px solid rgba(110,72,36,.4);box-shadow:0 3px 8px rgba(60,36,16,.25);font:700 15px/1.5 "MaruBuri","Malgun Gothic",sans-serif;font-style:normal;color:#4a2e18;white-space:pre-line;text-align:left;pointer-events:none;transform:none}
 .has-htip:hover>.htip{display:block}
