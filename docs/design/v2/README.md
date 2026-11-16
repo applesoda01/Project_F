@@ -1,6 +1,6 @@
 # 기획서 v2 (컨텐츠 요소별 정리)
 
-- 정리일: 2026-11-16 (1차 정리)
+- 정리일: 2026-11-16 (1차 정리) · 같은 날 원본 갱신 반영(raid_invasion_v2.md 새 문서, sub_quest_F_v1.md §6, nomination_v1.md §7-2·§7-3, game_overview.md 갱신 기록)
 - 범위: `docs/design/` 원본 문서를 컨텐츠 요소별 12개 문서로 다시 묶었습니다. 원본은 그대로 두었습니다.
 - `docs/balance/` 문서는 옮기지 않고 링크만 걸었습니다. `popup_quality_todo.md`(진행표)와 `nomination_trial/`(시험판 기록)은 넣지 않았습니다.
 
@@ -19,7 +19,7 @@
 | [00_게임개요](00_게임개요.md) | 콘셉트, 핵심 루프, 시간, 용어, 핵심 수치, 플랫폼, 기술·제작 환경, 로드맵 | design_v0.1 §1–4·부록, game_overview §1·2·10·11 |
 | [01_모험가](01_모험가.md) | 직업 48개, 능력치, 레벨·스킬 82개, 등급·승급 보너스, 전직, 애착도, 성향, 파티, 사망·계승, 몸 상태, 칭호, 모험가끼리 대화 | design_v0.1 §7·8·12-2.2, adv_condition_v1, titles_v1, character_talk_v1, popup_advs, popup_promo |
 | [02_의뢰](02_의뢰.md) | 퀘스트 분류, 유입, 배분, 게시판 규칙, 의뢰 유형, 성공 판정, 지명 퀘스트, 서브 퀘스트(F급 28개), 설비 해금 보상, 메인 퀘스트 | design_v0.1 §6·12-1.6, nomination_v1, named_sub_quest_v1, sub_quest_F_v1(+csv), popup_board |
-| [03_전투](03_전투.md) | 의뢰 전투 계산, 출발 판단, 마을 방어전(습격·침공), 전투 수치, 마인 세부 | quest_combat, raid_invasion_v1, design_v0.1 §11.2–11.3·12-2.1, game_overview §5 |
+| [03_전투](03_전투.md) | 의뢰 전투 계산, 출발 판단, 마을 방어전(습격·침공), 전투 수치, 마인 세부, 침공 v2(F급 메인 「다리를 지켜라」) | quest_combat, raid_invasion_v1, raid_invasion_v2, design_v0.1 §11.2–11.3·12-2.1, game_overview §5 |
 | [04_아이템](04_아이템.md) | 장비 91개, 물약, 소재 35종, 요리 | design_v0.1 §7.8·12-2.3·12-2.4·12-2.6, game_overview §6, cooking |
 | [05_길드](05_길드.md) | 길드 공간, 시설 효과 44개, F·E 시설 개편, 하우징(장식·테이블·자유 배치), 훈련장·도서관, 로비 식사·맥주 | design_v0.1 §9·12-2.5, guild_interior, popup_fac |
 | [06_마을](06_마을.md) | 마을 화면 흐름, 슬롯, 건물, 인구·민가 | design_v0.1 §10, town_structure, town_houses_v1 |
@@ -39,12 +39,13 @@
 | 정착(거주) 기준 애착 | 100(design·overview §3) · 65(population_v1·인구 계산) | 01 · 06 |
 | 스킬 발동 확률 | 10/18/28%(design 방어전) · 20/35/50%(skill_combat_v1) · 20% 고정(엔진) | 01 · 03 |
 | 관문 1 성공률 기준 | 65–85%(gate1) · 80–95%(decisions) · 80–90%(재미 점검 보고서) | 00 · 03 |
-| F급 메인 퀘스트 내용 | "첫 의뢰"(탐색·일지) · 전투형(늑대 4 + 보스) | 02 · 08 |
+| F급 메인 퀘스트 서사 | 규칙은 침공 「다리를 지켜라」로 정해짐(2026-11-16). 원안 "첫 의뢰"(탐색·일지·옛 파티)의 서사를 어떻게 이을지 | 02 · 08 · 09 |
+| 메인 등장 리퀘스트 횟수 | 8회로 확정했으나 지명 수정 뒤 등장이 다시 32주로 당겨짐 → 8 / 10 / 12회 재결정 | 02 · 08 |
 | 소재 판매 | 자동 차익 8%(장부·코드) · 판매 창구 직접 판매(economy_v1·cooking) | 04 · 05 · 07 |
 | 애착 단계 이름 | 새 이름(방랑자·새내기·동반자·토박이) 확정, 코드 `ATTACH_TITLE`은 옛 이름 | 01 · 10 |
 | 전생자 등급 | "길드 등급 + 2" · 모험가 등급 상한 "길드 등급 + 1" | 01 · 09 |
 | 의뢰 배분 단계 | 비중 0·1·2·4 · 책 화면 막대 0–3 | 02 · 10 |
-| '파티 중 1명만 충족' 결정 | `docs/decisions.md`에 아직 기록 없음 | 02 |
+| '파티 중 1명만 충족' · 섭외비 · 마감 없음 결정 | `docs/decisions.md`에 아직 기록 없음 | 02 |
 
 ## 원본 → v2 대응
 
@@ -57,6 +58,7 @@
 | nomination_v1.md · named_sub_quest_v1.md · sub_quest_F_v1.md · sub_quest_F_lines.csv | 02 (설비 해금은 05, 지명 창은 10) |
 | popup_board.md | 02 규칙 / 10 화면 |
 | quest_combat.md · raid_invasion_v1.md | 03 (미니 뷰는 10) |
+| raid_invasion_v2.md | 03 14장 (승급은 08, 화면은 10 18절, 인구는 06) |
 | cooking.md | 04 (식당 화면은 10) |
 | guild_interior.md · popup_fac.md | 05 (시설 팝업 화면은 10) |
 | town_structure.md · town_houses_v1.md | 06 |
