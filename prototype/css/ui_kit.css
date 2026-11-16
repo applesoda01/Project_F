@@ -676,3 +676,38 @@ span.kslot{cursor:default}
 .has-htip{position:relative;cursor:help}
 .has-htip>.htip{display:none;position:absolute;left:0;top:calc(100% + 24px);z-index:20;width:max-content;max-width:500px;word-break:keep-all;padding:9px 13px;border-radius:8px;background:#fffaf0;border:1px solid rgba(110,72,36,.4);box-shadow:0 3px 8px rgba(60,36,16,.25);font:700 15px/1.5 "MaruBuri","Malgun Gothic",sans-serif;font-style:normal;color:#4a2e18;white-space:pre-line;text-align:left;pointer-events:none;transform:none}
 .has-htip:hover>.htip{display:block}
+/* 리퀘스트 완료 카드 (2026-11-16) */
+#rqdLay{position:absolute;inset:0;z-index:60;display:none;place-items:center;background:rgba(30,18,8,.3)}
+#rqdLay.on{display:grid}
+#rqdLay .rqd-box{position:relative;display:flex;gap:26px;align-items:flex-start;width:820px;padding:30px 36px 34px 30px;border-radius:22px;color:var(--ux-ink);cursor:pointer;
+  background:radial-gradient(circle at 20% 0%,#fff6dc 0,#fbeccb 55%,#f3dcae 100%);border:3px solid #2f7f7a;box-shadow:0 0 0 6px rgba(47,127,122,.28),0 18px 40px rgba(0,0,0,.45);animation:gupIn .38s cubic-bezier(.2,1.4,.4,1) both}
+#rqdLay .rqd-por{flex:none;width:190px;height:236px;border-radius:16px;border:3px solid #c9963e;background-color:#efe2cf;background-repeat:no-repeat;box-shadow:inset 0 0 0 2px #fff6dc,0 3px 6px rgba(0,0,0,.25);animation:gupPop .4s .1s both}
+#rqdLay .rqd-por.npc{background-size:118% auto;background-position:50% 0}
+#rqdLay .rqd-por.adv{display:grid;place-items:center}#rqdLay .rqd-por.adv .rqd-face{width:72px;height:72px;border-radius:50%;transform:scale(2.2)}
+#rqdLay .rqd-por.none{display:grid;place-items:center;font-size:72px;color:#8a6a44}
+#rqdLay .rqd-main{flex:1;min-width:0}
+#rqdLay small{display:inline-block;padding:3px 12px;border-radius:999px;background:#2f7f7a;color:#fff;font-size:14px;font-weight:700;letter-spacing:1px}
+#rqdLay h2{margin:8px 0 2px;font-size:30px;color:#5a2f12;line-height:1.25}
+#rqdLay .rqd-who{margin:0 0 12px;font-size:16px;color:var(--ux-wood)}
+#rqdLay .rqd-sec{margin:12px 0 6px;font-size:14px;font-weight:700;color:#7a5a36;letter-spacing:1px;border-bottom:1px solid rgba(110,72,36,.25);padding-bottom:3px}
+#rqdLay .rqd-row{display:flex;align-items:center;gap:10px;padding:6px 10px;margin-bottom:5px;border-radius:10px;background:#fffaf0;border:1px solid #e9d3a4;font-size:17px;animation:gupPop .35s .35s both}
+#rqdLay .rqd-row i{font-style:normal;width:24px;text-align:center}#rqdLay .rqd-row span{flex:1}
+#rqdLay .rqd-row em{font-style:normal;font-size:13px;color:var(--ux-muted)}
+#rqdLay .rqd-row.pop{background:linear-gradient(90deg,#e4f3dc,#fffaf0);border-color:#a9d39a}
+#rqdLay .rqd-row b.rqd-n{font-size:22px;font-variant-numeric:tabular-nums;color:#2d6b25;display:inline-block;min-width:44px;text-align:right}
+#rqdLay .rqd-row b.rqd-n.done{animation:rqdBump .35s ease-out}
+#rqdLay .rqd-row u{text-decoration:none;color:#3b8a2a;font-weight:700;margin-left:4px}
+#rqdLay .rqd-chips{display:flex;flex-wrap:wrap;gap:8px}
+#rqdLay .rqd-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:10px;background:#fffaf0;border:2px solid #e2c48a;font-size:16px;font-weight:700;animation:gupPop .35s .5s both}
+#rqdLay .rqd-chip img{width:24px;height:24px}#rqdLay .rqd-chip.g{color:#8a5a10}
+#rqdLay .rqd-prog{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:15px;color:#5a4128}
+#rqdLay .rqd-prog .gd-bar{flex:1;height:7px;border-radius:4px;background:rgba(138,106,68,.25);overflow:hidden}
+#rqdLay .rqd-prog .gd-bar u{display:block;height:100%;background:linear-gradient(90deg,#2f7f7a,#58b0a6)}
+#rqdLay .rqd-prog.go{font-weight:700;color:#8a3a12}
+#rqdLay .rqd-bar{left:30px;right:30px;background:rgba(47,127,122,.55)}
+@keyframes rqdBump{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+/* 리퀘스트 장 도장 (2026-11-16): 수락 = 초록 · 거절 = 붉은색 */
+.rq-stamp{position:absolute;z-index:40;transform:translate(-50%,-50%) rotate(-12deg);display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 30px 8px;border:5px double currentColor;border-radius:14px;color:#2f7a3a;background:rgba(255,250,236,.35);pointer-events:none;animation:rqStamp 1.4s ease-out both;font-family:"MaruBuri","Malgun Gothic",serif}
+.rq-stamp b{font-size:54px;line-height:1;letter-spacing:6px}.rq-stamp small{font-size:17px;font-weight:700}
+.rq-stamp.no{color:#a3301f}
+@keyframes rqStamp{0%{transform:translate(-50%,-50%) rotate(-12deg) scale(2.2);opacity:0}18%{transform:translate(-50%,-50%) rotate(-12deg) scale(.94);opacity:.95}26%{transform:translate(-50%,-50%) rotate(-12deg) scale(1);opacity:.92}80%{opacity:.92}100%{opacity:0;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}}
