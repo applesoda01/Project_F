@@ -108,6 +108,11 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 #logBox.show .lg,#logBox .lg:hover{opacity:1;width:230px;background:rgba(34,22,13,.82)}
 #logBox .lg::before{content:"⋮⋮";letter-spacing:-2px;font-size:15px}
 #logBox.drag .lg{cursor:grabbing}
+/* 기록창 높이 조절 손잡이 (2026-11-16 동료 피드백): 창 위 가장자리를 끌어 높이를 바꿈, 더블클릭 = 기본 높이. 펼쳤을 때만 보임 */
+#logBox .lr{height:16px;width:150px;margin:0 0 4px;border-radius:8px;background:rgba(34,22,13,.72);cursor:ns-resize;pointer-events:auto;user-select:none;touch-action:none;opacity:0;transition:opacity .2s,width .2s;display:flex;align-items:center;justify-content:center}
+#logBox .lr::before{content:"";width:46px;height:4px;border-radius:2px;background:#e9d9b8;box-shadow:0 -5px 0 -1px rgba(233,217,184,.0)}
+#logBox.show .lr,#logBox.size .lr,#logBox .lr:hover{opacity:1}#logBox .lr:hover,#logBox.size .lr{width:230px}
+#logBox.size{cursor:ns-resize}#logBox.size .ll{outline:2px dashed rgba(233,217,184,.55);outline-offset:2px;border-radius:6px}
 #toasts{position:absolute;left:50%;top:22px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
 .toast{background:rgba(255,250,238,.96);border:3px solid var(--wood2);border-radius:16px;padding:8px 20px;font-size:21px;max-width:900px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:tin .3s ease-out;transition:opacity .4s,transform .4s}
 .toast.out{opacity:0;transform:translateY(-10px)}
@@ -379,7 +384,7 @@ body:not(.dev) #devToggle,body:not(.dev) #dev,body:not(.dev) #titleSkip,body:not
   <div id="goalBox" role="button" title="누르면 리퀘스트 장을 엽니다"></div>
   <div id="hudTR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><button class="btn" id="ppBtn" title="일시정지·재생 (스페이스)"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg></button><span class="more"><button class="chip on" data-speed="1"><b>1×</b></button><button class="chip" data-speed="2"><b>2×</b></button><button class="chip" data-speed="4"><b>4×</b></button></span></div></div>
   <div id="toasts"></div>
-  <div id="logBox"><div class="ll"></div><div class="lg" title="끌어서 이동 · 더블클릭: 원위치">기록 · 끌어서 이동</div></div>
+  <div id="logBox"><div class="lr" title="끌어서 높이 조절 · 더블클릭: 기본 높이"></div><div class="ll"></div><div class="lg" title="끌어서 이동 · 더블클릭: 원위치">기록 · 끌어서 이동</div></div>
   <button class="plate btn" id="bPromo" hidden>전직 제안</button>
   <div id="hudBR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in">
     <button class="mb" data-pop="board"><img class="ic" src="assets/ui/hud/bt/board.png" alt="" draggable="false">의뢰<span class="cnt" id="bBoard"></span></button>

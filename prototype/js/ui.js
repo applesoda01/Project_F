@@ -132,13 +132,13 @@
   const LOGMAX = 200, FADE_MS = 8000, POS_KEY = 'guildLogBoxPos';
   let lb = null;
   function lbInit() {
-    const box = q('#logBox'), ll = box.querySelector('.ll'), grip = box.querySelector('.lg');
+    const box = q('#logBox'), ll = box.querySelector('.ll'), grip = box.querySelector('.lg'), rz = box.querySelector('.lr');
     lb = { box, ll, grip, hov: 0, off: null };
     let tm = 0;
     const on = () => { clearTimeout(tm); if (!box.classList.contains('show')) { box.classList.add('show'); ll.scrollTop = ll.scrollHeight; } };   // 마우스를 올려 펼칠 때는 가장 최근 대사가 보이는 맨 아래부터 (예전에는 맨 위 = 가장 오래된 줄이 보였음)
-    const offS = () => { clearTimeout(tm); tm = setTimeout(() => { if (!box.classList.contains('drag')) { box.classList.remove('show'); ll.scrollTop = ll.scrollHeight; } }, 350); };
-    box.addEventListener('mouseover', e => { if (e.target.closest('.ln, .lg, .ll')) on(); });
-    box.addEventListener('mouseout', e => { if (!e.relatedTarget || !box.contains(e.relatedTarget) || !e.relatedTarget.closest('.ln, .lg, .ll')) offS(); });
+    const offS = () => { clearTimeout(tm); tm = setTimeout(() => { if (!box.classList.contains('drag') && !box.classList.contains('size')) { box.classList.remove('show'); ll.scrollTop = ll.scrollHeight; } }, 350); };
+    box.addEventListener('mouseover', e => { if (e.target.closest('.ln, .lg, .ll, .lr')) on(); });
+    box.addEventListener('mouseout', e => { if (!e.relatedTarget || !box.contains(e.relatedTarget) || !e.relatedTarget.closest('.ln, .lg, .ll, .lr')) offS(); });
     // 위치: 왼쪽 아래 기본, 끌어서 이동 (왼쪽·아래 여백을 저장)
     const clampPos = (x, b) => ({ x: Math.max(0, Math.min(1920 - 440, x)), b: Math.max(0, Math.min(1080 - 60, b)) });
     const apply = p => { const c = clampPos(p.x, p.b); box.style.left = c.x + 'px'; box.style.bottom = c.b + 'px'; return c; };
@@ -159,6 +159,18 @@
     };
     grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
     grip.addEventListener('dblclick', () => { box.style.left = '18px'; box.style.bottom = '96px'; try { localStorage.removeItem(POS_KEY); } catch (e) {} });
+    // 높이 조절 (2026-11-16 동료 피드백 "채팅창 길이 조절"): 위 손잡이를 끌면 위쪽으로 늘고 줄어듦. 3~14줄(132~616px), 화면 위를 넘지 않게. 높이는 저장
+    if (rz) {
+      const H_DEF = 264, H_MIN = 132, H_MAX = 616, H_KEY = 'guildLogBoxH';
+      const setH = h => { const top = 1080 - (parseFloat(box.style.bottom) || 96) - 90; h = Math.round(Math.max(H_MIN, Math.min(H_MAX, top, h))); ll.style.maxHeight = h + 'px'; return h; };
+      try { const v = +localStorage.getItem(H_KEY); if (v) setH(v); } catch (e) {}
+      let rs = null;
+      rz.addEventListener('pointerdown', e => { e.preventDefault(); rz.setPointerCapture(e.pointerId); box.classList.add('size', 'show'); rs = { py: e.clientY, h: parseFloat(ll.style.maxHeight) || H_DEF }; });
+      rz.addEventListener('pointermove', e => { if (!rs) return; const k = stage.scale || 1; setH(rs.h - (e.clientY - rs.py) / k); ll.scrollTop = ll.scrollHeight; });
+      const rEnd = () => { if (!rs) return; rs = null; box.classList.remove('size'); try { localStorage.setItem(H_KEY, parseFloat(ll.style.maxHeight) || H_DEF); } catch (er) {} if (!box.matches(':hover')) offS(); };
+      rz.addEventListener('pointerup', rEnd); rz.addEventListener('pointercancel', rEnd);
+      rz.addEventListener('dblclick', () => { ll.style.maxHeight = ''; try { localStorage.removeItem(H_KEY); } catch (e) {} });
+    }
     setInterval(() => { // 오래된 줄은 서서히 사라짐
       const now = performance.now();
       for (const el of ll.children) if (!el.classList.contains('dim') && now - el._t > FADE_MS) el.classList.add('dim');
