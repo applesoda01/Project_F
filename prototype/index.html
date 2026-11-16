@@ -148,6 +148,16 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 .mb .cnt{position:absolute;right:10px;top:2px;min-width:26px;height:26px;border-radius:13px;background:#c0392b;color:#fff;font-size:15px;display:grid;place-items:center;padding:0 6px}
 /* 왼쪽 아래: 개발 */
 #devToggle{position:absolute;right:22px;top:18px;padding:6px 14px;font-size:16px}
+/* 금고 증감 연출 (2026-11-16) */
+#hudTL .stat:has(#hGold){position:relative}
+#hudTL .gfx{position:absolute;left:calc(100% - 46px);top:calc(-2px + var(--gy,0px));font-style:normal;font-size:19px;font-weight:700;white-space:nowrap;pointer-events:none;text-shadow:0 0 3px #fff8e6,0 0 3px #fff8e6,0 0 8px #fff8e6;animation:gfxUp 1.25s ease-out forwards;z-index:2}
+#hudTL .gfx.up{color:#2f7a2a}#hudTL .gfx.down{color:#b5352a}
+@keyframes gfxUp{0%{opacity:0;transform:translateY(6px)}15%{opacity:1;transform:translateY(0)}70%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
+.gfx-desk{position:absolute;transform:translateX(-50%);font-style:normal;font-size:30px;font-weight:800;white-space:nowrap;pointer-events:none;z-index:3;-webkit-text-stroke:5px #fff8e6;paint-order:stroke fill;text-shadow:0 2px 0 rgba(60,36,14,.35);animation:gfxDesk 1.45s ease-out forwards}
+.gfx-desk.up{color:#2f7a2a}.gfx-desk.down{color:#b5352a}
+@keyframes gfxDesk{0%{opacity:0;margin-top:14px}12%{opacity:1;margin-top:0}70%{opacity:1}100%{opacity:0;margin-top:-46px}}
+#hGold.gup{animation:gPulseUp .45s ease-out}#hGold.gdown{animation:gPulseDn .45s ease-out}
+@keyframes gPulseUp{0%{color:#2f7a2a}100%{color:inherit}}@keyframes gPulseDn{0%{color:#b5352a}100%{color:inherit}}
 /* 책이 펼쳐지면 HUD가 위·아래로 숨는다 (2026-11-16) */
 #hudTL,#hudTR,#hudBR,#devToggle{transition:transform .25s ease}
 body.bookOn #hudTL,body.bookOn #devToggle{transform:translateY(-180px);pointer-events:none}

@@ -44,7 +44,7 @@
       ui: { expView: null } // 화면 배치 저장. expView: 원정 미니 뷰 위치 {x, y}(1920×1080 기준 왼쪽 위), null이면 기본 자리
     };
     attachRng(s);
-    for (let i = 0; i < cfg.adv.startCount; i++) spawnAdv(s, { attach: 20, quiet: true });
+    for (let i = 0; i < cfg.adv.startCount; i++) spawnAdv(s, { attach: 20, quiet: true, home: true })   // 창립 멤버: 늘 길드에 머묾 (2026-11-16);
     initHouses(s);   // 2026-11-13 시작 인구만큼 초가
     log(s, '길드가 문을 열었습니다. 모험가 ' + cfg.adv.startCount + '명이 첫 손님으로 찾아왔습니다.', 'guild');
     return s;
@@ -122,7 +122,7 @@
       id: s.nextId++, name, core, cls: CLASS1[core], stage: 1, pair: null,
       stats: [0, 0, 0, 0, 0].map((_, i) => i === core ? A.startCore + s.R() * 4 : A.startOther + s.R() * 3),
       lv: 1, xp: 0, bank: 0, grade: 0, ach: 0, attach: o.attach || 0,
-      risk: ri(s, 3), spend: ri(s, 3), social: ri(s, 3), wallet: 0, gear: -1, pots: 0,
+      risk: ri(s, 3), spend: ri(s, 3), social: ri(s, 3), wallet: 0, gear: -1, pots: 0, home: !!o.home,
       state: 'away', until: 0, joined: s.week, alive: true, done: 0,
       cls1: CLASS1[core], line: [core], fin: false, promoCool: 0, skills: [{ line: core, form: CLASS1[core] }], career: [{ week: s.week, text: '길드에 처음 옴' }]
     };
@@ -361,7 +361,7 @@
   function present(s, a) {
     if (!a.alive || a.state === 'quest') return false;
     if (a.state === 'injured' && s.week < a.until) return false;   // 부상 회복 중
-    if (a.attach >= 100) return true;
+    if (a.attach >= 100 || a.home) return true;   // home: 창립 멤버(시작 모험가)는 애착과 상관없이 늘 마을에 있음
     const interval = s.cfg.adv.visitBaseWeeks * (1 + (100 - a.attach) / 50);
     return s.R() < Math.min(1, 2 / interval);
   }
@@ -649,7 +649,7 @@
   // 규칙: 매주 조건을 채운 퀘스트 중 하나가 50%로 등장(동시에 4개) · 마감 없음 · 계절 퀘스트는 그 계절에만 진행(사라지지 않음) · 실패해도 다시 도전
   // 지명: 파티 중 1명만 조건 능력치 충족 · 수락 = 애착 단계 × 위험 · 거절해도 다음 주에 다시 지명 · 보상은 게시판처럼 보수 몫 · 대열은 자동(직업 순)
   const NQ = GD.namedQuests || [], NQ_BY = Object.fromEntries(NQ.map(d => [d.id, d])), QLINES = GD.questLines || {};
-  const REQ_CFG = { maxOpen: 4, appear: 0.5, refuseCool: 12, base: [0.40, 0.65, 0.90, 1.00], riskMul: [[1.0, 0.8, 0.5], [1.0, 1.0, 0.8], [1.0, 1.1, 1.2]], rowOrder: [0, 4, 1, 3, 2], bossHp: 3, bossAtk: 1.3, autoReserve: 1500, autoSend: 0.6 };
+  const REQ_CFG = { maxOpen: 4, appear: 0.5, refuseCool: 12, base: [0.40, 0.65, 0.90, 1.00], riskMul: [[1.0, 0.8, 0.5], [1.0, 1.0, 0.8], [1.0, 1.1, 1.2]], rowOrder: [0, 4, 1, 3, 2], bossHp: 3, bossAtk: 1.3, autoReserve: 400, autoSend: 0.6 };
   const REQ_QTYPE = { hunt: 0, search: 2 }, REQ_QTYPE_BY = { f_req_bat05: 3, f_req_srch04: 1, f_req_srch01: 3, f_req_srch05: 3, f_req_srch06: 3 };   // 미니 뷰 배경 · 성장 능력치용 의뢰 종류
   const SEASONS = ['spring', 'summer', 'autumn', 'winter'], SEASON_NAME = { spring: '봄', summer: '여름', autumn: '가을', winter: '겨울' };
   const seasonOf = w => { const mo = (2 + Math.floor(Math.max(0, w) / WPM)) % 12 + 1; return mo >= 3 && mo <= 5 ? 'spring' : mo >= 6 && mo <= 8 ? 'summer' : mo >= 9 && mo <= 11 ? 'autumn' : 'winter'; };   // 길드 · 마을 달력과 같음 (3월 시작)

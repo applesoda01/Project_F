@@ -62,7 +62,7 @@
     { const sb = q('#mSellBtn'); if (sb) sb.classList.toggle('lock', !s.built['판매창구']); }   // 판매창구를 짓기 전에는 회색
     q('#hDate').textContent = Gm.dateLabel(s.week);
     q('#hGrade').style.backgroundImage = 'url(assets/ui/hud/badge_' + GR[s.grade] + '.png)'; hudTip(q('#hGrade'), '지금 길드는 ' + GR[s.grade] + '급이에요.\n' + (s.grade < 6 ? '길드의 등급이 상승하면, 최대로 활동할 수 있는 모험가가 늘어나요.\n' : '') + GUILD_UP[s.grade]);
-    q('#hGold').textContent = fmt(s.gold); q('#hGold').classList.toggle('neg', s.gold < 0);
+    goldShow();
     q('#hTrust').textContent = Math.round(s.trust);
     { const t = Math.max(0, Math.min(100, s.trust)), st = Math.min(4, Math.floor(t / 20)), bar = q('#hTrustBar'), face = q('#hTrustFace'), box = q('#hTrustBox');   // 신뢰도: 리나 표정(5단계) + 50 기준 양쪽 막대(붉은색 → 초록)
       const NAME = ['화남', '불만', '보통', '만족', '아주 만족'], QN = ['30~50', '45~65', '65~85', '80~100', '100~120'], QR = ['80~90', '85~95', '95~105', '105~115', '110~120'];
@@ -286,6 +286,23 @@
   function rqLinesOf(key, ev, who) {   // 대사 묶음 → [{name, face, text, adv}] ({이름} = 의뢰한 모험가)
     const Lq = (Gm.QLINES[key] || {})[ev] || [], a = who != null ? s.advs.find(x => x.id === who) : null, nm = a ? a.name : '모험가';
     return Lq.map(([sp, face, text]) => ({ name: sp === '{이름}' ? nm : sp, face: sp === '리나' ? (face === 'default' ? 'smile' : face) : 'smile', text: text.replace(/\{이름\}/g, nm), adv: sp === '{이름}' ? a : null }));
+  }
+  // 금고 증감 연출 (2026-11-16): 숫자가 굴러서 바뀌고, 옆에 +N / −N이 잠깐 떠오름. 새 게임 · 불러오기 직후에는 연출 없이 바로 표시
+  let goldOf = null, goldTo = 0, goldNow = 0, goldRaf = 0, goldFx = 0;
+  function goldShow() {
+    const el = q('#hGold'), to = Math.round(s.gold); el.classList.toggle('neg', s.gold < 0);
+    if (goldOf !== s) { goldOf = s; goldTo = goldNow = to; cancelAnimationFrame(goldRaf); el.textContent = fmt(to); return; }
+    if (to === goldTo) return;
+    const d = to - goldTo, box = el.closest('.stat') || el.parentNode, f = document.createElement('i');
+    f.className = 'gfx ' + (d > 0 ? 'up' : 'down'); f.textContent = (d > 0 ? '+' : '−') + fmt(Math.abs(d)) + 'G'; f.style.setProperty('--gy', (goldFx++ % 3) * 16 + 'px');
+    box.appendChild(f); setTimeout(() => f.remove(), 1300);
+    // 로비의 접수대 위에도 같은 숫자를 띄움 (2026-11-16 15:28 사용자: "상단 HUD와 함께 보여지게"). 마을 화면 · 책이 펼쳐진 동안에는 띄우지 않음
+    if (root.Iso && !(root.Town && root.Town.active) && !popup) { const c = document.createElement('i'), at = root.Iso.COUNTER_AT; c.className = 'gfx-desk ' + (d > 0 ? 'up' : 'down'); c.textContent = f.textContent; c.style.left = (at[0] + 105 + ((goldFx % 3) - 1) * 26) + 'px'; c.style.top = (at[1] - 8) + 'px'; stage.ui.appendChild(c); setTimeout(() => c.remove(), 1500); }
+    el.classList.remove('gup', 'gdown'); void el.offsetWidth; el.classList.add(d > 0 ? 'gup' : 'gdown');
+    goldTo = to; const from = goldNow, t0 = performance.now(), dur = 450;
+    cancelAnimationFrame(goldRaf);
+    const tick = t => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); goldNow = Math.round(from + (to - from) * e); el.textContent = fmt(goldNow); if (k < 1) goldRaf = requestAnimationFrame(tick); else { goldNow = to; el.textContent = fmt(to); } };
+    goldRaf = requestAnimationFrame(tick);
   }
   function mainCardHtml() {   // 메인 퀘스트(침공) 카드: 리퀘스트 장 맨 위 (2026-11-16)
     if (!Gm.mainView) return ''; const m = Gm.mainView(s); if (m.state === 'none' || m.state === 'done') return '';
