@@ -196,6 +196,7 @@
         ls = ls.concat(rqLinesOf(L.rq.key, L.rq.ev, L.rq.who));
         if (L.rq.ev === 'ok' && Gm.NQ_BY[L.rq.key].type === 'town') ls = ls.concat(rqLinesOf(L.rq.key, 'req2', L.rq.who));
         if (ls.length) UI.say(ls);
+        if (L.rq.ev === 'ok2' || L.rq.ev === 'ok_y2' || (L.rq.ev === 'ok' && Gm.NQ_BY[L.rq.key] && Gm.NQ_BY[L.rq.key].type !== 'town')) rqdShow(L);   // 완료 카드 (대사가 끝나면 뜸)
         if (popup === 'req') renderPopup(); else UI.reqBadge();
       }
       UI.logLine(L.text, L.kind); // 로그박스로 흘려보냄 (알림은 전직 제안만 따로 띄움)
@@ -228,6 +229,59 @@
     gupEl.classList.remove('on'); void gupEl.offsetWidth; gupEl.classList.add('on'); gupTimer = setTimeout(gupNext, GUP_MS);
   }
   UI.gupShow = gupShow;   // 시험용
+
+
+  // ---------- 리퀘스트 수락 도장 · 완료 카드 (2026-11-16 todo "리퀘스트 수락 · 완료 연출") ----------
+  // 도장: 들어주기 · 보내기를 누르면 책 오른쪽 쪽에 붉은 도장(부탁 이름 함께). 완료 카드: 부탁을 끝내면 의뢰인 초상 · 마을의 변화 · 받은 보상 · 승급까지 N/8
+  //   대사(리나 · 의뢰인)가 끝난 뒤에 뜨고 4.5초 뒤 저절로 닫힘(누르면 바로 닫힘). 게임은 멈추지 않음
+  function rqStamp(word, name) {
+    const pop = q('#pop'); if (!pop) return;
+    const el = document.createElement('div'); el.className = 'rq-stamp';
+    el.innerHTML = `<div class="rs-in"><b>${esc(word)}</b><span>${esc(name || '')}</span></div>`;
+    pop.appendChild(el); setTimeout(() => el.classList.add('out'), 1250); setTimeout(() => el.remove(), 1700);
+  }
+  UI.rqStamp = rqStamp;   // 시험용
+  const RQD_MS = 4500, rqdQ = []; let rqdEl = null, rqdTimer = 0, rqdOn = false;
+  function rqdFace(key, who) {   // 의뢰인 얼굴: NPC 초상(눈 위치 기준으로 잘라 냄) 또는 모험가 SD 얼굴
+    const d = Gm.NQ_BY[key]; if (!d) return '';
+    const a = who != null ? s.advs.find(x => x.id === who) : null;
+    if (d.npc === '{이름}') return a ? `<span class="rqd-face" style="${faceStyle(a, 104, 260, 60)}"></span>` : '';
+    const P = root.NPC_PORTRAITS && root.NPC_PORTRAITS[d.npc]; if (!P) return '';
+    const [x, y, w, h] = P.eye, k = 104 / (w * 1.9), cx = (x + w / 2) * k, cy = (y + h / 2) * k;
+    return `<span class="rqd-face" style="background-image:url(assets/npc/${P.key}_stand.webp);background-size:${Math.round(P.w * k)}px auto;background-position:${Math.round(52 - cx)}px ${Math.round(56 - cy)}px"></span>`;
+  }
+  function rqdShow(L) { rqdQ.push(L); }
+  function rqdNext() {
+    clearTimeout(rqdTimer); const L = rqdQ.shift();
+    if (!L) { rqdOn = false; if (rqdEl) rqdEl.classList.remove('on'); return; }
+    const d = Gm.NQ_BY[L.rq.key]; if (!d) { rqdNext(); return; }
+    if (!rqdEl) { rqdEl = document.createElement('div'); rqdEl.id = 'rqdLay'; stage.ui.appendChild(rqdEl); rqdEl.addEventListener('pointerdown', () => rqdNext()); }
+    rqdOn = true;
+    const rw = d.rw, ex = rw.extra || {}, a = L.rq.who != null ? s.advs.find(x => x.id === L.rq.who) : null, giver = d.npc === '{이름}' ? (a ? a.name : '모험가') : d.npc;
+    const town = [];   // 마을의 변화
+    if (rw.pop) town.push(`<div class="rqd-pop"><span>마을 인구</span><b data-from="${Math.round(s.pop)}" data-to="${Math.round(s.pop + rw.pop)}">${Math.round(s.pop)}</b><i>+${rw.pop}</i><small>이번 달 말에 반영</small></div>`);
+    if (rw.unlock) town.push(`<div class="rqd-li">${rw.unlock === 'table' ? '테이블을 1세트 더 놓을 수 있어요' : (() => { const nm = (Gm.DECO_BY[rw.unlock] || {}).name || rw.unlock, w = josa(nm, '을', '를'); return `새 장식 <b>${esc(nm)}</b>${w.slice(nm.length)} 얻었어요`; })()} <small>시설 장 → 설비</small></div>`);
+    if (rw.town) { const nm = { smith: '대장간', potion: '물약 상점' }[rw.town] || rw.town; town.push(`<div class="rqd-li">마을에 <b>${nm}</b>${josa(nm, '이', '가').slice(nm.length)} 생겼어요</div>`); }
+    if (ex.popMonthly) town.push(`<div class="rqd-li">앞으로 마을 인구가 <b>매달 +${ex.popMonthly}</b>명씩 더 늘어요</div>`);
+    if (ex.recipe) town.push('<div class="rqd-li">새 요리 레시피를 배웠어요 <small>음식 장</small></div>');
+    if (ex.ownerStat && a) town.push(`<div class="rqd-li">${esc(a.name)}의 ${josa(STAT_NM[a.core], '이', '가')} <b>+${ex.ownerStat}</b> 올랐어요</div>`);
+    if (ex.ownerXp && a) town.push(`<div class="rqd-li">${esc(josa(a.name, '이', '가'))} 경험치 <b>+${ex.ownerXp}</b>를 얻었어요</div>`);
+    const got = [];   // 받은 보상
+    if (rw.gold) got.push(`<span class="rq-chip gold">${fmt(rw.gold)}G</span>`);
+    if (rw.fame) got.push(`<span class="rq-chip">명성 +${rw.fame}</span>`); if (rw.trust) got.push(`<span class="rq-chip">신뢰도 +${rw.trust}</span>`);
+    if (rw.attach) got.push(`<span class="rq-chip">${rw.attach[0] === 'all' ? '모든 모험가' : rw.attach[0] === 'party' ? '참가자' : esc(giver)} 애착 +${rw.attach[1]}</span>`);
+    for (const [m, k] of Object.entries(rw.mats || {})) got.push(rqMat(m, k));
+    const m = Gm.mainView ? Gm.mainView(s) : null, prog = m && m.state === 'none' && s.grade === 0 ? `<div class="rqd-prog"><span>메인 퀘스트까지 리퀘스트 <b>${m.doneN} / ${m.need}</b></span><i><u style="width:${Math.round(Math.min(1, m.doneN / m.need) * 100)}%"></u></i></div>` : m && m.state === 'offer' ? '<div class="rqd-prog"><span><b>메인 퀘스트가 도착했어요!</b> 리퀘스트 장 맨 위를 보세요</span></div>' : '';
+    rqdEl.innerHTML = `<div class="rqd-box">${rqdFace(L.rq.key, L.rq.who)}<div class="rqd-k">리퀘스트 완료</div><h2>「${esc(L.rq.name || d.name)}」</h2><div class="rqd-g">${esc(giver)}의 부탁을 들어주었어요</div>
+      ${town.length ? `<div class="rqd-sec"><i>마을의 변화</i><div class="rqd-town">${town.join('')}</div></div>` : ''}
+      ${got.length ? `<div class="rqd-sec"><i>받은 보상</i><div class="bk-rq rqd-got">${got.join('')}</div></div>` : ''}
+      ${prog}<i class="gup-bar" style="animation-duration:${RQD_MS}ms"></i></div>`;
+    rqdEl.classList.remove('on'); void rqdEl.offsetWidth; rqdEl.classList.add('on');
+    const pb = rqdEl.querySelector('.rqd-pop b');   // 인구 숫자가 올라감
+    if (pb) { const f = +pb.dataset.from, t = +pb.dataset.to, t0 = performance.now() + 450; const tick = now => { const k = Math.max(0, Math.min(1, (now - t0) / 1100)); pb.textContent = fmt(Math.round(f + (t - f) * (1 - Math.pow(1 - k, 3)))); if (k < 1 && rqdEl.classList.contains('on')) requestAnimationFrame(tick); }; requestAnimationFrame(tick); }
+    rqdTimer = setTimeout(rqdNext, RQD_MS);
+  }
+  UI.rqdShow = L => { rqdShow(L); };   // 시험용
 
   // ---------- 팝업 틀 ----------
   // ---------- 길드 업무 일지 (책 팝업, 2026-11-13 단계 ①) ----------
@@ -397,9 +451,9 @@
     if (act === 'main') { Gm.mainAccept(s); hooks.changed && hooks.changed(); renderPopup(); return; }
     const v = Gm.reqView(s).find(x => x.r.id === rqSel); if (!v) return;
     const top = s.log[0]; rqMsg = '';
-    if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; }
+    if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; else rqStamp('들어주기', v.name); }
     else if (act === 'refuse') Gm.reqRefuse(s, v.r.id);
-    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) rqMsg = '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; }
+    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; rqStamp('보내기', v.name); } }
     else if (act === 'unsend') Gm.reqUnsend(s, v.r.id);
     else if (act === 'office') Gm.build(s, '집무실');
     rqFlush(top); hooks.changed(); renderPopup();
@@ -1747,6 +1801,7 @@
     else next();
   };
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
+    if (rqdQ.length && !rqdOn && !Dlg.cur) rqdNext();   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
     if (!Dlg.cur) return;
     blinkTick(dt);
     if (Dlg.wait > 0) { Dlg.wait -= dt; if (Dlg.wait <= 0) q('#dlg').classList.add('open'); root.Lina.chatting = true; return; }

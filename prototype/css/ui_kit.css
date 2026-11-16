@@ -676,3 +676,29 @@ span.kslot{cursor:default}
 .has-htip{position:relative;cursor:help}
 .has-htip>.htip{display:none;position:absolute;left:0;top:calc(100% + 24px);z-index:20;width:max-content;max-width:500px;word-break:keep-all;padding:9px 13px;border-radius:8px;background:#fffaf0;border:1px solid rgba(110,72,36,.4);box-shadow:0 3px 8px rgba(60,36,16,.25);font:700 15px/1.5 "MaruBuri","Malgun Gothic",sans-serif;font-style:normal;color:#4a2e18;white-space:pre-line;text-align:left;pointer-events:none;transform:none}
 .has-htip:hover>.htip{display:block}
+
+/* 리퀘스트 수락 도장 · 완료 카드 (2026-11-16) */
+#pop .rq-stamp{position:absolute;left:69%;top:46%;z-index:40;pointer-events:none;transform:translate(-50%,-50%)}
+#pop .rq-stamp .rs-in{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:230px;height:230px;border-radius:50%;border:7px double rgba(176,40,28,.88);color:rgba(176,40,28,.9);background:radial-gradient(circle,rgba(255,240,230,.25),rgba(255,240,230,0) 70%);transform:rotate(-12deg);animation:rsIn .28s cubic-bezier(.2,1.5,.4,1) both;mix-blend-mode:multiply}
+#pop .rq-stamp b{font:900 46px/1 "MaruBuri","Malgun Gothic",serif;letter-spacing:4px}
+#pop .rq-stamp span{max-width:180px;font:700 16px/1.3 "Malgun Gothic",sans-serif;text-align:center;word-break:keep-all}
+#pop .rq-stamp.out{opacity:0;transition:opacity .4s}
+@keyframes rsIn{0%{transform:rotate(-24deg) scale(2.2);opacity:0}70%{opacity:1}100%{transform:rotate(-12deg) scale(1);opacity:1}}
+#rqdLay{position:absolute;inset:0;z-index:61;display:none;place-items:center;background:rgba(30,18,8,.35)}
+#rqdLay.on{display:grid}
+#rqdLay .rqd-box{position:relative;min-width:640px;max-width:780px;padding:70px 40px 30px;border-radius:22px;text-align:center;color:var(--ux-ink);cursor:pointer;
+  background:radial-gradient(circle at 50% 0%,#f6fff4 0,#eef6e4 50%,#e2ecd0 100%);border:3px solid #5f8f5a;box-shadow:0 0 0 6px rgba(47,90,60,.3),0 18px 40px rgba(0,0,0,.45);animation:gupIn .38s cubic-bezier(.2,1.4,.4,1) both}
+#rqdLay .rqd-face{position:absolute;left:50%;top:-54px;width:104px;height:104px;margin-left:-52px;border-radius:50%;background-color:#efe2cf;background-repeat:no-repeat;border:4px solid #5f8f5a;box-shadow:0 3px 8px rgba(0,0,0,.3);animation:gupStamp .5s .12s cubic-bezier(.3,1.6,.5,1) both}
+#rqdLay .rqd-k{font:800 15px/1 "Malgun Gothic",sans-serif;letter-spacing:.12em;color:#3f7a3a;margin-bottom:8px}
+#rqdLay h2{margin:0 0 6px;font:800 34px/1.25 "MaruBuri","Malgun Gothic",serif;color:#2f4a26;word-break:keep-all}
+#rqdLay .rqd-g{font-size:16px;color:#5a6a48;margin-bottom:16px}
+#rqdLay .rqd-sec{display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 0 14px}
+#rqdLay .rqd-sec>i{font:700 14px/1 "Malgun Gothic",sans-serif;font-style:normal;color:#6b7a58;letter-spacing:.06em}
+#rqdLay .rqd-town{display:flex;flex-direction:column;align-items:center;gap:6px}
+#rqdLay .rqd-pop{display:flex;align-items:baseline;gap:10px;padding:8px 18px;border-radius:12px;background:#fffdf4;border:2px solid #b9d39a;animation:gupPop .35s .4s both}
+#rqdLay .rqd-pop span{font-size:16px;color:#5a6a48}#rqdLay .rqd-pop b{font:800 30px/1 "MaruBuri",serif;color:#2f4a26;min-width:70px}#rqdLay .rqd-pop i{font-style:normal;font-weight:800;color:#3b8a2a;font-size:18px}#rqdLay .rqd-pop small{font-size:13px;color:#8a9474}
+#rqdLay .rqd-li{font-size:17px;color:#3a4a2c;animation:gupPop .35s .55s both}#rqdLay .rqd-li b{color:#2f6f2a}#rqdLay .rqd-li small{margin-left:6px;font-size:13px;color:#8a9474}
+#rqdLay .rqd-got{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+#rqdLay .rqd-prog{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:4px;font-size:15px;color:#5a6a48}#rqdLay .rqd-prog b{color:#2f4a26}
+#rqdLay .rqd-prog i{display:block;width:260px;height:8px;border-radius:4px;background:rgba(60,90,50,.15);overflow:hidden}#rqdLay .rqd-prog u{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#d9a441,#e9c062)}
+#rqdLay .gup-bar{position:absolute;left:40px;right:40px;bottom:14px;height:4px;border-radius:2px;background:rgba(63,122,58,.55);transform-origin:left center;animation:gupBar linear forwards}
