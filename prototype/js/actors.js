@@ -202,6 +202,7 @@
       settle(ac);
     }
     // 4-1) 술 주문 (2026-11-12): 규칙(game_core.js)이 이번 주에 술을 산 모험가(s.drinks)만 식당 창구에서 주문 → 화면과 주점 수입이 일치
+    for (const ac of D.actors.values()) ac.food = null;   // 2026-11-16: 지난주 술 주문 표시는 새 주에 지움 (맥주 75% / 먹기 75% 고를 때 씀)
     for (const id of s.drinks || []) {
       const a = find(id), ac = D.actors.get(id); if (!a || !ac || busy.has(id) || ac.tasks.some(t => t.k === 'remove')) continue;
       ac.food = 'beer'; T(ac, 'wait', { t: 1 + Math.random() * 6 }); LAB(ac, '주문 중'); visitWindow(ac, 'meal', { mode: 'talk', text: Speech.lina('lina_drink'), dur: SV }, Speech.line(a, 'drink')); settle(ac);

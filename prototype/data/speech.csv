@@ -9,7 +9,7 @@ accept,friendly,다 같이 가면 금방이죠!,수주 · 다정
 accept,friendly,"이 의뢰, 같이 할 사람?",수주 · 다정
 accept,friendly,"리나 씨, 이걸로 할게요!",수주 · 다정
 accept,loner,…이걸로.,수주 · 무뚝뚝
-accept,loner,혼자로 충분해.,수주 · 무뚝뚝
+accept,loner,혼자서 충분해.,수주 · 무뚝뚝
 accept,loner,접수 부탁하지.,수주 · 무뚝뚝
 accept,plain,이 의뢰 맡을게요!,수주 · 보통
 accept,plain,이걸로 할게요.,수주 · 보통
@@ -48,12 +48,12 @@ levelup,bold,몸이 가벼워!,레벨업 · 호탕
 levelup,careful,조금 늘었네요.,레벨업 · 조심
 levelup,friendly,레벨 올랐어요!,레벨업 · 다정
 levelup,loner,…강해졌군.,레벨업 · 무뚝뚝
-levelup,plain,레벨이 올랐다!,레벨업 · 보통
+levelup,plain,레벨이 올랐어요!,레벨업 · 보통
 gradeup,bold,이제 진짜 시작이다!,승급 · 호탕
 gradeup,careful,승급… 해냈네요.,승급 · 조심
 gradeup,friendly,저 승급했어요!,승급 · 다정
 gradeup,loner,…당연하지.,승급 · 무뚝뚝
-gradeup,plain,승급했다!,승급 · 보통
+gradeup,plain,승급했어요!,승급 · 보통
 meal,bold,고기! 고기 주세요!,식사 · 호탕
 meal,careful,든든히 먹고 가야죠.,식사 · 조심
 meal,friendly,같이 먹자!,식사 · 다정
@@ -61,7 +61,7 @@ meal,loner,…밥.,식사 · 무뚝뚝
 meal,plain,배부터 채우자!,식사 · 보통
 drink,bold,한 잔 더!,음료 · 호탕
 drink,careful,따뜻한 차 한 잔이요.,음료 · 조심
-drink,friendly,다 같이 한 잔 해요!,음료 · 다정
+drink,friendly,다 같이 한잔해요!,음료 · 다정
 drink,loner,…물.,음료 · 무뚝뚝
 drink,plain,한 잔 주세요!,음료 · 보통
 first,bold,여기가 길드냐!,첫 방문 · 호탕

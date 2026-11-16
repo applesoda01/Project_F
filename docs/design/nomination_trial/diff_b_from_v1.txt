@@ -1,0 +1,68 @@
+--- js/game_core_v1_all.js	2026-11-16 10:56:13.953145971 +0900
++++ js/game_core.js	2026-11-16 10:56:14.409729096 +0900
+@@ -639,8 +639,8 @@
+ 
+ 
+   // ===== 지명 퀘스트 시험판 (2026-11-16, docs/design/nomination_v1.md 7장 결정) =====
+-  // 대상 = 퀘스트별 최소 능력치 조건을 채운 모험가(원정 · 부상 제외) · 수락 = 전직 규칙(애착 단계 × 위험) · 보상 = 게시판처럼 모험가 몫 · 대열 = 항상 자동(직업 순)
+-  const NOM_CFG = { refuseWeeks: 4, riskMul: [0.8, 1.0, 1.1], base: [0.40, 0.65, 0.90, 1.00], rowOrder: [0, 4, 1, 3, 2] };   // 직업 순: 전사 → 도적 → 궁수 → 성직자 → 마법사
++  // 대상 = 퀘스트별 최소 능력치 조건 — 2026-11-16 결정: 파티 중 1명만 채우면 됨(cond 'one'), 나머지는 원정 · 부상이 아닌 누구나. cond 'all' = 모두 채워야 함(첫 시험판) · 수락 = 전직 규칙(애착 단계 × 위험) · 보상 = 게시판처럼 모험가 몫 · 대열 = 항상 자동(직업 순)
++  const NOM_CFG = { cond: 'one', refuseWeeks: 4, riskMul: [0.8, 1.0, 1.1], base: [0.40, 0.65, 0.90, 1.00], rowOrder: [0, 4, 1, 3, 2] };   // 직업 순: 전사 → 도적 → 궁수 → 성직자 → 마법사
+   const NOM_SAMPLE = [   // 시험용 3건 (sub_quest_F_v1.md 토벌형에서 골라 숫자만 붙임). req = [능력치 번호, 최소값]
+     { key: 'nom_goblin', name: '숲길 고블린 두목', giver: '바르톨', type: 0, party: [2, 3], req: [0, 18], reward: 400, risk: 1 },
+     { key: 'nom_herb', name: '절벽 약초 채집', giver: '그레타', type: 1, party: [1, 2], req: [1, 18], reward: 250, risk: 0 },
+@@ -661,9 +661,9 @@
+     return s.advs.filter(a => a.alive).map(a => {
+       const v = Math.round(finalStat(s, a, si < 0 ? a.core : si)), busy = a.state === 'quest' ? '원정 중' : (a.state === 'injured' && s.week < a.until) ? '부상' : null;
+       const refusedUntil = r.refused[a.id] || 0, inParty = r.party.includes(a.id);
+-      const ok = !busy && v >= need, chance = Math.round(nomChance(s, a) * 100);
+-      return { id: a.id, name: a.name, core: a.core, grade: a.grade, attach: a.attach, stat: v, need, ok, busy, chance, inParty, refusedUntil: refusedUntil > s.week ? refusedUntil : 0, away: a.state === 'away' };
+-    }).sort((x, y) => (y.ok - x.ok) || (y.stat - x.stat));
++      const meets = v >= need, ok = !busy && (NOM_CFG.cond === 'one' || meets), chance = Math.round(nomChance(s, a) * 100);
++      return { id: a.id, name: a.name, core: a.core, grade: a.grade, attach: a.attach, stat: v, need, meets, ok, busy, chance, inParty, refusedUntil: refusedUntil > s.week ? refusedUntil : 0, away: a.state === 'away' };
++    }).sort((x, y) => (y.ok - x.ok) || (y.meets - x.meets) || (y.stat - x.stat));
+   }
+   function nominate(s, rid, aid) {
+     const r = s.requests.find(x => x.id === rid), a = s.advs.find(x => x.id === aid); if (!r || !a || r.state !== 'open') return { ok: false, why: '없음' };
+@@ -677,7 +677,8 @@
+     const L = yes ? ['맡겨 주세요!', '좋아요, 가죠.', '마스터 부탁이라면야.'] : ['이번엔 좀…', '죄송해요, 다음에요.', '그건 내키지 않네요.'];
+     return { ok: yes, line: L[Math.floor(s.R() * L.length)] };
+   }
+-  function nomSend(s, rid) { const r = s.requests.find(x => x.id === rid); if (!r || r.party.length < r.d.party[0]) return false; r.state = 'queued'; return true; }
++  function nomMeets(s, r) { const [si, need] = r.d.req; return r.party.some(id => { const a = s.advs.find(x => x.id === id); return a && Math.round(finalStat(s, a, si < 0 ? a.core : si)) >= need; }); }
++  function nomSend(s, rid) { const r = s.requests.find(x => x.id === rid); if (!r || r.party.length < r.d.party[0] || !nomMeets(s, r)) return false; r.state = 'queued'; return true; }
+   function nomLaunch(s) {   // 주 진행: 게시판보다 먼저 출발
+     for (const r of (s.requests || [])) {
+       if (r.state !== 'queued') continue;
+@@ -699,6 +700,6 @@
+   }
+   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
+ 
+-  const api = { nomEnsure, nomList, nominate, nomSend, nomChance, NOM_SAMPLE, NOM_CFG, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
++  const api = { nomEnsure, nomList, nominate, nomSend, nomMeets, nomChance, NOM_SAMPLE, NOM_CFG, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
+ })(this);
+--- js/nomination_ui_v1_all.js	2026-11-16 11:03:41.249675986 +0900
++++ js/nomination_ui.js	2026-11-16 11:04:30.454517467 +0900
+@@ -21,17 +21,17 @@
+     const st = { open: '지명 받는 중', queued: '다음 주 출발', active: '원정 중', done: '성공', failed: '실패' };
+     let h = `<button class="x" title="닫기">✕</button><div class="l"><h2>지명 의뢰 (시험 3건)</h2>`;
+     for (const x of R) h += `<div class="card ${x.id === r.id ? 'on' : ''}" data-r="${x.id}"><b>[${x.d.giver}] ${x.d.name}</b><br><small>${['토벌', '사냥·채집', '조사', '호위·구호', '탐사'][x.d.type]} · 인원 ${x.d.party[0]}~${x.d.party[1]}명 · 보상 ${x.d.reward}G<br>조건: ${x.d.req[0] < 0 ? '주력 능력치' : G.STATS[x.d.req[0]]} ${x.d.req[1]} 이상 · 상태: ${st[x.state]}</small></div>`;
+-    h += `<p style="font-size:12px;color:#8a735a">결정(2026-11-16): 조건을 채운 모험가만 지명 · 수락 = 전직 규칙(애착 단계 40/65/90/100% × 위험 0.8/1.0/1.1) · 보상은 게시판처럼 모험가 몫 · 대열은 항상 자동(직업 순)</p></div>`;
++    h += `<p style="font-size:12px;color:#8a735a">결정(2026-11-16): 파티 중 1명만 조건(★)을 채우면 됨 · 수락 = 전직 규칙(애착 단계 40/65/90/100% × 위험 0.8/1.0/1.1) · 보상은 게시판처럼 모험가 몫 · 대열은 항상 자동(직업 순)</p></div>`;
+     const L = G.nomList(s, r.id), party = r.party.map(id => s.advs.find(a => a.id === id)).filter(Boolean);
+     const P = r.state === 'open' && party.length ? G.questP(s, party.slice().sort((x, y) => G.NOM_CFG.rowOrder.indexOf(x.core) - G.NOM_CFG.rowOrder.indexOf(y.core)), r.q) : null;
+     h += `<div class="r"><h2>${r.d.name} — 지명</h2><div class="party">파티 (${party.length}/${r.d.party[1]}, 자동 정렬): ${party.length ? party.slice().sort((x, y) => G.NOM_CFG.rowOrder.indexOf(x.core) - G.NOM_CFG.rowOrder.indexOf(y.core)).map(a => `${a.name}(${CLS[a.core]})`).join(' → ') : '비어 있음'}`;
+     if (P != null) h += ` · 예상 성공률 <b>${Math.round(P * 100)}%</b> ${P >= 0.7 ? '안전' : P >= 0.4 ? '주의' : '위험'}`;
+-    h += `<br><button id="nomSend" ${r.state !== 'open' || party.length < r.d.party[0] ? 'disabled' : ''}>보내기 (다음 주 출발)</button><span class="msg">${msg}</span></div>`;
+-    h += `<table><tr><th>이름</th><th>직업</th><th>등급</th><th>조건 능력치</th><th>애착</th><th>수락</th><th>상태</th></tr>`;
++    h += `<br><button id="nomSend" ${r.state !== 'open' || party.length < r.d.party[0] || !G.nomMeets(s, r) ? 'disabled' : ''}>보내기 (다음 주 출발)</button>${r.state === 'open' && party.length && !G.nomMeets(s, r) ? ' <span class="ng">조건(★)을 채운 모험가가 1명 있어야 해요</span>' : ''}<span class="msg">${msg}</span></div>`;
++    h += `<table><tr><th>이름</th><th>직업</th><th>등급</th><th>조건 능력치 (파티 중 1명 ★)</th><th>애착</th><th>수락</th><th>상태</th></tr>`;
+     for (const x of L) {
+       const state = x.inParty ? '<span class="ok">✔ 수락</span>' : x.busy ? x.busy : x.refusedUntil ? `<span class="ng">✖ 거절 (${x.refusedUntil - s.week}주)</span>` : !x.ok ? `조건 미달` : x.away ? '길드 밖 (부름 편지)' : '길드에 있음';
+       const can = r.state === 'open' && (x.inParty || (x.ok && !x.refusedUntil));
+-      h += `<tr class="${can ? 'click' : 'no'}" data-a="${can ? x.id : ''}"><td>${x.name}</td><td>${CLS[x.core]}</td><td>${GR[x.grade]}</td><td>${x.stat} / ${x.need}</td><td>${Math.round(x.attach)}</td><td>${x.ok ? x.chance + '%' : '—'}</td><td>${state}</td></tr>`;
++      h += `<tr class="${can ? 'click' : 'no'}" data-a="${can ? x.id : ''}"><td>${x.name}</td><td>${CLS[x.core]}</td><td>${GR[x.grade]}</td><td>${x.meets ? '<span class="ok">★</span> ' : ''}${x.stat} / ${x.need}</td><td>${Math.round(x.attach)}</td><td>${x.ok ? x.chance + '%' : '—'}</td><td>${state}</td></tr>`;
+     }
+     h += `</table></div>`; el.innerHTML = h;
+     el.querySelector('.x').onclick = close;

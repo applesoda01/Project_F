@@ -16,7 +16,7 @@ table,open,plain,,오늘은 뭐 먹을까?,식탁 · 말 걸기 · 보통
 table,open,plain,,배고파서 죽는 줄 알았어.,식탁 · 말 걸기 · 보통
 table,reply,bold,,좋지! 내가 다 먹어 주지!,식탁 · 대답 · 호탕
 table,reply,bold,,"하하, 그 정도야 껌이지!",식탁 · 대답 · 호탕
-table,reply,bold,,다음 판은 내가 쏜다!,식탁 · 대답 · 호탕
+table,reply,bold,,다음엔 내가 쏜다!,식탁 · 대답 · 호탕
 table,reply,careful,,…그래도 너무 많이 먹진 마요.,식탁 · 대답 · 조심
 table,reply,careful,,"음, 조금만 생각해 볼게요.",식탁 · 대답 · 조심
 table,reply,careful,,다치지 않게 조심해요.,식탁 · 대답 · 조심
@@ -102,7 +102,7 @@ depart,open,loner,,…발목이나 잡지 마.,출발 · 말 걸기 · 무뚝뚝
 depart,open,loner,,…따라오든지.,출발 · 말 걸기 · 무뚝뚝
 depart,open,loner,,…빨리 끝내자.,출발 · 말 걸기 · 무뚝뚝
 depart,open,plain,,그럼 출발해 볼까.,출발 · 말 걸기 · 보통
-depart,open,plain,,"{q}, 잘 해 보자.",출발 · 말 걸기 · 보통
+depart,open,plain,,"{q}, 잘해 보자.",출발 · 말 걸기 · 보통
 depart,open,plain,,짐은 다 챙겼지?,출발 · 말 걸기 · 보통
 depart,reply,bold,,"좋아, 가자고!",출발 · 대답 · 호탕
 depart,reply,bold,,"걱정 마, 내가 있잖아!",출발 · 대답 · 호탕
