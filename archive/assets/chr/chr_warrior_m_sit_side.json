@@ -22,24 +22,28 @@
   },
   "chair_layer": "chair_side_layer.png (same cell size and origin; draw behind the character)",
   "timing": {
-    "lift_start_video_frame": 12,
-    "lift_end_video_frame": 22,
-    "lift_px_576space": -101.0,
-    "lift_px_cell": -67.67,
-    "sheet_frame_to_video_frame": "sheet k>=1 -> video frame 2k",
-    "x_fix_px_576space": -41.09,
-    "seat_bottom_y_576space": 421.0
+    "sheet_frame_to_video_frame": "sheet k -> video frame [0,2,5,7,9,12,14,16,19,21,23,26,28][k] (24fps video, sit settles at frame 28)",
+    "lift_px_cell": 0,
+    "note": "리프트 없음: 새 갈색 남전사는 발이 바닥 높이에서 앉음(영상에서 서 있을 때 발 y=591, 앉은 뒤 597 캔버스px). 옛 시트의 -67.67 리프트는 사용하지 않음"
   },
   "feet_baseline_y": 274,
   "source": {
-    "video": "/mnt/user-data/uploads/output/video/LTX-2.5_i2v_00105_.mp4",
+    "video": "sitmag_warrior_m_brown_s5404_00001_.mp4 (LTX-2.5, seed 5404, magenta key)",
     "key": "magenta",
-    "crop_box_576": [
-      108,
-      188,
-      518,
-      542
-    ]
+    "scale_cell_per_standing_px": 0.409
   },
-  "notes": "frame 0 = walk-sheet frame 0 shifted down 32 px; others Real-ESRGAN x2 keyed frames scaled 0.67; character has no chair; lift/timing/chair offset are defaults to be tuned in the timing tool"
+  "notes": "갈색 남전사(재디자인) 앉기. frame 0 = 영상 첫 프레임(서 있는 자세, 발 기준선 274). 키잉: 마젠타, 가장자리 번짐은 가까운 불투명 색으로 대체, 좌우 반전(왼쪽 보기), FSRCNN/ESRGAN 미적용(스케일 0.409). idle 행은 마지막 프레임(영상 34)에 0,1,2,1px 상하 흔들림. 캐릭터에 의자 없음. 의자 레이어 위치는 chair_placement 값 참고(타이밍 툴에서 확인 필요)",
+  "chair_placement": {
+    "confirmed": "2026-11-11 user, chair-adjust page v2",
+    "dx_standing_px": -77,
+    "dy_standing_px": 23,
+    "chair_center_from_char_center_x_standing_px": -5,
+    "chair_bottom_from_feet_y_standing_px": 23,
+    "in_cell_px": {
+      "center_x": -2.0,
+      "bottom_y": 9.4
+    },
+    "chair_height_standing_px": 390,
+    "chair_height_cell_px": 159.5
+  }
 }
