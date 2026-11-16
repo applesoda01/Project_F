@@ -562,9 +562,22 @@
 .mg-ledger .lg tr.tot td{background:linear-gradient(90deg,rgba(236,194,95,.28),rgba(236,194,95,.05))}
 .mg-ledger>.bk-l{justify-content:flex-start}
 .mg-ledger .lg-bars{height:420px}
-/* 음식: 왼쪽 보관함 · 조리대 / 오른쪽 메뉴판 */
-.mg-meals .kpan.wide{flex:1;min-height:0}
-.mg-meals .kmenuwrap{flex:1;min-height:0;overflow:auto}
+/* 음식 (2026-11-16 재배치): 왼쪽 쪽 전체 = 메뉴판(메인) / 오른쪽 쪽 = 소재 보관함 + 조리대 */
+.mg-meals .kpan.wide{flex:1;min-height:0;display:flex;flex-direction:column}
+.mg-meals .kmenuwrap{flex:1;min-height:0;overflow:auto;padding:0 6px 6px 2px}
+.mg-meals>.bk-l .kmenu{grid-template-columns:1fr;gap:8px}
+.mg-meals>.bk-l .kgrade{margin:12px 0 8px;font-size:17px}
+.mg-meals>.bk-l .kgrade:first-child{margin-top:2px}
+.mg-meals>.bk-l .kdish{padding:8px 14px}
+.mg-meals>.bk-l .kdish b{font-size:17px}
+.mg-meals>.bk-l .kdish .rc .ux-slot{width:34px;height:34px}
+.mg-meals>.bk-r{gap:14px}
+.mg-meals>.bk-r .kpantry{justify-content:center;gap:8px}
+.mg-meals>.bk-r .kmat{width:60px}
+.mg-meals>.bk-r .kmat .ux-slot{width:58px;height:58px}
+.mg-meals>.bk-r .kmat em{font-size:12px}
+.mg-meals>.bk-r .kpan:nth-child(2){margin-top:4px;padding-top:12px;border-top:1px solid rgba(110,72,36,.22)}
+.mg-meals>.bk-r .kpot{transform:scale(.82);transform-origin:50% 100%;margin:-18px auto 0}
 /* 판매: 왼쪽 소재 + 아래 판매 줄 / 오른쪽 고른 소재 */
 .mg-sell .sl-left{flex:1;min-height:0;overflow:auto}
 .mg-sell .sl-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:8px;border-top:1px solid rgba(110,72,36,.25)}

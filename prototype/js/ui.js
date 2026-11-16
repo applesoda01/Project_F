@@ -58,7 +58,38 @@
   };
 
   // ---------- 상태 표시 ----------
+  // 목표 안내판 (2026-11-16): 지금 목표와 진행 + 할 일 한 줄. 메인 퀘스트 단계에 따라 문구가 바뀜. 누르면 리퀘스트 장
+  function goalShow() {
+    const box = q('#goalBox'); if (!box || !Gm.mainView) return;
+    if (!box.onclick) box.onclick = () => UI.open('req');
+    const m = Gm.mainView(s);
+    if (m.state === 'live') { box.hidden = true; return; }
+    box.hidden = false;
+    const R = s.req || { open: [] }, open = R.open || [];
+    const nNew = open.filter(r => r.isNew).length, nWait = open.filter(r => r.state === 'open').length, nRun = open.filter(r => r.state === 'queued' || r.state === 'active').length;
+    let title, prog = '', pct = null, act, go = false, warn = false;
+    const head = m.grade > 0 ? `<b>다음 목표</b><small>${GR[m.grade]}급 길드</small>` : `<b>다음 목표</b><small>길드 승급 ${GR[m.grade]} → ${GR[m.grade + 1]}</small>`;
+    if (m.grade > 0) { title = `${GR[m.grade]}급 길드가 되었습니다`; act = '다음 승급 조건은 준비 중입니다'; }
+    else if (m.state === 'none') {
+      title = '마을의 부탁 들어주기'; prog = `${Math.min(m.doneN, m.need)} / ${m.need}`; pct = Math.min(100, m.doneN / m.need * 100);
+      if (nNew) { act = `새 부탁 ${nNew}건 — 리퀘스트 장에서 확인하세요`; go = true; }
+      else if (nWait) act = `들어줄 수 있는 부탁 ${nWait}건 — 리퀘스트 장에서 고르세요`;
+      else if (nRun) act = `부탁 ${nRun}건 진행 중 — 모험가를 기다리세요`;
+      else act = '부탁이 오기 전까지 의뢰로 모험가를 키우세요';
+    } else if (m.state === 'offer') { title = '메인 퀘스트 도착'; act = '「다리를 지켜라」를 리퀘스트 장에서 받으세요'; go = true; }
+    else if (m.state === 'set') {
+      title = '침공 대비'; prog = m.left > 0 ? `${m.left}주 남음` : '이번 주';
+      if (m.blocked) { act = '출발 금지 — 모험가가 마을을 지킵니다'; warn = true; }
+      else act = `침공 ${m.block}주 전부터 출발 금지 · 회복을 챙기세요`;
+    } else if (m.state === 'cool') { title = '다시 도전 준비'; prog = `${m.cool}주 뒤`; act = '모험가를 키운 뒤 다시 받으세요'; }
+    else { title = '메인 퀘스트 달성'; act = '승급을 기다리는 중입니다'; }
+    const key = [head, title, prog, pct === null ? '' : Math.round(pct), act, go, warn].join('|');
+    if (box.dataset.k === key) return; box.dataset.k = key;
+    box.classList.toggle('go', go); box.classList.toggle('warn', warn);
+    box.innerHTML = `<div class="gb-h">${head}</div><div class="gb-t"><span>${title}</span>${prog ? `<em>${prog}</em>` : ''}</div>${pct === null ? '' : `<i class="gb-bar"><u style="width:${pct}%"></u></i>`}<div class="gb-a">${act}</div>`;
+  }
   UI.hud = function () {
+    goalShow();
     { const sb = q('#mSellBtn'); if (sb) sb.classList.toggle('lock', !s.built['판매창구']); }   // 판매창구를 짓기 전에는 회색
     q('#hDate').textContent = Gm.dateLabel(s.week);
     q('#hGrade').style.backgroundImage = 'url(assets/ui/hud/badge_' + GR[s.grade] + '.png)'; hudTip(q('#hGrade'), '지금 길드는 ' + GR[s.grade] + '급이에요.\n' + (s.grade < 6 ? '길드의 등급이 상승하면, 최대로 활동할 수 있는 모험가가 늘어나요.\n' : '') + GUILD_UP[s.grade]);
@@ -253,7 +284,7 @@
     const $ = sel => b.querySelector(sel), mk = (tag, cls, html) => { const e = document.createElement(tag); e.className = cls; if (html) e.innerHTML = html; return e; };
     let inner = '', L = [], Rn = [];
     if (kind === 'ledger') { const lg = $('.lg-book'); if (!lg) return; inner = 'lg-book'; Rn = [lg.querySelector('.lg-chart')]; L = [...lg.children].filter(x => x !== Rn[0]); }
-    else if (kind === 'meals') { const k = $('.kitchen'); if (!k) return; inner = 'kitchen'; const p = [...k.children]; L = p.slice(0, 1); Rn = p.slice(1); }   // 왼쪽 = 소재 보관함 / 오른쪽 = 조리대 + 메뉴판 (2026-11-13)
+    else if (kind === 'meals') { const k = $('.kitchen'); if (!k) return; inner = 'kitchen'; const p = [...k.children]; L = p.slice(2); Rn = p.slice(0, 2); }   // 2026-11-16 동료 피드백: 왼쪽 = 메뉴판(메인) / 오른쪽 = 소재 보관함 + 조리대 (이전: 왼쪽 보관함 · 오른쪽 조리대 + 메뉴판)
     else if (kind === 'sell') { const k = $('.sell'); if (!k) return; inner = 'sell'; L = [$('.sl-left'), $('.sl-bar')]; Rn = [$('.sl-right')]; }
     else if (kind === 'codex') { const k = $('.cdx'); if (!k) return; inner = 'cdx'; L = [...k.children];
       const t0 = codexTab, rows = CODEX_TABS.map((t, i) => { codexTab = i; const m = codexHtml().match(/(\d+) \/ (\d+) 발견/); return [i, t, m ? +m[1] : 0, m ? +m[2] : 0]; }); codexTab = t0;   // 도감별 발견 수 (각 도감 화면의 "n / N 발견"과 같은 값)
@@ -375,7 +406,7 @@
   }
   // 화면에서 바로 일어난 리퀘스트 기록(완료 · 거절 등)을 로그 · 대사로 흘려보냄 (주 진행 때는 main.js 가 UI.onLogs 로 보냄)
   function rqFlush(top) { const f = []; for (const L of s.log) { if (L === top) break; f.push(L); } if (f.length && f.length < 20) UI.onLogs(f.reverse()); }
-  UI.reqBadge = function () { const n = (s.req ? s.req.open : []).filter(r => r.isNew).length + (s.main && s.main.state === 'offer' ? 1 : 0), b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); return n; };
+  UI.reqBadge = function () { const n = (s.req ? s.req.open : []).filter(r => r.isNew).length + (s.main && s.main.state === 'offer' ? 1 : 0), b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); const c = q('#bReq'); if (c) { c.textContent = n || ''; c.hidden = !n; } return n; };
   const TITLES = { req: '리퀘스트', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
@@ -1651,14 +1682,31 @@
   const BLINK = { rows: ['smile', 'serious', 'laugh', 'worried', 'awkward', 'surprised'], x: 117, y: 116, w: 97, h: 93 };
   const BLINK_SEQ = [[1, 0.05], [2, 0.07], [1, 0.05]]; // [칸, 지속초] : 뜸 → 반쯤 → 감김 → 반쯤 → 뜸
   Dlg.expr = 'smile'; Dlg.bs = 0; Dlg.bt = 0; Dlg.bi = -1; Dlg.bnext = 2.5;
-  const standOK = () => { const a = root.Assets.items; return a.lina_stand && a.lina_stand.ok && a.lina_blink && a.lina_blink.ok; };
+  // 2026-11-16: 의뢰인 NPC 8명도 같은 방식 (root.NPC_PORTRAITS). Dlg.who = 'lina' 또는 NPC 이름
+  const okImg = k => { const a = root.Assets.items; return !!(a[k] && a[k].ok); };
+  const npcOf = name => { const P = root.NPC_PORTRAITS && root.NPC_PORTRAITS[name]; return P && okImg(P.key + '_stand') && okImg(P.key + '_blink') ? P : null; };
+  const standOK = () => Dlg.who && Dlg.who !== 'lina' ? !!npcOf(Dlg.who) : okImg('lina_stand') && okImg('lina_blink');
   function drawStand() {
-    const a = root.Assets.items, c = q('#dlgStand'), g = c.getContext('2d'), r = Math.max(0, BLINK.rows.indexOf(Dlg.expr));
+    const a = root.Assets.items, c = q('#dlgStand'), g = c.getContext('2d');
+    if (Dlg.who && Dlg.who !== 'lina') {   // 의뢰인: 표정 1가지(눈 조각 1줄)
+      const P = npcOf(Dlg.who); if (!P) return; const [x, y, w, h] = P.eye;
+      if (c.width !== P.w || c.height !== P.h) { c.width = P.w; c.height = P.h; }
+      g.clearRect(0, 0, c.width, c.height); g.drawImage(a[P.key + '_stand'].img, 0, 0);
+      g.drawImage(a[P.key + '_blink'].img, Dlg.bs * w, 0, w, h, x, y, w, h); return;
+    }
+    if (c.width !== 341 || c.height !== 640) { c.width = 341; c.height = 640; }
+    const r = Math.max(0, BLINK.rows.indexOf(Dlg.expr));
     g.clearRect(0, 0, c.width, c.height); g.drawImage(a.lina_stand.img, 0, 0);
     g.drawImage(a.lina_blink.img, Dlg.bs * BLINK.w, r * BLINK.h, BLINK.w, BLINK.h, BLINK.x, BLINK.y, BLINK.w, BLINK.h);
   }
+  function setNpc(name) {   // 의뢰인 초상으로 바꿈 (그림이 없으면 false)
+    if (!npcOf(name)) return false;
+    Dlg.who = name; Dlg.expr = 'npc'; Dlg.bs = 0; Dlg.bi = -1; Dlg.bnext = 1.5 + Math.random() * 2;
+    q('#dlgStand').hidden = false; q('#dlgFace').hidden = true; drawStand(); return true;
+  }
   function setFace(face) {
     const a = root.Assets.items, old = a['lina_face_' + face];
+    Dlg.who = 'lina';
     if (standOK()) {
       Dlg.expr = face; Dlg.bs = 0; Dlg.bi = -1; Dlg.bnext = 2 + Math.random() * 2;
       q('#dlgStand').hidden = false; q('#dlgFace').hidden = true; drawStand(); return;
@@ -1683,8 +1731,9 @@
     if (first) { Dlg.wait = DLG_WAIT; Dlg.t = 0; } else q('#dlg').classList.add('open');
     q('#logBox').classList.add('hide'); stage.ui.classList.add('dlgOn');
     const spk = L.name || '리나'; q('#dlgName').textContent = spk; UI.chat(spk, L.text, spk === '리나' ? 'lina' : null, L.adv || null);   // 2026-11-16: 리나가 아닌 화자(의뢰인 · 모험가)는 이름표만 (NPC 초상은 그림이 들어오면 연결)
-    if (spk === '리나') setFace(L.face); else { q('#dlgStand').hidden = true; q('#dlgFace').hidden = true; }
-    q('#dlg').classList.toggle('noface', spk !== '리나');
+    const npc = spk !== '리나' && setNpc(spk);   // 의뢰인 8명은 초상 + 눈 깜빡임 (2026-11-16)
+    if (spk === '리나') setFace(L.face); else if (!npc) { Dlg.who = null; q('#dlgStand').hidden = true; q('#dlgFace').hidden = true; }
+    q('#dlg').classList.toggle('noface', spk !== '리나' && !npc);
     q('#dlgText').textContent = ''; q('#dlgNext').hidden = true;
   }
   UI.advance = function () {

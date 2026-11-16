@@ -160,6 +160,22 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 @keyframes gPulseUp{0%{color:#2f7a2a}100%{color:inherit}}@keyframes gPulseDn{0%{color:#b5352a}100%{color:inherit}}
 /* 책이 펼쳐지면 HUD가 위·아래로 숨는다 (2026-11-16) */
 #hudTL,#hudTR,#hudBR,#devToggle{transition:transform .25s ease}
+/* 목표 안내판 (2026-11-16 동료 피드백 "초반에 뭘 해야 할지 모르겠음" → todo 가안): 지금 목표 · 진행 · 할 일 한 줄. 누르면 리퀘스트 장 */
+#goalBox{position:absolute;left:34px;top:140px;width:390px;padding:11px 16px 12px;border:2px solid #8a6a44;border-radius:12px;background:linear-gradient(#fcf5e3,#f0e0bd);box-shadow:0 3px 8px rgba(40,22,8,.35),inset 0 0 0 1px rgba(255,255,255,.55);color:var(--ink);font-family:"MaruBuri","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;cursor:pointer;z-index:4;transition:transform .35s,opacity .35s,box-shadow .2s}
+#goalBox:hover{box-shadow:0 4px 12px rgba(40,22,8,.45),inset 0 0 0 1px rgba(255,255,255,.7);transform:translateY(-1px)}
+#goalBox[hidden]{display:none}
+#goalBox .gb-h{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700;color:#7a5a36;letter-spacing:.02em}
+#goalBox .gb-h b{flex:1}#goalBox .gb-h small{font-size:14px;color:#9a7a52;font-weight:600}
+#goalBox .gb-t{display:flex;align-items:baseline;gap:10px;margin-top:4px;font-size:21px;font-weight:700;line-height:1.25}
+#goalBox .gb-t span{flex:1}#goalBox .gb-t em{font-style:normal;font-variant-numeric:tabular-nums;font-size:22px}
+#goalBox .gb-bar{display:block;height:7px;margin:6px 0 2px;border-radius:4px;background:rgba(138,106,68,.25);overflow:hidden}
+#goalBox .gb-bar u{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#c9963f,#e8b85a);text-decoration:none}
+#goalBox .gb-a{margin-top:6px;font-size:16px;line-height:1.35;color:#5a4128}
+#goalBox .gb-a::before{content:"▶ ";color:#b07a2e;font-size:12px;vertical-align:1px}
+#goalBox.go{border-color:#c9963f;animation:gbGlow 1.6s ease-in-out infinite}
+#goalBox.warn .gb-a{color:#a3361f;font-weight:700}
+@keyframes gbGlow{0%,100%{box-shadow:0 3px 8px rgba(40,22,8,.35),0 0 0 0 rgba(232,184,90,0)}50%{box-shadow:0 3px 8px rgba(40,22,8,.35),0 0 0 6px rgba(232,184,90,.45)}}
+body.bookOn #goalBox{transform:translateX(-460px);pointer-events:none}
 body.bookOn #hudTL,body.bookOn #devToggle{transform:translateY(-180px);pointer-events:none}
 body.bookOn #hudTR,body.bookOn #hudBR{transform:translateY(180px);pointer-events:none}
 #dev{z-index:6;right:22px;top:64px;display:none;flex-wrap:wrap;gap:6px;padding:10px;max-width:760px;font-size:17px}
@@ -360,19 +376,22 @@ body:not(.dev) #devToggle,body:not(.dev) #dev,body:not(.dev) #titleSkip,body:not
 <div id="loading"><div class="ld-box"><h1>이세계 모험가 길드</h1><p class="ld-sub">2차 프로토타입</p><div class="ld-bar"><i id="loadBar"></i></div><span id="loadMsg"></span><p class="ld-tip">처음 열 때는 그림을 받느라 시간이 조금 걸립니다.<br>두 번째부터는 금방 열립니다.</p></div></div>
 <template id="uiTpl">
   <div id="hudTL"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><span id="hGrade"></span><span class="dt"><span class="date" id="hDate"></span><div class="weekbar"><i id="hWeekBar"></i></div><div class="wkrow"><img id="hTime" alt="" draggable="false" src="assets/ui/hud/time_sun.png" data-k="sun"></div></span><span class="sep"></span><span class="stat"><img src="assets/ui/hud/icon_coin.png" alt=""><span><span class="lb">금고</span><span class="val"><b id="hGold"></b><small> G</small></span></span></span><span class="sep"></span><span class="stat" id="hTrustBox" title=""><img id="hTrustFace" class="tface" src="assets/ui/hud/trust/trust_2.png" alt=""><span><span class="lb">신뢰도</span><span class="val"><b id="hTrust"></b></span><span class="tbar"><i id="hTrustBar"></i></span></span></span><span class="sep"></span><span class="stat" id="hFameBox" title=""><img src="assets/ui/hud/icon_star.png" alt=""><span><span class="lb">명성</span><span class="val"><b id="hFame"></b></span><span class="fbar" id="hFameBarW"><i id="hFameBar"></i></span></span></span><span class="sep"></span><span class="stat" id="hAdvBox" title=""><img src="assets/ui/hud/icon_adventurer.png" alt=""><span><span class="lb">모험가</span><span class="val"><b id="hAdv"></b><small class="cap" id="hAdvCap"></small></span></span></span></div></div>
+  <div id="goalBox" role="button" title="누르면 리퀘스트 장을 엽니다"></div>
   <div id="hudTR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><button class="btn" id="ppBtn" title="일시정지·재생 (스페이스)"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg></button><span class="more"><button class="chip on" data-speed="1"><b>1×</b></button><button class="chip" data-speed="2"><b>2×</b></button><button class="chip" data-speed="4"><b>4×</b></button></span></div></div>
   <div id="toasts"></div>
   <div id="logBox"><div class="ll"></div><div class="lg" title="끌어서 이동 · 더블클릭: 원위치">기록 · 끌어서 이동</div></div>
   <button class="plate btn" id="bPromo" hidden>전직 제안</button>
   <div id="hudBR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in">
     <button class="mb" data-pop="board"><img class="ic" src="assets/ui/hud/bt/board.png" alt="" draggable="false">의뢰<span class="cnt" id="bBoard"></span></button>
+    <button class="mb" data-pop="req"><img class="ic" src="assets/ui/hud/mi/log.png" alt="" draggable="false">리퀘스트<span class="cnt" id="bReq"></span></button>
     <button class="mb" data-pop="advs"><img class="ic" src="assets/ui/hud/bt/advs.png" alt="" draggable="false">모험가<span class="cnt" id="bParty"></span></button>
     <button class="mb" data-pop="fac"><img class="ic" src="assets/ui/hud/bt/fac.png" alt="" draggable="false">시설</button>
+    <button class="mb" data-pop="meals"><img class="ic" src="assets/ui/hud/mi/meals.png" alt="" draggable="false">음식</button>
     <span class="grp"><button class="mb" id="mgBtn"><img class="ic" src="assets/ui/hud/bt/mgmt.png" alt="" draggable="false">경영</button>
-      <div class="up" id="mgUp"><button class="btn" data-pop="ledger"><span class="cb"><img class="mi" src="assets/ui/hud/mi/ledger.png" alt="" draggable="false"></span><b class="nm">장부</b></button><!-- [보류] 요리하기: 음식 설정과 합쳐져서 숨김 (2026.11) <button class="btn" data-act="cook"><span class="cb"><img class="mi" src="assets/ui/hud/mi/cook.png" alt="" draggable="false"></span><b class="nm">요리하기</b></button> --><button class="btn" data-pop="meals"><span class="cb"><img class="mi" src="assets/ui/hud/mi/meals.png" alt="" draggable="false"></span><b class="nm">음식 설정</b></button><button class="btn" data-pop="sell" id="mSellBtn"><span class="cb"><img class="mi" src="assets/ui/hud/mi/sell.png" onerror="this.onerror=null;this.src='assets/ui/hud/mi/ledger.png'" alt="" draggable="false"></span><b class="nm">소재 판매</b></button><button class="btn" data-pop="codex"><span class="cb"><img class="mi" src="assets/ui/hud/mi/codex.png" alt="" draggable="false"></span><b class="nm">도감</b></button><button class="btn" data-pop="log"><span class="cb"><img class="mi" src="assets/ui/hud/mi/log.png" alt="" draggable="false"></span><b class="nm">기록</b></button></div></span>
+      <div class="up" id="mgUp"><button class="btn" data-pop="ledger"><span class="cb"><img class="mi" src="assets/ui/hud/mi/ledger.png" alt="" draggable="false"></span><b class="nm">장부</b></button><!-- [보류] 요리하기: 음식 설정과 합쳐져서 숨김 (2026.11) <button class="btn" data-act="cook"><span class="cb"><img class="mi" src="assets/ui/hud/mi/cook.png" alt="" draggable="false"></span><b class="nm">요리하기</b></button> --><button class="btn" data-pop="sell" id="mSellBtn"><span class="cb"><img class="mi" src="assets/ui/hud/mi/sell.png" onerror="this.onerror=null;this.src='assets/ui/hud/mi/ledger.png'" alt="" draggable="false"></span><b class="nm">소재 판매</b></button><button class="btn" data-pop="codex"><span class="cb"><img class="mi" src="assets/ui/hud/mi/codex.png" alt="" draggable="false"></span><b class="nm">도감</b></button><button class="btn" data-pop="log"><span class="cb"><img class="mi" src="assets/ui/hud/mi/log.png" alt="" draggable="false"></span><b class="nm">기록</b></button></div></span>
     <button class="mb" data-act="town" title="마을 화면으로 이동"><img class="ic" src="assets/ui/hud/bt/town.png" alt="" draggable="false">마을</button>
     <i class="sep"></i>
-    <span class="grp"><button class="mb" id="menuBtn"><img class="ic" src="assets/ui/hud/bt/opt.png" alt="" draggable="false">옵션</button>
+    <span class="grp"><button class="mb" id="menuBtn"><img class="ic" src="assets/ui/hud/bt/opt.png" alt="" draggable="false">설정</button>
       <div class="up" id="menu"><button class="btn" data-pop="opts"><span class="cb"><img class="mi" src="assets/ui/hud/mi/option.png" onerror="this.onerror=null;this.src='assets/ui/hud/bt/opt.png'" alt="" draggable="false"></span><b class="nm">설정</b></button><button class="btn" id="mSave"><span class="cb"><img class="mi" src="assets/ui/hud/mi/save.png" alt="" draggable="false"></span><b class="nm">저장하기</b></button><button class="btn" id="mLoad"><span class="cb"><img class="mi" src="assets/ui/hud/mi/load.png" alt="" draggable="false"></span><b class="nm">불러오기</b></button><button class="btn" id="mReport"><span class="cb"><img class="mi" src="assets/ui/hud/mi/report.png" alt="" draggable="false"></span><b class="nm">월간 보고 자동 표시 <i>켬</i></b></button></div></span>
   </div></div>
   <button class="plate btn" id="devToggle">개발</button>
