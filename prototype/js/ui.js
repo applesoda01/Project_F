@@ -25,6 +25,7 @@
     q('#ppBtn').onclick = () => hooks.setSpeed(curSp > 0 ? 0 : lastSp);
     // 기능 버튼 → 팝업
     stage.ui.querySelectorAll('[data-pop]').forEach(b => b.onclick = () => UI.open(b.dataset.pop));
+    { const gb = q('#goalBox'); if (gb) gb.onclick = () => UI.open('req'); }   // 목표 안내판 → 리퀘스트 장
     lbInit();
     q('#popClose').onclick = UI.close;
     q('#popBack').onclick = e => { if (e.target.id === 'popBack') UI.closeFx(); };
@@ -62,7 +63,7 @@
     { const sb = q('#mSellBtn'); if (sb) sb.classList.toggle('lock', !s.built['판매창구']); }   // 판매창구를 짓기 전에는 회색
     q('#hDate').textContent = Gm.dateLabel(s.week);
     q('#hGrade').style.backgroundImage = 'url(assets/ui/hud/badge_' + GR[s.grade] + '.png)'; hudTip(q('#hGrade'), '지금 길드는 ' + GR[s.grade] + '급이에요.\n' + (s.grade < 6 ? '길드의 등급이 상승하면, 최대로 활동할 수 있는 모험가가 늘어나요.\n' : '') + GUILD_UP[s.grade]);
-    goldShow();
+    goldShow(); goalShow();
     q('#hTrust').textContent = Math.round(s.trust);
     { const t = Math.max(0, Math.min(100, s.trust)), st = Math.min(4, Math.floor(t / 20)), bar = q('#hTrustBar'), face = q('#hTrustFace'), box = q('#hTrustBox');   // 신뢰도: 리나 표정(5단계) + 50 기준 양쪽 막대(붉은색 → 초록)
       const NAME = ['화남', '불만', '보통', '만족', '아주 만족'], QN = ['30~50', '45~65', '65~85', '80~100', '100~120'], QR = ['80~90', '85~95', '95~105', '105~115', '110~120'];
@@ -289,6 +290,30 @@
   }
   // 금고 증감 연출 (2026-11-16): 숫자가 굴러서 바뀌고, 옆에 +N / −N이 잠깐 떠오름. 새 게임 · 불러오기 직후에는 연출 없이 바로 표시
   let goldOf = null, goldTo = 0, goldNow = 0, goldRaf = 0, goldFx = 0;
+  // 목표 안내판 (2026-11-16 동료 피드백 "초반에 뭘 해야 할지 모르겠음" → 가안: 늘 보이는 작은 판). 누르면 리퀘스트 장
+  function goalShow() {
+    const box = q('#goalBox'); if (!box || !Gm.mainView) return;
+    const m = Gm.mainView(s), R = s.req ? s.req.open : [], cnt = st => R.filter(r => r.state === st).length;
+    const nNew = R.filter(r => r.isNew).length, nOpen = cnt('open'), nGo = R.length - nOpen;
+    let k = '다음 목표', t = '', bar = null, d = '', dc = '', main = false;
+    if (m.state === 'done' || s.grade > 0) { k = '목표 달성'; t = `길드가 <b>${GR[s.grade]}급</b>이 되었어요`; d = '모험가 관리소를 지으면 2차 전직을 제안할 수 있어요.'; }
+    else if (m.state === 'none') {
+      t = `리퀘스트 들어주기 <b>${m.doneN} / ${m.need}</b>`; bar = m.doneN / m.need;
+      if (nNew) { d = `새 부탁 ${nNew}건이 왔어요. 눌러서 확인해 보세요.`; dc = 'new'; }
+      else if (nOpen) d = `고를 수 있는 부탁 ${nOpen}건${nGo ? ` · 진행 중 ${nGo}건` : ''}`;
+      else if (nGo) d = `부탁 ${nGo}건을 들어주는 중이에요.`;
+      else d = '새 부탁을 기다리는 중이에요. 마을이 커지면 찾아와요.';
+    } else {
+      main = true; k = '메인 퀘스트'; t = '「다리를 지켜라」';
+      if (m.state === 'offer') { d = '영주의 전갈이 왔어요. 받으면 2주 뒤 침공이 시작돼요.'; dc = 'new'; }
+      else if (m.state === 'set') { t = `「다리를 지켜라」 침공까지 <b>${m.left}주</b>`; if (m.blocked) { d = '침공 대비: 모든 의뢰 출발 금지'; dc = 'warn'; } else d = '식사와 물약을 준비하고 모험가를 마을에 남겨 두세요.'; }
+      else if (m.state === 'live') { t = '「다리를 지켜라」 침공 중'; d = '마을 다리를 지키는 중이에요.'; dc = 'warn'; }
+      else if (m.state === 'cool') { d = `재도전까지 ${m.cool}주 · 리퀘스트 장에서 다시 받을 수 있어요.`; }
+    }
+    box.classList.toggle('main', main);
+    box.innerHTML = `<div class="goal-k">${k}</div><div class="goal-t">${t}</div>${bar != null ? `<div class="goal-b"><i style="width:${Math.round(Math.min(1, bar) * 100)}%"></i></div>` : ''}${d ? `<div class="goal-d ${dc}">${d}</div>` : ''}`;
+  }
+  UI.goalShow = goalShow;
   function goldShow() {
     const el = q('#hGold'), to = Math.round(s.gold); el.classList.toggle('neg', s.gold < 0);
     if (goldOf !== s) { goldOf = s; goldTo = goldNow = to; cancelAnimationFrame(goldRaf); el.textContent = fmt(to); return; }
@@ -375,7 +400,7 @@
   }
   // 화면에서 바로 일어난 리퀘스트 기록(완료 · 거절 등)을 로그 · 대사로 흘려보냄 (주 진행 때는 main.js 가 UI.onLogs 로 보냄)
   function rqFlush(top) { const f = []; for (const L of s.log) { if (L === top) break; f.push(L); } if (f.length && f.length < 20) UI.onLogs(f.reverse()); }
-  UI.reqBadge = function () { const n = (s.req ? s.req.open : []).filter(r => r.isNew).length + (s.main && s.main.state === 'offer' ? 1 : 0), b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); return n; };
+  UI.reqBadge = function () { goalShow(); const n = (s.req ? s.req.open : []).filter(r => r.isNew).length + (s.main && s.main.state === 'offer' ? 1 : 0), b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); return n; };
   const TITLES = { req: '리퀘스트', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
