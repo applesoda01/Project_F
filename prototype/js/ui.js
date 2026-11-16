@@ -350,7 +350,7 @@
       if (r.state !== 'active') {
         Rr += `<div class="rq-nom ${r.state !== 'open' || v.lock ? 'off' : ''}"><div class="nh"><span>모험가</span><span>${d.req && d.req[0] >= 0 ? Gm.STATS[d.req[0]] : rows[0] && rows[0].stat != null ? '주력' : ''}</span><span>애착</span><span>수락</span><span>섭외비</span><span>상태</span></div>`;
         for (const x of rows) { const a = s.advs.find(z => z.id === x.id);
-          const st = x.inParty ? '<b class="ok">✔ 함께 감</b>' : x.busy ? x.busy : x.refused ? '<b class="ng">✖ 이번 주 거절</b>' : x.away ? '마을 밖' : '길드에 있음';
+          const st = x.inParty ? '<b class="ok">✔ 함께 감</b>' : x.busy ? x.busy : x.refused ? '<b class="ng">✖ 이번 주 거절</b>' : x.back ? '이번 주 귀환' : x.away ? '마을 밖' : '길드에 있음';
           Rr += `<button class="nr ${x.inParty ? 'in' : ''} ${x.busy || x.refused ? 'no' : ''}" data-rqnom="${x.id}"><span class="who"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span><b>${esc(x.name)}</b><em>${esc(x.cls)} Lv ${x.lv}</em></span></span><span class="sv">${d.req ? (x.meets ? '<i class="star">★</i>' : '') : ''}${x.stat != null ? x.stat : ''}</span><span>${x.attach}</span><span class="ch">${x.owner ? '본인' : x.chance + '%'}</span><span class="fee ${!x.inParty && x.fee > s.gold ? 'lack' : ''}">${x.inParty || !x.fee ? '—' : x.fee + 'G'}</span><span class="stx">${st}</span></button>`; }
         Rr += '</div>';
       }
@@ -614,7 +614,7 @@
   // ---------- 장부: 수입 · 지출 (지난달 | 이번 달) + 12개월 순이익 그래프 (docs/design/popup_ledger.md) ----------
   // 순이익 = 수입 − 지출(시설 건설비·기타). 관문 1의 "운영 순이익(m.net)"은 건설비를 빼고 계산하므로 따로 둠
   const LG_IN = [['fee', '중계료'], ['resale', '소재 판매 차익'], ['meal', '식사 판매'], ['tavern', '주점 매출'], ['reqIn', '리퀘스트 보상'], ['subsidy', '왕국 보조금']];
-  const LG_OUT = [['build', '시설 건설비'], ['scout', '지명 섭외비'], ['other', '기타']];
+  const LG_OUT = [['build', '시설 건설비'], ['scout', '지명 섭외비'], ['prep', '침공 대비 물약'], ['other', '기타']];
   const LG_EOM = { subsidy: 1 };   // 월말 결산 때 한꺼번에 들어오는 항목 (주점 매출은 2026-11-12부터 매주 술 1잔 단위라 제외)
   const lgIn = m => LG_IN.reduce((t, [k]) => t + (m[k] || 0), 0), lgOut = m => LG_OUT.reduce((t, [k]) => t + (m[k] || 0), 0), lgNet = m => lgIn(m) + lgOut(m);
   const gG = v => `${v < 0 ? '−' : ''}${fmt(Math.abs(Math.round(v)))}G`;
@@ -626,6 +626,7 @@
     if (k === 'tavern') return `술 <b>${m.drinks || 0}잔</b> 판매 · 1잔 마진 ${GR[s.grade]}급 ${(s.cfg.econ.drinkMargin || [2])[s.grade] || 2}G${Gm.upg(s, '주점') ? ' + 업그레이드 5G' : ''}`;   // 2026-11-12: 매주 술 1잔 단위
     if (k === 'subsidy') { const g = cur ? s.grade : (m.grade != null ? m.grade : s.grade); return `${cur ? '월말 결산 때 들어옵니다 · ' : ''}${GR[g]}급 길드 월 <b>${fmt(E.subsidy[g])}G</b>`; }
     if (k === 'reqIn') { const b = m.reqs || []; return b.length ? b.map(x => `${esc(x.n)} <b>${gG(x.g)}</b>`).join('<br>') : '없음'; }
+    if (k === 'prep') return m.prepN ? `정비 때 물약 <b>${m.prepN}개</b>` : '없음';
     if (k === 'scout') return m.scoutN ? `모험가 <b>${m.scoutN}번</b> 부탁 (거절당해도 나갑니다)` : '없음';
     if (k === 'build') { const b = m.builds || []; return b.length ? b.map(x => `${esc(FAC_LABEL[x.f] || x.f)} <b>${gG(-x.c)}</b>`).join('<br>') : '없음'; }
     if (k === 'other') { const w = m.wd || []; return w.length ? w.map(x => `${x.name ? esc(x.name) : `${GR[x.g]}급 ${QTYPE_[x.type]} 의뢰`} 취소 <b>${gG(-x.cost)}</b>`).join('<br>') : '없음'; }

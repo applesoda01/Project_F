@@ -63,6 +63,8 @@
   UI.init(stage, s, { setSpeed, save, load, newGame, slots: () => ({ cur: slot, list: Array.from({ length: SLOTS }, (_, i) => slotInfo(i + 1)) }), saveTo, loadSlot,   // 책 설정 장 오른쪽: 슬롯 3칸 정보 · 칸 골라 저장 / 불러오기 (2026-11-13)
     changed: () => UI.hud(), promoted: a => Director.celebrate(a.id), town: () => Town.open() });
   Town.init(stage, () => s, {});
+  Gm.live = true;   // 게임 화면: 침공은 마을 화면에서 차례마다 보여 줌 (검증 · 시뮬레이터는 한 번에 처리)
+  if (window.Invasion) Invasion.init(stage, () => s, { setSpeed, getSpeed: () => speed, save });
   LinaMenu.init(stage, () => s, UI); // 리나 클릭 메뉴 (좌3·우3)
   Expedition.init(stage, () => s); // 원정 현황 패널 + 미니 뷰 (expedition.js)
   const q = sel => stage.ui.querySelector(sel);
@@ -193,6 +195,7 @@
     Expedition.update(dt, acc / WEEK_MS, speed);
     // 화면 속 동작 빠르기: 배속이 오르면 함께 빨라지되 최대 3배 (일시정지면 멈춤)
     const as = speed === 0 ? 0 : Math.min(3, Math.max(1, speed * 0.6)), adt = dt * as;
+    if (window.Invasion) Invasion.check(s);
     Lobby.update(s, dt); Lina.update(adt); Director.update(adt); UI.update(dt); Town.wf = acc / WEEK_MS; Town.still = still || reduce || !Snd.opt.fx; Town.update(s, dt); Snd.update(s, dt);
     const g = stage.begin();
     if (Town.active) Town.draw(g, s, T); else Lobby.draw(g, s, T, { debug, still: still || reduce || !Snd.opt.fx, weekFrac: acc / WEEK_MS });

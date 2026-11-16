@@ -322,6 +322,7 @@
     if (bub) { bub.t -= dt; if (bub.t <= 0) bub = null; }
     skyUpdate(dt, mouse);
     if (root.TownSeason) root.TownSeason.update(s, dt, Town.wf, Town.still);   // 계절·시간대·입자 (길드와 같은 달력)
+    if (root.Invasion) root.Invasion.update(s, dt);   // 침공 연출 (2026-11-16, invasion.js)
   };
   function diamond(g, b, fill, stroke) {
     const f = foot(b); g.beginPath(); f.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath();
@@ -341,7 +342,7 @@
       wg.save(); wg.translate(cx, cy); if (br.flip) wg.scale(-1, 1); wg.drawImage(it.img, -w / 2, -h / 2, w, h); wg.restore();
     }
     const items = visible(s).map(b => ({ t: 0, d: depth(b), b }));
-    for (const r of res.values()) items.push({ t: 1, d: r.gd + 0.05, r });
+    if (!(root.Invasion && root.Invasion.on)) for (const r of res.values()) items.push({ t: 1, d: r.gd + 0.05, r });   // 침공 중에는 거주 모험가를 숨김 (싸우는 모험가와 헷갈림)
     for (const hd of houseDraws(s)) items.push({ t: 2, d: hd.depth - 0.01, hd });   // 민가 (클릭 불가 장식)
     items.sort((p, q) => p.d - q.d);
     for (const it of items) {
@@ -361,6 +362,7 @@
       g.lineWidth = 6; g.strokeStyle = 'rgba(34,22,13,.85)'; g.strokeText(t1, 960, 520); g.fillStyle = '#fbe3c4'; g.fillText(t1, 960, 520);
       g.font = '600 22px "Malgun Gothic",sans-serif'; g.lineWidth = 4; g.strokeText(t2, 960, 566); g.fillStyle = '#fbf1dc'; g.fillText(t2, 960, 566); g.restore();
     }
+    if (root.Invasion && root.Invasion.on) { root.Invasion.draw(g); return; }   // 침공 중: 모험가 · 몬스터 · 성 게이지만 (이름표 · 말풍선 생략)
     // 이름표
     const tag = hover || sel;
     if (tag) {
@@ -449,7 +451,8 @@
     if (!ui) return; Town.active = true; ui.classList.add('on'); const dg = document.getElementById('dlg'); if (dg) dg.style.visibility = 'hidden'; sel = null; hover = null; res.clear(); skyReset(); refreshUi();
     hubLabel(true); if (hooks.onOpen) hooks.onOpen();
   };
-  Town.close = function () { Town.active = false; if (ui) ui.classList.remove('on'); const dg = document.getElementById('dlg'); if (dg) dg.style.visibility = ''; hover = null; cv.style.cursor = ''; hubLabel(false); if (hooks.onClose) hooks.onClose(); };
+  Town.close = function () { if (root.Invasion && root.Invasion.on) return;   // 침공을 보는 동안은 닫지 않음
+    Town.active = false; if (ui) ui.classList.remove('on'); const dg = document.getElementById('dlg'); if (dg) dg.style.visibility = ''; hover = null; cv.style.cursor = ''; hubLabel(false); if (hooks.onClose) hooks.onClose(); };
   Town.refresh = () => { if (Town.active) refreshUi(); };
-  Town._res = res; root.Town = Town;
+  Town._res = res; Town.px = px; Town.py = py; root.Town = Town;
 })(this);

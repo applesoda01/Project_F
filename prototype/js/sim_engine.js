@@ -695,6 +695,12 @@
       if (!NQ.length) return;
       for (const r of s.rq.open.slice()) {
         const d = r.d;
+        if (r.run) {   // 원정 중인 지명 파티: 게임처럼 돌아오는 주에 결과를 반영 (그동안 목록 칸을 차지함, 2026-11-16)
+          if (s.week < r.run.at) continue;
+          const x = r.run; delete r.run;
+          if (x.win) complete(r, x.party); else { r.party = r.who ? [r.who] : []; s.st.reqFail++; }
+          continue;
+        }
         if (r.who && !r.who.alive) { s.rq.open.splice(s.rq.open.indexOf(r), 1); continue; }
         if (d.type === 'install') { const m = /^(\w+)(>=|=)(\d+)$/.exec(d.goal || ''); if (m && condOk([m[1], m[2], +m[3], 1])) complete(r, null); continue; }
         if (nominated(d) && !has('집무실') && s.gold - (E.officeCost || 1000) >= RQC.reserve) { s.gold -= (E.officeCost || 1000); s.built['집무실'] = true; s.st.facWeek['집무실'] = s.week; }
@@ -713,7 +719,7 @@
         if (!okNow()) continue;
         const party = sortRow(r.party), q = questOf(r);
         for (const m of party) m.busy = d.weeks;
-        if (runQuest(party, q)) complete(r, party); else { r.party = r.who ? [r.who] : []; s.st.reqFail++; }
+        r.run = { at: s.week + d.weeks, win: runQuest(party, q), party };   // 결과는 지금 정하고, 반영은 돌아오는 주에
       }
       if (s.rq.open.length < RQC.maxOpen) {
         const cands = NQ.filter(d => eligible(d) && ready(d));
@@ -723,7 +729,7 @@
 
     // ---------- F급 메인 퀘스트: 침공 "다리를 지켜라" (2026-11-16) — 게임 game_core.js MAIN_CFG · mainFight · mainWeekly와 같은 규칙 ----------
     const MQC = { need: 8, lead: 2, block: 1, retry: 4, rest: 0.3, revive: 0.4, castle: 1, group: 6, deathLoss: 0.01, popLoss: 0.1, trustLoss: 5, gold: 1000, fame: 10, accept: 0.6, trials: 20,
-      waves: [{ mon: 'mon_04', n: 6, hp: 1, atk: 1 }, { mon: 'mon_04', n: 6, hp: 1.3, atk: 1.2 }, { mon: 'mon_04', n: 6, hp: 1.6, atk: 1.4 }, { mon: 'mon_05', n: 1, hp: 5, atk: 3, boss: true }] };
+      waves: [{ mon: 'mon_04', n: 6, hp: 1.1, atk: 1.1 }, { mon: 'mon_04', n: 6, hp: 1.43, atk: 1.32 }, { mon: 'mon_04', n: 6, hp: 1.76, atk: 1.54 }, { mon: 'mon_05', n: 1, hp: 5.5, atk: 3.3, boss: true }] };
     const MQ2 = [{ 0: 50 }, { 1: 50 }, { 4: 50 }, { 2: 50 }, { 3: 50 }, { 0: 35, 1: 35 }, { 0: 40, 2: 30 }, { 0: 30, 3: 40 }, { 0: 30, 4: 40 }, { 1: 40, 2: 30 }, { 1: 35, 3: 35 }, { 1: 30, 4: 40 }, { 2: 40, 3: 30 }, { 2: 35, 4: 35 }, { 3: 30, 4: 40 }];   // 2차 전직 조건 (게임 CLASS2)
     const MONS = (gameData() && gameData().content && gameData().content.monsters) || [];
     s.mq = { state: 'none', at: null, cool: 0, tries: 0 }; s.st.mainOffer = null; s.st.mainClear = null; s.st.mainTries = 0;
@@ -742,8 +748,9 @@
           if (r.win) break;
           if (castle >= MQC.castle) return { win: false, down };
           castle++;
-          foes = foes.slice(0, Math.max(1, r.enemyLeft == null ? foes.length : r.enemyLeft)).map(e => Object.assign({}, e));
-          U = U.map(u => Object.assign(u, { hp: u.maxHp * MQC.revive, down: false }));
+          const left = r.foesLeft || foes.map(e => e.hp);   // 남은 적은 남은 체력 그대로 (게임 mainWaveFight와 같음)
+          foes = foes.map((e, i) => Object.assign({}, e, { hp: left[i] })).filter(e => e.hp > 0); if (!foes.length) break;
+          U = U.map(u => Object.assign(u, { hp: Math.max(u.down ? 0 : u.hp, u.maxHp * MQC.revive), down: false }));
         }
         if (w < MQC.waves.length - 1) U = U.map(u => u.down ? Object.assign(u, { hp: u.maxHp * MQC.revive, down: false }) : Object.assign(u, { hp: Math.min(u.maxHp, u.hp + u.maxHp * MQC.rest) }));
       }

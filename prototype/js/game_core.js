@@ -546,7 +546,7 @@
       if (a.wallet >= price * (1 + GE.reserveMult[a.spend] * 0.5)) { a.wallet -= price; a.gear = ng; log(s, `${J(a.name, '이', '가')} ${GR[ng]}급 장비를 샀습니다. (${Math.round(price)}G)`, 'grow', { who: [a.name] }); }
     }
     proposeClasses(s);
-    const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other + (s.month.reqIn || 0) + (s.month.scout || 0);   // 2026-11-16: 리퀘스트 보상(납품 금화) · 지명 섭외비 포함
+    const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other + (s.month.reqIn || 0) + (s.month.scout || 0) + (s.month.prep || 0);   // 2026-11-16: 리퀘스트 보상(납품 금화) · 지명 섭외비 포함
     s.month.net = net; s.month.grade = s.grade; s.month.feeRate = feeRate(s);
     s.lastMonth = s.month; s.history.push(Object.assign({ week: s.week }, s.month));
     log(s, `${dateLabel(s.week)} 결산: 운영 순이익 ${Math.round(net)}G (의뢰 ${s.month.quests}건, 성공 ${s.month.success}건)`, 'ledger', { net: Math.round(net), nq: s.month.quests, nok: s.month.success });
@@ -656,7 +656,8 @@
   const reqOf = s => (s.req = s.req || { open: [], done: {}, cool: {}, popMonthly: 0, rng: ((s.seed >>> 0) ^ 0x9E3779B9) >>> 0, next: 1 });
   function reqR(s) { const q = reqOf(s); q.rng = (q.rng + 0x6D2B79F5) >>> 0; let t = q.rng; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }   // 게임 난수와 따로 굴림 (리퀘스트가 게시판 결과를 흔들지 않게)
   const aliveAdvs = s => s.advs.filter(a => a.alive);
-  const reqBusy = (s, a) => a.state === 'quest' ? '원정 중' : (a.state === 'injured' && s.week < a.until) ? '부상' : null;
+  // 2026-11-16: 이번 주에 돌아오는 모험가(until <= 지금 주)는 지명할 수 있음 — 주 진행에서 귀환 → 지명 출발 → 게시판 출발 순서라, 막아 두면 의뢰를 이어 받는 모험가는 영영 지명할 수 없었음
+  const reqBusy = (s, a) => a.state === 'quest' && a.until > s.week ? '원정 중' : (a.state === 'injured' && s.week < a.until) ? '부상' : null;
   const OWNER = {
     any: a => true, social40: a => a.social === 2 && a.attach >= 40, calm65: a => a.attach >= 65 && a.risk !== 2 && a.social !== 0, wild8: a => (a.risk === 2 || a.social === 0) && a.lv >= 8 };
   function reqOwnerFor(s, d) { if (!d.owner) return null; const used = new Set(reqOf(s).open.map(r => r.who).filter(Boolean)); return aliveAdvs(s).filter(a => OWNER[d.owner](a) && !used.has(a.id)).sort((x, y) => y.attach - x.attach || x.id - y.id)[0] || null; }
@@ -774,7 +775,7 @@
     const r = reqOf(s).open.find(x => x.id === rid); if (!r) return [];
     const d = NQ_BY[r.key];
     return aliveAdvs(s).map(a => ({ id: a.id, name: a.name, cls: a.cls, core: a.core, lv: a.lv, grade: a.grade, attach: Math.round(a.attach), stat: reqStatI(s, r, a) == null ? null : Math.round(finalStat(s, a, reqStatI(s, r, a))), need: d.req && d.req[0] !== -1 ? d.req[1] : null,
-      meets: reqMeets(s, r, a), fee: scoutFee(s, r, a), busy: reqBusy(s, a), chance: Math.round(reqChance(s, r, a) * 100), inParty: r.party.includes(a.id), refused: r.refused[a.id] === s.week, away: a.state === 'away', owner: a.id === r.who }))
+      meets: reqMeets(s, r, a), fee: scoutFee(s, r, a), busy: reqBusy(s, a), chance: Math.round(reqChance(s, r, a) * 100), inParty: r.party.includes(a.id), refused: r.refused[a.id] === s.week, away: a.state === 'away', back: a.state === 'quest' && a.until <= s.week, owner: a.id === r.who }))
       .sort((x, y) => (y.owner - x.owner) || (y.inParty - x.inParty) || (y.meets - x.meets) || ((y.stat || 0) - (x.stat || 0)) || (x.id - y.id));
   }
   function reqNominate(s, rid, aid) {   // 누르면 그 자리에서 수락 · 거절이 정해짐. 다시 누르면 파티에서 뺌
@@ -859,32 +860,44 @@
   // 침공: 차례마다 전투(체력을 다음 차례로 넘김), 차례 사이 정비(서 있는 사람 +rest, 쓰러진 사람 revive로 일어남),
   //       전멸하면 영주의 성이 버티는 동안 castle번 다시 일어나 남은 적과 싸움. 다 막으면 E급 승급, 성이 무너지면 실패(retry주 뒤 재도전)
   const MAIN_CFG = { need: 8, lead: 2, block: 1, retry: 4, rest: 0.3, revive: 0.4, castle: 1, group: 6, deathLoss: 0.01, popLoss: 0.1, trustLoss: 5, gold: 1000, fame: 10, autoAccept: 0.6, autoTrials: 20,
-    waves: [{ mon: 'mon_04', n: 6, hp: 1, atk: 1, name: '늑대' }, { mon: 'mon_04', n: 6, hp: 1.3, atk: 1.2, name: '사나운 늑대' }, { mon: 'mon_04', n: 6, hp: 1.6, atk: 1.4, name: '흉포한 늑대' }, { mon: 'mon_05', n: 1, hp: 5, atk: 3, boss: true, name: '우두머리 늑대' }] };
+    waves: [{ mon: 'mon_04', n: 6, hp: 1.1, atk: 1.1, name: '늑대' }, { mon: 'mon_04', n: 6, hp: 1.43, atk: 1.32, name: '사나운 늑대' }, { mon: 'mon_04', n: 6, hp: 1.76, atk: 1.54, name: '흉포한 늑대' }, { mon: 'mon_05', n: 1, hp: 5.5, atk: 3.3, boss: true, name: '우두머리 늑대' }] };   // 2026-11-16: 재참전이 남은 적(남은 체력)과 싸우게 바뀌면서 쉬워져 전체 ×1.1 (바로 받을 때 첫 도전 승률 약 46%)
   const mainOf = s => (s.main = s.main || { state: 'none', at: null, tries: 0, cool: 0, offered: null, clear: null });   // state: none → offer → set → (done | cool → offer …)
   function mainFoes(w) { const M = (GD.content.monsters || []).find(m => m.id === w.mon) || { hp: 300, atk: 55, def: 20 }; return Array.from({ length: w.n }, () => ({ hp: M.hp * w.hp, atk: M.atk * w.atk, def: M.def || 0, name: w.name, mon: w.mon, boss: !!w.boss })); }
   const reqDoneN = s => Object.values(reqOf(s).done).reduce((t, x) => t + (x.n || 0), 0);   // 들어준 부탁 횟수
   const mainReady = s => reqDoneN(s) >= MAIN_CFG.need;
   const mainDefenders = (s, all) => aliveAdvs(s).filter(a => all ? !(a.state === 'injured' && a.until > s.week + MAIN_CFG.lead) : (a.state !== 'quest' && !(a.state === 'injured' && s.week < a.until)));
   const mainBlocked = s => { const M = s.main; return !!(M && M.state === 'set' && M.at - s.week <= MAIN_CFG.block); };   // 침공 1주 전: 모든 출발 금지
-  function mainFight(s, defs, R) {   // { win, wave(막은 차례 수), down:Set(쓰러진 적 있는 모험가 id), castle(성이 버틴 횟수) }
-    const C = MAIN_CFG, down = new Set(); let castle = 0;
-    let U = reqSorted(defs).map(a => Object.assign(unitOf(s, a, 0), { pots: 0 }));
-    if (!U.length) return { win: false, wave: 0, down, castle: 0 };
-    for (let w = 0; w < C.waves.length; w++) {
-      let foes = mainFoes(C.waves[w]);
-      for (;;) {
-        const r = CB.fight(U.filter(u => !u.down && u.hp > 0), foes, C.group, R, 2, false), by = new Map(r.units.map(u => [u.a, u]));
-        U = U.map(u => { const x = by.get(u.a); return x ? Object.assign(u, { hp: x.down ? 0 : x.hp, down: x.down }) : u; });
-        for (const u of U) if (u.down) down.add(u.a.id);
-        if (r.win) break;
-        if (castle >= C.castle) return { win: false, wave: w, down, castle };
-        castle++;   // 전멸: 성이 맞는 동안 모두 다시 일어남
-        foes = foes.slice(0, Math.max(1, r.enemyLeft == null ? foes.length : r.enemyLeft)).map(e => Object.assign({}, e));
-        U = U.map(u => Object.assign(u, { hp: u.maxHp * C.revive, down: false }));
-      }
-      if (w < C.waves.length - 1) U = U.map(u => u.down ? Object.assign(u, { hp: u.maxHp * C.revive, down: false }) : Object.assign(u, { hp: Math.min(u.maxHp, u.hp + u.maxHp * C.rest) }));
+  // 한 차례 싸움 (2026-11-16 정리): U를 고쳐 씀. 전멸하면 영주의 성이 버티는 동안 st.castle < castle이면 모두 다시 일어나 남은 적(남은 체력 그대로)과 싸움
+  //   wantLog면 화면용 구간 segs: fight(다리 앞 · 성 앞) · castle(성으로 밀림) · fall(성이 무너짐)
+  function mainWaveFight(s, U, w, R, st, wantLog) {
+    const C = MAIN_CFG, segs = []; let foes = mainFoes(C.waves[w]), at = 'bridge';
+    for (;;) {
+      const live = U.filter(u => !u.down && u.hp > 0);
+      const seg = wantLog ? { kind: 'fight', at, wave: w, units: live.map(u => ({ id: u.a.id, hp: u.hp, maxHp: u.maxHp, core: u.core, pots: u.pots || 0 })), foes: foes.map(e => Object.assign({}, e)) } : null;
+      const r = CB.fight(live, foes, C.group, R, 2, !!wantLog), by = new Map(r.units.map(u => [u.a, u]));
+      for (const u of U) { const x = by.get(u.a); if (x) { u.hp = x.down ? 0 : x.hp; u.down = x.down; u.pots = x.pots; u.usedPots = (u.usedPots || 0) + (x.used || 0); } }
+      for (const u of U) if (u.down) st.down.add(u.a.id);
+      if (seg) { seg.log = r.log; seg.win = r.win; segs.push(seg); }
+      if (r.win) return { win: true, segs };
+      if (st.castle >= C.castle) { if (wantLog) segs.push({ kind: 'fall', wave: w }); return { win: false, segs }; }
+      st.castle++;   // 전멸(또는 후퇴): 성이 맞는 동안 모두 다시 일어남
+      const left = r.foesLeft || foes.map(e => e.hp);
+      foes = foes.map((e, i) => Object.assign({}, e, { hp: left[i] })).filter(e => e.hp > 0);
+      if (!foes.length) return { win: true, segs };
+      if (wantLog) segs.push({ kind: 'castle', wave: w, foes: foes.map(e => Object.assign({}, e)) });
+      for (const u of U) { u.hp = Math.max(u.down ? 0 : u.hp, u.maxHp * C.revive); u.down = false; }
+      at = 'castle';
     }
-    return { win: true, wave: C.waves.length, down, castle };
+  }
+  const mainRest = U => { for (const u of U) { if (u.down) { u.hp = u.maxHp * MAIN_CFG.revive; u.down = false; } else u.hp = Math.min(u.maxHp, u.hp + u.maxHp * MAIN_CFG.rest); } };   // 차례 사이 정비
+  function mainFight(s, defs, R) {   // 자동 · 예상용 (기록 없음): { win, wave(막은 차례 수), down:Set(쓰러진 적 있는 모험가 id), castle(성이 버틴 횟수) }
+    const st = { castle: 0, down: new Set() }, U = reqSorted(defs).map(a => Object.assign(unitOf(s, a, 0), { pots: 0 }));
+    if (!U.length) return { win: false, wave: 0, down: st.down, castle: 0 };
+    for (let w = 0; w < MAIN_CFG.waves.length; w++) {
+      if (!mainWaveFight(s, U, w, R, st, false).win) return { win: false, wave: w, down: st.down, castle: st.castle };
+      if (w < MAIN_CFG.waves.length - 1) mainRest(U);
+    }
+    return { win: true, wave: MAIN_CFG.waves.length, down: st.down, castle: st.castle };
   }
   function mainPredict(s, n) {   // 예상 승률 (0~1): 지금 길드로 n번 모의. 게임 난수(s.R)는 쓰지 않음
     if (!COMBAT) return 0; const defs = mainDefenders(s, true); if (!defs.length) return 0;
@@ -894,35 +907,83 @@
     return win / (n || MAIN_CFG.autoTrials);
   }
   function mainAccept(s) { const M = mainOf(s); if (M.state !== 'offer') return false; M.state = 'set'; M.at = s.week + MAIN_CFG.lead; log(s, `메인 퀘스트 「다리를 지켜라」를 받았습니다. ${MAIN_CFG.lead}주 뒤 몬스터가 다리로 쳐들어옵니다. 침공 ${MAIN_CFG.block}주 전부터는 의뢰 출발이 막힙니다.`, 'main'); return true; }
-  function mainRun(s) {
-    const M = mainOf(s), C = MAIN_CFG, defs = mainDefenders(s), r = mainFight(s, defs, s.R);
-    M.tries++; M.last = { week: s.week, win: r.win, wave: r.wave, n: defs.length, down: r.down.size, castle: r.castle };
-    const clinic = s.built['의무실'] ? CB.C.injuryClinic : 0, fire = hasDeco(s, 'fireplace') ? s.cfg.deco.injury : 0;
+  function mainRun(s) {   // 자동 처리(검증 · 화면 없음): 한 번에 끝까지
+    const defs = mainDefenders(s), r = mainFight(s, defs, s.R);
+    mainFinish(s, defs, r.win, r.wave, r.down, r.castle);
+  }
+  function mainFinish(s, defs, win, wave, down, castle) {
+    const M = mainOf(s), C = MAIN_CFG;
+    M.tries++; M.last = { week: s.week, win, wave, n: defs.length, down: down.size, castle };
+    const clinic = s.built['의무실'] ? CB.C.injuryClinic : 0, fire = hasDeco(s, 'fireplace') ? s.cfg.deco.injury : 0, dead = [];
     for (const a of defs) {
-      if (!r.down.has(a.id)) continue;
+      if (!down.has(a.id) || !a.alive) continue;
       s.stats.injuries++;
-      if (!r.win && s.R() < C.deathLoss) { a.alive = false; a.dead = true; a.state = 'dead'; s.stats.deaths++; log(s, `${J(a.name, '이', '가')} 다리를 지키다 쓰러져 돌아오지 못했습니다.`, 'death', { who: [a.name] }); continue; }
+      if (!win && s.R() < C.deathLoss) { a.alive = false; a.dead = true; a.state = 'dead'; s.stats.deaths++; dead.push(a.name); log(s, `${J(a.name, '이', '가')} 다리를 지키다 쓰러져 돌아오지 못했습니다.`, 'death', { who: [a.name] }); continue; }
       const wk = Math.max(1, CB.C.injuryWeeks[0] - clinic - fire);
       a.state = 'injured'; a.until = s.week + wk; a.injuredFrom = '메인 퀘스트 「다리를 지켜라」';
     }
-    if (r.win) {
+    delete M.run;
+    if (win) {
       M.state = 'done'; M.clear = s.week;
       const g0 = s.grade; s.grade = Math.max(s.grade, 1); openGrades(s, g0);
       s.gold += C.gold; s.month.reqIn = (s.month.reqIn || 0) + C.gold; (s.month.reqs = s.month.reqs || []).push({ n: '메인 퀘스트 「다리를 지켜라」', g: C.gold });
       s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + C.fame);
-      log(s, `몬스터를 모두 막아 냈습니다! ${r.castle ? '영주의 성까지 밀렸지만 다시 일어나 ' : ''}다리를 지켰습니다. (쓰러진 모험가 ${r.down.size}명)`, 'main');
+      log(s, `몬스터를 모두 막아 냈습니다! ${castle ? '영주의 성까지 밀렸지만 다시 일어나 ' : ''}다리를 지켰습니다. (쓰러진 모험가 ${down.size}명)`, 'main');
       log(s, `길드가 E급으로 승급했습니다! 보상 ${C.gold}G · 명성 +${C.fame}. 모험가 관리소를 지을 수 있습니다.`, 'main');
+      M.result = { win: true, gold: C.gold, fame: C.fame, down: down.size, castle };
     } else {
       const lost = Math.floor(s.pop * C.popLoss); s.pop -= lost; s.trust = Math.max(0, s.trust - C.trustLoss);
       M.state = 'cool'; M.cool = s.week + C.retry;
-      log(s, `${C.waves[Math.min(r.wave, C.waves.length - 1)].boss ? '보스' : (r.wave + 1) + '차'} 공격을 막지 못해 영주의 성이 무너졌습니다. 인구 −${lost}명 · 신뢰도 −${C.trustLoss}. ${C.retry}주 뒤 다시 도전할 수 있습니다.`, 'main');
+      log(s, `${C.waves[Math.min(wave, C.waves.length - 1)].boss ? '보스' : (wave + 1) + '차'} 공격을 막지 못해 영주의 성이 무너졌습니다. 인구 −${lost}명 · 신뢰도 −${C.trustLoss}. ${C.retry}주 뒤 다시 도전할 수 있습니다.`, 'main');
+      M.result = { win: false, wave, pop: lost, trust: C.trustLoss, dead, retry: C.retry };
     }
+  }
+  // ---- 화면에서 보는 침공 (2026-11-16): 차례마다 멈추고 정비 창을 띄움. api.live가 켜져 있을 때만(게임 화면). 검증 · 시뮬레이터는 mainRun으로 한 번에
+  function mainStart(s) {
+    const M = mainOf(s), defs = reqSorted(mainDefenders(s));
+    M.state = 'live'; M.run = { ids: defs.map(a => a.id), wave: 0, castle: 0, down: [], hp: {}, dn: {}, pots: {}, bought: 0, segs: null };
+    log(s, `몬스터가 다리로 쳐들어옵니다! 모험가 ${defs.length}명이 다리를 지킵니다.`, 'main');
+  }
+  function mainUnits(s, run) {
+    return run.ids.map(id => s.advs.find(a => a.id === id)).filter(a => a && a.alive).map(a => {
+      const u = unitOf(s, a, 0), h = run.hp[a.id];
+      u.hp = h == null ? u.maxHp : Math.min(u.maxHp, h); u.down = !!run.dn[a.id]; u.pots = run.pots[a.id] || 0; return u; });
+  }
+  function mainNextWave(s) {   // 다음 차례 하나: 화면용 구간을 돌려주고, 마지막이면 결과까지 반영
+    const M = mainOf(s), run = M.run; if (M.state !== 'live' || !run) return null;
+    const U = mainUnits(s, run), st = { castle: run.castle, down: new Set(run.down) }, w = run.wave;
+    const r = mainWaveFight(s, U, w, s.R, st, true);
+    for (const u of U) s.stats.potions += u.usedPots || 0;
+    run.castle = st.castle; run.down = [...st.down];
+    const last = w >= MAIN_CFG.waves.length - 1;
+    if (r.win && !last) mainRest(U);
+    for (const u of U) { run.hp[u.a.id] = u.hp; run.dn[u.a.id] = u.down; run.pots[u.a.id] = u.pots || 0; }
+    run.segs = r.segs;
+    if (!r.win || last) { const defs = run.ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean); mainFinish(s, defs, r.win, r.win ? MAIN_CFG.waves.length : w, st.down, st.castle); stepWeekTail(s); return { segs: r.segs, wave: w, done: true, win: r.win }; }   // 끝나면 멈춰 둔 이 주의 나머지를 진행
+    run.wave++;
+    return { segs: r.segs, wave: w, done: false, win: true };
+  }
+  const mainPotPrice = () => (CB.C.potionPrice || [20])[0];
+  function mainBuy(s, id, n) {   // 정비: 물약 사서 쥐여 주기 (금고에서). 한 사람 최대 3개
+    const M = mainOf(s), run = M.run; if (!run || M.state !== 'live') return false;
+    const price = mainPotPrice(), have = run.pots[id] || 0, k = Math.max(-have, Math.min(n, 3 - have));
+    if (!k) return false;
+    if (k > 0 && s.gold < price * k) return false;
+    s.gold -= price * k; s.month.prep = (s.month.prep || 0) - price * k; s.month.prepN = (s.month.prepN || 0) + k;
+    run.pots[id] = have + k; run.bought += k; return true;
+  }
+  function mainLiveView(s) {   // 정비 창용: 지금 모험가 상태 · 다음 차례 적
+    const M = mainOf(s), run = M.run; if (!run) return null;
+    const U = mainUnits(s, run), next = MAIN_CFG.waves[run.wave];
+    return { wave: run.wave, total: MAIN_CFG.waves.length, castle: run.castle, castleMax: MAIN_CFG.castle, price: mainPotPrice(),
+      units: U.map(u => ({ id: u.a.id, name: u.a.name, cls: u.a.cls, core: u.core, lv: u.a.lv, hp: Math.round(u.hp), maxHp: Math.round(u.maxHp), down: u.down, pots: u.pots })),
+      next: next ? { name: next.name, n: next.n, boss: !!next.boss } : null };
   }
   function mainWeekly(s) {   // 주 진행: 귀환 뒤, 출발 전
     if (!COMBAT || s.grade > 0) return; const M = mainOf(s);
     if (M.state === 'none' && mainReady(s)) { M.state = 'offer'; M.offered = s.week; log(s, `부탁을 ${MAIN_CFG.need}번 들어준 길드에 영주의 전갈이 왔습니다: 메인 퀘스트 「다리를 지켜라」. 리퀘스트 장에서 받을 수 있습니다.`, 'main'); }
     else if (M.state === 'cool' && s.week >= M.cool) { M.state = 'offer'; log(s, '메인 퀘스트 「다리를 지켜라」에 다시 도전할 수 있습니다.', 'main'); }
-    else if (M.state === 'set' && s.week >= M.at) mainRun(s);
+    else if (M.state === 'set' && s.week >= M.at) { if (api.live) mainStart(s); else mainRun(s); }
   }
   function mainView(s) {   // 화면용
     const M = mainOf(s), C = MAIN_CFG;
@@ -933,10 +994,15 @@
   function autoMain(s) { const M = mainOf(s); if (M.state === 'offer' && mainPredict(s) >= MAIN_CFG.autoAccept) mainAccept(s); }   // 검증용: 예상 승률이 autoAccept 이상이면 받음 (시뮬레이터와 같은 규칙)
 
   function stepWeek(s) {
+    if (s.main && s.main.state === 'live') return;   // 침공을 보는 동안 시간은 멈춤
     expireQuests(s);
     generateQuests(s);   // 2026-11-12: 매주 게시 (예전에는 매달 초에만 = 월 유입의 1/4만 들어왔음)
     returns(s);
     mainWeekly(s);    // 메인 퀘스트(침공): 등장 · 침공 판정
+    if (s.main && s.main.state === 'live') return;   // 화면에서 침공을 보는 중: 이 주의 나머지(지명 · 출발 · 주 넘김)는 침공이 끝난 뒤 stepWeekTail로
+    stepWeekTail(s);
+  }
+  function stepWeekTail(s) {
     s.seatUsed = 0;   // 이번 주 식사한 좌석 수
     reqWeekly(s);     // 리퀘스트: 등장 판정 · 설치 요청 확인 · 지명 파티 출발(게시판보다 먼저)
     departures(s);
@@ -945,6 +1011,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

@@ -119,7 +119,7 @@
         if (!result) { wi++; if (wi >= waves.length) result = 'win'; else if (P.reduce((t, u) => t + (u.down ? 0 : u.hp), 0) < totalMax * retreat) result = 'retreat'; }
       }
       const enemyLeft = E.reduce((t, e) => t + Math.max(0, e.hp), 0) / Math.max(1, E.reduce((t, e) => t + e.maxHp, 0));
-      return { win: result === 'win', result, rounds: round, units: P, hpFrac: P.reduce((t, u) => t + (u.down ? 0 : u.hp), 0) / totalMax, enemyLeft, log };
+      return { win: result === 'win', result, rounds: round, units: P, hpFrac: P.reduce((t, u) => t + (u.down ? 0 : u.hp), 0) / totalMax, enemyLeft, foesLeft: E.map(e => Math.max(0, e.hp)), log };   // foesLeft: 적마다 남은 체력 (침공 재참전용, 2026-11-16)
     }
 
     // 출발 판단용 예상 성공 확률: 같은 조건으로 고정 씨앗 전투를 여러 번 돌려 이긴 비율을 구함 (같은 입력이면 항상 같은 값)
