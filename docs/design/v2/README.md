@@ -23,7 +23,7 @@
 | [04_아이템](04_아이템.md) | 장비 91개, 물약, 소재 35종, 요리 | design_v0.1 §7.8·12-2.3·12-2.4·12-2.6, game_overview §6, cooking |
 | [05_길드](05_길드.md) | 길드 공간, 시설 효과 44개, F·E 시설 개편, 하우징(장식·테이블·자유 배치), 훈련장·도서관, 로비 식사·맥주 | design_v0.1 §9·12-2.5, guild_interior, popup_fac |
 | [06_마을](06_마을.md) | 마을 화면 흐름, 슬롯, 건물, 인구·민가 | design_v0.1 §10, town_structure, town_houses_v1 |
-| [07_경제](07_경제.md) | 길드 수입, 중계료율, 모험가 경제, 지출처, 장부 항목 | design_v0.1 §5, game_overview §8, popup_ledger |
+| [07_경제](07_경제.md) **(수정 예정 · 시니어 기획자 검토)** | 길드 수입, 중계료율, 모험가 경제, 지출처, 장부 항목 | design_v0.1 §5, game_overview §8, popup_ledger |
 | [08_길드승급](08_길드승급.md) | 승급 흐름, 승급 시설, 명성·신뢰도, 다회차 | design_v0.1 §11.1, game_overview 관련 절 |
 | [09_스토리_세계관](09_스토리_세계관.md) | 주인공, 세계관, 영주, 접수원, 서브 스토리, 마왕·간부, 멀티엔딩, 전생자 | design_v0.1 §12·12-1 |
 | [10_UI](10_UI.md) | 타이틀, 팝업 7종, 책 펼침판, 지명 창, 식당, 원정 현황 패널·미니 뷰, 대화 화면, HUD | title_screen, popup_*, expedition_panel, quest_combat §6 |
