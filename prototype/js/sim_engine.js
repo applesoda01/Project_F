@@ -24,6 +24,7 @@
         partyAssist: 0.25,                         // 파티원 보조 계수
         deathBase: [0.01, 0.01, 0.03, 0.03, 0.05, 0.05, 0.08],
         subGrowth: 0.2,                            // 성공 시 유형 능력치 성장
+        diff: [1, 1, 1, 1, 1, 1, 1],                // 의뢰 난이도 배수 (등급별): 판정 기준치와 적 체력 · 공격력에 곱함 (2026-11-16)
         bossMult: 1.15                             // 보스급 기준치 배수
       },
       growth: {
@@ -223,14 +224,15 @@
       while (req.length < n) { const k = ri(5); if (!req.includes(k)) req.push(k); }
       const C = boss ? null : TPL[type + '_' + g], T = !C ? null : C.length > 1 ? C[Math.floor(R() * C.length)] : C[0];   // 칸 후보 중 하나 (1개면 난수 안 씀)
       const req2 = T && T.stats && T.stats.length ? T.stats.slice() : req;
-      const R0 = (T ? T.ref : Q.ref[g]) * n * (0.85 + R() * 0.30) * (boss ? Q.bossMult : 1);
+      const DF = (Q.diff || [])[g] || 1;   // 난이도 배수 (게임 makeQuest와 같음)
+      const R0 = (T ? T.ref : Q.ref[g]) * n * (0.85 + R() * 0.30) * (boss ? Q.bossMult : 1) * DF;
       const enemies = [], seen = [];
       if (COMBAT && T && T.enemies) {
         // 개체 차이: 실제 적은 게시된 정보보다 강하거나 약할 수 있음(±enemyVar). 정보실이 있으면 예측이 실제에 가까워짐
-        const v = CB.C.enemyVar || 0, f = 1 + (R() * 2 - 1) * v, look = Math.min(1, 0.25 * effN('정보실'));
+        const v = CB.C.enemyVar || 0, f0 = (1 + (R() * 2 - 1) * v), f = f0 * DF, look = Math.min(1, 0.25 * effN('정보실'));
         for (const e of T.enemies) for (let k = 0; k < e.count; k++) {
           enemies.push({ hp: e.hp * f, atk: e.atk * f, def: e.def || 0, name: e.name, boss: !!e.boss });
-          seen.push({ hp: e.hp * (1 + (f - 1) * look), atk: e.atk * (1 + (f - 1) * look), def: e.def || 0, name: e.name, boss: !!e.boss });
+          seen.push({ hp: e.hp * DF * (1 + (f0 - 1) * look), atk: e.atk * DF * (1 + (f0 - 1) * look), def: e.def || 0, name: e.name, boss: !!e.boss });
         }
       }
       return { g, type, req: req2, r: R0 / n, boss: !!boss, T, enemies, seen, combat: enemies.length > 0, posted: s.week };

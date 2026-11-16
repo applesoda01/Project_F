@@ -7,7 +7,7 @@
 "quest.boardCap": 7, "quest.expireWeeks": 0, "quest.trustExpire": 0, "quest.trustSucc": 0, "quest.trustFail": 0,
 "quest.partyAssist": 0,
 "quest.deathBase": 7,
-"quest.subGrowth": 0,
+"quest.subGrowth": 0, "quest.diff": 7,
 "quest.bossMult": 0,
 "growth.xpBase": 0,
 "growth.xpGradeMult": 0,

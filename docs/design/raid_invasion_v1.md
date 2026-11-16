@@ -1,5 +1,6 @@
 # 습격 · 침공 이식 설계안 v1
 
+> **2026-11-16: 이 문서의 "침공은 프로토타입 밖" 전제는 바뀌었습니다. 침공은 [raid_invasion_v2.md](raid_invasion_v2.md)를 보십시오.** 소규모 습격 부분만 참고용으로 남깁니다.
 > 작성: Claude, 2026-11-14 밤사이 작업 9번 · 상태: **제안 (코드 반영 안 함)**
 > 출발점: 재미 점검 레포트 1회차(`docs/reports/재미_점검_2026-11-14.md`) "긴장감 약함 — 성공률 94.6%, 적자 달 0번, 침공 없음"
 > 근거: `design_v0.1.md` 11.2(마을 방어 전투) · `prototype/js/sim_engine.js`(`raidStep` · `invasionStep` · `battle` · `defenders`) · `todo.md` "시뮬레이터 E급 승급 정체"(결정됨: E급 승급 = F급 메인 퀘스트)

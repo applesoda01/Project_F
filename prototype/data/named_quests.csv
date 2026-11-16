@@ -1,29 +1,29 @@
 ﻿id,no,name,giver,npc,type,season,cond,owner,goal,party,weeks,risk,req,r,foes,cost_gold,cost_mat,cost2_gold,rw_gold,rw_fame,rw_trust,rw_pop,rw_attach,rw_mat,rw_unlock,rw_town,rw_extra,repeat,hint
-f_req_inst01,1,쉴 곳이 필요해요,adventurer,{이름},install,,advs>=3;tables=0,any,tables>=1,,,,,,,,,,,2,,,owner:5,,,,,,모험가들이 앉을 곳을 찾는 눈치입니다.
+f_req_inst01,1,쉴 곳이 필요해요,adventurer,{이름},install,,advs>=2;tables=0,any,tables>=1,,,,,,,,,,,2,,,owner:5,,,,,,모험가들이 앉을 곳을 찾는 눈치입니다.
 f_req_don01,2,무너진 광장 우물,resident,바르톨,donate,,pop>=160,,,,,,,,,400,,,,,,20,,,,,,,마을이 조금 더 커지면 촌장이 찾아올지도…
 f_req_don02,3,목수 조합 후원,resident,한스,donate,,tables>=2;gold>=1000,,,,,,,,,500,,,,,,,,,table,,,,테이블이 손님으로 붐비면 목수가 관심을 가질 것 같습니다.
-f_req_bat01,4,밤마다 짖는 들개 떼,resident,굼바,hunt,,wins>=3;stat.str>=20,,,1-2,1,low,str:15,,들개x2,,,,150,,,,,,bench,,,,들개를 잘 잡는 힘센 모험가가 있다는 소문이 나면…
+f_req_bat01,4,밤마다 짖는 들개 떼,resident,굼바,hunt,,wins>=1,,,1-2,1,low,core:15,,들개x2,,,,150,,,,,,bench,,,,들개를 잘 잡는 힘센 모험가가 있다는 소문이 나면…
 f_req_bat02,5,우물 속 끈적한 손님,resident,그레타,hunt,,done=f_req_don01;trust>=60,,,1-2,1,mid,core:15,,슬라임x2|B:슬라임:큰 슬라임,,,,,,2,10,,,,,,,고친 우물에 무슨 일이 생긴 것 같다는 소문이…
-f_req_srch01,6,돌아오지 않는 약초꾼,resident,그레타,search,spring|autumn,pop>=180;stat.wis>=25,,,1-2,1,low,wis:18,25,,,,,,,,10,party:5,,boardDeco,,,,"약초를 캐는 계절, 마음이 굳센 모험가를 찾는 사람이 있습니다."
+f_req_srch01,6,돌아오지 않는 약초꾼,resident,그레타,search,spring|autumn,pop>=180;stat.wis>=30,,,1-2,1,low,wis:22,30,,,,,,,,10,party:5,,boardDeco,,,,"약초를 캐는 계절, 마음이 굳센 모험가를 찾는 사람이 있습니다."
 f_req_del01,7,가죽 주문서,outsider,페드로,deliver,,fame>=15;mat.mat_x015>=3,,,,,,,,,,mat_x015:5,,300,,,,,,,,,,길드 이름이 조금 더 알려지면 떠돌이 상인이 들를지도.
 f_req_bat03,8,짐마차를 노리는 도적,outsider,페드로,hunt,,done=f_req_del01;lv>=5*2,,,2-3,2,mid,core:18,,도적x4|B:도적:도적 두목,,,,400,,,,,,locker,,,,단골 상인이 오는 길에 무언가를 걱정하던데…
-f_req_bat04,9,밭을 망치는 외눈 멧돼지,resident,굼바,hunt,,pop>=200;stat.str>=30,,,2-3,1,mid,str:22,,멧돼지x2|B:멧돼지:외눈 멧돼지,,,,300,,,,,mat_x003:5,trophy,,,,힘이 아주 센 모험가가 있다면 밭 주인이 기뻐할 텐데.
+f_req_bat04,9,밭을 망치는 외눈 멧돼지,resident,굼바,hunt,,pop>=200;stat.str>=42,,,2-3,1,mid,str:30,,멧돼지x2|B:멧돼지:외눈 멧돼지,,,,300,,,,,mat_x003:5,trophy,,,,힘이 아주 센 모험가가 있다면 밭 주인이 기뻐할 텐데.
 f_req_srch02,10,잃어버린 결혼반지,resident,바르톨,search,,stat.dex>=20,,,1-1,1,low,dex:15,20,,,,,200,,,,,,banner,,,,날랜 손이 필요한 일이 있다고 합니다.
-f_req_srch03,11,낡은 지도의 X 표시,outsider,헤르만,search,,fame>=40;stat.int>=30,,,2-2,2,low,int:22,30,,,,,,,,,,mat_study_F:3,map,,,,머리 좋은 모험가를 찾는 학자가 있다는 소문입니다.
+f_req_srch03,11,낡은 지도의 X 표시,outsider,헤르만,search,,fame>=40;stat.int>=42,,,2-2,2,low,int:30,42,,,,,,,,,,mat_study_F:3,map,,,,머리 좋은 모험가를 찾는 학자가 있다는 소문입니다.
 f_req_don03,12,고아원 겨울 장작,resident,세실리아,donate,winter,trust>=70,,,,,,,,,300,,,,,3,10,,,fireplace,,,,"추운 계절, 마을의 믿음을 얻으면 누군가 도움을 청할지도."
 f_req_don04,13,길드가 너무 삭막해요,adventurer,{이름},donate,,decos=0,social40,,,,,,,,150,,,,,,,owner:5,,plant,,,,사교적인 모험가가 길드를 둘러보며 아쉬워합니다.
 f_req_don05,14,목수 조합 두 번째 주문,resident,한스,donate,,done=f_req_don02;tables>=3;gold>=3000,,,,,,,,,600,,,,,,,,,table,,,,"목수가 ""다음 세트도 짤 수 있다""고 하던데…"
 f_req_don06,15,새 이웃 맞이,outsider,대장장이,donate,,pop>=230;done=f_req_town01,,,,,,,,,800,,,,,2,,,,,,popMonthly:1,,마을에 새 가게가 생기면 이사 오고 싶은 사람이 있다는데.
-f_req_del02,16,숨은 맛 찾기,resident,그레타,deliver,,pop>=200;dishes>=5;stat.tec>=28,,,,,,,,,,mat_x004:3;mat_x003:2,,,,,,,,,,recipe:1,,요리를 여러 가지 해 본 길드라면 약초 할머니가 반길 것 같습니다.
-f_req_pers01,17,{이름}의 고향 편지,adventurer,{이름},search,,,calm65,,2-2,2,low,owner,30,,,,,,,,,owner:10,,,,ownerStat:2,,길드를 아주 좋아하는 모험가가 고민이 있어 보입니다.
+f_req_del02,16,숨은 맛 찾기,resident,그레타,deliver,,pop>=200;dishes>=5;stat.tec>=38,,,,,,,,,,mat_x004:3;mat_x003:2,,,,,,,,,,recipe:1,,요리를 여러 가지 해 본 길드라면 약초 할머니가 반길 것 같습니다.
+f_req_pers01,17,{이름}의 고향 편지,adventurer,{이름},search,,,calm65,,2-2,2,low,owner,42,,,,,,,,,owner:10,,,,ownerStat:2,,길드를 아주 좋아하는 모험가가 고민이 있어 보입니다.
 f_req_pers02,18,옛 동료와의 결판,adventurer,{이름},hunt,,done=f_req_bat03,wild8,,2-2,1,mid,owner,,B:도적:도적 두목,,,,,2,,,,,,,ownerXp:100,,거친 성격의 노련한 모험가에게 옛 사연이 있는 듯합니다.
-f_req_town01,19,떠돌이 대장장이,outsider,대장장이,town,,pop>=220;fame>=50;advs>=6;stat.tec>=30,,,,,,,,,,mat_mine_F:10;mat_hunt_F:5,1000,,,,,,,,smith,,,크고 이름난 마을에는 대장장이가 머물고 싶어 한다는데.
-f_req_town02,20,약초 할머니의 가게,resident,그레타,town,,pop>=200;trust>=75;mat.mat_x016>=5;stat.int>=28,,,,,,,,,,mat_x016:8;mat_x020:4,600,,,,,,,,potion,,,약초에 밝은 모험가가 있다면 할머니가 찾아올지도.
+f_req_town01,19,떠돌이 대장장이,outsider,대장장이,town,,pop>=220;fame>=50;advs>=6;stat.tec>=42,,,,,,,,,,mat_mine_F:10;mat_hunt_F:5,1000,,,,,,,,smith,,,크고 이름난 마을에는 대장장이가 머물고 싶어 한다는데.
+f_req_town02,20,약초 할머니의 가게,resident,그레타,town,,pop>=200;trust>=75;mat.mat_x016>=5;stat.int>=38,,,,,,,,,,mat_x016:8;mat_x020:4,600,,,,,,,,potion,,,약초에 밝은 모험가가 있다면 할머니가 찾아올지도.
 f_req_srch04,21,봄 파종 일손,resident,굼바,search,spring,pop>=160;advs>=5,,,1-2,1,low,,18,,,,,,,2,,,mat_x004:4;mat_x019:2,,,,,봄이 오면 일손이 부족해지는 집이 있습니다.
 f_req_don07,22,꽃놀이 축제 준비,resident,바르톨,donate,spring,pop>=220;fame>=30,,,,,,,,,500,,,,3,,10,,,,,,yearly,봄에 마을이 크고 이름나면 축제가 열릴지도.
-f_req_srch05,23,강가 물놀이 사고,resident,세실리아,search,summer,stat.dex>=26,,,1-2,1,low,dex:18,26,,,,,,,,10,,mat_x017:5,,,,,여름 강가는 날랜 사람이 지켜야 한다는데…
+f_req_srch05,23,강가 물놀이 사고,resident,세실리아,search,summer,stat.dex>=32,,,1-2,1,low,dex:22,32,,,,,,,,10,,mat_x017:5,,,,,여름 강가는 날랜 사람이 지켜야 한다는데…
 f_req_bat05,24,여름 장터 호위,outsider,페드로,hunt,summer,fame>=20;lv>=6*2,,,2-2,2,low,core:18,,도적x4,,,,500,,,,,mat_x019:3,,,,,"여름 장터 무렵, 이름난 길드에 호위를 맡기려는 상인단이 있습니다."
-f_req_bat06,25,수확제 사냥 대회,resident,바르톨,hunt,autumn,stat.str>=28;advs>=6,,,2-3,1,low,str:20,,멧돼지x4,,,,,4,,,party:5,mat_x003:6,,,,yearly,가을 수확제에 힘자랑할 모험가를 찾습니다.
+f_req_bat06,25,수확제 사냥 대회,resident,바르톨,hunt,autumn,stat.str>=38;advs>=6,,,2-3,1,low,str:26,,멧돼지x4,,,,,4,,,party:5,mat_x003:6,,,,yearly,가을 수확제에 힘자랑할 모험가를 찾습니다.
 f_req_don08,26,길드 연대기,outsider,헤르만,donate,autumn,fame>=35;social>=2,,,,,,,,,300,,,,2,,,all:3,,,,,,가을이면 글 쓰는 나그네가 사교적인 길드를 찾아온다는데.
-f_req_srch06,27,눈길에 갇힌 마차,outsider,페드로,search,winter,pop>=200;stat.wis>=28,,,2-2,1,low,wis:20,28,,,,,400,,2,,,,,,,,"눈 오는 계절, 마음이 굳센 모험가가 필요할지도."
+f_req_srch06,27,눈길에 갇힌 마차,outsider,페드로,search,winter,pop>=200;stat.wis>=38,,,2-2,1,low,wis:26,38,,,,,400,,2,,,,,,,,"눈 오는 계절, 마음이 굳센 모험가가 필요할지도."
 f_req_del03,28,겨울 등불 축제,resident,세실리아,deliver,winter,done=f_req_don03;trust>=85,,,,,,,,,,mat_study_F:3;mat_guard_F:5,,,3,,10,,,,,,yearly,겨울밤을 밝히는 축제를 준비하는 사람이 있습니다.

@@ -11,12 +11,13 @@ quest,trustSucc,1,의뢰 성공 시 신뢰도 상승 (2026-11-12 정수화, 예�
 quest,trustFail,2,의뢰 실패 시 신뢰도 하락 (2026-11-12 정수화, 예전 0.6)
 quest,partyAssist,0.25,파티원 보조 계수
 quest,deathBase,0.01|0.01|0.03|0.03|0.05|0.05|0.08,
-quest,subGrowth,0.2,성공 시 유형 능력치 성장
+quest,subGrowth,2,성공 시 유형 능력치 성장
+quest,diff,1.15|1|1|1|1|1|1,의뢰 난이도 배수(등급별): 판정 기준치와 적 체력 · 공격력에 곱함 (2026-11-16)
 quest,bossMult,1.15,보스급 기준치 배수
-growth,xpBase,80,성공 경험치 = xpBase × mult^등급
+growth,xpBase,240,성공 경험치 = xpBase × mult^등급
 growth,xpGradeMult,2,
 growth,xpFailRate,0.3,
-growth,lvA,20,다음 레벨 필요 경험치 = A × Lv^B
+growth,lvA,14,다음 레벨 필요 경험치 = A × Lv^B
 growth,lvB,1.55,
 growth,lvCap,30|40|50,
 growth,trainPerWeek,0.1,훈련장·도서관 주간 훈련량
@@ -24,7 +25,7 @@ growth,statCap,100,
 growth,gradeStat,0|3|4|5|6|8|10,승급하면 능력치 5개에 각각 더함 (F·E·D·C·B·A·S급으로 오를 때. 2026-11-12)
 adv,arrivalPerMonth,0.8,"arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)"
 adv,arrivalPerGrade,0.1,
-adv,startCount,5,
+adv,startCount,2,
 adv,startCore,15,
 adv,startOther,6,
 adv,attachSuccess,2,

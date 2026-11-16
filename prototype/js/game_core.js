@@ -140,16 +140,17 @@
     const Q = s.cfg.quest; const type = ri(s, 5); const n = Q.reqCount[g]; const req = [type];
     while (req.length < n) { const k = ri(s, 5); if (!req.includes(k)) req.push(k); }
     const C = TPL[type + '_' + g], T = !C ? null : C.length > 1 ? C[Math.floor(s.R() * C.length)] : C[0];   // 후보 1개면 난수를 쓰지 않아 예전과 같은 결과
-    const R0 = (T ? T.ref : Q.ref[g]) * n * (0.85 + s.R() * 0.30);
+    const DF = (Q.diff || [])[g] || 1;   // 난이도 배수 (2026-11-16): 판정 기준치와 적 체력 · 공격력에 곱함
+    const R0 = (T ? T.ref : Q.ref[g]) * n * (0.85 + s.R() * 0.30) * DF;
     const q = { id: s.nextId++, g, type, req: T && T.stats && T.stats.length ? T.stats.slice() : req, r: R0 / n, reward: T ? T.reward : Q.reward[g], posted: s.week };
     if (T) Object.assign(q, { tid: T.id, name: T.name, weeks: T.weeks, fameS: T.fameS, fameF: T.fameF, trustS: T.trustS, trustF: T.trustF, death: T.death });
     if (COMBAT && T && T.enemies && T.enemies.length) {
       // 개체 차이: 실제 적은 게시 정보보다 강하거나 약할 수 있음(±enemyVar). 모험가는 게시 정보(seen)로 판단, 정보실이 있으면 실제에 가까워짐
-      const f = 1 + (s.R() * 2 - 1) * (CB.C.enemyVar || 0), look = Math.min(1, 0.25 * effN(s, '정보실'));
+      const f0 = 1 + (s.R() * 2 - 1) * (CB.C.enemyVar || 0), f = f0 * DF, look = Math.min(1, 0.25 * effN(s, '정보실'));
       q.enemies = []; q.seen = []; q.foe = f;
       for (const e of T.enemies) for (let k = 0; k < e.count; k++) {
         q.enemies.push({ hp: e.hp * f, atk: e.atk * f, def: e.def || 0, name: e.name, mon: e.mon, boss: !!e.boss });
-        q.seen.push({ hp: e.hp * (1 + (f - 1) * look), atk: e.atk * (1 + (f - 1) * look), def: e.def || 0, name: e.name, boss: !!e.boss });
+        q.seen.push({ hp: e.hp * DF * (1 + (f0 - 1) * look), atk: e.atk * DF * (1 + (f0 - 1) * look), def: e.def || 0, name: e.name, boss: !!e.boss });
       }
     }
     return q;
