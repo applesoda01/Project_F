@@ -110,6 +110,7 @@
   }
 
   // ---------- 미니 뷰 ----------
+  const ATK_T = 0.85;   // 공격 모션 한 번 길이(초): 16칸 16fps에서 앞 0.15초를 뺀 만큼
   const NUM_T = 1.4;   // 피해 숫자 보이는 시간(초)
   const numK = (v, who) => v.nums.filter(o => o.who === who && o.t < 1.0).length % 3;   // 같은 대상에 1초 안에 또 뜨면 한 줄 위로 (최대 3줄)
   function timeline(F) {
@@ -137,6 +138,7 @@
       actors: party.map((a, i) => { const u = unitOf(a), k = CLS[a.core] + '_' + sexOf(a); ['walk', 'run', 'attack', 'fall'].forEach(n => img(k + '_' + n));
         return { id: a.id, name: a.name, adv: a, k, i, x: 0, anim: 'walk', t: Math.random(), flash: 0, glow: 0, dodge: 0, dir: 1, hp: u ? u.maxHp : 1, maxHp: u ? u.maxHp : 1, mp: u ? u.maxMp : 0, maxMp: u ? u.maxMp : 0, acts: actTimes(F, a.id), down: false, show: 0 }; }),
       enemies: (F ? F.enemies : []).map((m, i) => ({ n: m.name, boss: m.boss, scale: m.boss ? 140 : 100, im: monImg(m.mon), sd: sdOn() ? MONSD[m.mon] : null, mt: 0, act: 'idle', x: 540 + i * 56, flash: 0, crit: 0, alpha: 1, hp: m.maxHp, maxHp: m.maxHp, shown: 1 })) };
+    if (sdOn()) { view.actors.forEach(a => ['walk', 'run', 'attack', 'fall', 'search', 'idle'].forEach(n => sdSheet(a.k, n))); view.enemies.forEach(m => m.sd && ['idle', 'attack', 'fall'].forEach(n => monSheet(m.sd[0], n))); }   // 2026-11-16: 쓸 SD 시트를 열 때 미리 읽음 (처음 쓰는 순간 예전 도트가 잠깐 보이던 문제)
     ev.classList.add('on'); requestAnimationFrame(() => ev.classList.add('vis')); updSmall(); render();
   }
   function close() { sel = null; view = null; if (!ev) return; ev.classList.remove('vis'); setTimeout(() => { if (!view) ev.classList.remove('on'); }, 200); ui.querySelector('#hudExp').classList.remove('small'); render(); }
@@ -181,7 +183,8 @@
     g.drawImage(tmp, -ax, -ay); g.restore(); return true;
   }
   function drawActor(a, x) {
-    if (sdOn() && drawActorSD(a, x)) return;
+    if (sdOn()) { if (drawActorSD(a, x)) return;
+      if (sdSheet(a.k, a.anim)) { const an = a.anim; for (const alt of ['idle', 'walk']) { a.anim = alt; if (drawActorSD(a, x)) break; } a.anim = an; return; } }   // 시트를 읽는 중이면 예전 도트 대신 서 있기 · 걷기 시트로 (둘 다 없으면 그 프레임은 건너뜀)
     const an = a.anim === 'search' ? 'stand' : a.anim, [cw, ch, px, n, ms, loop] = SHEET[an], im = IM[a.k + '_' + (an === 'stand' ? 'walk' : an)]; if (!im || !im.complete || !im.naturalWidth) return;
     let f = a.anim === 'stand' ? 0 : Math.floor(a.t * 1000 / ms); f = loop ? f % n : Math.min(f, n - 1);
     tmp.width = cw; tmp.height = ch; tg.clearRect(0, 0, cw, ch); tg.drawImage(im, f * cw, 0, cw, ch, 0, 0, cw, ch);
@@ -221,11 +224,12 @@
   function apply(v, x, fx) {
     const A = id => v.actors.find(a => a.id === id), E = i => v.enemies[i];
     if (x.by && x.mp != null) { const b = A(x.by); if (b) b.mp = x.mp; }
-    if (x.t === 'hit') { const m = E(x.to); if (!m) return; m.hp = x.hp; if (fx) { m.flash = 0.25; if (x.c) m.crit = 0.4; if (x.d != null) v.nums.push({ who: m, e: 1, txt: String(x.d), crit: !!x.c, t: 0, k: numK(v, m), ox: Math.random() * 10 - 5 }); } }
+    if (x.t === 'hit') { const m = E(x.to); if (!m) return; m.hp = x.hp; { const by = A(x.by); if (fx && by && !by.down) { by.atk = ATK_T; by.t = 0.15; } }   // 2026-11-16: 실제로 공격할 때만 공격 모션 (앞 준비 동작 0.15초 건너뜀)
+      if (fx) { m.flash = 0.25; if (x.c) m.crit = 0.4; if (x.d != null) v.nums.push({ who: m, e: 1, txt: String(x.d), crit: !!x.c, t: 0, k: numK(v, m), ox: Math.random() * 10 - 5 }); } }
     else { const a = A(x.to); if (!a) return;
       if (x.t === 'hurt') { if (fx) { const live = v.enemies.filter(m => m.hp > 0 && m.sd); if (live.length) { const m = live[Math.floor(Math.random() * live.length)]; m.act = 'attack'; m.mt = 0; } } a.hp = x.hp; if (fx && a.hp > 0) vTalk(v, 'battle_hit', other(v, a), a); if (fx) { a.flash = 0.3; if (x.d != null) v.nums.push({ who: a, txt: String(x.d), t: 0, k: numK(v, a), ox: Math.random() * 6 - 3 }); } }
       else if (x.t === 'miss') { if (fx) a.dodge = 0.3; }
-      else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx && x.t === 'heal' && x.by && x.by !== x.to) vTalk(v, 'battle_heal', A(x.by), a); if (fx) { a.glow = 0.5; if (x.d != null && x.d > 0) v.nums.push({ who: a, txt: '+' + x.d, heal: true, t: 0, k: numK(v, a), ox: Math.random() * 6 - 3 }); for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
+      else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx && x.t === 'heal' && x.by) { const by = A(x.by); if (by && !by.down) { by.atk = ATK_T; by.t = 0.15; } } if (fx && x.t === 'heal' && x.by && x.by !== x.to) vTalk(v, 'battle_heal', A(x.by), a); if (fx) { a.glow = 0.5; if (x.d != null && x.d > 0) v.nums.push({ who: a, txt: '+' + x.d, heal: true, t: 0, k: numK(v, a), ox: Math.random() * 6 - 3 }); for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
       else if (x.t === 'down') { a.hp = 0; a.down = true; a.anim = 'fall'; a.t = 0; } }
   }
   function drawScene(dt) {
@@ -263,7 +267,7 @@
       if (a.down) { a.x = a.x || home; if (a.anim !== 'fall') { a.anim = 'fall'; a.t = 0; } }
       else if (P === 'move' || P === 'meet') { a.anim = 'walk'; a.x = home; a.dir = 1; }
       else if (P === 'fight' && v.combat && a.x && Math.abs(slot - a.x) > 1.5) { const d = slot - a.x; a.x += Math.sign(d) * Math.min(Math.abs(d), 70 * dt); a.anim = 'walk'; a.dir = 1; }   // 빈자리로 걸어감
-      else if (P === 'fight') { a.x = slot; a.anim = v.combat ? 'attack' : 'search';
+      else if (P === 'fight') { a.x = slot; if (a.atk > 0) a.atk -= dt; a.anim = v.combat ? (a.atk > 0 ? 'attack' : 'idle') : 'search';
         if (!v.combat && Math.random() < dt * 7) v.sparks.push({ x: slot + 12 + Math.random() * 30, y: SURF - 4 - Math.random() * 6, vy: -24 - Math.random() * 26, life: 0.8 + Math.random() * 0.6, c: Math.random() < 0.45 ? '#ffffff' : '#fff1a8', star: Math.random() < 0.45 }); }   // 2026-11-16: 탐색지 반짝임 강화 (1.5 → 7개/초, 별 모양 섞음)
       else { const walkBack = !v.combat && !ok;   // 결과: 성공 → 오른쪽으로 떠남, 실패 → 왼쪽으로 후퇴(비전투는 걸어서 돌아감)
         if (ok) { a.anim = 'run'; a.dir = 1; a.x = (a.x || home) + 150 * dt; } else { a.anim = walkBack ? 'walk' : 'run'; a.dir = -1; a.x = (a.x || home) - (walkBack ? 60 : 150) * dt; } }
@@ -283,14 +287,14 @@
       if (m.hp <= 0 && !(m.sd && m.mt < 1.6)) m.alpha = Math.max(0, m.alpha - dt * 1.2); if (m.alpha <= 0) return;
       const pic = ready(m.im), w = ws[i], h = m.sd ? Math.round(m.sd[1] * (m.boss ? 1.25 : 1)) : pic ? m.im.naturalHeight : Math.round(54 * m.scale / 100), xx = Math.round(m.x), y = (pic || m.sd ? SURF + 3 : SURF) - h - (i % 2 ? 4 : 0);
       g.globalAlpha = m.alpha;
-      const ms = m.sd ? monSheet(m.sd[0], m.act) : null;
+      let ms = m.sd ? monSheet(m.sd[0], m.act) : null; if (ms && !ready(ms.im) && m.act !== 'idle') { const alt = monSheet(m.sd[0], 'idle'); if (ready(alt.im)) ms = alt; }   // 읽는 중이면 서 있기 시트로
       if (ms && ready(ms.im)) {   // 몬스터 SD: 발 기준으로 그림, 맞으면 붉게 · 치명타는 밝게
         const sc = m.sd[1] * (m.boss ? 1.25 : 1) / ms.st, fw = Math.ceil(ms.fw * sc), fh = Math.ceil(ms.fh * sc), f = m.act === 'fall' ? Math.min(ms.n - 1, Math.floor(m.mt * ms.fps)) : Math.floor(m.mt * ms.fps) % ms.n;
         tmp.width = fw; tmp.height = fh; tg.clearRect(0, 0, fw, fh); tg.imageSmoothingQuality = 'high'; tg.drawImage(ms.im, (f % ms.cols) * ms.fw, Math.floor(f / ms.cols) * ms.fh, ms.fw, ms.fh, 0, 0, fw, fh);
         const c = m.crit > 0 ? 'rgba(255,244,194,' + (0.8 * Math.min(1, m.crit * 4)) + ')' : m.flash > 0 ? 'rgba(255,40,30,' + (0.65 * Math.min(1, m.flash * 4)) + ')' : null;
         if (c) { tg.globalCompositeOperation = 'source-atop'; tg.fillStyle = c; tg.fillRect(0, 0, fw, fh); tg.globalCompositeOperation = 'source-over'; }
         g.drawImage(tmp, Math.round(xx + w / 2 - ms.ax * sc), Math.round(SURF + 1 - (i % 2 ? 4 : 0) - ms.ay * sc));
-      } else if (pic) {   // 그림: 맞으면 붉게, 치명타는 밝게 (모험가와 같은 방식)
+      } else if (pic && !m.sd) {   // 그림(예전 도트, ?px=1일 때만): 맞으면 붉게, 치명타는 밝게 (모험가와 같은 방식)
         tmp.width = w; tmp.height = h; tg.clearRect(0, 0, w, h); tg.drawImage(m.im, 0, 0);
         const c = m.crit > 0 ? 'rgba(255,244,194,' + (0.8 * Math.min(1, m.crit * 4)) + ')' : m.flash > 0 ? 'rgba(255,40,30,' + (0.65 * Math.min(1, m.flash * 4)) + ')' : null;
         if (c) { tg.globalCompositeOperation = 'source-atop'; tg.fillStyle = c; tg.fillRect(0, 0, w, h); tg.globalCompositeOperation = 'source-over'; }
