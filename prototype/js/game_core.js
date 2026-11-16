@@ -842,6 +842,7 @@
       for (const x of rows) {
         const party = reqPartyOf(s, r); if (party.length >= d.party[1]) break;
         if (party.length >= d.party[0] && party.some(a => reqMeets(s, r, a)) && reqPredict(s, r.id) >= REQ_CFG.autoSend) break;
+        if (!x.meets && !party.some(a => reqMeets(s, r, a))) break;   // 조건(★)을 채울 사람부터 구한다: ★ 없이 다른 사람만 부르면 섭외비만 나감 (2026-11-16)
         if (s.gold - x.fee < keep) break;   // 섭외비를 내고도 여유가 남을 때만
         reqNominate(s, r.id, x.id);
       }

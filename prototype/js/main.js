@@ -88,7 +88,7 @@
   q('#dTemp').onclick = () => { location.search = Assets.forceTemp ? '' : '?temp=1'; };
   q('#dTemp').textContent = Assets.forceTemp ? '실제 리소스 보기' : '임시 그래픽 보기';
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && !/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName) && !document.querySelector('#dlg.open, #placeLay.on')) { e.preventDefault(); setSpeed(speed ? 0 : 1); }
+    if (e.code === 'Space' && !/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName) && !document.querySelector('#dlg.open, #placeLay.on, #popBack.open')) { e.preventDefault(); setSpeed(speed ? 0 : 1); }
   });
 
   // ---------- 시작 화면: 저장 슬롯 고르기 (2026.11) ----------
@@ -149,15 +149,18 @@
     const lay = $('titleLay'), fr = $('titleFrame'); if (!lay || !fr) { slotPick(done); return; }
     setSpeed(0);
     const has = !!newest();
-    const onMsg = async e => {
-      const d = e.data; if (!d || d.collegium !== 'title') return;
-      window.removeEventListener('message', onMsg);
-      await fadeTo(true, 600);
+    const skip = $('titleSkip'); let left = false;
+    const leave = async (mode, ms) => {   // 타이틀을 닫고 저장 칸 고르기로
+      if (left) return; left = true;
+      window.removeEventListener('message', onMsg); if (skip) skip.onclick = null;
+      await fadeTo(true, ms);
       lay.classList.remove('on'); fr.src = 'about:blank';   // 타이틀 애니메이션을 멈춘다
-      slotPick(done, d.act === 'load' ? 'load' : 'new', () => titleThenPick(done));
-      await fadeTo(false, 600);
+      slotPick(done, mode, () => titleThenPick(done));
+      await fadeTo(false, ms);
     };
+    const onMsg = e => { const d = e.data; if (!d || d.collegium !== 'title') return; leave(d.act === 'load' ? 'load' : 'new', 600); };
     window.addEventListener('message', onMsg);
+    if (skip) skip.onclick = () => leave(has ? 'load' : 'new', 150);   // 개발자 전용 SKIP: 저장 기록이 있으면 바로 이어하기 칸 고르기 (2026-11-16)
     fr.onload = () => { try { fr.contentWindow.focus(); } catch (er) { /* 무시 */ } };
     fr.src = 'title.html?saves=' + (has ? 1 : 0);
     lay.classList.add('on');

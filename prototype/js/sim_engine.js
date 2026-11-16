@@ -705,7 +705,7 @@
         r.party = r.party.filter(a => a.alive && (a === r.who || a.busy === 0));   // 그사이 다른 의뢰를 떠난 사람은 파티에서 뺌
         const pool = alive().filter(a => a.busy === 0 && !r.party.includes(a) && r.refused.get(a) !== s.week).sort((x, y) => { const k = a => finalStat(a, d.req && d.req[0] === -2 ? a.core : questOf(r).req[0]); return (meets(r, y) - meets(r, x)) || (k(y) - k(x)); });
         const q0 = questOf(r), okNow = () => r.party.length >= d.party[0] && r.party.some(a => meets(r, a)) && r.party.every(a => a.alive && a.busy === 0) && questP(sortRow(r.party), q0) >= RQC.send;
-        for (const a of pool) { if (r.party.length >= d.party[1] || okNow()) break; const fee = a === r.who ? 0 : (E.scoutFee || [])[a.grade] || 0; if (s.gold - fee < RQC.reserve) break; s.gold -= fee; s.op -= fee; s.st.scoutGold = (s.st.scoutGold || 0) + fee;   /* 섭외비: 거절당해도 나감, 운영 순이익에 넣음 */ if (R2() < chanceOf(r, a)) r.party.push(a); else r.refused.set(a, s.week); R2(); }
+        for (const a of pool) { if (r.party.length >= d.party[1] || okNow()) break; if (!meets(r, a) && !r.party.some(m => meets(r, m))) break;   /* ★부터 구한다 (게임 autoRequests와 같음) */ const fee = a === r.who ? 0 : (E.scoutFee || [])[a.grade] || 0; if (s.gold - fee < RQC.reserve) break; s.gold -= fee; s.op -= fee; s.st.scoutGold = (s.st.scoutGold || 0) + fee;   /* 섭외비: 거절당해도 나감, 운영 순이익에 넣음 */ if (R2() < chanceOf(r, a)) r.party.push(a); else r.refused.set(a, s.week); R2(); }
         if (!okNow()) continue;
         const party = sortRow(r.party), q = questOf(r);
         for (const m of party) m.busy = d.weeks;

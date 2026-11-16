@@ -352,6 +352,7 @@
   UI.open = function (name) {
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
     const wasOpen = q('#popBack').classList.contains('open'), prev = popup;
+    if (!bookHold) { bookHold = true; bookSp = curSp; hooks.setSpeed && hooks.setSpeed(0); document.body.classList.add('bookOn'); }   // 책을 펼치면 일시정지 + HUD 숨김 (2026-11-16)
     const go = () => {
       popup = name; q('#popTitle').textContent = TITLES[name];
       q('#popBack').classList.add('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.toggle('on', b.dataset.pop === name));
@@ -366,7 +367,8 @@
     if (root.BookFX && !wasOpen) root.BookFX.openCover();
   };
   UI.closeFx = function () { if (root.BookFX && popup) root.BookFX.closeCover(() => UI.close()); else UI.close(); };   // 책끈 · Esc · 바깥 누르기 = 표지 덮으며 닫기
-  UI.close = function () { mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
+  let bookHold = false, bookSp = 1;   // 책이 펼쳐진 동안 시간 정지: 닫으면 펼치기 전 속도로
+  UI.close = function () { if (bookHold) { bookHold = false; document.body.classList.remove('bookOn'); hooks.setSpeed && hooks.setSpeed(bookSp); } mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
   function renderPopup() {
     const b = q('#popBody');
     if (popup === 'board') renderBoard(b);

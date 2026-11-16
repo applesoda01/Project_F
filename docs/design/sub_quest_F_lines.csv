@@ -13,7 +13,7 @@ f_req_don02,req,2,한스,default,500G만 후원해 주시면 한 세트 더 짜 
 f_req_don02,ok,1,한스,default,세 번째 세트 완성! 팔씨름을 해도 안 부서집니다.
 f_req_don02,ok,2,리나,smile,설비 목록에 테이블이 하나 더 생겼어요.
 f_req_bat01,req,1,굼바,default,밤마다 들개 떼가 우리 양 우리를 빙빙 돌아요.
-f_req_bat01,req,2,굼바,default,잠을 못 자서 제가 양을 세다가 잠들 지경이에요. 두 분만 보내 주세요!
+f_req_bat01,req,2,굼바,default,잠을 못 자서 제가 양을 세다가 잠들 지경이에요. 한 분이라도 좋으니 보내 주세요!
 f_req_bat01,ok,1,굼바,default,어젯밤엔 양 울음소리밖에 안 들렸어요. 꿀잠 잤습니다!
 f_req_bat01,ok,2,굼바,default,고마워서 한스한테 벤치를 하나 부탁했어요. 길드 손님들 기다릴 때 쓰세요.
 f_req_bat01,fail,1,굼바,default,들개가 오히려 더 늘었어요… 다음엔 꼭 부탁해요.
