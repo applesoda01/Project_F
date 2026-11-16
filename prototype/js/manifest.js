@@ -57,6 +57,20 @@
   add('lina_stand', 'npc/lina_stand.png', 341, 640, { optional: true });
   add('lina_blink', 'npc/lina_blink.png', 291, 558, { optional: true });
 
+  // 리퀘스트 의뢰인 대화 초상 (2026-11-16, assets/npc/npc_portraits.json과 같은 값): 상반신 + 눈 조각(가로 3칸: 뜸 · 반쯤 · 감김). eye = [x, y, 칸 w, 칸 h]
+  //   JSON을 읽지 않고 여기에 적어 둠 — 로컬 파일로 열 때 브라우저가 JSON 읽기를 막기 때문
+  root.NPC_PORTRAITS = {
+    '바르톨': { key: 'npc_chief', w: 499, h: 640, eye: [187, 69, 125, 61] },
+    '굼바': { key: 'npc_farmer', w: 476, h: 640, eye: [195, 82, 127, 64] },
+    '한스': { key: 'npc_carpenter', w: 499, h: 640, eye: [186, 74, 129, 74] },
+    '세실리아': { key: 'npc_nun', w: 310, h: 640, eye: [79, 124, 130, 73] },
+    '그레타': { key: 'npc_granny', w: 474, h: 640, eye: [185, 131, 127, 59] },
+    '페드로': { key: 'npc_merchant', w: 499, h: 640, eye: [185, 120, 131, 71] },
+    '헤르만': { key: 'npc_scholar', w: 499, h: 640, eye: [186, 101, 129, 65] },
+    '대장장이': { key: 'npc_smith', w: 500, h: 640, eye: [186, 105, 130, 78] }
+  };
+  for (const n in root.NPC_PORTRAITS) { const P = root.NPC_PORTRAITS[n]; add(P.key + '_stand', 'npc/' + P.key + '_stand.webp', P.w, P.h, { optional: true }); add(P.key + '_blink', 'npc/' + P.key + '_blink.webp', P.eye[2] * 3, P.eye[3], { optional: true }); }
+
   // 의뢰서 (시안 확정 2026.10)
   for (let i = 0; i < 3; i++) add('quest_paper_' + i, `quest/quest_paper_${i}.png`, 84, 110, { color: '#f3e6c4' });
   for (let i = 0; i < 5; i++) add('quest_stamp_' + i, `quest/quest_stamp_${i}.png`, 44, 44, { color: '#7a5a3a' });
