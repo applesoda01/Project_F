@@ -1,0 +1,526 @@
+[
+  {
+    "id": "contract",
+    "kicker": "UI 01  /  모험가 명부 → 계약 카드",
+    "active": "모험가",
+    "leftTitle": "모험가 명부",
+    "rightTitle": "세라 · 정식 계약 제안",
+    "left": [
+      {
+        "kind": "card",
+        "title": "세라  ·  E급 성직자",
+        "text": "자유  ·  애착 72  ·  마을 거주",
+        "selected": true,
+        "image": "prototype/assets/chr/chr_cleric_f_front.png"
+      },
+      {
+        "kind": "card",
+        "title": "도윤  ·  E급 전사",
+        "text": "정식  ·  계약 8주 남음",
+        "selected": false,
+        "image": "prototype/assets/chr/chr_warrior_m_front.png"
+      },
+      {
+        "kind": "card",
+        "title": "루카  ·  F급 궁수",
+        "text": "자유  ·  현재 의뢰 수행 중",
+        "selected": false,
+        "image": "prototype/assets/chr/chr_archer_m_front.png"
+      },
+      {
+        "kind": "row",
+        "title": "최근 성공",
+        "text": "8회 / 영입 후보",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "현재 가용 자금",
+        "text": "300G",
+        "warning": false
+      },
+      {
+        "kind": "note",
+        "text": "소속 · 애착 · 거주는 별도 표시합니다.\n창립 멤버도 계약에 동의해야 합니다."
+      }
+    ],
+    "right": [
+      {
+        "kind": "row",
+        "title": "기간 / 기본 보수",
+        "text": "12주 / 월 40G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "일반 의뢰 길드 몫",
+        "text": "30% (일반 요율 포함)",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "물약·치료 지원",
+        "text": "월 한도 20G / 실사용",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "지정 업무",
+        "text": "4주 중 최대 2주",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "계약 전 예산 확보",
+        "text": "8주 보수·지원 120G",
+        "warning": false
+      },
+      {
+        "kind": "metric",
+        "title": "계약 뒤 예상 가용 자금",
+        "text": "300 − 120 = 180G"
+      },
+      {
+        "kind": "note",
+        "text": "약정 범위 밖의 임무는 별도 동의.\n체납·부상·중복 예약 때 새 배치 제한."
+      },
+      {
+        "kind": "button",
+        "text": "이 조건으로 계약 제안",
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "id": "guild-order",
+    "kicker": "UI 02  /  의뢰 게시판 → 길드 발주",
+    "active": "의뢰",
+    "leftTitle": "의뢰 게시판",
+    "rightTitle": "길드 발주서",
+    "left": [
+      {
+        "kind": "card",
+        "title": "외부 의뢰  |  길드 발주",
+        "text": "서사 분류: 메인 · 서브 · 리소스",
+        "selected": true
+      },
+      {
+        "kind": "card",
+        "title": "약초 납품  ·  길드 발주",
+        "text": "납품 1묶음  ·  보수 200G",
+        "selected": false
+      },
+      {
+        "kind": "card",
+        "title": "숲길 호위  ·  주민 의뢰",
+        "text": "외부 보수 100G  ·  게시판 수주",
+        "selected": false
+      },
+      {
+        "kind": "metric",
+        "title": "사용 가능 금액",
+        "text": "300G"
+      },
+      {
+        "kind": "note",
+        "text": "발주 주체를 새 분류로 표시합니다.\n기존 의뢰 유형·성장 흐름은 유지."
+      }
+    ],
+    "right": [
+      {
+        "kind": "row",
+        "title": "지급자",
+        "text": "길드",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "인도 조건",
+        "text": "지정 약초 1묶음",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "완료 보수",
+        "text": "200G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "중계료 / 보조금",
+        "text": "없음 / 실적 제외",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "게시 시 처리",
+        "text": "200G 예약",
+        "warning": false
+      },
+      {
+        "kind": "metric",
+        "title": "게시 후 가용 금액",
+        "text": "300 − 200 = 100G"
+      },
+      {
+        "kind": "note",
+        "text": "미수주 취소: 예약만 해제.\n완료: 지급·예약 해제·소유권 이전 1회."
+      },
+      {
+        "kind": "button",
+        "text": "200G 예산 예약 후 게시",
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "id": "assignment",
+    "kicker": "UI 03  /  리퀘스트 → 지명과 업무 예약",
+    "active": "리퀘스트",
+    "leftTitle": "숲길 안전 확보",
+    "rightTitle": "후보와 배치 조건",
+    "left": [
+      {
+        "kind": "card",
+        "title": "주민 의뢰  ·  토벌  ·  1주",
+        "text": "총 보수 100G / 조건: 힘 18 이상",
+        "selected": true
+      },
+      {
+        "kind": "row",
+        "title": "파티 조건",
+        "text": "1명 이상 충족",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "선택한 인원",
+        "text": "도윤 1명",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "현재 업무 점유",
+        "text": "4주 중 1주",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "배치 후 업무 점유",
+        "text": "4주 중 2주",
+        "warning": false
+      },
+      {
+        "kind": "note",
+        "text": "계약원도 전투·후퇴 규칙은 같습니다.\n침공 준비 중 출발 제한을 먼저 확인."
+      },
+      {
+        "kind": "button",
+        "text": "선택 인원 배치 예약",
+        "disabled": false
+      }
+    ],
+    "right": [
+      {
+        "kind": "card",
+        "title": "도윤  ·  정식 전사",
+        "text": "힘 24  ·  조건 충족  ·  섭외비 없음",
+        "selected": true,
+        "image": "prototype/assets/chr/chr_warrior_m_front.png"
+      },
+      {
+        "kind": "card",
+        "title": "세라  ·  자유 성직자",
+        "text": "수락 72%  ·  섭외비 40G (예시)",
+        "selected": false,
+        "image": "prototype/assets/chr/chr_cleric_f_front.png"
+      },
+      {
+        "kind": "card",
+        "title": "루카  ·  정식 궁수",
+        "text": "외부 호위 예약 중  ·  중복 배치 불가",
+        "selected": false,
+        "image": "prototype/assets/chr/chr_archer_m_front.png"
+      },
+      {
+        "kind": "row",
+        "title": "계약 범위",
+        "text": "1주 / 위험 상한 이내",
+        "warning": false
+      },
+      {
+        "kind": "note",
+        "text": "자유: 기존 섭외비·수락 방식 유지.\n정식: 합의한 업무·위험·시간 안에서 배치."
+      }
+    ]
+  },
+  {
+    "id": "trade",
+    "kicker": "UI 04  /  경영 → 소재 거래",
+    "active": "경영",
+    "leftTitle": "소재 거래",
+    "rightTitle": "희귀 소재 묶음",
+    "left": [
+      {
+        "kind": "card",
+        "title": "길드 소유  |  매입 후보  |  위탁",
+        "text": "소유자 · 원가 · 사용 제한을 구분",
+        "selected": true
+      },
+      {
+        "kind": "card",
+        "title": "희귀 소재 묶음  × 1",
+        "text": "세라 소유  ·  매입 또는 위탁 가능",
+        "selected": true,
+        "image": "prototype/assets/icons/mat_x021.png"
+      },
+      {
+        "kind": "card",
+        "title": "보관 중인 위탁품  × 1",
+        "text": "도윤 소유  ·  요리·납품 사용 불가",
+        "selected": false
+      },
+      {
+        "kind": "metric",
+        "title": "현재 가용 금액",
+        "text": "300G"
+      },
+      {
+        "kind": "note",
+        "text": "기존 재고는 길드 보유분으로 보존.\n원가를 모르면 ‘기존 재고·원가 미상’."
+      }
+    ],
+    "right": [
+      {
+        "kind": "row",
+        "title": "소유자",
+        "text": "세라",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "판매 예상액",
+        "text": "100G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "즉시 매입가",
+        "text": "70G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "매입 후 예상 차익",
+        "text": "30G / 부대비용 전",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "위탁 수수료",
+        "text": "10% → 길드 10G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "위탁 판매 시 지급",
+        "text": "소유자에게 90G",
+        "warning": false
+      },
+      {
+        "kind": "button",
+        "text": "70G에 매입  ·  가용 230G",
+        "disabled": false
+      },
+      {
+        "kind": "button",
+        "text": "10% 조건으로 위탁 접수",
+        "disabled": false
+      },
+      {
+        "kind": "note",
+        "text": "판매 전 위탁품은 길드 물건이 아닙니다.\n실제 거래와 자동 소재 차익 중복 금지."
+      }
+    ]
+  },
+  {
+    "id": "ledger",
+    "kicker": "UI 05  /  경영 → 월간 장부",
+    "active": "경영",
+    "leftTitle": "이번 달 운영 손익",
+    "rightTitle": "현금과 지급 예정",
+    "left": [
+      {
+        "kind": "row",
+        "title": "의뢰 길드 몫",
+        "text": "+100G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "실현 판매 차익",
+        "text": "+30G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "시설 기여",
+        "text": "+50G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "보수",
+        "text": "−80G",
+        "warning": true
+      },
+      {
+        "kind": "row",
+        "title": "실제 지원",
+        "text": "−20G",
+        "warning": true
+      },
+      {
+        "kind": "row",
+        "title": "직접 운영비",
+        "text": "−20G",
+        "warning": true
+      },
+      {
+        "kind": "metric",
+        "title": "운영 손익",
+        "text": "180 − 120 = +60G"
+      },
+      {
+        "kind": "row",
+        "title": "별도 지원 수입",
+        "text": "+60G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "이달 현금 증감",
+        "text": "+120G",
+        "warning": false
+      }
+    ],
+    "right": [
+      {
+        "kind": "metric",
+        "title": "길드 소유 현금",
+        "text": "500G"
+      },
+      {
+        "kind": "row",
+        "title": "확정 지급 예약",
+        "text": "200G",
+        "warning": false
+      },
+      {
+        "kind": "metric",
+        "title": "사용 가능 금액",
+        "text": "500 − 200 = 300G"
+      },
+      {
+        "kind": "row",
+        "title": "외부 예치금",
+        "text": "180G / 사용 불가",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "다음 보수 예약",
+        "text": "80G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "발주 지급 예약",
+        "text": "120G",
+        "warning": false
+      },
+      {
+        "kind": "note",
+        "text": "매입은 현금 지출, 판매 시 원가 반영.\n지원 수입과 예치금을 운영 이익에 합산 금지."
+      }
+    ]
+  },
+  {
+    "id": "policy",
+    "kicker": "UI 06  /  경영 → 운영 방침",
+    "active": "경영",
+    "leftTitle": "일반 의뢰 중계료",
+    "rightTitle": "적용 범위와 영향",
+    "left": [
+      {
+        "kind": "card",
+        "title": "낮은 요율  ·  10%",
+        "text": "개인 수입을 우선 / 기준 정책",
+        "selected": false
+      },
+      {
+        "kind": "card",
+        "title": "기본 정책  ·  15%",
+        "text": "검증용 선택 예시",
+        "selected": true
+      },
+      {
+        "kind": "card",
+        "title": "높은 요율  ·  20%",
+        "text": "서비스 가치와 개인 부담을 함께 검증",
+        "selected": false
+      },
+      {
+        "kind": "note",
+        "text": "F급은 기본 10%로 출발합니다.\n상위 정책은 해금·검증 후 적용."
+      },
+      {
+        "kind": "button",
+        "text": "새 의뢰부터 15% 적용",
+        "disabled": false
+      }
+    ],
+    "right": [
+      {
+        "kind": "row",
+        "title": "솔로 보상 예시",
+        "text": "100G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "길드 몫 / 개인 몫",
+        "text": "15G / 85G",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "정보실 자동 가산",
+        "text": "+0%p / 중복 금지",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "이미 출발한 의뢰",
+        "text": "출발 때 조건 유지",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "기존 정식 계약",
+        "text": "합의한 계약 요율 유지",
+        "warning": false
+      },
+      {
+        "kind": "row",
+        "title": "길드 발주",
+        "text": "수수료 없음",
+        "warning": false
+      },
+      {
+        "kind": "note",
+        "text": "정보실은 위험 정보·의뢰 품질 역할.\n위험 보수·정산 조건을 숨기지 않습니다."
+      }
+    ]
+  }
+]

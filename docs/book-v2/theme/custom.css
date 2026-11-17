@@ -1,0 +1,4 @@
+.mermaid { text-align: center; margin: 1.2em 0; }
+table { display: block; overflow-x: auto; }
+blockquote.note, .content blockquote { border-left: 4px solid #c9a46a; }
+.content main { max-width: 820px; }

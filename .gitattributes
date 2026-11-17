@@ -9,6 +9,14 @@
 *.html text eol=lf
 *.json text eol=lf
 *.py text eol=lf
+# 문서 UI 시안은 작은 JPEG이며 LFS 없는 문서 CI에서도 읽혀야 함.
+docs/book-v2/src/assets/ui/*.jpg -filter -diff -merge -text
+
+docs/book-v2/src/assets/ui/*.png -filter -diff -merge -text
+
+# 다운로드한 HTML 폴더에서 이미지가 바로 열리도록 실제 파일을 보관.
+docs/book/v[12]/**/*.png -filter -diff -merge -text
+docs/book/v[12]/**/*.jpg -filter -diff -merge -text
 
 # Windows 배치 파일은 CRLF로 (2026-11-17)
 *.bat text eol=crlf
