@@ -43,7 +43,7 @@ test('real books preserve v1 and provide portable version links, including new c
   assert.doesNotMatch(sidebar, /<a[^>]+data-book-change="ch03\/stats.html"/);
   const partial = readFileSync(join(output, 'v2/ch03/lifecycle.html'), 'utf8');
   const changedRegions = [...partial.matchAll(/<section class="book-change"[^>]*>([\s\S]*?)<\/section>/g)].map(m => m[1]).join('');
-  assert.match(changedRegions, /assets\/ui\/contract.jpg/);
+  assert.match(changedRegions, /assets\/ui\/contract-tabs.png/);
   assert.doesNotMatch(changedRegions, /모험가는 명성 10마다 1명씩 오고/);
   const metadata = JSON.parse(added.match(/<script type="application\/json" id="book-change-data"[^>]*>([\s\S]*?)<\/script>/)[1]);
   assert.ok(metadata['ch03/lifecycle.html'].items.some(item => item.after.includes('E급 소수 계약')));
@@ -57,6 +57,10 @@ test('real books preserve v1 and provide portable version links, including new c
   for (const name of ['contract', 'guild-order', 'assignment', 'trade', 'ledger', 'policy']) {
     const asset = readFileSync(join(output, 'v2/assets/ui', name + '.jpg'));
     assert.equal(asset.subarray(0, 2).toString('hex'), 'ffd8', 'Real JPEG, not an LFS pointer');
+  }
+  for (const name of ['contract-tabs', 'purchase-tabs', 'consignment-tabs', 'quest-policy', 'request-tabs']) {
+    const asset = readFileSync(join(output, 'v2/assets/ui', name + '.png'));
+    assert.equal(asset.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', 'Real PNG, not an LFS pointer');
   }
   assert.equal(createHash('sha256').update(readFileSync('docs/references/guild-economy-contracts-2026-11-16/original.html')).digest('hex'),
     '7b6a3b1a40d01e50a7b97e4e21062f92d69b30972eb87cdfbc15ec05b6474480');
@@ -78,4 +82,13 @@ test('real books preserve v1 and provide portable version links, including new c
   assert.notEqual(second.status, 0);
   assert.equal(readFileSync(join(output, 'v1/ch09/income.html'), 'utf8'), chapter);
   console.log(`Verified real build: ${resolve(output)}`);
+});
+
+// Preserve the existing design explanation when adding new systems.
+test('v1 economics questions, flow and automatic board remain in v2', () => {
+  for (const page of ['ch09/issues.md', 'ch09/flow.md', 'ch04/board.md']) {
+    const original = readFileSync('docs/book/src/' + page, 'utf8');
+    const revised = readFileSync('docs/book-v2/src/' + page, 'utf8');
+    for (const line of original.split(/\r?\n/).filter(line => line.trim())) assert.ok(revised.includes(line), page + ': ' + line);
+  }
 });

@@ -7,8 +7,8 @@
 - `docs/book-v2/src/changes.md`: 기능 ID별 변경 비교.
 - `docs/book-v2/src/features.md`: 버전별 기능·기획 상태·게임 구현 상태.
 - `docs/references/guild-economy-contracts-2026-11-16/original.html`: 첨부 원문 보관. 책에 별도 장으로 게시하지 않는다.
-- `docs/book-v2/src/assets/ui/`: 기존 게임 리소스를 활용한 UI 예시 6개. 관련 본문에 삽입한다.
-- `docs/tools/render-book-mockups.ps1`: `book-mockups.json`으로 UI 예시를 재생성한다.
+- `docs/book-v2/src/assets/ui/`: 기존 리소스 JPG 예시와 사용자 화면 기반 PNG 시안. 관련 본문에 삽입한다.
+- `docs/tools/render-book-mockups.ps1`: `book-mockups.json`으로 초기 JPG 예시만 재생성한다. 새 PNG 시안은 이 스크립트 대상이 아니다.
 
 새 제안을 수록했다고 게임 구현 상태를 완료로 바꾸지 않는다. 확정 시 결정 근거, 구현 시 코드 커밋과 검증 결과를 별도 기록한다.
 
