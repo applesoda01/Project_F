@@ -45,6 +45,7 @@
     };
     attachRng(s);
     for (let i = 0; i < cfg.adv.startCount; i++) spawnAdv(s, { attach: 20, quiet: true, home: true })   // 창립 멤버: 늘 길드에 머묾 (2026-11-16);
+    { const f = s.advs.filter(a => a.home); if (f.length >= 2 && f.every(a => a.risk === 0)) f[1].risk = 1; }   // 2026-11-17 의뢰 0건 판 대책 ①: 창립 2명이 둘 다 신중이면 2번째를 보통으로 (economy_v2_zero_quest.md)
     initHouses(s);   // 2026-11-13 시작 인구만큼 초가
     log(s, '길드가 문을 열었습니다. 모험가 ' + cfg.adv.startCount + '명이 첫 손님으로 찾아왔습니다.', 'guild');
     return s;
@@ -1142,6 +1143,7 @@
   //   상한(길드 등급별)이 차 있으면 기다렸다가 자리가 나면(승급 등) 옴. 명성이 깎였다가 다시 올라도 같은 칸은 한 번만. 예전 저장은 지금 명성까지는 이미 온 것으로 봄
   function fameArrivals(s) {
     const st = (s.cfg.adv || {}).fameStep; if (!st) return;
+    { const z = (s.cfg.adv || {}).zeroFameVisit || 0; if (z && (s.fame || 0) === 0 && s.week > 0 && s.week % z === 0 && s.advs.filter(x => x.alive).length < advCap(s)) spawnAdv(s, {}); }   // 2026-11-17 대책 ②: 명성 0인 동안 8주마다 1명 방문
     const due = Math.floor((s.fame || 0) / st); if (s.fameMs == null) s.fameMs = due;
     while (s.fameMs < due && s.advs.filter(x => x.alive).length < advCap(s)) { s.fameMs++; spawnAdv(s, {}); }
   }

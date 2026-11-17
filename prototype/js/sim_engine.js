@@ -38,6 +38,7 @@
       },
       adv: {
         arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,       // arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)
+        zeroFameVisit: 8,   // 2026-11-17 의뢰 0건 판 대책 ②: 명성 0인 동안 N주마다 1명 방문 (0이면 끔)
         fameStep: 5,                                       // 2026-11-17: 명성 5마다 새 모험가 1명 (게임 fameArrivals와 같음). 0이면 예전 확률 방식
         startCount: 5, startCore: 15, startOther: 6,
         attachSuccess: 2, attachPerMonthInTown: 1,
@@ -817,6 +818,7 @@
 
     // 시작 모험가 3명
     for (let i = 0; i < A.startCount; i++) newAdv({ attach: 20, home: true });   // 창립 멤버: 늘 길드에 머묾 (게임과 같음)
+    { const f = s.advs.filter(a => a.home); if (f.length >= 2 && f.every(a => a.risk === 0)) f[1].risk = 1; }   // 의뢰 0건 판 대책 ① (게임과 같음)
     // 로비 배치 (2026-11-12): 놓인 장식(cfg.run.deco 목록) · 테이블 세트 수. 테이블은 첫 주에 2세트, 이후 매달 금고 여유(구매 뒤 1,000G 이상)가 있으면 1세트씩 4세트까지 (게임 autoPlace와 같음)
     s.deco = new Set((cfg.run && cfg.run.deco) || []); s.tables = 0; s.x2Owed = 0;
     s.tableCap = 2; const buyTables = n0 => { const P = 200, MAX = s.tableCap; /* 2026-11-13: 테이블은 처음 2세트까지. 3·4세트는 서브 퀘스트 보상 (2026-11-16: reqStep 이 tableCap 을 올림) */ let n = n0; while (n-- > 0 && s.tables < MAX && s.gold >= P) { s.gold -= P; s.tables++; } };
@@ -832,6 +834,7 @@
       }
       if (!s.demonFlagFallback && !s.st.demonFallback && s.week === EN.demonHeirFallbackYear * WPY && !s.advs.some(a => a.alive && a.demonHeir)) s.demonFlagFallback = true;
       weekly();
+      { const z = cfg.adv.zeroFameVisit || 0, cap0 = (cfg.adv.capByGrade || [8, 12, 16, 20, 24, 28, 32])[s.grade] || 8; if (z && (s.fame || 0) === 0 && s.week > 0 && s.week % z === 0 && s.advs.filter(x => x.alive).length < cap0) newAdv({}); }   // 대책 ② (게임과 같음)
       { const st = cfg.adv.fameStep; if (st) {   // 명성 방문 (게임 fameArrivals와 같은 규칙: 명성 fameStep(5)마다 1명, 상한이 차면 기다림)
         const due = Math.floor(s.fame / st), cap = (cfg.adv.capByGrade || [8, 12, 16, 20, 24, 28, 32])[s.grade] || 8; s.fameMs = s.fameMs || 0;
         while (s.fameMs < due && s.advs.filter(x => x.alive).length < cap) { s.fameMs++; const ext = R() < 0.05 && s.grade > 0 ? Math.min(6, s.grade + (R() < 0.3 ? 2 : 1)) : 0; const a = newAdv({ grade: ext }); if (s.demonFlagFallback) { a.demonHeir = true; a.heirWeek = s.week; s.demonFlagFallback = false; s.st.demonFallback = true; } }
