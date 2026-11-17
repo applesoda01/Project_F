@@ -26,12 +26,28 @@ test('real books preserve v1 and provide portable version links, including new c
   assert.equal(result.status, 0, result.stdout + result.stderr);
   assert.deepEqual(snapshot('docs/book'), before, 'v1 sources must not change');
   const chapter = readFileSync(join(output, 'v1/ch09/income.html'), 'utf8');
-  assert.match(chapter, /href="\.\.\/\.\.\/v2\/ch09\/income.html"/);
-  assert.match(chapter, /aria-current="page"[^>]*>v1/);
+  assert.match(chapter, /<option value="\.\.\/\.\.\/v2\/ch09\/income.html">V2/);
+  assert.match(chapter, /<option[^>]+selected>V1/);
+  assert.match(chapter, /class="right-buttons">\s*<nav class="book-version-menu"/);
+  assert.doesNotMatch(chapter, /class="book-versions"/);
   const added = readFileSync(join(output, 'v2/ch03/contracts.html'), 'utf8');
-  assert.match(added, /href="\.\.\/\.\.\/v1\/index.html"/);
-  assert.match(added, /v1 첫 페이지/);
-  assert.match(readFileSync(join(output, 'ch09/income.html'), 'utf8'), /href="\.\.\/v2\/ch09\/income.html"/);
+  assert.match(added, /<option value="\.\.\/\.\.\/v1\/index.html">V1 원본 \(첫 페이지\)/);
+  assert.match(readFileSync(join(output, 'ch09/income.html'), 'utf8'), /value="\.\.\/v2\/ch09\/income.html"/);
+  assert.match(added, /<section class="book-change"/);
+  assert.match(added, /<dialog id="book-change-dialog"/);
+  const sidebar = added.match(/<ol class="chapter">([\s\S]*?)<\/nav>/)[1];
+  assert.doesNotMatch(sidebar, />버전 이력<|>버전별 기능 관리</);
+  assert.match(sidebar, /<a[^>]+data-book-change="ch03\/contracts.html"[^>]*>/);
+  const unchanged = readFileSync(join(output, 'v2/ch03/stats.html'), 'utf8');
+  assert.doesNotMatch(unchanged, /<section class="book-change"/);
+  assert.doesNotMatch(sidebar, /<a[^>]+data-book-change="ch03\/stats.html"/);
+  const partial = readFileSync(join(output, 'v2/ch03/lifecycle.html'), 'utf8');
+  const changedRegions = [...partial.matchAll(/<section class="book-change"[^>]*>([\s\S]*?)<\/section>/g)].map(m => m[1]).join('');
+  assert.match(changedRegions, /창립 2명은 상주하는 자유 모험가/);
+  assert.doesNotMatch(changedRegions, /모험가는 명성 10마다 1명씩 오고/);
+  const metadata = JSON.parse(added.match(/<script type="application\/json" id="book-change-data"[^>]*>([\s\S]*?)<\/script>/)[1]);
+  assert.ok(metadata['ch03/contracts.html'].items.some(item => item.after.includes('E급 소수 계약')));
+  assert.ok(metadata['ch03/contracts.html'].items.every(item => item.state.includes('미반영')));
   for (const version of ['v1', 'v2']) {
     assert.ok(existsSync(join(output, version, 'searchindex.js')));
   }

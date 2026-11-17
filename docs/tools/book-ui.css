@@ -1,0 +1,46 @@
+/* mdBook's right toolbar owns version controls; no large menu in the article. */
+#menu-bar .right-buttons { display: flex; align-items: center; flex-shrink: 0; gap: .5rem; }
+#menu-bar .menu-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.book-version-menu { display: flex; align-items: center; gap: .9rem; font-size: 1.4rem; white-space: nowrap; }
+.book-version-menu select { color: var(--fg); background: var(--bg); border: 1px solid var(--table-border-color); border-radius: 5px; padding: .5rem .7rem; font: inherit; max-width: 17rem; cursor: pointer; }
+#menu-bar .book-version-menu a { color: var(--fg); padding: .5rem 0; line-height: normal; text-decoration: none; }
+#menu-bar .book-version-menu a:hover { text-decoration: underline; }
+.book-version-status { color: var(--fg); opacity: .8; font-size: .85em; border-bottom: 1px solid var(--table-border-color); padding-bottom: 1rem; }
+:root { --book-change-color: #b42332; --book-change-fill: #fff5f5; }
+.navy, .coal, .ayu { --book-change-color: #ff9b9b; --book-change-fill: #33252b; }
+.rust { --book-change-color: #a61f2e; --book-change-fill: #f5e4dd; }
+.chapter li a.book-toc-change:link,
+.chapter li a.book-toc-change:visited,
+.chapter li a.book-toc-change.active,
+.chapter li a.book-toc-change:hover { color: var(--book-change-color); }
+.chapter a.book-toc-change:hover { text-decoration: underline; }
+.book-change-tag { font-size: .72em; margin-left: .45em; border: 1px solid currentColor; border-radius: 3px; padding: 0 .25em; white-space: nowrap; }
+.book-change { color: var(--book-change-color); border-left: 3px solid currentColor; padding: .6rem 0 .6rem 1.2rem; margin: 1.2rem 0; cursor: pointer; }
+.book-change a, .book-change .header, .book-change blockquote { color: inherit; }
+.content .book-change .header:link, .content .book-change .header:visited { color: var(--book-change-color); }
+.book-change code, .book-change table { color: inherit; }
+.book-change:hover { background: var(--book-change-fill); }
+.book-change-trigger { display: block; border: 1px solid currentColor; border-radius: 4px; background: transparent; color: inherit; padding: .3rem .7rem; font: inherit; font-size: .78em; cursor: pointer; }
+.book-change-trigger:focus-visible, .book-version-menu :focus-visible, #book-change-dialog :focus-visible { outline: 3px solid var(--links); outline-offset: 3px; }
+#book-change-dialog { color: var(--fg); background: var(--bg); border: 1px solid var(--table-border-color); border-radius: 12px; padding: 2.2rem; width: min(54rem, calc(100vw - 4rem)); max-height: 80vh; box-sizing: border-box; overflow: auto; box-shadow: 0 16px 64px #0005; }
+#book-change-dialog::backdrop { background: #0007; }
+#book-change-dialog h2 { margin: 0 0 1rem; font-size: 1.25em; padding-right: 3rem; }
+#book-change-dialog .dialog-close { position: absolute; top: 1rem; right: 1rem; border: 0; background: transparent; color: var(--fg); padding: .5rem; cursor: pointer; font-size: 1.8rem; }
+#book-change-dialog .change-item { margin: 1rem 0; padding-bottom: 1rem; border-bottom: 1px solid var(--table-border-color); }
+#book-change-dialog .change-item p { margin: .5rem 0; }
+#book-change-dialog .change-after { color: var(--book-change-color); }
+#book-change-dialog .change-state { font-size: .85em; opacity: .85; }
+#book-change-dialog .dialog-actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
+#book-change-dialog a { color: var(--links); }
+@media (max-width: 700px) {
+  #menu-bar .menu-title { display: none; }
+  #menu-bar .right-buttons { margin-left: auto; gap: 0; }
+  #menu-bar .right-buttons > a { display: none; }
+  .book-version-menu { gap: .6rem; font-size: 1.3rem; }
+  .book-version-menu select { max-width: 13rem; }
+  .book-change { padding-left: .8rem; }
+}
+@media print {
+  .book-version-menu, .book-change-trigger, #book-change-dialog { display: none !important; }
+  .book-change { break-inside: auto; }
+}

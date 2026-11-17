@@ -22,7 +22,7 @@ jobs:
         run: |
           curl -fsSL https://github.com/rust-lang/mdBook/releases/download/v0.4.40/mdbook-v0.4.40-x86_64-unknown-linux-gnu.tar.gz | tar -xz
       - name: 실제 책 빌드·버전 이동·원본 보존 검사
-        run: MDBOOK="$GITHUB_WORKSPACE/mdbook" node --test docs/tools/build-books.test.mjs
+        run: MDBOOK="$GITHUB_WORKSPACE/mdbook" node --test docs/tools/*.test.mjs
       - name: 다운로드용 책 만들기
         run: MDBOOK="$GITHUB_WORKSPACE/mdbook" node docs/tools/build-books.mjs --out dist/book
       - name: HTML 미리보기 보관 (공개 배포 없음)
