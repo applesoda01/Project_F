@@ -6,7 +6,9 @@
 - `docs/book-v2/`: 안내서 v2. 기존 `docs/design/v2/` 재분류 기획서와 다른 버전 체계.
 - `docs/book-v2/src/changes.md`: 기능 ID별 변경 비교.
 - `docs/book-v2/src/features.md`: 버전별 기능·기획 상태·게임 구현 상태.
-- `docs/book-v2/src/proposal/`: 첨부 원문과 절별 전문.
+- `docs/references/guild-economy-contracts-2026-11-16/original.html`: 첨부 원문 보관. 책에 별도 장으로 게시하지 않는다.
+- `docs/book-v2/src/assets/ui/`: 기존 게임 리소스를 활용한 UI 예시 6개. 관련 본문에 삽입한다.
+- `docs/tools/render-book-mockups.ps1`: `book-mockups.json`으로 UI 예시를 재생성한다.
 
 새 제안을 수록했다고 게임 구현 상태를 완료로 바꾸지 않는다. 확정 시 결정 근거, 구현 시 코드 커밋과 검증 결과를 별도 기록한다.
 
@@ -45,7 +47,7 @@ v2의 변경된 목차와 본문은 붉은색 및 ‘변경’ 표식으로 구�
 
 요약 창은 V1/V2 차이, 이유, 기획·게임 구현 상태를 짧게 보여 준다. 닫기 버튼, Escape, 바깥 클릭으로 닫는다. 드롭다운과 요약 버튼은 키보드로 조작할 수 있다. 원본에서 그대로 이어받은 문단과 공통 출처 안내는 변경 표시에서 제외한다.
 
-비교는 생성 HTML의 문단·표·목록 단위다. 표 일부가 바뀌면 해당 표 전체를 하나의 변경 영역으로 표시하며 문자 단위 diff가 아니다. 요약은 `changes.md`의 기능별 기록과 해당 문서의 기능 ID를 사용한다. 게임 규칙이 아닌 새 참고 문서는 문서 추가로 설명한다. 관련 파일은 `docs/tools/book-changes.mjs`, `book-ui.css`, `book-ui.js`다.
+비교는 생성 HTML의 문단·표·목록·이미지 단위다. 표 일부가 바뀌면 해당 표 전체를 하나의 변경 영역으로 표시하며 문자 단위 diff가 아니다. 요약은 `changes.md`의 기능별 기록과 해당 문서의 기능 ID를 사용한다. 게임 규칙이 아닌 새 참고 문서는 문서 추가로 설명한다. 관련 파일은 `docs/tools/book-changes.mjs`, `book-ui.css`, `book-ui.js`다.
 
 ## 다른 브랜치의 미리보기
 

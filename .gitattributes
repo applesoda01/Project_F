@@ -9,3 +9,5 @@
 *.html text eol=lf
 *.json text eol=lf
 *.py text eol=lf
+# 문서 UI 시안은 작은 JPEG이며 LFS 없는 문서 CI에서도 읽혀야 함.
+docs/book-v2/src/assets/ui/*.jpg -filter -diff -merge -text

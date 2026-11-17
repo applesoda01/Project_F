@@ -22,16 +22,23 @@ function blocks(html) {
   return result;
 }
 
+function signature(html) {
+  const images = [...html.matchAll(/<img\b[^>]*>/gi)].map(([tag]) =>
+    ['src', 'alt'].map(name => tag.match(new RegExp(`\\b${name}=["']([^"']*)["']`, 'i'))?.[1] || ''));
+  return plainText(html) + (images.length ? JSON.stringify(images) : '');
+}
+
 export function changedBlocks(before, after) {
-  const previous = new Set(blocks(before).map(plainText));
+  const previous = new Set(blocks(before).map(signature));
   const result = blocks(after).map(html => {
     const text = plainText(html);
     const inheritedNote = text.startsWith('v1에서 유지한 설명.') || text === 'v1에서 이어받은 설명';
-    return { html, changed: Boolean(text) && !inheritedNote && !previous.has(text) };
+    const key = signature(html);
+    return { html, changed: Boolean(key) && !inheritedNote && !previous.has(key) };
   });
   // A removal leaves no new paragraph to color. Mark the retained heading so
   // the chapter still exposes its change summary instead of silently disappearing.
-  const current = new Set(result.map(part => plainText(part.html)));
+  const current = new Set(result.map(part => signature(part.html)));
   const removed = [...previous].filter(text => text && !current.has(text));
   if (removed.length && result.length && !result.some(part => part.changed)) {
     result[0].changed = true;

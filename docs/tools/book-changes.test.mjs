@@ -2,6 +2,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { changedBlocks, markChangedContent } from './book-changes.mjs';
 
+test('image-only additions and replacements are marked, identical images stay unchanged', () => {
+  const old = '<p><img src="old.jpg" alt="계약 시안"></p>';
+  const next = '<p><img src="new.jpg" alt="계약 시안"></p>';
+  assert.equal(changedBlocks('', next)[0].changed, true);
+  assert.equal(changedBlocks(old, next)[0].changed, true);
+  assert.equal(changedBlocks(next, next)[0].changed, false);
+});
+
 test('unchanged paragraphs stay unmarked when v2 adds only its inherited-source note', () => {
   const v1 = '<h1><a href="#a">성장</a></h1><p>레벨은 유지합니다.</p>';
   const v2 = '<h1><a href="#b">성장</a></h1><blockquote><p><strong>v1에서 유지한 설명.</strong> 참고 안내</p></blockquote><p>레벨은 유지합니다.</p>';
