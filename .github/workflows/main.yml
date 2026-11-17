@@ -15,6 +15,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   build:
+    # 기능 브랜치에서 수동 실행해도 기존 Pages 전체를 교체하지 않음.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,10 +51,10 @@ jobs:
           name: 최신빌드
           path: prototype
           retention-days: 14
-      - name: 기획 안내서(mdBook) 만들기 → 주소/book/
+      - name: 기획 안내서 v1·v2 만들기 → 주소/book/
         run: |
           curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.40/mdbook-v0.4.40-x86_64-unknown-linux-gnu.tar.gz | tar -xz
-          ./mdbook build docs/book -d "$GITHUB_WORKSPACE/prototype/book"
+          MDBOOK="$GITHUB_WORKSPACE/mdbook" node docs/tools/build-books.mjs --out "$GITHUB_WORKSPACE/prototype/book"
       - name: Pages용 업로드
         uses: actions/upload-pages-artifact@v3
         with:
