@@ -38,7 +38,7 @@
       },
       adv: {
         arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,       // arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)
-        zeroFameVisit: 8,   // 2026-11-17 의뢰 0건 판 대책 ②: 명성 0인 동안 N주마다 1명 방문 (0이면 끔)
+        zeroFameVisit: 8, founderMix: 1,   // 2026-11-17 의뢰 0건 판 대책 ②: 명성 0인 동안 N주마다 1명 방문 (0이면 끔)
         fameStep: 5,                                       // 2026-11-17: 명성 5마다 새 모험가 1명 (게임 fameArrivals와 같음). 0이면 예전 확률 방식
         startCount: 5, startCore: 15, startOther: 6,
         attachSuccess: 2, attachPerMonthInTown: 1,
@@ -818,7 +818,7 @@
 
     // 시작 모험가 3명
     for (let i = 0; i < A.startCount; i++) newAdv({ attach: 20, home: true });   // 창립 멤버: 늘 길드에 머묾 (게임과 같음)
-    { const f = s.advs.filter(a => a.home); if (f.length >= 2 && f.every(a => a.risk === 0)) f[1].risk = 1; }   // 의뢰 0건 판 대책 ① (게임과 같음)
+    if (A.founderMix !== 0) { const f = s.advs.filter(a => a.home); if (f.length >= 2 && f.every(a => a.risk === 0)) f[1].risk = 1; }   // 의뢰 0건 판 대책 ① (게임과 같음)
     // 로비 배치 (2026-11-12): 놓인 장식(cfg.run.deco 목록) · 테이블 세트 수. 테이블은 첫 주에 2세트, 이후 매달 금고 여유(구매 뒤 1,000G 이상)가 있으면 1세트씩 4세트까지 (게임 autoPlace와 같음)
     s.deco = new Set((cfg.run && cfg.run.deco) || []); s.tables = 0; s.x2Owed = 0;
     s.tableCap = 2; const buyTables = n0 => { const P = 200, MAX = s.tableCap; /* 2026-11-13: 테이블은 처음 2세트까지. 3·4세트는 서브 퀘스트 보상 (2026-11-16: reqStep 이 tableCap 을 올림) */ let n = n0; while (n-- > 0 && s.tables < MAX && s.gold >= P) { s.gold -= P; s.tables++; } };

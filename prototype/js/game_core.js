@@ -45,7 +45,7 @@
     };
     attachRng(s);
     for (let i = 0; i < cfg.adv.startCount; i++) spawnAdv(s, { attach: 20, quiet: true, home: true })   // 창립 멤버: 늘 길드에 머묾 (2026-11-16);
-    { const f = s.advs.filter(a => a.home); if (f.length >= 2 && f.every(a => a.risk === 0)) f[1].risk = 1; }   // 2026-11-17 의뢰 0건 판 대책 ①: 창립 2명이 둘 다 신중이면 2번째를 보통으로 (economy_v2_zero_quest.md)
+    if ((s.cfg.adv || {}).founderMix !== 0) { const f = s.advs.filter(a => a.home); if (f.length >= 2 && f.every(a => a.risk === 0)) f[1].risk = 1; }   // 2026-11-17 의뢰 0건 판 대책 ① (adv.founderMix 0이면 끔): 창립 2명이 둘 다 신중이면 2번째를 보통으로 (economy_v2_zero_quest.md)
     initHouses(s);   // 2026-11-13 시작 인구만큼 초가
     log(s, '길드가 문을 열었습니다. 모험가 ' + cfg.adv.startCount + '명이 첫 손님으로 찾아왔습니다.', 'guild');
     return s;
