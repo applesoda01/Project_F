@@ -38,6 +38,7 @@
       },
       adv: {
         arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,       // arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)
+        fameStep: 5,                                       // 2026-11-17: 명성 5마다 새 모험가 1명 (게임 fameArrivals와 같음). 0이면 예전 확률 방식
         startCount: 5, startCore: 15, startOther: 6,
         attachSuccess: 2, attachPerMonthInTown: 1,
         visitBaseWeeks: 2,
@@ -610,15 +611,15 @@
       for (const a of s.advs) if (a.alive && a.busy === 0) a.attach = Math.min(100, a.attach + A.attachPerMonthInTown * 0.5);
       // 이탈
       for (const a of s.advs) if (a.alive && !a.rebirth && a.attach < A.leaveAttach && s.week - a.joined > A.leaveAfterYears * WPY) a.alive = false;
-      // 신규 모험가
-      const lam = A.arrivalPerMonth * (0.7 + 0.6 * s.trust / 100) * (1 + cfg.fame.maxBonus * Math.min(1, s.fame / cfg.fame.full)); // 신뢰도 × 명성
+      // 신규 모험가 (fameStep이 0일 때만 예전 확률 방식. 지금은 매주 명성 방문 = fameArrivals)
+      if (!A.fameStep) { const lam = A.arrivalPerMonth * (0.7 + 0.6 * s.trust / 100) * (1 + cfg.fame.maxBonus * Math.min(1, s.fame / cfg.fame.full)); // 신뢰도 × 명성
       let k = Math.floor(lam); if (R() < lam - k) k++;
       const advCap = (A.capByGrade || [8, 12, 16, 20, 24, 28, 32])[s.grade] || 8;   // 2026-11-12: 게임(game_core.js advCap)과 같게 길드 등급별 모험가 상한 적용
       for (let i = 0; i < k && s.advs.filter(x => x.alive).length < advCap; i++) {
         const ext = R() < 0.05 && s.grade > 0 ? Math.min(6, s.grade + (R() < 0.3 ? 2 : 1)) : 0;
         const a = newAdv({ grade: ext });
         if (s.demonFlagFallback) { a.demonHeir = true; a.heirWeek = s.week; s.demonFlagFallback = false; s.st.demonFallback = true; }
-      }
+      } }
       // 2세
       s.heirsQueue = s.heirsQueue.filter(h => { if (h.at <= s.week) { newAdv({ core: h.core, heirOf: true, demonHeir: h.demon, risk: h.risk }); s.st.heirs++; return false; } return true; });
       // 전직 제안 (월 1회)
@@ -811,6 +812,10 @@
       }
       if (!s.demonFlagFallback && !s.st.demonFallback && s.week === EN.demonHeirFallbackYear * WPY && !s.advs.some(a => a.alive && a.demonHeir)) s.demonFlagFallback = true;
       weekly();
+      { const st = cfg.adv.fameStep; if (st) {   // 명성 방문 (게임 fameArrivals와 같은 규칙: 명성 fameStep(5)마다 1명, 상한이 차면 기다림)
+        const due = Math.floor(s.fame / st), cap = (cfg.adv.capByGrade || [8, 12, 16, 20, 24, 28, 32])[s.grade] || 8; s.fameMs = s.fameMs || 0;
+        while (s.fameMs < due && s.advs.filter(x => x.alive).length < cap) { s.fameMs++; const ext = R() < 0.05 && s.grade > 0 ? Math.min(6, s.grade + (R() < 0.3 ? 2 : 1)) : 0; const a = newAdv({ grade: ext }); if (s.demonFlagFallback) { a.demonHeir = true; a.heirWeek = s.week; s.demonFlagFallback = false; s.st.demonFallback = true; } }
+      } }
       if (s.week % WPM === WPM - 1) monthly();
       if (s.week % WPY === WPY - 1) {
         const alive = s.advs.filter(a => a.alive);

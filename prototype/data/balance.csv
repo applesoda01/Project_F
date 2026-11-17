@@ -36,6 +36,7 @@ adv,leaveAttach,20,
 adv,heirDelayWeeks,24,
 adv,seekTh,0.5|0.7|0.85,이보다 낮으면 동료를 찾음 (독불장군|보통|사교적)
 adv,departTh,0.95|0.85|0.65,출발 기준: 예상 성공 확률 (신중|보통|무모)
+adv,fameStep,5,새 모험가: 명성이 이 값의 배수(5 · 10 · 15…)에 닿을 때마다 1명 (2026-11-17 결정: 5마다 · progression_v1 2-2). 0이면 예전 확률 방식(arrivalPerMonth)
 econ,startGold,500,
 econ,feeBase,0.1,
 econ,feePerInfo,0.02,
