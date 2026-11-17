@@ -408,12 +408,14 @@
         if (q.T) for (const r of q.T.rewards || []) if (R() * 100 < r.p) s.mats[r.m] = (s.mats[r.m] || 0) + 1;   // 소재 획득 (게임 dropMats와 같음)
         if (q.T && s.deco.has('locker')) { const b = baseMat(q.T); if (b) s.mats[b] = (s.mats[b] || 0) + cfg.deco.mat; }   // 사물함: 기본 소재 +1
         for (const d of DISH) if (!s.dishes[d.name] && d.g <= s.grade && d.mats.every(m => s.mats[m] > 0)) { for (const m of d.mats) s.mats[m]--; s.dishes[d.name] = s.week; s.meals[d.g]++; s.st.mealsUnlocked.push(s.week); }
-        const inc = reward * feeRate() + reward * E.resaleRate * (1 + 0.1 * effN('판매창구'));
+        // 2026-11-17 경제 개편 V2 결정 8: 게임 econSplit 과 같은 정수 배분 (나머지는 대장 먼저 1G씩, 길드 몫 버림)
+        const RW = Math.floor(reward), n = party.length, b0 = Math.floor(RW / n), rem = RW - b0 * n, fr = feeRate();
+        const nets = party.map((_, i) => { const b = b0 + (i < rem ? 1 : 0); return b - Math.floor(b * fr + 1e-9); });
+        const inc = (RW - nets.reduce((x, y) => x + y, 0)) + reward * E.resaleRate * (1 + 0.1 * effN('판매창구'));
         const bench = s.deco.has('bench') ? cfg.deco.gold : 0;
         s.gold += inc + bench; s.op += inc + bench;
-        const each = reward * (1 - feeRate()) / party.length;
+        party.forEach((a, i) => { a.wallet += nets[i]; });
         for (const a of party) {
-          a.wallet += each;
           gainXp(a, G.xpBase * Math.pow(G.xpGradeMult, q.g) + (s.deco.has('map') ? cfg.deco.xp : 0));
           a.stats[q.type] = Math.min(G.statCap, a.stats[q.type] + Q.subGrowth);
           a.attach = Math.min(100, a.attach + A.attachSuccess * (1 + 0.2 * Math.min(1, effN('휴게실'))) + (s.deco.has('plant') ? cfg.deco.attach : 0));
@@ -716,7 +718,7 @@
         r.party = r.party.filter(a => a.alive && (a === r.who || a.busy === 0));   // 그사이 다른 의뢰를 떠난 사람은 파티에서 뺌
         const pool = alive().filter(a => a.busy === 0 && !r.party.includes(a) && r.refused.get(a) !== s.week).sort((x, y) => { const k = a => finalStat(a, d.req && d.req[0] === -2 ? a.core : questOf(r).req[0]); return (meets(r, y) - meets(r, x)) || (k(y) - k(x)); });
         const q0 = questOf(r), okNow = () => r.party.length >= d.party[0] && r.party.some(a => meets(r, a)) && r.party.every(a => a.alive && a.busy === 0) && questP(sortRow(r.party), q0) >= RQC.send;
-        for (const a of pool) { if (r.party.length >= d.party[1] || okNow()) break; if (!meets(r, a) && !r.party.some(m => meets(r, m))) break;   /* ★부터 구한다 (게임 autoRequests와 같음) */ const fee = a === r.who ? 0 : (E.scoutFee || [])[a.grade] || 0; if (s.gold - fee < RQC.reserve) break; s.gold -= fee; s.op -= fee; s.st.scoutGold = (s.st.scoutGold || 0) + fee;   /* 섭외비: 거절당해도 나감, 운영 순이익에 넣음 */ if (R2() < chanceOf(r, a)) r.party.push(a); else r.refused.set(a, s.week); R2(); }
+        for (const a of pool) { if (r.party.length >= d.party[1] || okNow()) break; if (!meets(r, a) && !r.party.some(m => meets(r, m))) break;   /* ★부터 구한다 (게임 autoRequests와 같음) */ const fee = a === r.who ? 0 : (E.scoutFee || [])[a.grade] || 0; if (s.gold - fee < RQC.reserve) break; s.gold -= fee; a.wallet += fee; s.op -= fee; s.st.scoutGold = (s.st.scoutGold || 0) + fee;   /* 섭외비: 거절당해도 나감, 운영 순이익에 넣음 · 2026-11-17 결정 10: 부탁받은 모험가 지갑으로 */ if (R2() < chanceOf(r, a)) r.party.push(a); else r.refused.set(a, s.week); R2(); }
         if (!okNow()) continue;
         const party = sortRow(r.party), q = questOf(r);
         for (const m of party) m.busy = d.weeks;

@@ -35,7 +35,7 @@
       expireV: 1, up: {}, place: { items: [], next: 1 }, week: 0, grade: 0, gold: cfg.econ.startGold, trust: 50, fame: 0, pop: cfg.town.startPop,
       built: { 게시판: true, 접수대: true, 주점: true, 판매창구: true }, eff: {}, meals: [0, 0, 0, 0, 0, 0, 0],
       filter: [4, 0, 0, 0, 0, 0, 0], filterV: 2, // 게시판 칸 배분: 등급별 비중 0(없음)·1(적게)·2(보통)·4(우선) (docs/design/popup_board.md)
-      advs: [], board: [], active: [], nextId: 1, log: [],
+      advs: [], board: [], active: [], nextId: 1, log: [], uidNext: 1, settled: {}, paidMonth: {},   // uidNext · settled · paidMonth: 경제 개편 V2 정산 1회 보장 (원정 번호 → 정산한 주, 월 보수 지급한 달)
       month: blankLedger(), lastMonth: null, history: [],
       stats: { done: 0, fail: 0, combat: 0, combatWin: 0, injuries: 0, deaths: 0, potions: 0 },
       proposals: [], discovered: {}, // 전직 제안 대기열, 발견한 직업 (M3-2)
@@ -98,6 +98,14 @@
     if (built) log(s, `마을에 새 집이 ${built}채 생겼습니다. (인구 ${Math.round(s.pop)}명 · 집 ${s.houses.length}채)`, 'town');
   }
   const feeRate = s => s.cfg.econ.feeBase + s.cfg.econ.feePerInfo * effN(s, '정보실');
+  // 2026-11-17 경제 개편 V2 결정 8: 정수 배분. 1인 몫 = 총액 ÷ 인원의 몫, 나머지는 파티 슬롯 순서(대장 먼저)로 1G씩. 길드 몫 = 1인 몫 × 각자 요율, 버림. 합계는 늘 총액
+  function econSplit(total, rates) {
+    total = Math.max(0, Math.floor(total)); const n = rates.length; if (!n) return { base: [], fee: [], net: [], guild: 0 };
+    const b0 = Math.floor(total / n), r = total - b0 * n, base = rates.map((_, i) => b0 + (i < r ? 1 : 0));
+    const fee = base.map((b, i) => Math.floor(b * rates[i] + 1e-9)), net = base.map((b, i) => b - fee[i]);
+    return { base, fee, net, guild: fee.reduce((x, y) => x + y, 0) };
+  }
+  const rateOf = (s, a) => a.contract ? a.contract.rate : feeRate(s);   // 개인 요율: 계약 모험가 = 계약 요율, 자유 = 일반 중계료
   // 게시판 칸 배분: 버튼 4단계의 비중. 칸 수 = 최대 칸 × 비중 ÷ 합 (최대 나머지 방식으로 합을 정확히 맞춤)
   const FILTER_W = [0, 1, 2, 4], FILTER_NAME = ['없음', '적게', '보통', '우선'];
   const filterLevel = w => w >= 4 ? 3 : w >= 2 ? 2 : w >= 1 ? 1 : 0;
@@ -123,7 +131,7 @@
       id: s.nextId++, name, core, cls: CLASS1[core], stage: 1, pair: null,
       stats: [0, 0, 0, 0, 0].map((_, i) => i === core ? A.startCore + s.R() * 4 : A.startOther + s.R() * 3),
       lv: 1, xp: 0, bank: 0, grade: 0, ach: 0, attach: o.attach || 0,
-      risk: ri(s, 3), spend: ri(s, 3), social: ri(s, 3), wallet: 0, gear: -1, pots: 0, home: !!o.home,
+      risk: ri(s, 3), spend: ri(s, 3), social: ri(s, 3), wallet: 0, gear: -1, pots: 0, home: !!o.home, contract: null,   // contract: 계약 모험가 조건 (경제 개편 V2 2단계에서 채움, null = 자유 모험가)
       state: 'away', until: 0, joined: s.week, alive: true, done: 0,
       cls1: CLASS1[core], line: [core], fin: false, promoCool: 0, skills: [{ line: core, form: CLASS1[core] }], career: [{ week: s.week, text: '길드에 처음 옴' }]
     };
@@ -299,8 +307,10 @@
       if (!a.career) a.career = [{ week: a.joined || 0, text: '길드에 처음 옴' }];
       if (a.promoCool == null) a.promoCool = 0;
       if (a.pots == null) a.pots = 0;   // 전투 도입 전 저장
+      if (a.contract === undefined) a.contract = null;   // 2026-11-17 경제 개편 V2 전 저장: 모두 자유 모험가 (강제 고용 · 소급 급여 없음)
     }
     for (const k of ['combat', 'combatWin', 'injuries', 'deaths', 'potions']) if (s.stats[k] == null) s.stats[k] = 0;
+    if (s.uidNext == null) { s.uidNext = 1; s.settled = {}; s.paidMonth = {}; }   // 2026-11-17 경제 개편 V2: 정산 1회 보장 (진행 중이던 원정은 번호 없이 예전처럼 정산)
     if (s.filterV !== 2) {   // 예전 슬라이더(0~10) → 버튼 4단계: 0 없음, 1~2 적게, 3~6 보통, 7~10 우선
       s.filter = s.filter.map(v => v <= 0 ? 0 : v <= 2 ? 1 : v <= 6 ? 2 : 4);
       if (!s.filter.slice(0, s.grade + 1).some(v => v > 0)) s.filter[s.grade] = 4;
@@ -470,7 +480,7 @@
         // 비전투 의뢰도 결과를 출발할 때 정해 둠 (미니 뷰가 귀환 전에 결과 장면을 보여 줌). rate = 출발 때 예상 성공률(위험도 표시용)
         const ok = fight ? fight.win : s.R() < p, rate = Math.round(pp * 100);
         for (const m of party) { m.state = 'quest'; m.until = s.week + weeks; }
-        s.active.push({ q, party: party.map(m => m.id), p, ok, rate, start: s.week, weeks, back: s.week + weeks, ate: eaters, dish: dish && eaters ? dish.name : null, fight });
+        s.active.push({ uid: s.uidNext++, rates: party.map(m => rateOf(s, m)), q, party: party.map(m => m.id), p, ok, rate, start: s.week, weeks, back: s.week + weeks, ate: eaters, dish: dish && eaters ? dish.name : null, fight });
         log(s, `${J(names(party), '이', '가')} ${qn(q)} ${q.rq ? '리퀘스트' : '의뢰'}를 맡아 떠났습니다.${eaters ? ` (출발 전 ${dish.name} ${eaters}명)` : ''}`, 'depart', { who: party.map(x => x.name) });
       }
     }
@@ -480,6 +490,8 @@
     const Q = s.cfg.quest, G = s.cfg.growth, A = s.cfg.adv, E = s.cfg.econ;
     const back = s.active.filter(x => x.back <= s.week); s.active = s.active.filter(x => x.back > s.week);
     for (const x of back) {
+      if (x.uid != null) { if (s.settled[x.uid] != null) continue; s.settled[x.uid] = s.week; }   // 같은 원정은 한 번만 정산
+
       const party = x.party.map(id => s.advs.find(a => a.id === id));
       const q = x.q, F = x.fight; s.month.quests++; seeMons(s, q);
       const ok = x.ok != null ? x.ok : F ? F.win : s.R() < x.p;   // 예전 저장(출발 때 결과 없음)은 귀환 때 판정
@@ -487,11 +499,12 @@
       if (ok) {
         s.stats.done++; s.month.success++; s.month.popAdd = (s.month.popAdd || 0) + (s.cfg.town.perSuccess[q.g] || 0);   // 의뢰 성공 → 인구 (2026-11-13)
         const RW = q.reward * (q.x2 ? 2 : 1), DV = s.cfg.deco;   // ×2 의뢰는 골드만 2배 (명성·경험치는 그대로)
-        const fee = RW * feeRate(s) + (hasDeco(s, 'bench') ? DV.gold : 0), resale = RW * E.resaleRate;   // 벤치 +5G는 중계 수입에 더함
+        const sp = econSplit(RW, x.rates && x.rates.length === party.length ? x.rates : party.map(m => rateOf(s, m)));   // 출발 때 요율로 정산 (귀환 전 정책 변경 무시), 예전 저장은 지금 요율
+        const fee = sp.guild + (hasDeco(s, 'bench') ? DV.gold : 0), resale = RW * E.resaleRate;   // 벤치 +5G는 중계 수입에 더함 · 소재 자동 차익은 4단계(E4-3)에서 정리
         s.gold += fee + resale; s.month.fee += fee; s.month.resale += resale;
-        const each = RW * (1 - feeRate(s)) / party.length;
+        party.forEach((a, i) => { a.wallet += sp.net[i]; });
         for (const a of party) {
-          a.wallet += each; a.done++;
+          a.done++;
           gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) + (hasDeco(s, 'map') ? DV.xp : 0));
           a.stats[q.type] = Math.min(G.statCap, a.stats[q.type] + Q.subGrowth);
           a.attach = Math.min(100, a.attach + A.attachSuccess + (hasDeco(s, 'plant') ? DV.attach : 0));
@@ -528,6 +541,7 @@
   function monthly(s) {
     const E = s.cfg.econ, A = s.cfg.adv, T = s.cfg.town, GE = s.cfg.gear;
     s.gold += E.subsidy[s.grade]; s.month.subsidy += E.subsidy[s.grade];
+    if (s.settled) for (const k in s.settled) if (s.settled[k] < s.week - 12) delete s.settled[k];   // 정산 기록은 12주만 보관 (원정은 길어야 3주)
     const inTown = s.advs.filter(a => a.alive && a.state !== 'quest').length;
     s.month.inTown = inTown;   // 주점 매출은 2026-11-12부터 매주 술 1잔 단위 (departures 끝)
     let up = 0; for (const f of Object.keys(s.built)) up += (FAC_COST[f] != null ? E.buildCost[FAC_COST[f]] : 0) * E.upkeepRate;
@@ -788,8 +802,9 @@
     // 2026-11-16 예약 지명: 원정 중 · 부상 중인 모험가도 부탁할 수 있음(수락 판정 · 섭외비는 지금). '마을 밖'은 예전처럼 바로 부탁 가능(그 주 길드에 없을 뿐)
     if (r.refused[aid] === s.week) return { ok: false, why: '이번 주에는 거절했습니다 (다음 주에 다시 부탁할 수 있어요)' };
     if (r.party.length >= d.party[1]) return { ok: false, why: '파티가 가득 찼습니다' };
+    if (s.gold < 0) return { ok: false, why: '금고 적자 — 금고가 0G 이상이 되면 다시 부탁할 수 있어요' };   // 결정 7: 마이너스인 동안 지명 막힘
     const fee = scoutFee(s, r, a); if (s.gold < fee) return { ok: false, why: `섭외비 ${fee}G가 부족합니다` };
-    if (fee) { s.gold -= fee; s.month.scout = (s.month.scout || 0) - fee; s.month.scoutN = (s.month.scoutN || 0) + 1; }   // 섭외비는 부탁하는 순간 나감 (거절당해도 돌려받지 않음)
+    if (fee) { s.gold -= fee; a.wallet += fee; s.month.scout = (s.month.scout || 0) - fee; s.month.scoutN = (s.month.scoutN || 0) + 1; }   // 결정 10: 섭외비는 부탁받은 모험가 지갑으로 (거절해도)   // 섭외비는 부탁하는 순간 나감 (거절당해도 돌려받지 않음)
     const yes = reqR(s) < reqChance(s, r, a);
     if (yes) r.party.push(aid); else r.refused[aid] = s.week;
     const L = yes ? ['맡겨 주세요!', '좋아요, 가죠.', '마스터 부탁이라면야.'] : ['이번엔 좀…', '죄송해요, 다음에요.', '그건 내키지 않네요.'];
@@ -1026,6 +1041,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, econSplit, rateOf, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

@@ -381,7 +381,7 @@
   }
   UI.goalShow = goalShow;
   function goldShow() {
-    const el = q('#hGold'), to = Math.round(s.gold); el.classList.toggle('neg', s.gold < 0);
+    const el = q('#hGold'), to = Math.round(s.gold); el.classList.toggle('neg', s.gold < 0); { const lb = el.closest('.stat') && el.closest('.stat').querySelector('.lb'); if (lb) { lb.textContent = s.gold < 0 ? '금고 적자' : '금고'; lb.classList.toggle('neg', s.gold < 0); } }   // 2026-11-17 경제 개편 V2 결정 7: 마이너스인 동안 지출 행동이 막혔음을 알림
     if (goldOf !== s) { goldOf = s; goldTo = goldNow = to; cancelAnimationFrame(goldRaf); el.textContent = fmt(to); return; }
     if (to === goldTo) return;
     const d = to - goldTo, box = el.closest('.stat') || el.parentNode, f = document.createElement('i');
