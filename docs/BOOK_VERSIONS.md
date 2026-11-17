@@ -78,3 +78,7 @@ GitHub Pages는 저장소당 프로젝트 사이트 하나다. 브랜치 이름�
 ## V1 전체 보존 검사
 
 `docs/tools/audit-book-preservation.mjs`가 V1의 61개 원문 페이지와 기존 목차 경로를 검사한다. 개선안과 직접 관련된 25개 원문 교체만 `book-preservation-exceptions.json`에 사유와 함께 기록한다. 추가 누락이나 낡은 예외가 생기면 테스트가 실패한다. 페이지별 대조 결과는 `docs/book-v2-preservation-audit.md`에서 확인한다.
+
+## 문서 병합 시 공개 배포 제외
+
+`main.yml`의 main push는 `docs/**`, `.gitattributes`, `.github/workflows/**`만 변경한 경우 실행하지 않는다. 따라서 이 기획서·HTML 병합은 저장소에 반영되며 Pages를 배포하지 않는다. 게임 파일 변경이나 명시적 수동 실행에 대한 기존 배포 기능은 유지한다.

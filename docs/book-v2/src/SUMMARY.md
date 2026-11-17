@@ -8,6 +8,12 @@
 
 ---
 
+- [개발 순서와 완료 기준](development/README.md)
+    - [1. 기준 확정·저장·정산 기반](development/foundation.md)
+    - [2. 계약·지원·배치](development/contracts.md)
+    - [3. 거래·의뢰 관리·발주](development/operations.md)
+    - [4. 보조금·통합 검증](development/validation.md)
+    - [5. 후속 사업과 보류 범위](development/later.md)
 - [이 게임은](ch01/README.md)
     - [한 장으로 보는 게임](ch01/concept.md)
     - [핵심 수치 다섯 가지](ch01/numbers.md)

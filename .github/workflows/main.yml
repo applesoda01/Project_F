@@ -5,6 +5,11 @@ name: 최신 빌드
 on:
   push:
     branches: [main]
+    # 문서/열람 HTML 병합은 저장소 보관만 한다. Pages 배포를 실행하지 않는다.
+    paths-ignore:
+      - 'docs/**'
+      - '.gitattributes'
+      - '.github/workflows/**'
   workflow_dispatch:
 permissions:
   contents: write
