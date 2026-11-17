@@ -84,6 +84,10 @@
         gradeUp: [0, 25, 50, 75, 100, 125, 150],  // 길드 승급 시 상승
         maxBonus: 0.6, full: 500, cap: 1000       // 명성 보정 = 1 + 0.6 × min(1, 명성/500) → 최대 1.6배 (명성 도입 전 S급 보정과 같음)
       },
+      contract: {   // 2026-11-17 경제 개편 V2 계약 모험가 [임시] (balance.csv contract.* 와 같게, 결정표 economy_v2_decisions.md)
+        slots: 1, minAttach: 30, minDone: 3, weeksOpt: [8, 12], weeks: 12, rateOpt: [0.15, 0.2, 0.25, 0.3], rate: 0.2, pay: 25, payMax: 60, sup: 10, supMax: 30, step: 5, supUse: 0.5,
+        attachAdj: 0.15, spendReq: [0.95, 1, 1.03], riskReq: [0.97, 1, 1.05], socialReq: [1.05, 1, 0.98], maybe: 0.05, callMax: 2, callWin: 4, look: 8
+      },
       town: {
         startPop: 150, baseAdd: 2, perSuccess: [1, 2, 3, 4, 5, 6, 8], residentAttach: 65, perResident: 2,   // 2026-11-13 정수 가산형 인구 (balance.csv와 같게)
         houseCap: [40, 45, 50, 60, 75], upgradePerMonth: 2, upgradeWait: 3,                                    // 민가 수용·레벨업 (docs/design/town_houses_v1.md)

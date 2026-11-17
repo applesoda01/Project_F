@@ -145,3 +145,24 @@ deco,gold,5,의뢰인 대기 벤치: 의뢰 성공 시 길드 수입 +5G
 deco,xp,5,낡은 지도: 의뢰 성공 시 파티원 경험치 +5
 deco,injury,1,벽난로: 부상 기간 −1주 (최소 1주)
 deco,x2PerMonth,1,트로피 장식장: 매달 ×2 의뢰 보장 건수
+contract,slots,1,계약 모험가 정원 (결정 2: F급 + 집무실 · 1명) [임시]
+contract,minAttach,30,계약 후보: 애착 이상 (결정 2)
+contract,minDone,3,계약 후보: 의뢰 성공 횟수 이상 (결정 2)
+contract,weeksOpt,8|12,계약 기간 선택지 (결정 3)
+contract,weeks,12,계약 기간 기본값 (결정 3)
+contract,rateOpt,0.15|0.2|0.25|0.3,계약 길드 몫 선택지 (결정 4) [임시]
+contract,rate,0.2,계약 길드 몫 기본값 (결정 4) [임시]
+contract,pay,25,월 보수 기본값 G (결정 4) [임시]
+contract,payMax,60,월 보수 최대 G (결정 4) [임시]
+contract,sup,10,월 지원 한도 기본값 G (결정 4) [임시]
+contract,supMax,30,월 지원 한도 최대 G (결정 4) [임시]
+contract,step,5,보수 · 지원 조정 단위 G (결정 4)
+contract,supUse,0.5,수락 판단 때 지원 한도를 몇 할 쓴다고 보는가 (결정 5) [임시]
+contract,attachAdj,0.15,수락 요구 비율: 애착 30→100에서 줄어드는 폭 (결정 5) [임시]
+contract,spendReq,0.95|1|1.03,수락 요구 비율 보정: 절약 · 보통 · 낭비 (결정 5, 1 = 보정 없음) [임시]
+contract,riskReq,0.97|1|1.05,수락 요구 비율 보정: 신중 · 보통 · 무모 (결정 5) [임시]
+contract,socialReq,1.05|1|0.98,수락 요구 비율 보정: 독불장군 · 보통 · 사교적 (결정 5) [임시]
+contract,maybe,0.05,화면 표시 고민 중 범위 (필요액 ± 비율, 결정 5)
+contract,callMax,2,계약 모험가 거절 없는 지명 횟수 (결정 6)
+contract,callWin,4,지명 횟수를 세는 기간 주 (결정 6)
+contract,look,8,수락 판단에 쓰는 최근 기준액 기간 주 (결정 5)

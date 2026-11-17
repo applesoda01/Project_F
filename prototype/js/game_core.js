@@ -52,7 +52,7 @@
   function hasBatchim(w) { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; }
   function J(w, a, b) { return w + (hasBatchim(w) ? a : b); }
   const names = party => party.map(m => m.name).join('·');
-  function blankLedger() { return { fee: 0, resale: 0, meal: 0, tavern: 0, subsidy: 0, upkeep: 0, other: 0, reqIn: 0, scout: 0, quests: 0, success: 0, popAdd: 0, build: 0, dishes: {}, wd: [], builds: [], inTown: 0 }; }   // build·dishes·wd·builds·inTown: 장부 화면 내역용 (운영 순이익 net에는 건설비를 넣지 않음 = 관문 1 기준)
+  function blankLedger() { return { cpay: 0, csup: 0, fee: 0, resale: 0, meal: 0, tavern: 0, subsidy: 0, upkeep: 0, other: 0, reqIn: 0, scout: 0, quests: 0, success: 0, popAdd: 0, build: 0, dishes: {}, wd: [], builds: [], inTown: 0 }; }   // build·dishes·wd·builds·inTown: 장부 화면 내역용 (운영 순이익 net에는 건설비를 넣지 않음 = 관문 1 기준)
   const ri = (s, n) => Math.floor(s.R() * n);
   // 기록용 의뢰 이름: 편집기에서 지은 이름이 있으면 「이름」, 기본 이름(○○ F급 의뢰)이면 등급·유형
   function qn(q) { return q.name && !/급 의뢰/.test(q.name) ? `${GR[q.g]}급 「${q.name}」` : `${GR[q.g]}급 ${QTYPE[q.type]}`; }
@@ -307,7 +307,7 @@
       if (!a.career) a.career = [{ week: a.joined || 0, text: '길드에 처음 옴' }];
       if (a.promoCool == null) a.promoCool = 0;
       if (a.pots == null) a.pots = 0;   // 전투 도입 전 저장
-      if (a.contract === undefined) a.contract = null;   // 2026-11-17 경제 개편 V2 전 저장: 모두 자유 모험가 (강제 고용 · 소급 급여 없음)
+      if (a.contract === undefined) a.contract = null; if (!a.earn) a.earn = [];   // 2026-11-17 경제 개편 V2 전 저장: 모두 자유 모험가 (강제 고용 · 소급 급여 없음)
     }
     for (const k of ['combat', 'combatWin', 'injuries', 'deaths', 'potions']) if (s.stats[k] == null) s.stats[k] = 0;
     if (s.uidNext == null) { s.uidNext = 1; s.settled = {}; s.paidMonth = {}; }   // 2026-11-17 경제 개편 V2: 정산 1회 보장 (진행 중이던 원정은 번호 없이 예전처럼 정산)
@@ -432,12 +432,12 @@
       const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
       const hi = Math.min(s.grade, a.grade + range[1]), lo = Math.min(hi, Math.max(0, a.grade + range[0]));   // 2026-11-12: 길드보다 1등급 높은 모험가도 길드 최고 등급 의뢰는 고름
       const th = s.cfg.adv.departTh[a.risk];
-      const cands = s.board.filter(q => q.g >= lo && q.g <= hi).sort((x, y) => y.g - x.g);
+      const cands = s.board.filter(q => q.g >= lo && q.g <= hi && !cPastEnd(s, a, q.weeks || s.cfg.quest.weeks[q.g])).sort((x, y) => y.g - x.g);   // 결정 9: 계약 끝을 넘는 의뢰는 고르지 않음
       for (const q of cands) {
         let party = [a];
         let pp = perceived(s, a, questP(s, party, q));
         if (pp < s.cfg.adv.seekTh[a.social]) {
-          const mates = idle.filter(b => b !== a && b.state === 'town' && Math.abs(b.grade - q.g) <= 1).slice(0, 4);
+          const mates = idle.filter(b => b !== a && b.state === 'town' && Math.abs(b.grade - q.g) <= 1 && !cPastEnd(s, b, q.weeks || s.cfg.quest.weeks[q.g])).slice(0, 4);
           for (const m of mates) { party.push(m); if (perceived(s, a, questP(s, party, q)) >= th) break; }
           pp = perceived(s, a, questP(s, party, q));
         }
@@ -453,6 +453,7 @@
   }
   function launchParty(s, q, party, pp) {   // 2026-11-16: 게시판 출발과 지명(리퀘스트) 출발이 같은 처리를 씀
     const Q = s.cfg.quest, E = s.cfg.econ;
+    const w0 = party.map(m => m.wallet);   // 계약 지원(결정 4 · E3-3): 출발 때 식사 · 물약에 쓴 돈을 약정 한도 안에서 길드가 돌려줌
     {
       {
         // 출발 전 식사
@@ -480,6 +481,7 @@
         // 비전투 의뢰도 결과를 출발할 때 정해 둠 (미니 뷰가 귀환 전에 결과 장면을 보여 줌). rate = 출발 때 예상 성공률(위험도 표시용)
         const ok = fight ? fight.win : s.R() < p, rate = Math.round(pp * 100);
         for (const m of party) { m.state = 'quest'; m.until = s.week + weeks; }
+        party.forEach((m, i) => { const c = m.contract; if (!c || s.week < c.start || s.week > c.end) return; const used = Math.max(0, Math.floor(w0[i] - m.wallet)), back = Math.min(used, Math.max(0, c.sup - (c.supMonth || 0))); if (back > 0) { m.wallet += back; s.gold -= back; c.supMonth = (c.supMonth || 0) + back; s.month.csup = (s.month.csup || 0) - back; } });   // 금고 마이너스 허용(결정 7)
         s.active.push({ uid: s.uidNext++, rates: party.map(m => rateOf(s, m)), q, party: party.map(m => m.id), p, ok, rate, start: s.week, weeks, back: s.week + weeks, ate: eaters, dish: dish && eaters ? dish.name : null, fight });
         log(s, `${J(names(party), '이', '가')} ${qn(q)} ${q.rq ? '리퀘스트' : '의뢰'}를 맡아 떠났습니다.${eaters ? ` (출발 전 ${dish.name} ${eaters}명)` : ''}`, 'depart', { who: party.map(x => x.name) });
       }
@@ -502,7 +504,7 @@
         const sp = econSplit(RW, x.rates && x.rates.length === party.length ? x.rates : party.map(m => rateOf(s, m)));   // 출발 때 요율로 정산 (귀환 전 정책 변경 무시), 예전 저장은 지금 요율
         const fee = sp.guild + (hasDeco(s, 'bench') ? DV.gold : 0), resale = RW * E.resaleRate;   // 벤치 +5G는 중계 수입에 더함 · 소재 자동 차익은 4단계(E4-3)에서 정리
         s.gold += fee + resale; s.month.fee += fee; s.month.resale += resale;
-        party.forEach((a, i) => { a.wallet += sp.net[i]; });
+        party.forEach((a, i) => { a.wallet += sp.net[i]; (a.earn = a.earn || []).push({ w: s.week, b: sp.base[i] }); a.earn = a.earn.filter(e => e.w > s.week - (s.cfg.contract ? s.cfg.contract.look : 8)); });   // earn: 최근 기준액 기록 (계약 수락 판단, 결정 5)
         for (const a of party) {
           a.done++;
           gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) + (hasDeco(s, 'map') ? DV.xp : 0));
@@ -538,10 +540,82 @@
     }
   }
 
+
+  // ---------- 계약 모험가 (경제 개편 V2 2 · 3단계 · 결정표 docs/design/economy_v2_decisions.md, 수치는 balance.csv contract.* [임시]) ----------
+  const CCF = s => s.cfg.contract;
+  const cActive = (s, a) => !!(a && a.alive && a.contract && s.week >= a.contract.start && s.week <= a.contract.end);
+  const cCallsLeft = (s, a) => { const C = CCF(s), c = a.contract; return c ? C.callMax - c.calls.filter(w => w > s.week - C.callWin).length : 0; };
+  const cPastEnd = (s, a, weeks) => !!(a && a.contract && !a.contract.next && s.week + (weeks || 1) > a.contract.end);   // 결정 9: 돌아오는 주가 계약 끝을 넘음 (갱신이 정해져 있으면 괜찮음)
+  const contractOpen = s => !!s.built['집무실'];   // 결정 2: F급 + 집무실
+  const contractedN = s => s.advs.filter(a => a.alive && a.contract).length;
+  function earnMonthly(s, a) { const C = CCF(s), L = (a.earn || []).filter(e => e.w > s.week - C.look); return Math.floor(L.reduce((t, e) => t + e.b, 0) * WPM / C.look); }   // 최근 8주 기준액 → 한 달치
+  const contractDefault = s => { const C = CCF(s); return { weeks: C.weeks, rate: C.rate, pay: C.pay, sup: C.sup }; };
+  function contractWhy(s, a) {   // 계약을 제안할 수 없는 까닭 (없으면 null)
+    const C = CCF(s);
+    if (!contractOpen(s)) return '집무실을 지으면 계약할 수 있습니다';
+    if (!a || !a.alive) return '길드에 없는 모험가입니다';
+    if (a.contract) { if (a.contract.next) return '다음 계약이 이미 정해져 있습니다'; if (s.week < a.contract.end - 1) return `계약 중입니다 (끝나기 2주 전부터 갱신할 수 있어요)`; }
+    else if (contractedN(s) >= C.slots) return `계약 정원(${C.slots}명)이 찼습니다`;
+    if (a.attach < C.minAttach) return `애착 ${C.minAttach} 이상이어야 합니다`;
+    if ((a.done || 0) < C.minDone) return `의뢰 성공 ${C.minDone}회 이상이어야 합니다`;
+    if (s.gold < 0) return '금고 적자 — 금고가 0G 이상이 되면 계약할 수 있어요';   // 결정 7
+    return null;
+  }
+  function contractTermsWhy(s, t) {
+    const C = CCF(s), inR = (v, lo, hi, st) => Number.isInteger(v) && v >= lo && v <= hi && v % st === 0;
+    if (!C.weeksOpt.includes(t.weeks)) return '계약 기간은 ' + C.weeksOpt.join(' · ') + '주 중에서 고릅니다';
+    if (!C.rateOpt.some(r => Math.abs(r - t.rate) < 1e-9)) return '길드 몫은 ' + C.rateOpt.map(r => Math.round(r * 100) + '%').join(' · ') + ' 중에서 고릅니다';
+    if (!inR(t.pay, 0, C.payMax, C.step)) return `월 보수는 0~${C.payMax}G, ${C.step}G 단위입니다`;
+    if (!inR(t.sup, 0, C.supMax, C.step)) return `지원 한도는 0~${C.supMax}G, ${C.step}G 단위입니다`;
+    return null;
+  }
+  function contractEval(s, a, t) {   // 결정 5 복합식: 계약 쪽 월수입 ≥ 자유 쪽 월수입 × 요구 비율 → 수락 (같은 조건은 늘 같은 답)
+    const C = CCF(s), B = earnMonthly(s, a), free = Math.floor(B * (1 - feeRate(s)) + 1e-9);
+    const offer = Math.floor(B * (1 - t.rate) + 1e-9) + t.pay + Math.floor(t.sup * C.supUse);
+    const ratio = 1 - C.attachAdj * Math.max(0, Math.min(70, a.attach - 30)) / 70 + (C.spendReq[a.spend] - 1) + (C.riskReq[a.risk] - 1) + (C.socialReq[a.social] - 1);
+    const need = Math.floor(free * ratio + 1e-9);
+    const mood = offer >= need * (1 + C.maybe) ? 'yes' : offer > need * (1 - C.maybe) ? 'maybe' : 'no';   // 화면은 3단계만 (정수 원칙)
+    return { base: B, free, offer, need, ok: offer >= need, mood };
+  }
+  function contractPropose(s, aid, terms) {
+    const a = s.advs.find(x => x.id === aid), why = contractWhy(s, a); if (why) return { ok: false, why };
+    const t = Object.assign(contractDefault(s), terms || {}), tw = contractTermsWhy(s, t); if (tw) return { ok: false, why: tw };
+    const e = contractEval(s, a, t);
+    if (!e.ok) return { ok: false, mood: e.mood, line: e.mood === 'maybe' ? '음… 조금만 더 생각해 볼게요. 조건이 살짝 아쉬워요.' : '이 조건이면 혼자 일하는 게 낫겠어요.' };
+    const c = { weeks: t.weeks, rate: t.rate, pay: t.pay, sup: t.sup };
+    if (a.contract) { a.contract.next = c; log(s, `${J(a.name, '이', '가')} 계약을 갱신했습니다. (${t.weeks}주 · 길드 몫 ${Math.round(t.rate * 100)}% · 월 ${t.pay}G)`, 'grow', { who: [a.name] }); }
+    else { a.contract = Object.assign(c, { start: s.week, end: s.week + t.weeks - 1, calls: [], wk: 0, supMonth: 0, since: s.week }); (a.career = a.career || []).push({ week: s.week, text: `길드와 ${t.weeks}주 계약` }); log(s, `${J(a.name, '이', '가')} 길드의 계약 모험가가 되었습니다. (${t.weeks}주 · 길드 몫 ${Math.round(t.rate * 100)}% · 월 ${t.pay}G · 지원 ${t.sup}G)`, 'grow', { who: [a.name] }); }
+    return { ok: true, mood: e.mood, line: '좋아요, 마스터. 잘 부탁드려요.' };
+  }
+  function contractPay(s, a, why) {   // 근무한 주만큼 보수 지급 (금고 마이너스 허용, 결정 7)
+    const c = a.contract; if (!c || !c.wk) return 0;
+    const due = Math.floor(c.pay * c.wk / WPM); c.wk = 0; if (!due) return 0;
+    s.gold -= due; s.month.cpay = (s.month.cpay || 0) - due; if (a.alive) a.wallet += due;
+    return due;
+  }
+  function contractWeekly(s) {
+    for (const a of s.advs) {
+      const c = a.contract; if (!c) continue;
+      if (!a.alive) { contractPay(s, a); log(s, `${a.name}의 계약이 끝났습니다.`, 'sys'); a.contract = null; continue; }   // 사망 · 떠남: 근무분 정산, 위로금은 미정(E3-6)
+      if (s.week >= c.start && s.week <= c.end) c.wk = (c.wk || 0) + 1;
+      if (s.week >= c.end) {   // 이번 주가 마지막 주: 근무분 정산 뒤 갱신 또는 종료
+        contractPay(s, a);
+        if (c.next) { const n = c.next; a.contract = Object.assign(n, { start: c.end + 1, end: c.end + n.weeks, calls: c.calls, wk: 0, supMonth: c.supMonth, since: c.since }); log(s, `${a.name}의 새 계약이 시작됩니다. (${n.weeks}주)`, 'grow', { who: [a.name] }); }
+        else { a.contract = null; (a.career = a.career || []).push({ week: s.week, text: '계약 끝 · 자유 모험가로' }); log(s, `${a.name}의 계약이 끝나 자유 모험가가 되었습니다.`, 'sys', { who: [a.name] }); }
+      }
+    }
+  }
+  function contractMonthly(s) {
+    const mk = Math.floor(s.week / WPM); s.paidMonth = s.paidMonth || {};
+    for (const a of s.advs) { const c = a.contract; if (!c || !a.alive) continue; const key = a.id + ':' + mk; if (s.paidMonth[key]) continue; s.paidMonth[key] = 1; contractPay(s, a); c.supMonth = 0; }   // 같은 달은 한 번만 (결정 9 · E1-6)
+    for (const k in s.paidMonth) if (+k.split(':')[1] < mk - 3) delete s.paidMonth[k];
+  }
+
   function monthly(s) {
     const E = s.cfg.econ, A = s.cfg.adv, T = s.cfg.town, GE = s.cfg.gear;
     s.gold += E.subsidy[s.grade]; s.month.subsidy += E.subsidy[s.grade];
-    if (s.settled) for (const k in s.settled) if (s.settled[k] < s.week - 12) delete s.settled[k];   // 정산 기록은 12주만 보관 (원정은 길어야 3주)
+    if (s.settled) for (const k in s.settled) if (s.settled[k] < s.week - 12) delete s.settled[k];
+    contractMonthly(s);   // 계약 보수: 이번 달 근무 주만큼 월말 1회 지급 (결정 4 · 7)   // 정산 기록은 12주만 보관 (원정은 길어야 3주)
     const inTown = s.advs.filter(a => a.alive && a.state !== 'quest').length;
     s.month.inTown = inTown;   // 주점 매출은 2026-11-12부터 매주 술 1잔 단위 (departures 끝)
     let up = 0; for (const f of Object.keys(s.built)) up += (FAC_COST[f] != null ? E.buildCost[FAC_COST[f]] : 0) * E.upkeepRate;
@@ -561,7 +635,7 @@
       if (a.wallet >= price * (1 + GE.reserveMult[a.spend] * 0.5)) { a.wallet -= price; a.gear = ng; log(s, `${J(a.name, '이', '가')} ${GR[ng]}급 장비를 샀습니다. (${Math.round(price)}G)`, 'grow', { who: [a.name] }); }
     }
     proposeClasses(s);
-    const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other + (s.month.reqIn || 0) + (s.month.scout || 0) + (s.month.prep || 0);   // 2026-11-16: 리퀘스트 보상(납품 금화) · 지명 섭외비 포함
+    const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other + (s.month.reqIn || 0) + (s.month.scout || 0) + (s.month.prep || 0) + (s.month.cpay || 0) + (s.month.csup || 0);   // 2026-11-17 V2: 계약 보수 · 지원(음수)   // 2026-11-16: 리퀘스트 보상(납품 금화) · 지명 섭외비 포함
     s.month.net = net; s.month.grade = s.grade; s.month.feeRate = feeRate(s);
     s.lastMonth = s.month; s.history.push(Object.assign({ week: s.week }, s.month));
     log(s, `${dateLabel(s.week)} 결산: 운영 순이익 ${Math.round(net)}G (의뢰 ${s.month.quests}건, 성공 ${s.month.success}건)`, 'ledger', { net: Math.round(net), nq: s.month.quests, nok: s.month.success });
@@ -768,8 +842,8 @@
     if (ex.ownerXp && ow && ow.alive) gainXp(s, ow, ex.ownerXp);
   }
   // ----- 지명 -----
-  const scoutFee = (s, r, a) => a.id === r.who ? 0 : ((s.cfg.econ.scoutFee || [])[a.grade] || 0);   // 지명 섭외비: 모험가 등급별, 부탁할 때마다 (거절당해도 나감). 의뢰한 본인은 없음
-  function reqChance(s, r, a) { const d = NQ_BY[r.key]; if (a.id === r.who) return 1; return Math.min(1, REQ_CFG.base[attachTier(a)] * REQ_CFG.riskMul[a.risk][d.risk]); }
+  const scoutFee = (s, r, a) => a.id === r.who || cActive(s, a) ? 0 : ((s.cfg.econ.scoutFee || [])[a.grade] || 0);   // 계약 모험가는 섭외비 0 (결정 1)   // 지명 섭외비: 모험가 등급별, 부탁할 때마다 (거절당해도 나감). 의뢰한 본인은 없음
+  function reqChance(s, r, a) { const d = NQ_BY[r.key]; if (a.id === r.who) return 1; if (cActive(s, a) && cCallsLeft(s, a) > 0) return 1; /* 계약 모험가: 4주에 2번까지 거절 없음 (결정 1 · 6) */ return Math.min(1, REQ_CFG.base[attachTier(a)] * REQ_CFG.riskMul[a.risk][d.risk]); }
   const reqStatI = (s, r, a) => { const d = NQ_BY[r.key]; if (!d.req) return null; if (d.req[0] >= 0) return d.req[0]; if (d.req[0] === -2) return a ? a.core : 0; const ow = s.advs.find(x => x.id === r.who); return ow ? ow.core : 0; };   // req[0]: 0~4 능력치 · -1 의뢰한 본인 · -2 주력 능력치(직업 무관)
   function reqMeets(s, r, a) { const d = NQ_BY[r.key]; if (!d.req) return true; if (d.req[0] === -1) return a.id === r.who; return Math.round(finalStat(s, a, d.req[0] === -2 ? a.core : d.req[0])) >= d.req[1]; }
   const reqSorted = party => party.slice().sort((x, y) => REQ_CFG.rowOrder.indexOf(x.core) - REQ_CFG.rowOrder.indexOf(y.core));   // 대열: 항상 자동(직업 순 — 전사 · 도적 · 궁수 · 성직자 · 마법사)
@@ -803,9 +877,11 @@
     if (r.refused[aid] === s.week) return { ok: false, why: '이번 주에는 거절했습니다 (다음 주에 다시 부탁할 수 있어요)' };
     if (r.party.length >= d.party[1]) return { ok: false, why: '파티가 가득 찼습니다' };
     if (s.gold < 0) return { ok: false, why: '금고 적자 — 금고가 0G 이상이 되면 다시 부탁할 수 있어요' };   // 결정 7: 마이너스인 동안 지명 막힘
+    if (cPastEnd(s, a, d.weeks)) return { ok: false, why: `${a.name}: 계약이 곧 끝나서 이번 일은 어렵겠는데요. (계약을 갱신하면 맡을 수 있어요)`, line: '계약이 곧 끝나서 이번 일은 어렵겠는데요.' };   // 결정 9
     const fee = scoutFee(s, r, a); if (s.gold < fee) return { ok: false, why: `섭외비 ${fee}G가 부족합니다` };
     if (fee) { s.gold -= fee; a.wallet += fee; s.month.scout = (s.month.scout || 0) - fee; s.month.scoutN = (s.month.scoutN || 0) + 1; }   // 결정 10: 섭외비는 부탁받은 모험가 지갑으로 (거절해도)   // 섭외비는 부탁하는 순간 나감 (거절당해도 돌려받지 않음)
     const yes = reqR(s) < reqChance(s, r, a);
+    if (yes && cActive(s, a)) a.contract.calls.push(s.week);
     if (yes) r.party.push(aid); else r.refused[aid] = s.week;
     const L = yes ? ['맡겨 주세요!', '좋아요, 가죠.', '마스터 부탁이라면야.'] : ['이번엔 좀…', '죄송해요, 다음에요.', '그건 내키지 않네요.'];
     return { ok: yes, asked: true, fee, line: L[Math.floor(reqR(s) * L.length)] };
@@ -816,6 +892,7 @@
     if (mainBlocked(s)) return '침공 대비 중에는 출발할 수 없습니다';
     if (party.length < d.party[0]) return `${d.party[0]}명 이상 지명해야 합니다`;
     if (!party.some(a => reqMeets(s, r, a))) return '조건(★)을 채운 모험가가 1명 있어야 합니다';
+    { const late = party.find(a => cPastEnd(s, a, d.weeks)); if (late) return `${late.name}의 계약이 끝나기 전에 돌아올 수 없습니다`; }   // 결정 9
     return null;   // 2026-11-16 예약 지명: 원정 중 · 부상 중인 파티원이 있어도 보낼 수 있음 → 모두 돌아온 주에 출발 (reqLaunch)
   }
   const reqWaitOf = (s, r) => reqPartyOf(s, r).filter(a => reqBusy(s, a));   // 예약: 아직 돌아오지 않은 파티원
@@ -1034,6 +1111,7 @@
   function stepWeekTail(s) {
     fameArrivals(s);
     s.seatUsed = 0;   // 이번 주 식사한 좌석 수
+    contractWeekly(s);   // 계약 모험가: 근무 주 세기 · 끝난 계약 정산 (경제 개편 V2 3단계)
     reqWeekly(s);     // 리퀘스트: 등장 판정 · 설치 요청 확인 · 지명 파티 출발(게시판보다 먼저)
     departures(s);
     s.week++;
@@ -1041,6 +1119,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, econSplit, rateOf, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, econSplit, rateOf, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
