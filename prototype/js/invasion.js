@@ -58,7 +58,7 @@
   function mkActor(u, adv) {
     const k = CLS[u.core] + '_' + sexOf(adv || u);   // 원정 미니 뷰와 같은 키 (SD 시트는 10직업 모두 있음)
     ['idle', 'run', 'attack', 'fall'].forEach(n => advSheet(k, n));
-    return { id: u.id, name: u.name || (adv && adv.name) || '', k, core: u.core, row: POS[u.core], x: 0, y: 0, from: null, to: null, mt0: 0, mt1: 0, anim: 'idle', at0: 0, hp: u.hp, maxHp: u.maxHp, down: !!u.down, flash: 0, glow: 0, revive: null };
+    return { adv, id: u.id, name: u.name || (adv && adv.name) || '', k, core: u.core, row: POS[u.core], x: 0, y: 0, from: null, to: null, mt0: 0, mt1: 0, anim: 'idle', at0: 0, hp: u.hp, maxHp: u.maxHp, down: !!u.down, flash: 0, glow: 0, revive: null };
   }
   function moveTo(o, xy, dur) { o.from = [o.x, o.y]; o.to = xy; o.mt0 = now(); o.mt1 = now() + dur; }
   function stepMove(o) {
@@ -85,6 +85,21 @@
   }
   function num(x, y, text, color, big) { st.nums.push({ x: x + (Math.random() * 16 - 8), y, text, color, big, t0: now() }); }
   function banner(text, sub, dur) { st.banner = { text, sub, t0: now(), t1: now() + (dur || 2.4) }; }
+  // 침공 대사 (2026-11-17, data/speech.csv iv_* · lina_iv_*): 서 있는 모험가 1명이 말풍선, 리나는 길드 앞 말풍선 + 기록창
+  const SAY_T = 2.8;
+  function say(ev, who, delay, anyone) {   // anyone: 쓰러진 사람도 말함 (승패)
+    const SP = root.Speech; if (!SP || !st) return;
+    const live = [...st.actors.values()].filter(a => (anyone || !a.down) && !(st.says || []).some(b => b.a === a && now() < b.t1));
+    const a = who || live[Math.floor(Math.random() * live.length)]; if (!a) return;
+    const text = SP.line(a.adv || a, ev); if (!text || text === '…') return;
+    const t0 = now() + (delay || 0); (st.says = st.says || []).push({ a, text, t0, t1: t0 + SAY_T, any: !!anyone });
+    if (root.UI && root.UI.chat && a.adv) setTimeout(() => { if (IV.on) root.UI.chat(a.adv.name, text, null, a.adv); }, (delay || 0) * 1000);
+  }
+  function linaSay(ev, delay) {
+    const SP = root.Speech; if (!SP || !st) return; const text = SP.lina(ev); if (!text) return;
+    const t0 = now() + (delay || 0), xy = P(GUILD[0], GUILD[1]); (st.says = st.says || []).push({ lina: true, x: xy[0], y: xy[1] - 70, text, t0, t1: t0 + SAY_T + 0.8 });
+    if (root.UI && root.UI.chat) root.UI.chat('리나', text, 'lina');
+  }
 
   // ---------- 구간 재생 ----------
   // 전투 구간: 기록(log)을 라운드마다 RD초로 펼쳐 재생
@@ -96,7 +111,7 @@
       for (const u of seg.units) { const a = actorOf(u.id); if (a) { a.hp = u.hp; a.maxHp = u.maxHp; a.down = false; setAnim(a, 'idle'); } }
       let pre = 0.4;
       if (seg.at === 'bridge' && st.waveFresh) { mkFoes(seg.foes, 'bridge', true); placeAdvs('bridge', 1.6); pre = PRE.bridge; st.waveFresh = false;
-        banner(st.waveName, st.waveSub, 2.0); }
+        banner(st.waveName, st.waveSub, 2.0); if (st.waveIdx > 0 || (st.lastRes && st.waveName === '보스 등장!')) say(st.waveName === '보스 등장!' ? 'iv_boss' : 'iv_wave', null, 1.2); }
       else if (seg.at === 'castle') { st.foes.filter(f => !f.dead).forEach((f, k) => { f.i = k; }); st.foes = st.foes.filter(f => !f.dead); placeAdvs('castle', 1.6); pre = PRE.castle; }
       const byR = new Map(); for (const e of seg.log || []) { if (e.t === 'wave') continue; if (!byR.has(e.r)) byR.set(e.r, []); byR.get(e.r).push(e); }
       for (const [r, list] of byR) list.forEach((e, j) => st.events.push({ at: st.segT0 + pre + (r - 1) * RD + (j / list.length) * RD * 0.9, e }));
@@ -109,6 +124,7 @@
       live.forEach((f, k) => { const end = foeSpot('castle', f.boss ? 0 : k, n, f.boss); f.path = [...PATH.map(p => P(p[0] + ((k % 3) - 1) * 0.5, p[1])), end]; f.pk = 0; f.from = [f.x, f.y]; f.to = f.path[0]; f.mt0 = now() + 0.6; f.mt1 = f.mt0 + 1.0; });
       for (const a of st.actors.values()) if (a.down) a.revive = { t0: now() + 1.2, t1: now() + 5.4 };
       st.castleFrom = st.castle; st.castleTo = Math.max(0.3, st.castle - 0.45); st.cT0 = now() + 3.2; st.cT1 = now() + 5.4;
+      st.castleSay = now() + 5.6;   // 다시 일어난 뒤 성 앞 대사 (update에서)
       st.segEnd = now() + 5.6;
     } else if (seg.kind === 'fall') {     // 또 전멸: 성이 무너짐
       banner('영주의 성이 무너지고 있습니다…', null, 2.6);
@@ -128,7 +144,7 @@
       const a = actorOf(e.to); if (!a) return; a.hp = e.hp; a.flash = 0.25; num(a.x, a.y - 66, '−' + e.d, '#ff6b5b');
       const f = st.foes.find(x => !x.dead); if (f && f.act !== 'attack') { f.act = 'attack'; f.mt = 0; }
     } else if (e.t === 'down') {
-      const a = actorOf(e.to); if (a) { a.down = true; a.hp = 0; setAnim(a, 'fall'); }
+      const a = actorOf(e.to); if (a) { a.down = true; a.hp = 0; setAnim(a, 'fall'); if (!(now() < (st.downSayAt || 0))) { st.downSayAt = now() + 5; say('iv_down', null, 0.3); } }
     } else if (e.t === 'heal' || e.t === 'potion') {
       const a = actorOf(e.to); if (!a) return; a.hp = e.hp; a.glow = 0.5; num(a.x, a.y - 66, (e.t === 'potion' ? '물약 +' : '+') + e.d, '#7be08a');
       if (e.t === 'heal') { const h = actorOf(e.by); if (h) setAnim(h, 'attack'), h.atkEnd = now() + 0.55; }
@@ -159,6 +175,7 @@
     for (const u of v.units) { const adv = s.advs.find(a => a.id === u.id), a = mkActor(u, adv); st.actors.set(u.id, a); const g0 = P(GUILD[0] + (Math.random() - 0.5), GUILD[1] + (Math.random() - 0.5)); a.x = g0[0]; a.y = g0[1]; }
     buildUi(); hud();
     banner('몬스터가 다리로 쳐들어옵니다!', `모험가 ${v.units.length}명이 다리를 지킵니다`, 2.4);
+    linaSay('lina_iv_start', 0.3); say('iv_start', null, 1.6);
     setTimeout(() => { if (IV.on && st && st.s === s) nextWave(); }, 1200);
   }
   function finish() {   // 결과 창의 확인: 마을 화면을 닫고 시간을 되돌림
@@ -194,7 +211,7 @@
 #invUi .iv-note{font-size:13px;color:#7a5c3c}
 #invUi .iv-res{bottom:auto;top:50%;transform:translate(-50%,-50%);text-align:center;min-width:560px}
 #invUi .iv-res h3{font-size:32px;margin-bottom:10px}#invUi .iv-res.win h3{color:#3d6b2c}#invUi .iv-res.lose h3{color:#9a3b26}
-#invUi .iv-res p{margin:6px 0;font-size:17px}#invUi .iv-res .iv-go{margin-top:16px}
+#invUi .iv-res p{margin:6px 0;font-size:17px}#invUi .iv-res .iv-lina{margin-top:12px;padding-top:10px;border-top:1px dashed rgba(110,72,36,.35);color:#5a3a22;font-size:16px}#invUi .iv-res .iv-lina b{margin-right:6px;color:#7a5032}#invUi .iv-res .iv-go{margin-top:16px}
 body.invOn #hudBR,body.invOn #hudTR,body.invOn #townUi .plate,body.invOn #logBox,body.invOn #devToggle{opacity:0;pointer-events:none;transition:opacity .2s}
 `;
   function buildUi() {
@@ -212,6 +229,7 @@ body.invOn #hudBR,body.invOn #hudTR,body.invOn #townUi .plate,body.invOn #logBox
   const fmt = n => Math.round(n).toLocaleString('ko-KR');
   function showPrep() {
     const s = st.s, v = root.GuildGame.mainLiveView(s); if (!v) return;
+    say('iv_rest', null, 0.2);
     const nx = v.next, rows = v.units.map(u => {
       const a = actorOf(u.id), was = a && a.down, k = u.hp / u.maxHp;
       return `<div class="iv-row"><span><b>${u.name}</b><em>${u.cls} Lv ${u.lv}${was ? ' · 다시 일어남' : ''}</em></span><span class="iv-hp"><u class="${k < 0.3 ? 'crit' : k < 0.6 ? 'low' : ''}" style="width:${Math.round(k * 100)}%"></u><span>${u.hp} / ${u.maxHp}</span></span><span class="iv-pot">물약 <b>${u.pots}</b>개 <button data-iv="pot" data-id="${u.id}" data-n="-1" ${u.pots ? '' : 'disabled'}>−</button><button data-iv="pot" data-id="${u.id}" data-n="1" ${u.pots >= 3 || s.gold < v.price ? 'disabled' : ''}>+</button></span></div>`;
@@ -221,10 +239,14 @@ body.invOn #hudBR,body.invOn #hudTR,body.invOn #townUi .plate,body.invOn #logBox
   }
   function showResult() {
     const s = st.s, R = (s.main && s.main.result) || {}, ok = !!R.win;
+    say(ok ? 'iv_win' : 'iv_lose', null, 0, true);
+    const lt = root.Speech ? root.Speech.lina(ok ? 'lina_iv_win' : 'lina_iv_lose') : '';   // 리나 한마디는 결과 창 안에 (창이 길드 앞 말풍선을 가림)
+    if (lt && root.UI && root.UI.chat) root.UI.chat('리나', lt, 'lina');
+    const linaP = lt ? `<p class="iv-lina"><b>리나</b> “${lt}”</p>` : '';
     const body = ok
-      ? `<p><b>길드가 E급으로 승급했습니다!</b></p><p>보상 ${fmt(R.gold)}G · 명성 +${R.fame} · 모험가 관리소를 지을 수 있습니다</p><p>${R.castle ? '영주의 성까지 밀렸지만 다시 일어나 막아 냈습니다. ' : ''}쓰러진 모험가 ${R.down}명은 부상으로 쉽니다.</p>`
+      ? `<p><b>길드가 E급으로 승급했습니다!</b></p><p>보상 ${fmt(R.gold)}G · 명성 +${R.fame} · 모험가 관리소를 지을 수 있습니다</p>${R.castle || R.down ? `<p>${R.castle ? '영주의 성까지 밀렸지만 다시 일어나 막아 냈습니다. ' : ''}${R.down ? `쓰러진 모험가 ${R.down}명은 부상으로 쉽니다.` : ''}</p>` : ''}`   // 2026-11-17: 0명이면 줄을 숨김
       : `<p>인구 −${R.pop}명 · 신뢰도 −${R.trust}</p>${R.dead && R.dead.length ? `<p><b>${R.dead.join(', ')}</b> — 돌아오지 못했습니다</p>` : ''}<p>${R.retry}주 뒤 리퀘스트 장에서 다시 도전할 수 있습니다.</p>`;
-    ui.querySelector('.iv-slot').innerHTML = `<div class="iv-panel iv-res ${ok ? 'win' : 'lose'}"><h3>${ok ? '다리를 지켜 냈습니다!' : '영주의 성이 무너졌습니다'}</h3>${body}<button class="iv-go" data-iv="end">확인</button></div>`;
+    ui.querySelector('.iv-slot').innerHTML = `<div class="iv-panel iv-res ${ok ? 'win' : 'lose'}"><h3>${ok ? '다리를 지켜 냈습니다!' : '영주의 성이 무너졌습니다'}</h3>${body}${linaP}<button class="iv-go" data-iv="end">확인</button></div>`;
     if (ok && root.UI && root.UI.gradeUp) { /* 승급 카드는 확인 뒤 */ }
   }
   function onClick(e) {
@@ -256,6 +278,8 @@ body.invOn #hudBR,body.invOn #hudTR,body.invOn #townUi .plate,body.invOn #logBox
     if (st.castleShown && st.cT1 && now() >= st.cT0) { const k = Math.min(1, (now() - st.cT0) / (st.cT1 - st.cT0)); st.castle = st.castleFrom + (st.castleTo - st.castleFrom) * k; }
     while (st.ei < st.events.length && st.events[st.ei].at <= now()) applyEv(st.events[st.ei++].e);
     st.nums = st.nums.filter(n => now() - n.t0 < 1.1);
+    if (st.castleSay && now() >= st.castleSay) { st.castleSay = 0; say('iv_castle'); }
+    if (st.says) st.says = st.says.filter(b => now() < b.t1);
     if (st.phase === 'play' && st.seg && now() >= st.segEnd) startSeg();
   };
   IV.draw = function (g) {
@@ -288,6 +312,11 @@ body.invOn #hudBR,body.invOn #hudTR,body.invOn #townUi .plate,body.invOn #logBox
       if (st.smokeOn && now() >= st.smokeOn) smoke(g, c[0], c[1] - 120, now() - st.smokeOn);
     }
     for (const n of st.nums) { const k = (now() - n.t0) / 1.1; g.save(); g.globalAlpha = Math.max(0, 1 - k * k); g.font = `800 ${n.big ? 26 : 20}px "Malgun Gothic",sans-serif`; g.textAlign = 'center'; g.lineWidth = 4; g.strokeStyle = 'rgba(30,18,10,.85)'; g.strokeText(n.text, n.x, n.y - k * 30); g.fillStyle = n.color; g.fillText(n.text, n.x, n.y - k * 30); g.restore(); }
+    if (st.says && root.Director && root.Director.drawBubble) for (const b of st.says) {   // 침공 대사 말풍선 (머리 위)
+      if (now() < b.t0) continue; const x = b.lina ? b.x : b.a.x, y = b.lina ? b.y : b.a.y - 62 - 12; if (!b.lina && b.a.down && !b.any) continue;
+      g.save(); root.Director.drawBubble(g, x, y, b.text, 0, now() - b.t0, b.t1 - now());
+      if (b.lina) { g.font = '700 15px "Malgun Gothic",sans-serif'; const w = g.measureText('리나').width + 16; g.globalAlpha = Math.min(1, (b.t1 - now()) / 0.25); g.fillStyle = 'rgba(34,22,13,.85)'; g.beginPath(); g.roundRect(x - 34, y - 22 - 54 - 26, w, 22, 8); g.fill(); g.fillStyle = '#fbf1dc'; g.textBaseline = 'middle'; g.fillText('리나', x - 34 + 8, y - 22 - 54 - 15); }
+      g.restore(); }
     if (st.banner && now() < st.banner.t1) {
       const b = st.banner, k = Math.min(1, (now() - b.t0) / 0.3, (b.t1 - now()) / 0.4);
       g.save(); g.globalAlpha = Math.max(0, k); g.fillStyle = 'rgba(34,22,13,.8)'; g.fillRect(0, 190, 1920, b.sub ? 104 : 74);

@@ -92,7 +92,8 @@
     const want = s.pop + T.baseAdd + (s.month.popAdd || 0) + residents * T.perResident;
     const built = HOUSE_SLOTS.length ? addHouses(s, want) : 0;
     const cap = HOUSE_SLOTS.length ? housingCap(s) : Infinity;
-    s.housingFull = want > cap; s.pop = Math.min(want, cap);
+    const wasFull = !!s.housingFull; s.housingFull = want > cap; s.pop = Math.min(want, cap);
+    if (s.housingFull && !wasFull) log(s, `마을에 집이 부족해 인구가 ${Math.round(s.pop)}명에서 더 늘지 않습니다. 집이 고쳐 지어지거나 마을 단계가 오르면 다시 늘어납니다.`, 'town');   // 2026-11-17 주거지 부족 안내 (처음 부족해질 때 한 번)
     if (up) log(s, `마을 집 ${up}채를 고쳐 지었습니다. (주거 +${upCap}명 · 지금 마을에서는 ${LV_NAME[Math.min(4, st - 1)]}까지)`, 'town');
     if (built) log(s, `마을에 새 집이 ${built}채 생겼습니다. (인구 ${Math.round(s.pop)}명 · 집 ${s.houses.length}채)`, 'town');
   }
@@ -518,7 +519,7 @@
         const d = (q.death != null ? q.death : Q.deathBase[q.g]) * CB.C.deathRisk[a.risk] * (1 - 0.15 * Math.min(1, effN(s, '의무실')));
         if (s.R() < d) { a.alive = false; a.dead = true; a.state = 'dead'; s.stats.deaths++; log(s, `${J(a.name, '이', '가')} ${qn(q)} 의뢰에서 쓰러져 돌아오지 못했습니다.`, 'death', { who: [a.name] }); continue; }
         const wk = Math.max(1, CB.C.injuryWeeks[q.g] - (s.built['의무실'] ? CB.C.injuryClinic : 0) - (hasDeco(s, 'fireplace') ? s.cfg.deco.injury : 0));   // 벽난로 −1주
-        a.state = 'injured'; a.until = s.week + wk; a.injuredFrom = q.name || `${GR[q.g]}급 ${QTYPE[q.type]} 의뢰`;   // 모험가 팝업 오버 창용
+        a.state = 'injured'; a.until = s.week + wk; a.injuredAt = s.week; a.injuredFrom = q.name || `${GR[q.g]}급 ${QTYPE[q.type]} 의뢰`;   // 모험가 팝업 오버 창용
         log(s, `${J(a.name, '이', '가')} 전투에서 쓰러져 부상을 입었습니다. ${wk}주 동안 쉽니다.`, 'injury', { who: [a.name] });
       }
     }
@@ -535,10 +536,10 @@
     townMonthly(s);   // 2026-11-13: 정수 가산형 인구 + 민가
     for (const a of s.advs) if (a.alive && a.state !== 'quest') a.attach = Math.min(100, a.attach + A.attachPerMonthInTown * 0.5);
     for (const a of s.advs) if (a.alive && a.attach < A.leaveAttach && s.week - a.joined > A.leaveAfterYears * WPY && a.state !== 'quest') { a.alive = false; log(s, `${J(a.name, '이', '가')} 이 마을을 떠났습니다. (애착도 ${Math.round(a.attach)})`, 'leave', { who: [a.name] }); }
-    // 새 모험가 방문 수 = 기본 × 신뢰도 보정(0.7~1.3) × 명성 보정(1~1.6)
-    const F = s.cfg.fame, lam = A.arrivalPerMonth * (0.7 + 0.6 * s.trust / 100) * (1 + F.maxBonus * Math.min(1, (s.fame || 0) / F.full));
+    // 새 모험가: 2026-11-17부터 명성 fameStep(5)마다 1명(fameArrivals, 매주). fameStep이 0일 때만 예전 확률 방식 = 기본 × 신뢰도 보정(0.7~1.3) × 명성 보정(1~1.6)
+    if (!A.fameStep) { const F = s.cfg.fame, lam = A.arrivalPerMonth * (0.7 + 0.6 * s.trust / 100) * (1 + F.maxBonus * Math.min(1, (s.fame || 0) / F.full));
     let k = Math.floor(lam); if (s.R() < lam - k) k++;
-    for (let i = 0; i < k && s.advs.filter(x => x.alive).length < advCap(s); i++) spawnAdv(s, {});   // 등급 상한이 차면 새 모험가는 오지 않는다
+    for (let i = 0; i < k && s.advs.filter(x => x.alive).length < advCap(s); i++) spawnAdv(s, {}); }   // 등급 상한이 차면 새 모험가는 오지 않는다
     for (const a of s.advs) {
       if (!a.alive) continue;
       const ng = Math.min(s.grade, a.gear + 1); if (ng <= a.gear) continue;
@@ -926,7 +927,7 @@
       s.stats.injuries++;
       if (!win && s.R() < C.deathLoss) { a.alive = false; a.dead = true; a.state = 'dead'; s.stats.deaths++; dead.push(a.name); log(s, `${J(a.name, '이', '가')} 다리를 지키다 쓰러져 돌아오지 못했습니다.`, 'death', { who: [a.name] }); continue; }
       const wk = Math.max(1, CB.C.injuryWeeks[0] - clinic - fire);
-      a.state = 'injured'; a.until = s.week + wk; a.injuredFrom = '메인 퀘스트 「다리를 지켜라」';
+      a.state = 'injured'; a.until = s.week + wk; a.injuredAt = s.week; a.injuredFrom = '메인 퀘스트 「다리를 지켜라」';
     }
     delete M.run;
     if (win) {
@@ -1008,7 +1009,15 @@
     if (s.main && s.main.state === 'live') return;   // 화면에서 침공을 보는 중: 이 주의 나머지(지명 · 출발 · 주 넘김)는 침공이 끝난 뒤 stepWeekTail로
     stepWeekTail(s);
   }
+  // 명성 방문 (2026-11-17 결정: 5마다, progression_v1 2-2 · HUD '다음 모험가까지 명성 N'과 같은 규칙): 명성이 fameStep의 배수(5 · 10 · 15…)에 처음 닿을 때마다 1명.
+  //   상한(길드 등급별)이 차 있으면 기다렸다가 자리가 나면(승급 등) 옴. 명성이 깎였다가 다시 올라도 같은 칸은 한 번만. 예전 저장은 지금 명성까지는 이미 온 것으로 봄
+  function fameArrivals(s) {
+    const st = (s.cfg.adv || {}).fameStep; if (!st) return;
+    const due = Math.floor((s.fame || 0) / st); if (s.fameMs == null) s.fameMs = due;
+    while (s.fameMs < due && s.advs.filter(x => x.alive).length < advCap(s)) { s.fameMs++; spawnAdv(s, {}); }
+  }
   function stepWeekTail(s) {
+    fameArrivals(s);
     s.seatUsed = 0;   // 이번 주 식사한 좌석 수
     reqWeekly(s);     // 리퀘스트: 등장 판정 · 설치 요청 확인 · 지명 파티 출발(게시판보다 먼저)
     departures(s);

@@ -451,9 +451,9 @@
     if (act === 'main') { Gm.mainAccept(s); hooks.changed && hooks.changed(); renderPopup(); return; }
     const v = Gm.reqView(s).find(x => x.r.id === rqSel); if (!v) return;
     const top = s.log[0]; rqMsg = '';
-    if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; else rqStamp('들어주기', v.name); }
+    if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; else rqStamp('수락', `「${v.name}」`); }   // 2026-11-17 사용자: 도장은 밤 원본(초록 '수락' + 「이름」)으로
     else if (act === 'refuse') Gm.reqRefuse(s, v.r.id);
-    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = Gm.reqWaitOf(s, v.r).length ? '' : '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; rqStamp('보내기', v.name); } }
+    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = Gm.reqWaitOf(s, v.r).length ? '' : '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; rqStamp('수락', `「${v.name}」 · ${Gm.reqWaitOf(s, v.r).length ? '모이면 출발' : '다음 주 출발'}`); } }
     else if (act === 'unsend') Gm.reqUnsend(s, v.r.id);
     else if (act === 'office') Gm.build(s, '집무실');
     rqFlush(top); hooks.changed(); renderPopup();
@@ -1010,7 +1010,8 @@
     // 머리
     let h = `${BK ? `<div class="av-sealw" aria-hidden="true"><div class="av-seal"><b>${GR[a.grade]}</b></div></div>` : ''}<div class="av-head">${BK ? '<div class="pcol">' : ''}<div class="ux-portrait sm"><i style="${faceStyle(a, 104, 260, 60)}"></i></div>${BK ? `<b class="plv">Lv ${a.lv}</b></div>` : ''}<div class="who">${document.getElementById('pop').classList.contains('book') ? titleDD(a) : ''}
       <div class="nm"><span class="anm">${a.name}</span> <i class="ux-grade" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)"></i><span class="cls">${STAGE[a.stage]} ${path}</span><i class="br"></i>${stTag(a)}${BK ? `<i class="br br2"></i><span class="av-trt"><span><em>모험심</em>${Gm.RISK[a.risk]}<i class="tip">${TRAIT_TXT.risk[a.risk]}</i></span><span><em>소비</em>${Gm.SPEND[a.spend]}<i class="tip">${TRAIT_TXT.spend[a.spend]}</i></span><span><em>사교</em>${Gm.SOCIAL[a.social]}<i class="tip">${TRAIT_TXT.social[a.social]}</i></span></span>` : ''}${(() => { const AT = [0, 30, 60, 90, 100], t = Gm.attachTier(a), lo = AT[t], hi = AT[t + 1] || 100, pct = t >= 3 ? 100 : Math.min(100, (a.attach - lo) / (hi - lo) * 100); return `<span class="av-att" title="애착 ${ATT_NAME[t]} (${Math.round(a.attach)})"><span class="att-a">♥ ${Math.round(a.attach)}</span><span class="att-b"><em>${['방랑자', '새내기', '동반자', '토박이'][t]}</em><i class="trk"><i style="width:${pct}%"></i></i></span></span>`; })()}<span class="gold av-wal" title="모험가 소지금 (식사·물약·장비 구매에 씀)"><em class="wl">소지금</em><i></i>${fmt(Math.round(a.wallet || 0))}G</span></div>
-      ${(() => { const CBH = root.GuildCombat ? root.GuildCombat.make(root.GAME_DATA) : null; if (!(CBH && CBH.ok)) return ''; const u = CBH.unit(a, i => Gm.finalStat(s, a, i), a.gear, 0); const hp = Math.round(u.maxHp), mp = Math.round(u.maxMp); if (BK) return `<div class="hm"><div class="vb hp"><span class="k">체력</span><i class="trk"><i></i><em class="bv">${fmt(hp)}/${fmt(hp)}</em></i></div><div class="vb mp"><span class="k">마력</span><i class="trk"><i></i><em class="bv">${fmt(mp)}/${fmt(mp)}</em></i></div><div class="vb ex"><span class="k">경험치</span><i class="trk"><i style="width:${xp}%"></i><em class="bv">${a.lv >= cap ? '상한' : fmt(Math.floor(a.xp)) + '/' + fmt(Math.round(need))}</em></i></div></div>`; return `<div class="hm"><div class="vb hp"><span class="k">체력</span><i class="trk"><i></i></i><b>${hp}</b></div><div class="vb mp"><span class="k">마력</span><i class="trk"><i></i></i><b>${mp}</b></div></div>`; })()}
+      ${(() => { const CBH = root.GuildCombat ? root.GuildCombat.make(root.GAME_DATA) : null; if (!(CBH && CBH.ok)) return ''; const u = CBH.unit(a, i => Gm.finalStat(s, a, i), a.gear, 0); const hp = Math.round(u.maxHp), mp = Math.round(u.maxMp); const iw = a.state === 'injured' ? Math.max(0, a.until - s.week) : 0, itot = Math.max(iw, a.injuredAt != null ? a.until - a.injuredAt : iw + 1), ipc = iw ? Math.max(8, Math.round((itot - iw) / Math.max(1, itot) * 100)) : 100;   // 부상 표시 (2026-11-16 결정 · 11-17 구현): 부상이면 체력 막대를 회복한 만큼만 채우고 '부상 N주'
+      if (BK) return `<div class="hm"><div class="vb hp${iw ? ' inj' : ''}"><span class="k">체력</span><i class="trk"><i${iw ? ` style="width:${ipc}%"` : ''}></i><em class="bv">${iw ? `부상 ${iw}주` : `${fmt(hp)}/${fmt(hp)}`}</em></i></div><div class="vb mp"><span class="k">마력</span><i class="trk"><i></i><em class="bv">${fmt(mp)}/${fmt(mp)}</em></i></div><div class="vb ex"><span class="k">경험치</span><i class="trk"><i style="width:${xp}%"></i><em class="bv">${a.lv >= cap ? '상한' : fmt(Math.floor(a.xp)) + '/' + fmt(Math.round(need))}</em></i></div></div>`; return `<div class="hm"><div class="vb hp"><span class="k">체력</span><i class="trk"><i></i></i><b>${hp}</b></div><div class="vb mp"><span class="k">마력</span><i class="trk"><i></i></i><b>${mp}</b></div></div>`; })()}
       ${BK ? '' : `<div class="lv"><b>Lv ${a.lv}</b><div class="ux-bar blue"><i style="width:${xp}%"></i></div><span>${a.lv >= cap ? '레벨 상한' : '다음 레벨까지 ' + fmt(need - a.xp)}</span></div>`}</div></div>`;
     // 장비
     const CB_ = root.GuildCombat ? root.GuildCombat.make(root.GAME_DATA) : null, GE = s.cfg.gear;
@@ -1560,7 +1561,7 @@
   }
   // 롤오버 (2026-11-12): 놓인 물건·시설 위에서 금빛 테두리 + 손가락 커서, 시설은 이름 툴팁 (짓지 않은 시설은 짓기 비용)
   const FAC_NAME = { 게시판: '의뢰 게시판', 접수대: '접수대', 주점: '주점', 판매창구: '판매 창구', 집무실: '집무실', 관리소: '모험가 관리소' };
-  const lobbyIdle = () => !(PM || popup || (root.Town && root.Town.active) || Dlg.open || (root.LinaMenu && root.LinaMenu.open));
+  const lobbyIdle = () => !(PM || popup || (root.Town && root.Town.active) || Dlg.open);   // 2026-11-17 리나 메뉴(lina_menu.js) 걷어냄
   function hoverAt(pt) {
     const L = root.Lobby; if (!L) return;
     let h = pt && lobbyIdle() ? L.hitAt(s, pt[0], pt[1]) : null;
@@ -1646,7 +1647,6 @@
   function pressCancel() { PRESS = null; if (root.Lobby) root.Lobby.press = null; }
   function pmItemClick(pt) {
     if (PM || popup || (root.Town && root.Town.active) || Dlg.open) return;
-    if (root.LinaMenu && root.LinaMenu.open) { root.LinaMenu.close(); return; }   // 리나 메뉴가 떠 있으면 바닥을 눌러 닫기
     const h = root.Lobby.hitAt(s, pt[0], pt[1]);
     if (h && h.kind === 'fac') { pmMenuClose(); facClick(h.id, pt); return; }
     const it = h && h.it; if (!it) { pmMenuClose(); return; }

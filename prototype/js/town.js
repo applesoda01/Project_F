@@ -356,11 +356,16 @@
     }
     if (TS) { TS.tint(wg); g.drawImage(TS.worldImage(), 0, 0); TS.drawFx(g); }   // 시간대 색 → 화면 → 낙엽·눈·비
     if (TS) TS.drawSky(g, c => skyDraw(c, skyImg)); else skyDraw(g, skyImg); // 구름 그림자·새·구름 (클릭 판정과 무관). 계절 모듈이 있으면 일반 배경의 아침~노을에만 보임
-    if (s.housingFull) {   // 주거지 부족 (2026-11-13 임시: 화면 가운데 글자. UI 확정 뒤 자리·모양 결정)
-      const t1 = '주거지가 부족합니다', t2 = '집이 고쳐 지어지거나 마을 단계가 오르면 인구가 다시 늘어납니다';
-      g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '700 40px "Malgun Gothic",sans-serif';
-      g.lineWidth = 6; g.strokeStyle = 'rgba(34,22,13,.85)'; g.strokeText(t1, 960, 520); g.fillStyle = '#fbe3c4'; g.fillText(t1, 960, 520);
-      g.font = '600 22px "Malgun Gothic",sans-serif'; g.lineWidth = 4; g.strokeText(t2, 960, 566); g.fillStyle = '#fbf1dc'; g.fillText(t2, 960, 566); g.restore();
+    if (s.housingFull) {   // 주거지 부족 표시 (2026-11-17 사용자 '나'안: 왼쪽 위 HUD 아래 붉은 표시 + 처음 부족해질 때 기록창 한 줄 — game_core houses)
+      const t1 = '집 부족', t2 = `인구 ${Math.round(s.pop).toLocaleString()}명에서 멈춤 · 집이 고쳐 지어지거나 마을 단계가 오르면 다시 늘어요`;
+      g.save(); g.textBaseline = 'middle';
+      g.font = '700 18px "Malgun Gothic",sans-serif'; const w1 = g.measureText(t1).width; g.font = '500 15px "Malgun Gothic",sans-serif'; const w2 = g.measureText(t2).width;
+      const x0 = 30, y0 = 140, h = 36, w = 14 + 22 + w1 + 14 + w2 + 16;
+      g.shadowColor = 'rgba(30,18,8,.3)'; g.shadowBlur = 6; g.shadowOffsetY = 2; g.fillStyle = 'rgba(255,248,236,.95)'; g.beginPath(); g.roundRect(x0, y0, w, h, 10); g.fill();
+      g.shadowColor = 'transparent'; g.strokeStyle = '#c0392b'; g.lineWidth = 2; g.stroke();
+      g.fillStyle = '#c0392b'; g.beginPath(); g.roundRect(x0 + 12, y0 + 9, 18, 18, 4); g.fill(); g.fillStyle = '#fff'; g.font = '700 14px "Malgun Gothic",sans-serif'; g.textAlign = 'center'; g.fillText('!', x0 + 21, y0 + 19);
+      g.textAlign = 'left'; g.font = '700 18px "Malgun Gothic",sans-serif'; g.fillStyle = '#a3261b'; g.fillText(t1, x0 + 36, y0 + h / 2 + 1);
+      g.font = '500 15px "Malgun Gothic",sans-serif'; g.fillStyle = '#4a3322'; g.fillText(t2, x0 + 36 + w1 + 14, y0 + h / 2 + 1); g.restore();
     }
     if (root.Invasion && root.Invasion.on) { root.Invasion.draw(g); return; }   // 침공 중: 모험가 · 몬스터 · 성 게이지만 (이름표 · 말풍선 생략)
     // 이름표
@@ -373,10 +378,19 @@
     }
     if (bub) {
       if (root.Director && root.Director.drawBubble) root.Director.drawBubble(g, bub.x, bub.y + 36, bub.text, 4 - bub.t, bub.t);   // 길드와 같은 말풍선
-      if (bub.who && bub.who.a) {   // 말풍선 위 이름표: 이름 · 직업 (2026-11-12)
-        const A2 = bub.who.a, txt = `${A2.name} · ${A2.cls}`, ty = bub.y + 36 - 22 - 54 - 8, al = Math.min(1, (4 - bub.t) / .2, bub.t / .25);
-        g.save(); g.globalAlpha = Math.max(0, al); g.font = '700 17px "Malgun Gothic",sans-serif'; const w = g.measureText(txt).width + 16, x0 = Math.max(12, Math.min(1908 - w, bub.x - 34));
-        g.fillStyle = 'rgba(34,22,13,.82)'; g.beginPath(); g.roundRect(x0, ty - 24, w, 24, 8); g.fill(); g.fillStyle = '#fbf1dc'; g.textBaseline = 'middle'; g.fillText(txt, x0 + 8, ty - 11); g.restore();
+      if (bub.who && bub.who.a) {   // 이름 리본 (2026-11-17 반영, 사용자 D안 11-16): 말풍선 오른쪽 위 모서리에 걸친 갈색 리본 — 이름 굵게 + 직업 작게
+        const A2 = bub.who.a, x = bub.x, y = bub.y + 36, al = Math.min(1, (4 - bub.t) / .2, bub.t / .25);
+        g.save(); g.globalAlpha = Math.max(0, al);
+        g.font = '700 26px "MaruBuri", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';   // 말풍선 상자 크기 (actors.js bubble과 같은 계산)
+        const bw = Math.max(72, Math.ceil(g.measureText(bub.text).width) + 48), bx = Math.max(12, Math.min(1908 - bw, x - 34)), by = y - 22 - 54;
+        const F1 = '700 18px "MaruBuri", "Malgun Gothic", sans-serif', F2 = '600 13px "Malgun Gothic", sans-serif';
+        g.font = F1; const w1 = g.measureText(A2.name).width; g.font = F2; const w2 = g.measureText(A2.cls).width;
+        const rw = Math.ceil(w1 + w2 + 34), rh = 30, rx = Math.max(12, Math.min(1908 - rw, bx + bw - rw + 12)), ry = by - rh / 2 - 2;
+        g.shadowColor = 'rgba(30,18,8,.35)'; g.shadowBlur = 5; g.shadowOffsetY = 2;
+        g.fillStyle = '#5a3820'; g.beginPath(); g.roundRect(rx, ry, rw, rh, 15); g.fill();
+        g.shadowColor = 'transparent'; g.strokeStyle = 'rgba(232,196,128,.55)'; g.lineWidth = 1.5; g.beginPath(); g.roundRect(rx + 2.5, ry + 2.5, rw - 5, rh - 5, 12.5); g.stroke();
+        g.textBaseline = 'middle'; g.font = F1; g.fillStyle = '#fbf1dc'; g.fillText(A2.name, rx + 13, ry + rh / 2 + 1);
+        g.font = F2; g.fillStyle = '#e2c79a'; g.fillText(A2.cls, rx + 13 + w1 + 8, ry + rh / 2 + 2); g.restore();
       }
       /* [보관] 예전 마을 말풍선
       g.font = '600 20px "Malgun Gothic",sans-serif'; const w = g.measureText(bub.text).width + 30, a = Math.min(1, bub.t * 2);

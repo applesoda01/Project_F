@@ -272,7 +272,7 @@
       else { const walkBack = !v.combat && !ok;   // 결과: 성공 → 오른쪽으로 떠남, 실패 → 왼쪽으로 후퇴(비전투는 걸어서 돌아감)
         if (ok) { a.anim = 'run'; a.dir = 1; a.x = (a.x || home) + 150 * dt; } else { a.anim = walkBack ? 'walk' : 'run'; a.dir = -1; a.x = (a.x || home) - (walkBack ? 60 : 150) * dt; } }
       a.flash = Math.max(0, a.flash - dt); a.glow = Math.max(0, a.glow - dt); a.dodge = Math.max(0, a.dodge - dt);
-      a.show += ((v.combat && (P === 'fight' || P === 'result') ? 1 : 0) - a.show) * Math.min(1, dt * 6);
+      a.show += (((P === 'fight' || P === 'result') ? 1 : 0) - a.show) * Math.min(1, dt * 6);   // 2026-11-17: 수행(비전투) 의뢰도 막대를 보임 — 전에는 전투에서만 보여 수행 게이지가 안 나왔음
     });
     // 적: x=316부터 오른쪽 끝(478)까지. 넘치면 겹쳐서 줄이고, 홀수 번째는 4px 뒤(위)에 서서 덜 겹쳐 보이게. 그림이 있으면 그림 크기 그대로(도트 1:1), 없으면 상자(보스 140%)
     // 2026-11-16: 쓰러진 적은 그 자리에 두고, 살아 있는 적만 왼쪽(316)부터 다시 줄 세움 → 앞 적이 쓰러지면 뒤 적이 앞으로 나옴
