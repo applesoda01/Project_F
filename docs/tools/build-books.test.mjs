@@ -49,7 +49,7 @@ test('real books preserve v1 and provide portable version links, including new c
   assert.match(changedRegions, /assets\/ui\/contract-tabs.png/);
   assert.doesNotMatch(changedRegions, /모험가는 명성 10마다 1명씩 오고/);
   const metadata = JSON.parse(added.match(/<script type="application\/json" id="book-change-data"[^>]*>([\s\S]*?)<\/script>/)[1]);
-  assert.ok(metadata['ch03/lifecycle.html'].items.some(item => item.after.includes('E급 소수 계약')));
+  assert.ok(metadata['ch03/lifecycle.html'].items.some(item => item.after.includes('F급 + 집무실 소수 계약')));
   assert.ok(metadata['ch03/lifecycle.html'].items.every(item => item.state.includes('미반영')));
   for (const version of ['v1', 'v2']) {
     assert.ok(existsSync(join(output, version, 'searchindex.js')));
