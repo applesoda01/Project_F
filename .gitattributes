@@ -9,3 +9,6 @@
 *.html text eol=lf
 *.json text eol=lf
 *.py text eol=lf
+
+# Windows 배치 파일은 CRLF로 (2026-11-17)
+*.bat text eol=crlf
