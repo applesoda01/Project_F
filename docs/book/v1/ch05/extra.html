@@ -1,0 +1,297 @@
+<!DOCTYPE HTML>
+<html lang="ko" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>습격 · 마인 · 무술 대회 - Project_F 기획 안내서</title>
+
+
+        <!-- Custom HTML head -->
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+
+        <meta name="description" content="이세계 모험가 길드(가칭) — 처음 읽는 사람을 위한 기획 안내서">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/custom.css">
+
+    <link rel="stylesheet" href="../../_book-ui.css">
+</head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html">들어가며</a></li><li class="chapter-item expanded affix "><a href="../reading.html">이 책을 읽는 법</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded "><a href="../ch01/index.html"><strong aria-hidden="true">1.</strong> 이 게임은</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch01/concept.html"><strong aria-hidden="true">1.1.</strong> 한 장으로 보는 게임</a></li><li class="chapter-item expanded "><a href="../ch01/numbers.html"><strong aria-hidden="true">1.2.</strong> 핵심 수치 다섯 가지</a></li><li class="chapter-item expanded "><a href="../ch01/scope.html"><strong aria-hidden="true">1.3.</strong> 프로토타입 범위와 현재 상태</a></li><li class="chapter-item expanded "><a href="../ch01/references.html"><strong aria-hidden="true">1.4.</strong> 레퍼런스 게임</a></li><li class="chapter-item expanded "><a href="../ch01/platform.html"><strong aria-hidden="true">1.5.</strong> 플랫폼과 로드맵</a></li></ol></li><li class="chapter-item expanded "><a href="../ch02/index.html"><strong aria-hidden="true">2.</strong> 한 판의 흐름</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch02/loop.html"><strong aria-hidden="true">2.1.</strong> 핵심 루프: 한 주에 일어나는 일</a></li><li class="chapter-item expanded "><a href="../ch02/time.html"><strong aria-hidden="true">2.2.</strong> 시간: 주 · 달 · 해</a></li><li class="chapter-item expanded "><a href="../ch02/first-year.html"><strong aria-hidden="true">2.3.</strong> 첫해 진행표</a></li></ol></li><li class="chapter-item expanded "><a href="../ch03/index.html"><strong aria-hidden="true">3.</strong> 모험가</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch03/stats.html"><strong aria-hidden="true">3.1.</strong> 능력치 · 레벨 · 등급</a></li><li class="chapter-item expanded "><a href="../ch03/jobs.html"><strong aria-hidden="true">3.2.</strong> 직업과 전직</a></li><li class="chapter-item expanded "><a href="../ch03/skills.html"><strong aria-hidden="true">3.3.</strong> 스킬과 성장 경로</a></li><li class="chapter-item expanded "><a href="../ch03/personality.html"><strong aria-hidden="true">3.4.</strong> 성향과 애착도</a></li><li class="chapter-item expanded "><a href="../ch03/lifecycle.html"><strong aria-hidden="true">3.5.</strong> 합류 · 파티 · 사망과 계승</a></li><li class="chapter-item expanded "><a href="../ch03/talk.html"><strong aria-hidden="true">3.6.</strong> 모험가끼리 대화 · 몸 상태 · 칭호</a></li></ol></li><li class="chapter-item expanded "><a href="../ch04/index.html"><strong aria-hidden="true">4.</strong> 의뢰와 퀘스트</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch04/board.html"><strong aria-hidden="true">4.1.</strong> 의뢰 유입과 게시판</a></li><li class="chapter-item expanded "><a href="../ch04/judge.html"><strong aria-hidden="true">4.2.</strong> 의뢰 유형과 성공 판정</a></li><li class="chapter-item expanded "><a href="../ch04/requests.html"><strong aria-hidden="true">4.3.</strong> 리퀘스트(서브 퀘스트)</a></li><li class="chapter-item expanded "><a href="../ch04/requests-list.html"><strong aria-hidden="true">4.4.</strong> F급 리퀘스트 28개와 의뢰인</a></li><li class="chapter-item expanded "><a href="../ch04/nomination.html"><strong aria-hidden="true">4.5.</strong> 지명 퀘스트</a></li><li class="chapter-item expanded "><a href="../ch04/main.html"><strong aria-hidden="true">4.6.</strong> 메인 퀘스트</a></li></ol></li><li class="chapter-item expanded "><a href="../ch05/index.html"><strong aria-hidden="true">5.</strong> 전투</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch05/rules.html"><strong aria-hidden="true">5.1.</strong> 전투 규칙</a></li><li class="chapter-item expanded "><a href="../ch05/departure.html"><strong aria-hidden="true">5.2.</strong> 출발 판단과 성공률</a></li><li class="chapter-item expanded "><a href="../ch05/invasion.html"><strong aria-hidden="true">5.3.</strong> 침공: 다리를 지켜라</a></li><li class="chapter-item expanded "><a href="../ch05/extra.html" class="active"><strong aria-hidden="true">5.4.</strong> 습격 · 마인 · 무술 대회</a></li></ol></li><li class="chapter-item expanded "><a href="../ch06/index.html"><strong aria-hidden="true">6.</strong> 아이템</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch06/gear.html"><strong aria-hidden="true">6.1.</strong> 장비</a></li><li class="chapter-item expanded "><a href="../ch06/potion.html"><strong aria-hidden="true">6.2.</strong> 물약과 소재</a></li><li class="chapter-item expanded "><a href="../ch06/cooking.html"><strong aria-hidden="true">6.3.</strong> 요리</a></li></ol></li><li class="chapter-item expanded "><a href="../ch07/index.html"><strong aria-hidden="true">7.</strong> 길드와 마을</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch07/facilities.html"><strong aria-hidden="true">7.1.</strong> 시설</a></li><li class="chapter-item expanded "><a href="../ch07/housing.html"><strong aria-hidden="true">7.2.</strong> 길드 내부 꾸미기</a></li><li class="chapter-item expanded "><a href="../ch07/town.html"><strong aria-hidden="true">7.3.</strong> 마을과 인구</a></li></ol></li><li class="chapter-item expanded "><a href="../ch08/index.html"><strong aria-hidden="true">8.</strong> 길드 승급</a></li><li class="chapter-item expanded "><a href="../ch09/index.html"><strong aria-hidden="true">9.</strong> 경제</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch09/flow.html"><strong aria-hidden="true">9.1.</strong> 돈의 흐름 한눈에 보기</a></li><li class="chapter-item expanded "><a href="../ch09/income.html"><strong aria-hidden="true">9.2.</strong> 길드 수입</a></li><li class="chapter-item expanded "><a href="../ch09/spending.html"><strong aria-hidden="true">9.3.</strong> 길드 지출</a></li><li class="chapter-item expanded "><a href="../ch09/adventurer.html"><strong aria-hidden="true">9.4.</strong> 모험가의 지갑</a></li><li class="chapter-item expanded "><a href="../ch09/measure.html"><strong aria-hidden="true">9.5.</strong> 측정값: 첫해 100판</a></li><li class="chapter-item expanded "><a href="../ch09/ledger.html"><strong aria-hidden="true">9.6.</strong> 장부와 관문 1</a></li><li class="chapter-item expanded "><a href="../ch09/issues.html"><strong aria-hidden="true">9.7.</strong> 알려진 문제와 열린 질문</a></li></ol></li><li class="chapter-item expanded "><a href="../ch10/index.html"><strong aria-hidden="true">10.</strong> 화면</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch10/flow.html"><strong aria-hidden="true">10.1.</strong> 화면 흐름</a></li><li class="chapter-item expanded "><a href="../ch10/book.html"><strong aria-hidden="true">10.2.</strong> 길드 업무 일지(책 UI)</a></li><li class="chapter-item expanded "><a href="../ch10/miniview.html"><strong aria-hidden="true">10.3.</strong> 원정 미니 뷰</a></li><li class="chapter-item expanded "><a href="../ch10/hud.html"><strong aria-hidden="true">10.4.</strong> HUD · 대화 · 침공 화면</a></li><li class="chapter-item expanded "><a href="../ch10/visual.html"><strong aria-hidden="true">10.5.</strong> 비주얼과 사운드</a></li></ol></li><li class="chapter-item expanded "><a href="../ch11/index.html"><strong aria-hidden="true">11.</strong> 세계관과 이야기</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch11/ending.html"><strong aria-hidden="true">11.1.</strong> 엔딩 · 마왕 · 간부</a></li><li class="chapter-item expanded "><a href="../ch11/characters.html"><strong aria-hidden="true">11.2.</strong> 인물과 이름</a></li></ol></li><li class="chapter-item expanded "><li class="spacer"></li><li class="chapter-item expanded "><a href="../appendix/glossary.html"><strong aria-hidden="true">12.</strong> 부록 A. 용어집</a></li><li class="chapter-item expanded "><a href="../appendix/values.html"><strong aria-hidden="true">13.</strong> 부록 B. 주요 설정값</a></li><li class="chapter-item expanded "><a href="../appendix/pending.html"><strong aria-hidden="true">14.</strong> 부록 C. 결정 대기 목록</a></li><li class="chapter-item expanded "><a href="../appendix/sources.html"><strong aria-hidden="true">15.</strong> 부록 D. 원본 문서 지도</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Project_F 기획 안내서</h1>
+
+                    <div class="right-buttons">
+<nav class="book-version-menu" aria-label="문서 버전"><select id="book-version-select" aria-label="문서 버전 선택"><option value="extra.html" selected>V1 원본</option><option value="../../v2/ch05/extra.html">V2 개선안</option></select><a href="../../v2/versions.html">버전 이력</a></nav>
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/applesoda01/Project_F" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+<p class="book-version-status">v1 원본 보존 · 2026-11-16 기준 문서. 이 판의 본문은 수정하지 않았습니다.</p>
+                        <h1 id="습격--마인--무술-대회"><a class="header" href="#습격--마인--무술-대회">습격 · 마인 · 무술 대회</a></h1>
+<p><strong>침공 말고도 전투 장면은 다섯 종류가 더 있고, 모두 "탑뷰 한 화면에서 지켜보기"입니다.</strong> 프로토타입에는 침공만 있고, 나머지는 설계 단계입니다.</p>
+<h2 id="전투-장면-전체-15년-기준"><a class="header" href="#전투-장면-전체-15년-기준">전투 장면 전체 (15년 기준)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>장면</th><th>화면</th><th>빈도</th><th>지면</th></tr></thead><tbody>
+<tr><td>일반 의뢰 전투</td><td>미니 뷰</td><td>매주</td><td>의뢰 실패</td></tr>
+<tr><td>소규모 습격 [제안]</td><td>마을</td><td>반년에 한 번꼴, 약 30회</td><td>인구 · 신뢰도 하락</td></tr>
+<tr><td>특별 퀘스트 전투</td><td>퀘스트별 배경</td><td>약 25회</td><td>퀘스트 실패</td></tr>
+<tr><td>승급 침공</td><td>마을</td><td>6회</td><td>승급 실패</td></tr>
+<tr><td>간부 토벌</td><td>전용 배경</td><td>3~4회</td><td>간부 후퇴</td></tr>
+<tr><td>마왕전</td><td>마왕성</td><td>1회 이상</td><td>사망과 계승</td></tr>
+<tr><td>무술 대회</td><td>투기장</td><td>투기장을 지은 뒤 1년에 1회</td><td>기절 (부상 · 사망 없음)</td></tr>
+</tbody></table>
+</div>
+<h2 id="직업별-전투-수치-가안"><a class="header" href="#직업별-전투-수치-가안">직업별 전투 수치 [가안]</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>1차 직업</th><th>체력 (레벨당)</th><th>마력 (레벨당)</th><th>공격력 (레벨당)</th></tr></thead><tbody>
+<tr><td>전사</td><td>100 (+10)</td><td>20 (+2)</td><td>35 (+3)</td></tr>
+<tr><td>궁수</td><td>80 (+8)</td><td>30 (+3)</td><td>30 (+3)</td></tr>
+<tr><td>마법사</td><td>60 (+6)</td><td>60 (+6)</td><td>25 (+2)</td></tr>
+<tr><td>성직자</td><td>70 (+7)</td><td>50 (+5)</td><td>25 (+2)</td></tr>
+<tr><td>도적</td><td>75 (+8)</td><td>30 (+3)</td><td>30 (+3)</td></tr>
+</tbody></table>
+</div>
+<p>여기에 능력치 환산(힘 1당 체력 3 등)과 장비가 더해집니다.</p>
+<h2 id="스킬--부상--사망"><a class="header" href="#스킬--부상--사망">스킬 · 부상 · 사망</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>항목</th><th>규칙</th></tr></thead><tbody>
+<tr><td>웨이브</td><td>한 무리 최대 F 2마리 · E 3마리. 무리를 나눠 차례로, 체력 · 마력은 회복 없이 이어짐</td></tr>
+<tr><td>스킬</td><td>성직자 외에는 20% 확률로 발동 (설계는 1 · 2 · 3차 20 / 35 / 50%)</td></tr>
+<tr><td>부상</td><td>체력 0이 된 사람. 귀환 뒤 F · E 2주 쉼 (벽난로 −1주)</td></tr>
+<tr><td>사망</td><td>쓰러진 사람만 판정: 등급 사망률 × 위험 성향(0.5 / 1 / 1.5)</td></tr>
+</tbody></table>
+</div>
+<h2 id="소규모-습격-제안--보류"><a class="header" href="#소규모-습격-제안--보류">소규모 습격 [제안 · 보류]</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody>
+<tr><td>빈도</td><td>개척촌 8개월 · 마을 6개월 · 읍 5개월 · 도시 4개월 · 성채 도시 3개월에 한 번꼴</td></tr>
+<tr><td>규모</td><td>길드 등급과 같은 몬스터, 1~2웨이브, 보스 없음</td></tr>
+<tr><td>패배</td><td>인구 −5%, 신뢰도 하락</td></tr>
+<tr><td>플레이어 결정</td><td>예고 2주 동안 누구를 마을에 남길지, 방어 보상금을 얼마 걸지</td></tr>
+<tr><td>돈</td><td>보상금이 습격 1번에 평균 439G (시뮬레이터)</td></tr>
+</tbody></table>
+</div>
+<p>지금 규칙이면 첫해 습격은 0.9번뿐이라 긴장감이 약합니다. 그래서 보류 중입니다.</p>
+<h2 id="무술-대회"><a class="header" href="#무술-대회">무술 대회</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody>
+<tr><td>조건</td><td>마을에 투기장이 있을 때, 1년에 한 번</td></tr>
+<tr><td>참가</td><td>모험가가 성향에 따라 스스로 지원 (무모 70% · 보통 40% · 신중 15%, 사교적 +15%p) + 외부 도전자</td></tr>
+<tr><td>방식</td><td>1대 1 토너먼트, 지면 기절</td></tr>
+<tr><td>등급</td><td>길드 등급이 오를수록 마을 → 지방 → 왕국 대회</td></tr>
+<tr><td>보상</td><td>우승자: 상금 · 칭호 · 애착 / 길드: 명성, 외부 강자 방문 / 마을: 축제 기간 인구 증가</td></tr>
+</tbody></table>
+</div>
+<h2 id="마인-가안"><a class="header" href="#마인-가안">마인 [가안]</a></h2>
+<p><strong>마인은 마왕군에게 죽은 모험가의 2세가 각성하는 전설 직업입니다.</strong> 2세 계승 시스템이 이야기와 만나는 지점입니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody>
+<tr><td>생기는 조건</td><td>마왕군에게 죽은 모험가의 2세가 길드에 있고 2차 이상. 부모가 언데드 간부로 나타남</td></tr>
+<tr><td>각성</td><td>2세가 있는 파티가 그 간부를 쓰러뜨림 + 주력 능력치 70 + 애착 70</td></tr>
+<tr><td>2세가 없으면</td><td>8년 차 말까지 없으면 "무너진 봉인 마을 출신" 2세가 1~2명 자동으로 옴</td></tr>
+<tr><td>마왕의 파편</td><td>장신구. 모든 능력치 +15, 마왕군 대상 피해 증가</td></tr>
+<tr><td>잠식도 (0~100)</td><td>파편을 낀 채 싸우면 오름. 높을수록 강하지만 애착이 서서히 떨어짐. 성당에서 돈으로 정화</td></tr>
+<tr><td>마인이 죽으면</td><td>파편은 3세에게 (잠식도 0). 3세가 없으면 소멸</td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../ch05/invasion.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../ch06/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../ch05/invasion.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../ch06/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../theme/mermaid-init.js"></script>
+
+
+    </div>
+    <script src="../../_book-ui.js"></script>
+</body>
+</html>

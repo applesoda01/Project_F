@@ -1,5 +1,16 @@
 # 기획 안내서 버전과 배포
 
+## 저장소에 보관하는 HTML
+
+- 최신 열람 파일: `docs/book/v2/index.html`.
+- 버전 선택용 원본 HTML: `docs/book/v1/index.html`.
+- 공통 파일: `docs/book/_book-ui.css`, `docs/book/_book-ui.js`.
+- 기존 `docs/book/src`, `book.toml`, `theme` 원고·설정은 유지한다.
+
+최신 생성 폴더를 위 위치로 이동했고 `dist`의 이전 책 미리보기·ZIP은 제거했다. 다운로드할 때는 두 버전과 공통 파일을 포함한 `docs/book` 폴더를 함께 받는다. HTML만 옮기면 스타일·이미지·검색·버전 선택 링크가 끊긴다. Mermaid 그림은 기존 CDN을 사용하므로 인터넷 연결이 필요하다.
+
+이 파일은 GitHub 저장소 보관용이다. Pages 등 배포 기능은 사용하지 않는다. 원고 수정 뒤에는 별도의 임시 폴더로 빌드·검증한 다음 이 열람 파일을 갱신하고 임시 산출물을 정리한다. V1 원고와 V2 원고는 재생성에 필요한 소스이므로 HTML과 구분해 유지한다.
+
 ## 원고
 
 - `docs/book/`: 원본 v1. `6df6325` 기준 파일 보존.
