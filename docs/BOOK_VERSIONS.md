@@ -47,7 +47,7 @@ v2의 변경된 목차와 본문은 붉은색 및 ‘변경’ 표식으로 구�
 
 요약 창은 V1/V2 차이, 이유, 기획·게임 구현 상태를 짧게 보여 준다. 닫기 버튼, Escape, 바깥 클릭으로 닫는다. 드롭다운과 요약 버튼은 키보드로 조작할 수 있다. 원본에서 그대로 이어받은 문단과 공통 출처 안내는 변경 표시에서 제외한다.
 
-비교는 생성 HTML의 문단·표·목록·이미지 단위다. 표 일부가 바뀌면 해당 표 전체를 하나의 변경 영역으로 표시하며 문자 단위 diff가 아니다. 요약은 `changes.md`의 기능별 기록과 해당 문서의 기능 ID를 사용한다. 게임 규칙이 아닌 새 참고 문서는 문서 추가로 설명한다. 관련 파일은 `docs/tools/book-changes.mjs`, `book-ui.css`, `book-ui.js`다.
+비교는 생성 HTML의 문단·표·목록·이미지 단위다. 표는 변경된 행만, 목록은 변경된 항목만 붉게 표시한다. 문단은 문단 단위이며 문자·단어 단위 diff는 아니다. 요약은 `changes.md`의 기능별 기록과 해당 문서의 기능 ID를 사용한다. 게임 규칙이 아닌 새 참고 문서는 문서 추가로 설명한다. 관련 파일은 `docs/tools/book-changes.mjs`, `book-ui.css`, `book-ui.js`다.
 
 ## 다른 브랜치의 미리보기
 
@@ -63,3 +63,7 @@ GitHub Pages는 저장소당 프로젝트 사이트 하나다. 브랜치 이름�
 이 책의 버전 링크는 상대 경로라 두 방식 모두 같은 산출물을 사용할 수 있다. 실제 공개 URL·호스팅 설정·배포 권한 변경은 별도 작업이다. 이번 변경의 `최신 빌드` workflow에는 main에서만 실행하는 조건을 추가했다. 기능 브랜치에서는 전용 문서 미리보기 workflow를 사용한다. 변경 전 workflow에는 이 보호 조건이 없으므로 오래된 브랜치에서 수동 실행하지 않는다.
 
 근거: [Pages 사이트 종류와 저장소당 제한](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages), [Actions를 이용한 Pages 배포](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+
+## V1 전체 보존 검사
+
+`docs/tools/audit-book-preservation.mjs`가 V1의 61개 원문 페이지와 기존 목차 경로를 검사한다. 개선안과 직접 관련된 25개 원문 교체만 `book-preservation-exceptions.json`에 사유와 함께 기록한다. 추가 누락이나 낡은 예외가 생기면 테스트가 실패한다. 페이지별 대조 결과는 `docs/book-v2-preservation-audit.md`에서 확인한다.

@@ -19,6 +19,8 @@
 .book-change a, .book-change .header, .book-change blockquote { color: inherit; }
 .content .book-change .header:link, .content .book-change .header:visited { color: var(--book-change-color); }
 .book-change code, .book-change table { color: inherit; }
+.book-change-partial { color: var(--fg); border-left-color: var(--book-change-color); }
+.book-change-partial .book-change-trigger, .book-change-partial .book-unit-change { color: var(--book-change-color); }
 .book-change:hover { background: var(--book-change-fill); }
 .book-change-trigger { display: block; border: 1px solid currentColor; border-radius: 4px; background: transparent; color: inherit; padding: .3rem .7rem; font: inherit; font-size: .78em; cursor: pointer; }
 .book-change-trigger:focus-visible, .book-version-menu :focus-visible, #book-change-dialog :focus-visible { outline: 3px solid var(--links); outline-offset: 3px; }

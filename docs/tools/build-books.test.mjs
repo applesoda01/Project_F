@@ -42,6 +42,9 @@ test('real books preserve v1 and provide portable version links, including new c
   assert.doesNotMatch(unchanged, /<section class="book-change"/);
   assert.doesNotMatch(sidebar, /<a[^>]+data-book-change="ch03\/stats.html"/);
   const partial = readFileSync(join(output, 'v2/ch03/lifecycle.html'), 'utf8');
+  assert.match(partial, /<section class="book-change book-change-partial"/);
+  assert.match(partial, /<tr class="book-unit-change">\s*<td>시작<\/td>/);
+  assert.match(partial, /<tr>\s*<td>합류<\/td>/, 'Unmodified arrival row must retain its original color');
   const changedRegions = [...partial.matchAll(/<section class="book-change"[^>]*>([\s\S]*?)<\/section>/g)].map(m => m[1]).join('');
   assert.match(changedRegions, /assets\/ui\/contract-tabs.png/);
   assert.doesNotMatch(changedRegions, /모험가는 명성 10마다 1명씩 오고/);

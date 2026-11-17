@@ -100,7 +100,7 @@ function decorate(dir, version) {
       // Mark after link normalization; partitioning uses the same top-level block order.
       const normalized = changedBlocks('', mainContent(html));
       const originalParts = pageBlocks.get(page);
-      const parts = normalized.map((part, i) => ({ ...part, changed: originalParts[i]?.changed || false }));
+      const parts = normalized.map((part, i) => ({ ...originalParts[i], html: part.html, changed: originalParts[i]?.changed || false }));
       html = html.replace(/<main>[\s\S]*?<\/main>/, () => `<main>${markChangedContent(parts, page)}</main>`);
     }
     const css = href(file, join(output, '_book-ui.css'));

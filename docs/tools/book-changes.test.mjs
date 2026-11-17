@@ -2,6 +2,17 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { changedBlocks, markChangedContent } from './book-changes.mjs';
 
+test('only changed table rows and list items receive red styling', () => {
+  const before = '<table><tr><th>규칙</th></tr><tr><td>유지</td></tr><tr><td>10%</td></tr></table><ul><li>기존</li><li>교체 전</li></ul>';
+  const after = '<table><tr><th>규칙</th></tr><tr><td>유지</td></tr><tr><td>15%</td></tr></table><ul><li>기존</li><li>교체 후</li></ul>';
+  const html = markChangedContent(changedBlocks(before, after), 'test.html');
+  assert.match(html, /<tr><td>유지<\/td><\/tr>/);
+  assert.match(html, /<li>기존<\/li>/);
+  assert.match(html, /<tr class="book-unit-change"><td>15%/);
+  assert.match(html, /<li class="book-unit-change">교체 후/);
+  assert.equal((html.match(/book-change-partial/g) || []).length, 2);
+});
+
 test('image-only additions and replacements are marked, identical images stay unchanged', () => {
   const old = '<p><img src="old.jpg" alt="계약 시안"></p>';
   const next = '<p><img src="new.jpg" alt="계약 시안"></p>';

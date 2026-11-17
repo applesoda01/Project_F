@@ -28,13 +28,25 @@ function signature(html) {
   return plainText(html) + (images.length ? JSON.stringify(images) : '');
 }
 
+// Compare table rows and top-level list items separately so an edited cell or
+// added item does not paint retained rows/items red.
+function units(html) {
+  // mdBook wraps tables in <div class="table-wrapper">.
+  if (/<table\b/.test(html)) return [...html.matchAll(/<tr\b[^>]*>[\s\S]*?<\/tr>/g)].map(m => m[0]);
+  if (/^\s*<(ul|ol)\b/.test(html)) return blocks(html.replace(/^\s*<(ul|ol)\b[^>]*>/, '').replace(/<\/(ul|ol)>\s*$/, ''));
+  return [];
+}
+
 export function changedBlocks(before, after) {
   const previous = new Set(blocks(before).map(signature));
+  const previousUnits = new Set(blocks(before).flatMap(units).map(signature));
   const result = blocks(after).map(html => {
     const text = plainText(html);
     const inheritedNote = text.startsWith('v1에서 유지한 설명.') || text === 'v1에서 이어받은 설명';
     const key = signature(html);
-    return { html, changed: Boolean(key) && !inheritedNote && !previous.has(key) };
+    const changed = Boolean(key) && !inheritedNote && !previous.has(key);
+    const retained = changed ? units(html).filter(unit => previousUnits.has(signature(unit))).map(signature) : [];
+    return { html, changed, retained };
   });
   // A removal leaves no new paragraph to color. Mark the retained heading so
   // the chapter still exposes its change summary instead of silently disappearing.
@@ -51,6 +63,17 @@ export function markChangedContent(parts, page) {
   const key = page.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
   let html = '', open = false;
   for (const part of parts) {
+    if (part.changed && part.retained?.length) {
+      if (open) { html += '</section>'; open = false; }
+      let content = part.html;
+      for (const unit of units(part.html)) {
+        if (!part.retained.includes(signature(unit))) {
+          content = content.replace(unit, unit.replace(/<(tr|li)\b/, '<$1 class="book-unit-change"'));
+        }
+      }
+      html += `<section class="book-change book-change-partial" data-book-change="${key}" aria-label="V1 대비 일부 변경"><button type="button" class="book-change-trigger" aria-haspopup="dialog">변경 요약</button>${content}</section>`;
+      continue;
+    }
     if (part.changed && !open) {
       html += `<section class="book-change" data-book-change="${key}" aria-label="V1 대비 변경된 내용"><button type="button" class="book-change-trigger" aria-haspopup="dialog">변경 요약</button>`;
       open = true;
