@@ -295,14 +295,14 @@
     { id: 'mgmt', name: '경영', col: '#66763a', pops: ['ledger', 'sell', 'codex', 'log'] },
     { id: 'opt', name: '설정', col: '#6a4785', pops: ['opts'] },
   ];
-  const SUB_NAME = { board: '게시판', req: '리퀘스트', advs: '명부', 'advs:career': '경력', promo: '전직 제안', fac: '시설', ledger: '장부', meals: '음식 설정', sell: '소재 판매', codex: '도감', log: '기록', opts: '설정' };
+  const SUB_NAME = { board: '게시판', req: '리퀘스트', advs: '명부', 'advs:career': '경력', 'advs:contract': '계약 제안', promo: '전직 제안', fac: '시설', ledger: '장부', meals: '음식 설정', sell: '소재 판매', codex: '도감', log: '기록', opts: '설정' };
   const chapterOf = name => BOOK.find(c => c.pops.includes(name)) || null;
   function bookInit() {
     const mk = q('#bookMarks'); if (!mk || mk.childElementCount) return;
     mk.innerHTML = BOOK.map(c => `<button data-ch="${c.id}" style="--bm:${c.col}"><i>${c.name}</i></button>`).join('');
     mk.onclick = e => { const b = e.target.closest('[data-ch]'); if (!b) return; const c = BOOK.find(x => x.id === b.dataset.ch); if (c && !c.pops.includes(popup)) UI.open(c.pops.find(p => p !== 'sell' || s.built['판매창구']) || c.pops[0]); };
     q('#bookSub').onclick = e => { const b = e.target.closest('[data-sub]'); if (!b) return; const sub = b.dataset.sub;
-      if (sub === 'advs' || sub === 'advs:career') { advView = sub === 'advs:career' ? 'career' : 'detail'; if (popup === 'advs') { renderPopup(); bookSync('advs'); } else UI.open('advs'); return; }   // 모험가 장: 명부 ↔ 경력 (같은 팝업, 오른쪽 쪽만 바뀜)
+      if (sub === 'advs' || sub === 'advs:career' || sub === 'advs:contract') { advView = sub === 'advs:career' ? 'career' : sub === 'advs:contract' ? 'contract' : 'detail'; if (popup === 'advs') { renderPopup(); bookSync('advs'); } else UI.open('advs'); return; }   // 모험가 장: 명부 ↔ 경력 (같은 팝업, 오른쪽 쪽만 바뀜)
       if (sub !== popup) UI.open(sub); };
     q('#bookRibbon').onclick = () => UI.closeFx();
   }
@@ -311,7 +311,7 @@
     q('#bookMarks').querySelectorAll('[data-ch]').forEach(b => b.classList.toggle('on', !!c && b.dataset.ch === c.id));
     q('#bookTitle').textContent = c ? c.name : (TITLES[name] || '');
     { const on = q('#bookMarks [data-ch].on'); q('#bookSub').style.setProperty('--bm', on ? getComputedStyle(on).getPropertyValue('--bm') : '#8a6a46'); }   // 오른쪽 책갈피 색 = 지금 장 색
-    const subs = c ? (c.id === 'adv' ? [['advs', name === 'advs' && advView !== 'career'], ['advs:career', name === 'advs' && advView === 'career'], ['promo', name === 'promo']] : c.pops.map(p => [p, p === name])) : [];   // 모험가 장: 명부 · 경력 · 전직 제안
+    const subs = c ? (c.id === 'adv' ? [['advs', name === 'advs' && advView === 'detail'], ['advs:career', name === 'advs' && advView === 'career'], ['promo', name === 'promo']].concat(Gm.contractOpen(s) ? [['advs:contract', name === 'advs' && advView === 'contract']] : []) : c.pops.map(p => [p, p === name])) : [];   // 모험가 장: 명부 · 경력 · 전직 제안
     q('#bookSub').innerHTML = subs.length > 1 ? subs.map(([p, on]) => `<button data-sub="${p}" class="${on ? 'on' : ''}">${(SUB_NAME[p] || TITLES[p]).replace(/ /g, '')}</button>`).join('') : '';
   }
   // ---------- 책: 경영 장 정렬 (2026-11-13) — 기존 화면을 그대로 그린 뒤 왼쪽 / 오른쪽 쪽으로 나눠 담음 (쪽마다 원래 바깥 상자 class를 붙여 스타일 유지) ----------
@@ -877,7 +877,8 @@
   const stTag = a => { const k = stOf(a), w = Math.max(0, a.until - s.week); return `<span class="ux-tag ${k}">● ${ST_TXT[k]}${k === 'quest' ? (w ? ' ' + w + '주' : ' · 이번 주 귀환') : k === 'injured' ? ' ' + w + '주' : ''}</span>`; };   // 2026-11-12: 남은 0주 → "이번 주 귀환"
   const ITEMS_ = ((root.GAME_DATA || {}).content || {}).items || [];
   const gearItem = (type, g) => ITEMS_.find(i => i.kind === 'gear' && i.gtype === type && i.grade === GR[g]) || null;
-  let advView = 'detail';   // 책 모험가 장 오른쪽 쪽: 'detail'(명부) | 'career'(경력 책갈피)
+  let advView = 'detail';   // 책 모험가 장 오른쪽 쪽: 'detail'(명부) | 'career'(경력 책갈피) | 'contract'(계약 제안 책갈피, 2026-11-17 V2)
+  let ctDraft = null;   // 계약 제안 양식 { aid, weeks, rate, pay, sup } — 다른 모험가를 고르면 기본값으로
   let advTab = 'skill';   // 아래 탭: 'skill'(기본) | 'path' | 'trait' | 'career' — 항상 하나가 펼쳐져 있음
   let advAnimFor = null;   // 능력치 칸이 차오르는 움직임: 다른 모험가를 고르거나 팝업을 처음 열 때만
   let advFlip = false;     // 책: 붙인 쪽지를 바꾸면 새 쪽지가 위에서 넘어오는 움직임 (0.25초)
@@ -920,6 +921,48 @@
   const attMini = a => { const AT = [0, 30, 60, 90, 100], t = Gm.attachTier(a), lo = AT[t], hi = AT[t + 1] || 100, pct = t >= 3 ? 100 : Math.min(100, (a.attach - lo) / (hi - lo) * 100);
     return `<span class="attm" title="애착 ${Math.round(a.attach)}"><em>${ATT_NAME[t]}</em><i class="trk"><i style="width:${pct}%"></i></i></span>`; };
   // 책 펼침 (2026-11-13 시안): 왼쪽 쪽 = 모험가 명부 / 오른쪽 쪽 = 고른 모험가 상세 (아래 스킬·전직·성향·경력·칭호 = 붙인 쪽지 묶음)
+
+  // ---------- 계약 모험가 화면 (경제 개편 V2 E2-3 · E2-5, 시안 docs/design/mockups/economy_v2/ · 결정 14 · 16 · 17) ----------
+  const relIcons = a => (a.attach >= 65 ? '<i class="ri ct" title="지역 기여 (애착 65 이상 · 마을 인구 +2)">기</i>' : '') + (a.home || a.attach >= 100 ? '<i class="ri hm" title="상주 (애착 100 또는 창립 멤버 · 늘 마을에 있음)">⌂</i>' : '');   // 이름 옆 작은 표 (쓸 때만)
+  function contractBox(a) {
+    const c = a.contract; if (!c) return '';
+    const left = Math.max(0, c.end - s.week + 1), used = Gm.cCallsLeft ? (s.cfg.contract.callMax - Gm.cCallsLeft(s, a)) : 0;
+    return `<div class="ct-box"><b>계약 모험가</b> · ${c.start + 1}주 ~ ${c.end + 1}주 (남은 ${left}주) · 계약 수수료 ${Math.round(c.rate * 100)}% · 월 보수 ${c.pay}G · 지원 한도 ${c.sup}G · 지명 4주에 ${s.cfg.contract.callMax}번 중 ${used}번 사용${c.next ? ` · <b>다음 계약 ${c.next.weeks}주 정해짐</b>` : ''}</div>`;
+  }
+  function contractPage(a) {
+    const C = s.cfg.contract, D = Gm.contractDefault(s);
+    if (!ctDraft || ctDraft.aid !== a.id) ctDraft = Object.assign({ aid: a.id }, D);
+    const T = ctDraft, why = Gm.contractWhy(s, a), tw = Gm.contractTermsWhy(s, T), e = Gm.contractEval(s, a, T), r = { no: 0, maybe: 1, yes: 2 }[e.mood];
+    const names = ['거절할 것 같다', '고민 중', '받아들일 것 같다'], say = ['"이 조건이면 혼자 일하는 게 낫겠어요."', '"음… 조금만 더 생각해 볼게요. 조건이 살짝 아쉬워요."', '"좋아요, 마스터. 잘 부탁드려요."'][r];
+    const seg = (k, vals, unit, show) => `<span class="ct-seg">${vals.map(v => `<button data-ct="${k}:${v}" class="${Math.abs(v - T[k]) < 1e-9 ? 'on' : ''} ${Math.abs(v - D[k]) < 1e-9 ? 'df' : ''}">${show ? show(v) : v}${unit}</button>`).join('')}</span>`;
+    const step = (k, max, unit) => `<span class="ct-step"><button data-ct="${k}:-" ${T[k] <= 0 ? 'disabled' : ''}>−</button><b>${T[k]}${unit}</b><button data-ct="${k}:+" ${T[k] >= max ? 'disabled' : ''}>+</button>${T[k] !== D[k] ? `<span class="chg">기본 ${D[k]}${unit}</span>` : ''}</span>`;
+    const changed = ['weeks', 'rate', 'pay', 'sup'].some(k => Math.abs(T[k] - D[k]) > 1e-9);
+    const att = Gm.attachTier(a);
+    let h = `<div class="ct-of"><h3>계약 제안</h3><div class="sub">${GR[s.grade]}급 기본값 양식 · 바꾼 칸만 표시됩니다</div>
+      <div class="ct-who"><span class="face" style="${faceStyle(a, 64, 335, 32)}"></span><span><b>${a.name}</b> ${STAGE[a.stage]} ${a.cls} · ${GR[a.grade]}급<br>애착 ${Math.round(a.attach)} <b class="st">${ATT_NAME[att]}</b> · 의뢰 성공 ${a.done || 0}회</span></div>
+      <div class="ct-row"><span class="lb">기간</span>${seg('weeks', C.weeksOpt, '주')}<span class="rg">${C.weeksOpt.join(' · ')}주<br>기본 ${D.weeks}주</span></div>
+      <div class="ct-row"><span class="lb">계약 수수료</span>${seg('rate', C.rateOpt, '%', v => Math.round(v * 100))}<span class="rg">${Math.round(C.rateOpt[0] * 100)}~${Math.round(C.rateOpt[C.rateOpt.length - 1] * 100)}% (5%)<br>기본 ${Math.round(D.rate * 100)}%</span></div>
+      <div class="ct-row"><span class="lb">월 보수</span>${step('pay', C.payMax, 'G')}<span class="rg">0~${C.payMax}G (${C.step}G)<br>기본 ${D.pay}G</span></div>
+      <div class="ct-row"><span class="lb">지원 한도</span>${step('sup', C.supMax, 'G')}<span class="rg">월 0~${C.supMax}G (${C.step}G)<br>기본 ${D.sup}G</span></div>
+      <div class="ct-fix">고정: <em>지명 4주에 ${C.callMax}번까지 · 섭외비 0 · 범위 안 거절 없음 · 리퀘스트 우선</em></div>`;
+    if (why) h += `<div class="ct-why">${why}</div>`;
+    else h += `<div class="ct-react">${a.name}의 반응</div><div class="ct-meter">${names.map((n, i) => `<span class="r${i} ${i === r ? 'on' : ''}">${n}</span>`).join('')}</div><div class="ct-say">${say}</div>`;
+    h += `<div class="ct-btns"><button class="rs ${changed ? '' : 'dim'}" data-ct="reset">기본값 복원</button><button class="go" data-ct="go" ${why || tw ? 'disabled' : ''}>${a.contract ? '갱신 제안하기' : '제안하기'}</button></div></div>`;
+    return h;
+  }
+  function contractClick(cmd) {
+    const a = s.advs.find(x => x.id === openAdv); if (!a || !ctDraft) return;
+    const C = s.cfg.contract, D = Gm.contractDefault(s);
+    if (cmd === 'reset') { ctDraft = Object.assign({ aid: a.id }, D); renderPopup(); return; }
+    if (cmd === 'go') { const r = Gm.contractPropose(s, a.id, { weeks: ctDraft.weeks, rate: ctDraft.rate, pay: ctDraft.pay, sup: ctDraft.sup });
+      if (r.ok) { toast(`${a.name}: "${r.line}" — ${a.contract && a.contract.next ? '계약 갱신' : '계약 체결'}`, 'grow'); advView = 'detail'; hooks.changed(); bookSync('advs'); }
+      else toast(r.why || r.line, 'warn');
+      renderPopup(); return; }
+    const [k, v] = cmd.split(':'), max = { pay: C.payMax, sup: C.supMax }[k];
+    if (v === '+' || v === '-') ctDraft[k] = Math.max(0, Math.min(max, ctDraft[k] + (v === '+' ? C.step : -C.step)));
+    else ctDraft[k] = +v;
+    renderPopup();
+  }
   function advsBookHtml() {
     const pty = new Map(); (s.active || []).forEach((x, qi) => x.party.forEach((id, pi) => pty.set(id, { qi, pi, col: root.Director && root.Director.partyColor ? root.Director.partyColor(x.q.id) : null })));
     const list = s.advs.filter(a => a.alive).sort((x, y) => { const px = pty.get(x.id), py = pty.get(y.id);
@@ -930,7 +973,7 @@
     let h = `<div class="bk2 bk-av ${root.BOOK_ATT || 'att-b'}"><section class="bk-l"><div class="ux-h">모험가 명부 <small>${list.length} / ${Gm.advCap(s)}명</small></div><div class="av-list ${root.BOOK_ADV_LIST || 'st-d'}">`;
     for (const a of list) { const pc = pty.get(a.id) && pty.get(a.id).col, on = sampleOn(a), t = ttlName(on);
       h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${pc ? 'pty' : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"${pc ? ` style="--pc:${pc}"` : ''}><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}</span>
-      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}</span><span class="sub">${a.cls} · ${ST_SHORT[stOf(a)]}${stOf(a) === 'injured' ? ' ' + Math.max(0, a.until - s.week) + '주' : ''}</span></span><i class="ux-grade av-gr" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)" title="${GR[a.grade]}급"></i>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
+      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}${a.contract ? `<em class="ct-tag" title="계약 모험가 · ${a.contract.end + 1}주까지 (체결 주 ~ 체결 주 + 기간 − 1)">계약</em>` : ''}</span><span class="sub">${a.contract ? `계약 ${Math.max(0, Math.min(a.contract.weeks, s.week - a.contract.start + 1))}/${a.contract.weeks}주` : `${a.cls} · ${ST_SHORT[stOf(a)]}${stOf(a) === 'injured' ? ' ' + Math.max(0, a.until - s.week) + '주' : ''}`}${relIcons(a)}</span></span><i class="ux-grade av-gr" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)" title="${GR[a.grade]}급"></i>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
     const a = s.advs.find(x => x.id === openAdv);
     return h + `</div></section><section class="bk-r av-main">${a ? advDetail(a) : '<div class="ux-empty">모험가가 없습니다.</div>'}</section><div class="qtip avtip" id="avTip"></div></div>`;
   }
@@ -1010,6 +1053,7 @@
   }
   function advDetail(a) {
     if (document.getElementById('pop').classList.contains('book') && advView === 'career') return advCareerPage(a);
+    if (document.getElementById('pop').classList.contains('book') && advView === 'contract') return contractPage(a);
     const G = s.cfg.growth, cap = Gm.lvCapOf(s, a), need = G.lvA * Math.pow(a.lv, G.lvB), xp = a.lv >= cap ? 100 : Math.min(100, a.xp / need * 100);
     const path = a.cls1 === a.cls ? a.cls : `${a.cls1} → ${a.cls}`;
     const BK = document.getElementById('pop').classList.contains('book');   // 책 펼침판: 애착·다음 장비 빼고 막대 안에 수치
@@ -1019,6 +1063,7 @@
       ${(() => { const CBH = root.GuildCombat ? root.GuildCombat.make(root.GAME_DATA) : null; if (!(CBH && CBH.ok)) return ''; const u = CBH.unit(a, i => Gm.finalStat(s, a, i), a.gear, 0); const hp = Math.round(u.maxHp), mp = Math.round(u.maxMp); const iw = a.state === 'injured' ? Math.max(0, a.until - s.week) : 0, itot = Math.max(iw, a.injuredAt != null ? a.until - a.injuredAt : iw + 1), ipc = iw ? Math.max(8, Math.round((itot - iw) / Math.max(1, itot) * 100)) : 100;   // 부상 표시 (2026-11-16 결정 · 11-17 구현): 부상이면 체력 막대를 회복한 만큼만 채우고 '부상 N주'
       if (BK) return `<div class="hm"><div class="vb hp${iw ? ' inj' : ''}"><span class="k">체력</span><i class="trk"><i${iw ? ` style="width:${ipc}%"` : ''}></i><em class="bv">${iw ? `부상 ${iw}주` : `${fmt(hp)}/${fmt(hp)}`}</em></i></div><div class="vb mp"><span class="k">마력</span><i class="trk"><i></i><em class="bv">${fmt(mp)}/${fmt(mp)}</em></i></div><div class="vb ex"><span class="k">경험치</span><i class="trk"><i style="width:${xp}%"></i><em class="bv">${a.lv >= cap ? '상한' : fmt(Math.floor(a.xp)) + '/' + fmt(Math.round(need))}</em></i></div></div>`; return `<div class="hm"><div class="vb hp"><span class="k">체력</span><i class="trk"><i></i></i><b>${hp}</b></div><div class="vb mp"><span class="k">마력</span><i class="trk"><i></i></i><b>${mp}</b></div></div>`; })()}
       ${BK ? '' : `<div class="lv"><b>Lv ${a.lv}</b><div class="ux-bar blue"><i style="width:${xp}%"></i></div><span>${a.lv >= cap ? '레벨 상한' : '다음 레벨까지 ' + fmt(need - a.xp)}</span></div>`}</div></div>`;
+    h += contractBox(a);   // 2026-11-17 V2: 계약 모험가면 조건 상자
     // 장비
     const CB_ = root.GuildCombat ? root.GuildCombat.make(root.GAME_DATA) : null, GE = s.cfg.gear;
     const slots = CB_ ? [['무기', CB_.WEAPON[a.core]], ['방어구', CB_.ARMOR[a.core]], ['장신구', CB_.ACC[(a.core + 2) % 5]]] : [];
@@ -1676,6 +1721,7 @@
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
+      { const c = e.target.closest('[data-ct]'); if (c && popup === 'advs') { if (!c.disabled) contractClick(c.dataset.ct); return; } }
       const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs], [data-rq], [data-rqact], [data-rqnom]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
       if (t.dataset.rq) { rqSel = t.dataset.rq; rqMsg = ''; renderPopup(); return; }
       if (t.dataset.rqact) { rqAct(t.dataset.rqact); return; }
