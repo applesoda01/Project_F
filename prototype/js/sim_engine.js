@@ -52,7 +52,8 @@
         buildCost: [0, 2000, 4000, 8000, 15000, 30000, 0],
         upkeepRate: 0,   // 2026-11-05 시설 유지비 없앰 (balance.csv와 같게)
         tavernPerAdvWeek: 4, tavernGradeMult: 1.6,
-        feeOpt: [0.1, 0.15, 0.2],   // 2026-11-17 V2 결정 11: 의뢰별 요율 선택지 [임시]
+        feeOpt: [0.1, 0.15, 0.2],
+        subsidyMode: 1, subsidyRate: 0.5,   // 2026-11-17 V2 결정 13: 반기 지급 · 성공 보상 합의 50% [임시] (0 = 예전 매달 고정)   // 2026-11-17 V2 결정 11: 의뢰별 요율 선택지 [임시]
         resaleRate: 0, matBuyRate: 0.7, consignFee: 0.1,   // 2026-11-17 V2 결정 12: 소재 자동 차익 8% 없앰 → 자동 매입 70% · 위탁 10% [임시] (balance.csv와 같게)
         effectCost: [0.10, 0.20, 0.35],
         effectOpen: 0,                             // 시설 효과 개방 (0 = 끔. 2026-11-12: 프로토타입 게임에는 없으므로 시뮬레이터도 끔)
@@ -414,7 +415,7 @@
       const fee = q.boss ? 0 : q.reward != null ? 0 : 0;
       const reward = (q.T ? q.T.reward : Q.reward[q.g]) * (q.boss ? 2 : 1) * (q.x2 ? 2 : 1);   // ×2 의뢰는 골드만 2배
       if (ok) {
-        s.st.qDone++; s.popAdd += T.perSuccess[q.g] || 0;   // 의뢰 성공 → 인구 (2026-11-13)
+        s.st.qDone++; s.subHalf = (s.subHalf || 0) + (q.T ? q.T.reward : Q.reward[q.g]) * (q.boss ? 2 : 1); s.popAdd += T.perSuccess[q.g] || 0;   // 반기 보조금 실적 (게임과 같음, ×2 전)   // 의뢰 성공 → 인구 (2026-11-13)
         if (q.T) { let paid = 0; for (const r of q.T.rewards || []) if (R() * 100 < r.p) { const bp = Math.floor(matBase(r.m) * (E.matBuyRate != null ? E.matBuyRate : 0.7) + 1e-9); if (s.gold >= bp) { s.mats[r.m] = (s.mats[r.m] || 0) + 1; s.gold -= bp; s.op -= bp; paid += bp; } else (s.consign = s.consign || []).push({ m: r.m, ps: party.slice() }); } splitPay(party, paid); }   // 소재 획득 → 자동 매입 (게임 dropMats와 같음)
         if (q.T && s.deco.has('locker')) { const b = baseMat(q.T); if (b) s.mats[b] = (s.mats[b] || 0) + cfg.deco.mat; }   // 사물함: 기본 소재 +1
         for (const d of DISH) if (!s.dishes[d.name] && d.g <= s.grade && d.mats.every(m => s.mats[m] > 0)) { for (const m of d.mats) s.mats[m]--; s.dishes[d.name] = s.week; s.meals[d.g]++; s.st.mealsUnlocked.push(s.week); }
@@ -589,7 +590,8 @@
 
     function monthly() {
       // 수입
-      s.gold += E.subsidy[s.grade]; s.op += E.subsidy[s.grade];
+      if (E.subsidyMode === 1) { if (Math.floor(s.week / WPM + 1) % 6 === 0) { const pay = Math.floor((s.subHalf || 0) * (E.subsidyRate != null ? E.subsidyRate : 0.5) + 1e-9); s.gold += pay; s.op += pay; s.subHalf = 0; } }   // V2 결정 13: 반기 지급 (게임과 같음)
+      else { s.gold += E.subsidy[s.grade]; s.op += E.subsidy[s.grade]; }
       { const cf = E.consignFee != null ? E.consignFee : 0.1; for (const e of s.consign || []) { const sale = matBase(e.m), fee = Math.floor(sale * cf + 1e-9); s.gold += fee; s.op += fee; splitPay(e.ps, sale - fee); } s.consign = []; }   // 위탁품 판매 (결정 12)
       for (const id in s.mats) { const m = SIM_MAT[id]; if (m && m.line !== 'food' && s.mats[id] > 10) { const k = s.mats[id] - 10, g = k * (matBase(id) + (s.up && s.up['판매창구'] ? (E.upSell || 3) : 0)); s.mats[id] = 10; s.gold += g; s.op += g; } }   // 자동 판매 (게임 autoSell과 같음)
       // 주점 매출은 2026-11-12부터 매주 술 1잔 단위 (adventurersChoose 끝)

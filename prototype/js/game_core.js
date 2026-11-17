@@ -529,6 +529,7 @@
       const ok = x.ok != null ? x.ok : F ? F.win : s.R() < x.p;   // 예전 저장(출발 때 결과 없음)은 귀환 때 판정
       if (F) { s.stats.combat++; if (ok) s.stats.combatWin++; }
       if (ok) {
+        if (!q.self) s.subHalf = (s.subHalf || 0) + q.reward;   // 반기 보조금 실적: 외부 의뢰의 기본 보상(×2 전), 원정 번호당 한 번(정산 1회 보장), 길드 자가 발주 제외 (V2 결정 13)
         s.stats.done++; s.month.success++; s.month.popAdd = (s.month.popAdd || 0) + (s.cfg.town.perSuccess[q.g] || 0);   // 의뢰 성공 → 인구 (2026-11-13)
         const RW = q.reward * (q.x2 ? 2 : 1), DV = s.cfg.deco;   // ×2 의뢰는 골드만 2배 (명성·경험치는 그대로)
         const sp = econSplit(RW, x.rates && x.rates.length === party.length ? x.rates : party.map(m => rateOf(s, m, q)));   // 출발 때 요율로 정산 (귀환 전 정책 변경 무시), 예전 저장은 지금 요율
@@ -643,7 +644,9 @@
 
   function monthly(s) {
     const E = s.cfg.econ, A = s.cfg.adv, T = s.cfg.town, GE = s.cfg.gear;
-    s.gold += E.subsidy[s.grade]; s.month.subsidy += E.subsidy[s.grade];
+    if (E.subsidyMode === 1) {   // 2026-11-17 V2 결정 13: 6 · 12월 말 반기 지급 = 반기 동안 성공한 외부 의뢰 기본 보상 합 × 50% [임시]
+      if ((s.week / WPM) % 6 === 0) { const pay = Math.floor((s.subHalf || 0) * (E.subsidyRate != null ? E.subsidyRate : 0.5) + 1e-9); s.gold += pay; s.month.subsidy += pay; s.month.subsidyBase = s.subHalf || 0; s.subHalf = 0; }
+    } else { s.gold += E.subsidy[s.grade]; s.month.subsidy += E.subsidy[s.grade]; }   // 예전: 등급별 매달 고정
     if (s.settled) for (const k in s.settled) if (s.settled[k] < s.week - 12) delete s.settled[k];
     consignMonthly(s);   // 위탁품 판매 정산 (결정 12)
     contractMonthly(s);   // 계약 보수: 이번 달 근무 주만큼 월말 1회 지급 (결정 4 · 7)   // 정산 기록은 12주만 보관 (원정은 길어야 3주)
