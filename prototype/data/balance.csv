@@ -54,7 +54,9 @@ econ,drinkMargin,2|3|4|5|6|7|8,술 1잔 길드 마진 (길드 등급별, 2026-11
 econ,tavernPerAdvWeek,4,
 econ,tavernGradeMult,1.6,
 econ,effectOpen,0,시설 효과 개방 (0 = 끔: 프로토타입 게임에 없음. 시뮬레이터만 쓰던 기능)
-econ,resaleRate,0.08,
+econ,resaleRate,0,소재 자동 차익 (2026-11-17 V2 결정 12로 없앰 = 0 · 예전 0.08)
+econ,matBuyRate,0.7,의뢰 소재 자동 매입가 = 판매가 × 이 값 (버림 · 돈은 파티에게) [임시] (V2 결정 12)
+econ,consignFee,0.1,위탁 소재 판매 수수료 (금고가 모자라 매입 못 한 소재 · 월말 판매) [임시] (V2 결정 12)
 econ,effectCost,0.1|0.2|0.35,
 econ,mealPriceRate,0.25,
 econ,mealMargin,0.6,

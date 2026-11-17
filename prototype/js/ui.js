@@ -505,9 +505,9 @@
   // 소재 판매 창구 (docs/balance/economy_v1.md 6절, 시설 팝업 '판매하기'로 열기): 보관 소재를 직접 팖. 음식이 아닌 소재 먼저, 음식 소재는 "요리 재료"
   const SELL_P = [6, 9, 12, 30, 36, 48, 90];
   let sellSel = null;
-  const sellPrice = m => (m.price || SELL_P[Math.max(0, GR.indexOf(m.grade))]) + (Gm.upg(s, '판매창구') ? (s.cfg.econ.upSell || 3) : 0);   // 판매 창구 업그레이드 +3G (2026-11-12)
-  function sellDo(ids, all) { let n = 0, g = 0; for (const id of ids) { const m = MATS[id], k = all ? (s.mats[id] || 0) : Math.min(1, s.mats[id] || 0); if (!m || !k) continue; s.mats[id] -= k; n += k; g += k * sellPrice(m); }
-    if (!n) return; s.gold += g; s.month.sell = (s.month.sell || 0) + g; s.month.resale += g;   // 장부: '소재 판매 차익' 줄에 합침
+  const sellPrice = m => Gm.matSellPrice(s, m.id);   // 판매 창구 업그레이드 +3G (2026-11-12) · 2026-11-17 규칙은 game_core.matSellPrice
+  function sellDo(ids, all) { const { n, g } = Gm.sellMats(s, ids.map(id => [id, all ? (s.mats[id] || 0) : 1]));
+    if (!n) return;   // 장부: '소재 판매' 줄 (game_core.sellMats)
     Gm.log(s, `소재 ${n}개를 팔아 ${g}G를 받았습니다.`, 'guild'); UI.hud && UI.hud(); }
   function sellHtml() {
     const mats = s.mats || {}, known = s.knownMats || {};
@@ -703,15 +703,18 @@
   }
   // ---------- 장부: 수입 · 지출 (지난달 | 이번 달) + 12개월 순이익 그래프 (docs/design/popup_ledger.md) ----------
   // 순이익 = 수입 − 지출(시설 건설비·기타). 관문 1의 "운영 순이익(m.net)"은 건설비를 빼고 계산하므로 따로 둠
-  const LG_IN = [['fee', '중계료'], ['resale', '소재 판매 차익'], ['meal', '식사 판매'], ['tavern', '주점 매출'], ['reqIn', '리퀘스트 보상'], ['subsidy', '왕국 보조금']];
-  const LG_OUT = [['build', '시설 건설비'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
+  const LG_IN = [['fee', '중계료'], ['resale', '소재 판매'], ['consign', '위탁 수수료'], ['meal', '식사 판매'], ['tavern', '주점 매출'], ['reqIn', '리퀘스트 보상'], ['subsidy', '왕국 보조금']];
+  const LG_OUT = [['build', '시설 건설비'], ['matBuy', '소재 매입'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
+  const LG_OPT = { consign: 1, cpay: 1, csup: 1, prep: 1 };
   const LG_EOM = { subsidy: 1 };   // 월말 결산 때 한꺼번에 들어오는 항목 (주점 매출은 2026-11-12부터 매주 술 1잔 단위라 제외)
   const lgIn = m => LG_IN.reduce((t, [k]) => t + (m[k] || 0), 0), lgOut = m => LG_OUT.reduce((t, [k]) => t + (m[k] || 0), 0), lgNet = m => lgIn(m) + lgOut(m);
   const gG = v => `${v < 0 ? '−' : ''}${fmt(Math.abs(Math.round(v)))}G`;
   function lgTip(k, m, cur) {   // 줄 오버 내역
     const E = s.cfg.econ, fr = m.feeRate != null ? m.feeRate : Gm.feeRate(s);
     if (k === 'fee') return `성공한 의뢰 <b>${m.success || 0}건</b> · 보상의 ${Math.round(fr * 100)}%`;
-    if (k === 'resale') return `성공한 의뢰 <b>${m.success || 0}건</b> · 보상의 ${Math.round(E.resaleRate * 100)}%` + (m.sell ? ` · 판매 창구 <b>${fmt(m.sell)}G</b>` : '');
+    if (k === 'resale') return (E.resaleRate ? `성공한 의뢰 <b>${m.success || 0}건</b> · 보상의 ${Math.round(E.resaleRate * 100)}% · ` : '') + (m.sell ? `판매 창구 <b>${fmt(m.sell)}G</b>` : '판매 없음');
+    if (k === 'matBuy') return m.matBuyN ? `모험가가 주워 온 소재 <b>${m.matBuyN}개</b>를 판매가의 ${Math.round((E.matBuyRate || 0.7) * 100)}%로 매입` : '없음';
+    if (k === 'consign') return m.consignN ? `위탁 소재 <b>${m.consignN}개</b> 판매 · 수수료 ${Math.round((E.consignFee || 0.1) * 100)}%` : '없음';
     if (k === 'meal') { const d = m.dishes || {}, ks = Object.keys(d); return ks.length ? ks.map(n => `${esc(n)} <b>${d[n]}그릇</b>`).join('<br>') : (m.dishes ? '판매 없음' : '내역 없음 (예전 기록)'); }
     if (k === 'tavern') return `술 <b>${m.drinks || 0}잔</b> 판매 · 1잔 마진 ${GR[s.grade]}급 ${(s.cfg.econ.drinkMargin || [2])[s.grade] || 2}G${Gm.upg(s, '주점') ? ' + 업그레이드 5G' : ''}`;   // 2026-11-12: 매주 술 1잔 단위
     if (k === 'subsidy') { const g = cur ? s.grade : (m.grade != null ? m.grade : s.grade); return `${cur ? '월말 결산 때 들어옵니다 · ' : ''}${GR[g]}급 길드 월 <b>${fmt(E.subsidy[g])}G</b>`; }
@@ -747,10 +750,11 @@
     let h = `<div class="lg-book"><table class="lg"><colgroup><col><col class="c"><col class="c"></colgroup>
       <tr class="hd"><th></th><th class="n">지난달</th><th class="n">이번 달</th></tr>
       <tr class="sec in"><th colspan="3">수입</th></tr>`;
-    for (const [k, n] of LG_IN) h += `<tr><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
+    const lgShow = k => !LG_OPT[k] || (prev && prev[k]) || cur[k];   // 2026-11-17: 쓸 때만 보이는 줄 (위탁 · 계약 · 침공 물약) — 장부가 책 한 쪽을 넘지 않게
+    for (const [k, n] of LG_IN) if (lgShow(k)) h += `<tr><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
     h += `<tr class="sum in"><td>수입 합계</td><td class="n">${prev ? gG(lgIn(prev)) : '—'}</td><td class="n">${gG(lgIn(cur))}</td></tr>
       <tr class="sec out"><th colspan="3">지출</th></tr>`;
-    for (const [k, n] of LG_OUT) h += `<tr><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
+    for (const [k, n] of LG_OUT) if (lgShow(k)) h += `<tr><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
     h += `<tr class="sum out"><td>지출 합계</td><td class="n neg">${prev ? gG(lgOut(prev)) : '—'}</td><td class="n neg">${gG(lgOut(cur))}</td></tr>
       <tr class="tot"><td>순이익</td><td class="n ${prev && lgNet(prev) < 0 ? 'neg' : 'pos'}">${prev ? gG(lgNet(prev)) : '—'}</td><td class="n ${lgNet(cur) < 0 ? 'neg' : 'pos'}">${gG(lgNet(cur))}</td></tr></table>`;
     // 그래프: 최근 12개월 순이익 (건설비 포함). 0 기준선 위 = 이익, 아래 = 손해
