@@ -65,7 +65,6 @@
   Town.init(stage, () => s, {});
   Gm.live = true;   // 게임 화면: 침공은 마을 화면에서 차례마다 보여 줌 (검증 · 시뮬레이터는 한 번에 처리)
   if (window.Invasion) Invasion.init(stage, () => s, { setSpeed, getSpeed: () => speed, save });
-  LinaMenu.init(stage, () => s, UI); // 리나 클릭 메뉴 (좌3·우3)
   Expedition.init(stage, () => s); // 원정 현황 패널 + 미니 뷰 (expedition.js)
   const q = sel => stage.ui.querySelector(sel);
   q('#dWeek').onclick = () => { step(); UI.hud(); };

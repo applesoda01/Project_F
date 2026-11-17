@@ -197,6 +197,8 @@
 .av-head .vb .trk{display:block;height:11px;border-radius:6px;background:rgba(60,35,20,.18);border:1px solid var(--ux-line);overflow:hidden}
 .av-head .vb .trk i{display:block;height:100%;width:100%;border-radius:5px}
 .av-head .vb.hp .trk i{background:linear-gradient(#f26a5c,#d8392e)}
+.av-head .vb.hp.inj .trk i{background:repeating-linear-gradient(135deg,#b8322a 0 6px,#9a2a22 6px 12px)}   /* 부상 중 체력 막대 (2026-11-17) */
+.av-head .vb.hp.inj .bv{color:#8a241c;font-weight:700;text-shadow:0 0 3px #fff,0 0 2px #fff}
 .av-head .vb.mp .trk i{background:linear-gradient(#5aa6f0,#2f78d0)}
 .av-head .vb b{font-size:17px;color:var(--ux-ink);min-width:34px;text-align:right}
 .av-tabs .ux-tabs button{font-size:15px;padding:5px 14px 4px}

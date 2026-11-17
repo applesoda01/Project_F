@@ -92,7 +92,8 @@
     const want = s.pop + T.baseAdd + (s.month.popAdd || 0) + residents * T.perResident;
     const built = HOUSE_SLOTS.length ? addHouses(s, want) : 0;
     const cap = HOUSE_SLOTS.length ? housingCap(s) : Infinity;
-    s.housingFull = want > cap; s.pop = Math.min(want, cap);
+    const wasFull = !!s.housingFull; s.housingFull = want > cap; s.pop = Math.min(want, cap);
+    if (s.housingFull && !wasFull) log(s, `마을에 집이 부족해 인구가 ${Math.round(s.pop)}명에서 더 늘지 않습니다. 집이 고쳐 지어지거나 마을 단계가 오르면 다시 늘어납니다.`, 'town');   // 2026-11-17 주거지 부족 안내 (처음 부족해질 때 한 번)
     if (up) log(s, `마을 집 ${up}채를 고쳐 지었습니다. (주거 +${upCap}명 · 지금 마을에서는 ${LV_NAME[Math.min(4, st - 1)]}까지)`, 'town');
     if (built) log(s, `마을에 새 집이 ${built}채 생겼습니다. (인구 ${Math.round(s.pop)}명 · 집 ${s.houses.length}채)`, 'town');
   }
@@ -518,7 +519,7 @@
         const d = (q.death != null ? q.death : Q.deathBase[q.g]) * CB.C.deathRisk[a.risk] * (1 - 0.15 * Math.min(1, effN(s, '의무실')));
         if (s.R() < d) { a.alive = false; a.dead = true; a.state = 'dead'; s.stats.deaths++; log(s, `${J(a.name, '이', '가')} ${qn(q)} 의뢰에서 쓰러져 돌아오지 못했습니다.`, 'death', { who: [a.name] }); continue; }
         const wk = Math.max(1, CB.C.injuryWeeks[q.g] - (s.built['의무실'] ? CB.C.injuryClinic : 0) - (hasDeco(s, 'fireplace') ? s.cfg.deco.injury : 0));   // 벽난로 −1주
-        a.state = 'injured'; a.until = s.week + wk; a.injuredFrom = q.name || `${GR[q.g]}급 ${QTYPE[q.type]} 의뢰`;   // 모험가 팝업 오버 창용
+        a.state = 'injured'; a.until = s.week + wk; a.injuredAt = s.week; a.injuredFrom = q.name || `${GR[q.g]}급 ${QTYPE[q.type]} 의뢰`;   // 모험가 팝업 오버 창용
         log(s, `${J(a.name, '이', '가')} 전투에서 쓰러져 부상을 입었습니다. ${wk}주 동안 쉽니다.`, 'injury', { who: [a.name] });
       }
     }
@@ -926,7 +927,7 @@
       s.stats.injuries++;
       if (!win && s.R() < C.deathLoss) { a.alive = false; a.dead = true; a.state = 'dead'; s.stats.deaths++; dead.push(a.name); log(s, `${J(a.name, '이', '가')} 다리를 지키다 쓰러져 돌아오지 못했습니다.`, 'death', { who: [a.name] }); continue; }
       const wk = Math.max(1, CB.C.injuryWeeks[0] - clinic - fire);
-      a.state = 'injured'; a.until = s.week + wk; a.injuredFrom = '메인 퀘스트 「다리를 지켜라」';
+      a.state = 'injured'; a.until = s.week + wk; a.injuredAt = s.week; a.injuredFrom = '메인 퀘스트 「다리를 지켜라」';
     }
     delete M.run;
     if (win) {

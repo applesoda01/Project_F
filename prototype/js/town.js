@@ -356,11 +356,16 @@
     }
     if (TS) { TS.tint(wg); g.drawImage(TS.worldImage(), 0, 0); TS.drawFx(g); }   // 시간대 색 → 화면 → 낙엽·눈·비
     if (TS) TS.drawSky(g, c => skyDraw(c, skyImg)); else skyDraw(g, skyImg); // 구름 그림자·새·구름 (클릭 판정과 무관). 계절 모듈이 있으면 일반 배경의 아침~노을에만 보임
-    if (s.housingFull) {   // 주거지 부족 (2026-11-13 임시: 화면 가운데 글자. UI 확정 뒤 자리·모양 결정)
-      const t1 = '주거지가 부족합니다', t2 = '집이 고쳐 지어지거나 마을 단계가 오르면 인구가 다시 늘어납니다';
-      g.save(); g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '700 40px "Malgun Gothic",sans-serif';
-      g.lineWidth = 6; g.strokeStyle = 'rgba(34,22,13,.85)'; g.strokeText(t1, 960, 520); g.fillStyle = '#fbe3c4'; g.fillText(t1, 960, 520);
-      g.font = '600 22px "Malgun Gothic",sans-serif'; g.lineWidth = 4; g.strokeText(t2, 960, 566); g.fillStyle = '#fbf1dc'; g.fillText(t2, 960, 566); g.restore();
+    if (s.housingFull) {   // 주거지 부족 표시 (2026-11-17 사용자 '나'안: 왼쪽 위 HUD 아래 붉은 표시 + 처음 부족해질 때 기록창 한 줄 — game_core houses)
+      const t1 = '집 부족', t2 = `인구 ${Math.round(s.pop).toLocaleString()}명에서 멈춤 · 집이 고쳐 지어지거나 마을 단계가 오르면 다시 늘어요`;
+      g.save(); g.textBaseline = 'middle';
+      g.font = '700 18px "Malgun Gothic",sans-serif'; const w1 = g.measureText(t1).width; g.font = '500 15px "Malgun Gothic",sans-serif'; const w2 = g.measureText(t2).width;
+      const x0 = 30, y0 = 140, h = 36, w = 14 + 22 + w1 + 14 + w2 + 16;
+      g.shadowColor = 'rgba(30,18,8,.3)'; g.shadowBlur = 6; g.shadowOffsetY = 2; g.fillStyle = 'rgba(255,248,236,.95)'; g.beginPath(); g.roundRect(x0, y0, w, h, 10); g.fill();
+      g.shadowColor = 'transparent'; g.strokeStyle = '#c0392b'; g.lineWidth = 2; g.stroke();
+      g.fillStyle = '#c0392b'; g.beginPath(); g.roundRect(x0 + 12, y0 + 9, 18, 18, 4); g.fill(); g.fillStyle = '#fff'; g.font = '700 14px "Malgun Gothic",sans-serif'; g.textAlign = 'center'; g.fillText('!', x0 + 21, y0 + 19);
+      g.textAlign = 'left'; g.font = '700 18px "Malgun Gothic",sans-serif'; g.fillStyle = '#a3261b'; g.fillText(t1, x0 + 36, y0 + h / 2 + 1);
+      g.font = '500 15px "Malgun Gothic",sans-serif'; g.fillStyle = '#4a3322'; g.fillText(t2, x0 + 36 + w1 + 14, y0 + h / 2 + 1); g.restore();
     }
     if (root.Invasion && root.Invasion.on) { root.Invasion.draw(g); return; }   // 침공 중: 모험가 · 몬스터 · 성 게이지만 (이름표 · 말풍선 생략)
     // 이름표
