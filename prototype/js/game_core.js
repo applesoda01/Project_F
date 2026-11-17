@@ -105,14 +105,14 @@
     const fee = base.map((b, i) => Math.floor(b * rates[i] + 1e-9)), net = base.map((b, i) => b - fee[i]);
     return { base, fee, net, guild: fee.reduce((x, y) => x + y, 0) };
   }
-  // 2026-11-17 경제 개편 V2 결정 11 (5단계): 의뢰별 요율. 의뢰에 붙은 요율 → 등급 칸 요율 → 기본 중계료 순. 선택지 10 · 15 · 20% [임시], 15% = 집무실 · 20% = 게시판 업그레이드 뒤
+  // 2026-11-17 경제 개편 V2 결정 11 (5단계): 의뢰별 수수료. 의뢰에 붙은 수수료 → 등급 칸 수수료 → 기본 수수료 순. 선택지 10 · 15 · 20% [임시], 15% = 집무실 · 20% = 게시판 업그레이드 뒤
   const questFee = (s, q) => q && q.fee != null ? q.fee : q && s.gradeFee && s.gradeFee[q.g] != null ? s.gradeFee[q.g] : feeRate(s);
-  const rateOf = (s, a, q) => a.contract ? a.contract.rate : questFee(s, q);   // 개인 요율: 계약 모험가 = 계약 요율, 자유 = 그 의뢰의 요율
+  const rateOf = (s, a, q) => a.contract ? a.contract.rate : questFee(s, q);   // 개인 수수료: 계약 모험가 = 계약 수수료, 자유 = 그 의뢰의 수수료
   function feeOptions(s) { const O = s.cfg.econ.feeOpt || [0.1, 0.15, 0.2]; return O.filter((r, i) => i === 0 || (i === 1 && s.built['집무실']) || (i >= 2 && upg(s, '게시판'))); }
   const feeOk = (s, r) => feeOptions(s).some(x => Math.abs(x - r) < 1e-9);
   function setGradeFee(s, g, r) { if (!feeOk(s, r)) return false; (s.gradeFee = s.gradeFee || [null, null, null, null, null, null, null])[g] = r; return true; }   // 새로 출발하는 의뢰부터 (출발한 의뢰는 출발 때 요율, E5-2)
   function setQuestFee(s, qid, r) { const q = s.board.find(x => x.id === qid); if (!q || !feeOk(s, r)) return false; q.fee = r; return true; }
-  // 모험가가 의뢰를 고르는 순서 (결정 11): 돈이 필요한 모험가는 효율(내 실수령 ÷ 걸리는 주, 혼자 간다고 볼 때) 높은 순, 아니면 지금처럼 등급 높은 순 + 같은 등급이면 요율 낮은 순
+  // 모험가가 의뢰를 고르는 순서 (결정 11): 돈이 필요한 모험가는 주당 실수령(혼자 간다고 볼 때) 높은 순, 아니면 지금처럼 등급 높은 순 + 같은 등급이면 요율 낮은 순
   function needsMoney(s, a) { const GE = s.cfg.gear; if (a.spend === 2) return true; const ng = Math.min(s.grade, a.gear + 1); if (ng <= a.gear) return false; return a.wallet < GE.weaponPrice[ng] * GE.setMult * (1 + GE.reserveMult[a.spend] * 0.5); }
   const questEff = (s, q) => Math.floor(q.reward * (q.x2 ? 2 : 1) * (1 - questFee(s, q)) + 1e-9) / (q.weeks || s.cfg.quest.weeks[q.g]);
   const pickOrder = (s, a) => needsMoney(s, a) ? (x, y) => (questEff(s, y) - questEff(s, x)) || (y.g - x.g) : (x, y) => (y.g - x.g) || (questFee(s, x) - questFee(s, y));
@@ -532,7 +532,7 @@
         if (!q.self) s.subHalf = (s.subHalf || 0) + q.reward;   // 반기 보조금 실적: 외부 의뢰의 기본 보상(×2 전), 원정 번호당 한 번(정산 1회 보장), 길드 자가 발주 제외 (V2 결정 13)
         s.stats.done++; s.month.success++; s.month.popAdd = (s.month.popAdd || 0) + (s.cfg.town.perSuccess[q.g] || 0);   // 의뢰 성공 → 인구 (2026-11-13)
         const RW = q.reward * (q.x2 ? 2 : 1), DV = s.cfg.deco;   // ×2 의뢰는 골드만 2배 (명성·경험치는 그대로)
-        const sp = econSplit(RW, x.rates && x.rates.length === party.length ? x.rates : party.map(m => rateOf(s, m, q)));   // 출발 때 요율로 정산 (귀환 전 정책 변경 무시), 예전 저장은 지금 요율
+        const sp = econSplit(RW, x.rates && x.rates.length === party.length ? x.rates : party.map(m => rateOf(s, m, q)));   // 출발 때 수수료로 정산 (귀환 전 정책 변경 무시), 예전 저장은 지금 요율
         const fee = sp.guild + (hasDeco(s, 'bench') ? DV.gold : 0), resale = RW * E.resaleRate;   // 벤치 +5G는 중계 수입에 더함 · 소재 자동 차익은 4단계(E4-3)에서 정리
         s.gold += fee + resale; s.month.fee += fee; s.month.resale += resale;
         party.forEach((a, i) => { a.wallet += sp.net[i]; (a.earn = a.earn || []).push({ w: s.week, b: sp.base[i] }); a.earn = a.earn.filter(e => e.w > s.week - (s.cfg.contract ? s.cfg.contract.look : 8)); });   // earn: 최근 기준액 기록 (계약 수락 판단, 결정 5)
