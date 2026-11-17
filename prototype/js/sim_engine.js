@@ -52,7 +52,7 @@
         buildCost: [0, 2000, 4000, 8000, 15000, 30000, 0],
         upkeepRate: 0,   // 2026-11-05 시설 유지비 없앰 (balance.csv와 같게)
         tavernPerAdvWeek: 4, tavernGradeMult: 1.6,
-        feeOpt: [0.1, 0.15, 0.2],
+        feeOpt: [0.1, 0.15, 0.2], restK: 0.5,   // 결정 22: 높은 수수료를 거르는 세기 [임시]
         subsidyMode: 1, subsidyRate: 0.5,   // 2026-11-17 V2 결정 13: 반기 지급 · 성공 보상 합의 50% [임시] (0 = 예전 매달 고정)   // 2026-11-17 V2 결정 11: 의뢰별 요율 선택지 [임시]
         resaleRate: 0, matBuyRate: 0.7, consignFee: 0.1,   // 2026-11-17 V2 결정 12: 소재 자동 차익 8% 없앰 → 자동 매입 70% · 위탁 10% [임시] (balance.csv와 같게)
         effectCost: [0.10, 0.20, 0.35],
@@ -459,7 +459,9 @@
         const GE = cfg.gear, ngr = Math.min(s.grade, a.gear + 1), needy = a.spend === 2 || (ngr > a.gear && a.wallet < GE.weaponPrice[ngr] * GE.setMult * (1 + GE.reserveMult[a.spend] * 0.5));   // 게임 needsMoney 와 같음 (V2 결정 11)
         const effq = q => Math.floor((q.T ? q.T.reward : Q.reward[q.g]) * (q.x2 ? 2 : 1) * (1 - feeRate()) + 1e-9) / (q.T ? q.T.weeks : Q.weeks[q.g]);
         const cands = s.board.map((q, i) => ({ q, i })).filter(o => o.q.g >= lo && o.q.g <= hi).sort(needy ? (x, y) => (effq(y.q) - effq(x.q)) || (y.q.g - x.q.g) : (x, y) => y.q.g - x.q.g);
+        const base0 = (E.feeOpt || [0.1])[0], skipP = needy && E.restK ? Math.min(1, Math.max(0, feeRate() - base0) / base0 * E.restK) : 0;   // 게임과 같은 보완(결정 22) — 시뮬레이터는 수수료가 하나
         for (const { q, i } of cands) {
+          if (skipP > 0 && R() < skipP) continue;
           let party = [a];
           let pp = perceived(a, questP(party, q));
           if (pp < A.seekTh[a.social]) {
