@@ -17,7 +17,7 @@
 | 수치 확정 | 같은 조건의 측정 근거 |
 | 이전 규칙 확인 | 우측 V1 선택. 개정 본문에 옛 규칙을 중복 적재하지 않음 |
 
-v1은 `docs/book/`, v2는 `docs/book-v2/`입니다. `docs/design/v2/`는 기존 재분류 묶음으로 별도 버전 체계입니다.
+원고는 v1 `docs/book/src/`, v2 `docs/book-v2/src/`이고, 열람용 HTML은 v1 `docs/book/v1/`, v2 `docs/book/v2/`입니다(`docs/tools/build-books.mjs`로 만듦). `docs/design/v2/`는 기존 재분류 묶음으로 별도 버전 체계입니다.
 
 ## 실제 화면 기준 보완
 
