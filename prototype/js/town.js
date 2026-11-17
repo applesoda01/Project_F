@@ -373,10 +373,19 @@
     }
     if (bub) {
       if (root.Director && root.Director.drawBubble) root.Director.drawBubble(g, bub.x, bub.y + 36, bub.text, 4 - bub.t, bub.t);   // 길드와 같은 말풍선
-      if (bub.who && bub.who.a) {   // 말풍선 위 이름표: 이름 · 직업 (2026-11-12)
-        const A2 = bub.who.a, txt = `${A2.name} · ${A2.cls}`, ty = bub.y + 36 - 22 - 54 - 8, al = Math.min(1, (4 - bub.t) / .2, bub.t / .25);
-        g.save(); g.globalAlpha = Math.max(0, al); g.font = '700 17px "Malgun Gothic",sans-serif'; const w = g.measureText(txt).width + 16, x0 = Math.max(12, Math.min(1908 - w, bub.x - 34));
-        g.fillStyle = 'rgba(34,22,13,.82)'; g.beginPath(); g.roundRect(x0, ty - 24, w, 24, 8); g.fill(); g.fillStyle = '#fbf1dc'; g.textBaseline = 'middle'; g.fillText(txt, x0 + 8, ty - 11); g.restore();
+      if (bub.who && bub.who.a) {   // 이름 리본 (2026-11-17 반영, 사용자 D안 11-16): 말풍선 오른쪽 위 모서리에 걸친 갈색 리본 — 이름 굵게 + 직업 작게
+        const A2 = bub.who.a, x = bub.x, y = bub.y + 36, al = Math.min(1, (4 - bub.t) / .2, bub.t / .25);
+        g.save(); g.globalAlpha = Math.max(0, al);
+        g.font = '700 26px "MaruBuri", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';   // 말풍선 상자 크기 (actors.js bubble과 같은 계산)
+        const bw = Math.max(72, Math.ceil(g.measureText(bub.text).width) + 48), bx = Math.max(12, Math.min(1908 - bw, x - 34)), by = y - 22 - 54;
+        const F1 = '700 18px "MaruBuri", "Malgun Gothic", sans-serif', F2 = '600 13px "Malgun Gothic", sans-serif';
+        g.font = F1; const w1 = g.measureText(A2.name).width; g.font = F2; const w2 = g.measureText(A2.cls).width;
+        const rw = Math.ceil(w1 + w2 + 34), rh = 30, rx = Math.max(12, Math.min(1908 - rw, bx + bw - rw + 12)), ry = by - rh / 2 - 2;
+        g.shadowColor = 'rgba(30,18,8,.35)'; g.shadowBlur = 5; g.shadowOffsetY = 2;
+        g.fillStyle = '#5a3820'; g.beginPath(); g.roundRect(rx, ry, rw, rh, 15); g.fill();
+        g.shadowColor = 'transparent'; g.strokeStyle = 'rgba(232,196,128,.55)'; g.lineWidth = 1.5; g.beginPath(); g.roundRect(rx + 2.5, ry + 2.5, rw - 5, rh - 5, 12.5); g.stroke();
+        g.textBaseline = 'middle'; g.font = F1; g.fillStyle = '#fbf1dc'; g.fillText(A2.name, rx + 13, ry + rh / 2 + 1);
+        g.font = F2; g.fillStyle = '#e2c79a'; g.fillText(A2.cls, rx + 13 + w1 + 8, ry + rh / 2 + 2); g.restore();
       }
       /* [보관] 예전 마을 말풍선
       g.font = '600 20px "Malgun Gothic",sans-serif'; const w = g.measureText(bub.text).width + 30, a = Math.min(1, bub.t * 2);

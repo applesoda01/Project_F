@@ -451,9 +451,9 @@
     if (act === 'main') { Gm.mainAccept(s); hooks.changed && hooks.changed(); renderPopup(); return; }
     const v = Gm.reqView(s).find(x => x.r.id === rqSel); if (!v) return;
     const top = s.log[0]; rqMsg = '';
-    if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; else rqStamp('들어주기', v.name); }
+    if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; else rqStamp('수락', `「${v.name}」`); }   // 2026-11-17 사용자: 도장은 밤 원본(초록 '수락' + 「이름」)으로
     else if (act === 'refuse') Gm.reqRefuse(s, v.r.id);
-    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = Gm.reqWaitOf(s, v.r).length ? '' : '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; rqStamp('보내기', v.name); } }
+    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = Gm.reqWaitOf(s, v.r).length ? '' : '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; rqStamp('수락', `「${v.name}」 · ${Gm.reqWaitOf(s, v.r).length ? '모이면 출발' : '다음 주 출발'}`); } }
     else if (act === 'unsend') Gm.reqUnsend(s, v.r.id);
     else if (act === 'office') Gm.build(s, '집무실');
     rqFlush(top); hooks.changed(); renderPopup();
