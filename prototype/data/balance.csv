@@ -39,7 +39,8 @@ adv,departTh,0.95|0.85|0.65,출발 기준: 예상 성공 확률 (신중|보통|�
 adv,fameStep,5,새 모험가: 명성이 이 값의 배수(5 · 10 · 15…)에 닿을 때마다 1명 (2026-11-17 결정: 5마다 · progression_v1 2-2). 0이면 예전 확률 방식(arrivalPerMonth)
 econ,startGold,500,
 econ,feeBase,0.1,
-econ,feePerInfo,0.02,
+econ,feePerInfo,0,정보실 단계마다 중계료 +%p (2026-11-17 V2 E5-3: 자동 인상 없앰 = 0 · 예전 0.02 · 정보실은 서비스 · 해금 역할로)
+econ,feeOpt,0.1|0.15|0.2,의뢰별 요율 선택지: 기본 · 집무실 뒤 · 게시판 업그레이드 뒤 [임시] (V2 결정 11)
 econ,subsidy,300|500|800|1200|2000|3000|4500,
 econ,buildCost,0|2000|4000|8000|15000|30000|0,
 econ,upkeepRate,0,
