@@ -292,10 +292,10 @@
     { id: 'adv', name: '모험가', col: '#b38a26', pops: ['advs', 'promo'] },
     { id: 'fac', name: '시설', col: '#566d84', pops: ['fac'] },
     { id: 'food', name: '음식', col: '#b0612e', pops: ['meals'] },   // 2026-11-13: 경영 장에서 분리 (사용자 결정)
-    { id: 'mgmt', name: '경영', col: '#66763a', pops: ['ledger', 'sell', 'codex', 'log'] },
+    { id: 'mgmt', name: '경영', col: '#66763a', pops: ['ledger', 'sell', 'trade', 'codex', 'log'] },   // trade: 매입 · 위탁 (2026-11-18 V2 E4-4)
     { id: 'opt', name: '설정', col: '#6a4785', pops: ['opts'] },
   ];
-  const SUB_NAME = { board: '게시판', req: '리퀘스트', advs: '명부', 'advs:career': '경력', 'advs:contract': '계약 제안', promo: '전직 제안', fac: '시설', ledger: '장부', meals: '음식 설정', sell: '소재 판매', codex: '도감', log: '기록', opts: '설정' };
+  const SUB_NAME = { board: '게시판', req: '리퀘스트', advs: '명부', 'advs:career': '경력', 'advs:contract': '계약 제안', promo: '전직 제안', fac: '시설', ledger: '장부', meals: '음식 설정', sell: '소재 판매', trade: '매입 위탁', codex: '도감', log: '기록', opts: '설정' };
   const chapterOf = name => BOOK.find(c => c.pops.includes(name)) || null;
   function bookInit() {
     const mk = q('#bookMarks'); if (!mk || mk.childElementCount) return;
@@ -466,7 +466,7 @@
   // 화면에서 바로 일어난 리퀘스트 기록(완료 · 거절 등)을 로그 · 대사로 흘려보냄 (주 진행 때는 main.js 가 UI.onLogs 로 보냄)
   function rqFlush(top) { const f = []; for (const L of s.log) { if (L === top) break; f.push(L); } if (f.length && f.length < 20) UI.onLogs(f.reverse()); }
   UI.reqBadge = function () { goalShow(); const n = (s.req ? s.req.open : []).filter(r => r.isNew).length + (s.main && s.main.state === 'offer' ? 1 : 0), b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); const c = q('#bReq'); if (c) { c.textContent = n; c.hidden = !n; } return n; };
-  const TITLES = { req: '리퀘스트', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
+  const TITLES = { req: '리퀘스트', trade: '매입 · 위탁', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
     const wasOpen = q('#popBack').classList.contains('open'), prev = popup;
@@ -498,6 +498,7 @@
     else if (popup === 'log') { const l0 = b.querySelector('.gl-list'), y = l0 ? l0.scrollTop : 0; b.innerHTML = logHtml(); mgBook(b, 'log'); const l1 = b.querySelector('.gl-list'); if (l1) l1.scrollTop = y; }   // 필터 줄은 고정, 목록만 스크롤 (다시 그려도 위치 유지)
     else if (popup === 'codex') { b.innerHTML = codexHtml(); mgBook(b, 'codex'); }
     else if (popup === 'sell') { b.innerHTML = sellHtml(); mgBook(b, 'sell'); }
+    else if (popup === 'trade') b.innerHTML = tradeHtml();
     else if (popup === 'opts') b.innerHTML = optsHtml();
     else if (popup === 'req') { const keep = sel => { const el = b.querySelector(sel); return el ? el.scrollTop : 0; }, y1 = keep('.bk-rq .bk-r'), y2 = keep('.rq-list'), sel0 = b.dataset.rsel; b.innerHTML = reqHtml(); const r1 = b.querySelector('.bk-rq .bk-r'), l1 = b.querySelector('.rq-list'); if (r1 && sel0 === String(rqSel)) r1.scrollTop = y1; if (l1) l1.scrollTop = y2; b.dataset.rsel = rqSel; UI.reqBadge(); }
   }
@@ -679,6 +680,25 @@
       const c = e.target.closest('.qcard'); if (c) { qSel = +c.dataset.q; renderBoardBook(b); }
     };
     b.onmouseover = b.onmouseout = null;
+  }
+  function tradeHtml() {   // 2026-11-18 V2 E4-4 (시안 사용자 확인): 매입 기록 + 위탁 보관함 · 위탁품 지금 사들이기
+    const E = s.cfg.econ, br = Math.round((E.matBuyRate != null ? E.matBuyRate : 0.7) * 100), cf = E.consignFee != null ? E.consignFee : 0.1;
+    const who = ids => ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean), face = a => `<span class="tr-f" style="${faceStyle(a, 34, 180, 17)}"></span>`;
+    const cons = s.consign || [], logs = (s.buyLog || []).slice(0, 7), cn = cons.reduce((t, c) => t + c.n, 0), left = (Gm.WPM - s.week % Gm.WPM) % Gm.WPM || Gm.WPM;
+    const feeOf = c => Math.floor(Gm.matSellPrice(s, c.m) * c.n * cf + 1e-9);
+    let L = `<div class="tr"><div class="sub">모험가가 주워 온 소재는 모험가 것입니다 · 귀환 때 길드가 판매가의 <b>${br}%</b>로 삽니다</div>
+      <div class="tr-sum"><div>이번 달 매입<b class="m">${s.month.matBuyN || 0}개 · ${fmt(-(s.month.matBuy || 0))}G</b>돈은 주워 온 모험가에게</div><div>위탁 보관 중<b>${cn}개</b>${cn ? `월말에 팔리면 수수료 +${fmt(cons.reduce((t, c) => t + feeOf(c), 0))}G` : '금고가 모자랄 때만 생깁니다'}</div></div>
+      <div class="ux-h">매입 기록 <small>최근 순</small></div>`;
+    if (!logs.length) L += '<div class="tr-none">아직 매입한 소재가 없습니다.</div>';
+    for (const b of logs) { const m = MATS[b.m], ps = who(b.ids); if (!m) continue;
+      L += `<div class="tr-row"><span class="ic">${matImg(m)}</span><span class="fs">${ps.slice(0, 2).map(face).join('')}</span><span><b>${esc(m.name)}</b> ×${b.n}<br><small>${ps.length ? esc(ps[0].name) + (ps.length > 1 ? ' 파티' : '') + '가 주워 옴' : '떠난 모험가'}</small></span><span class="g">${fmt(b.g)}G</span><span class="wk">${b.w === s.week ? '이번 주' : (s.week - b.w) + '주 전'}</span></div>`; }
+    L += `<div class="tr-note">산 소재는 길드 창고로 들어가 요리 · 리퀘스트 납품에 쓰고, <b>소재 판매</b> 책갈피에서 판매가 그대로 팔 수 있습니다.</div></div>`;
+    let R = `<div class="tr"><h3>위탁 보관함</h3><div class="sub">금고가 모자라 사지 못한 소재 · 모험가 것으로 맡아 둡니다</div>`;
+    if (!cons.length) R += '<div class="tr-none">맡아 둔 소재가 없습니다.<br><small>귀환 때 금고가 매입가보다 적으면 여기에 쌓입니다.</small></div>';
+    cons.forEach((c, i) => { const m = MATS[c.m], ps = who(c.ids); if (!m) return; const sale = Gm.matSellPrice(s, c.m) * c.n, fee = feeOf(c), cost = Gm.matBuyPrice(s, c.m) * c.n;
+      R += `<div class="tr-row c"><span class="ic">${matImg(m)}</span><span class="fs">${ps.slice(0, 2).map(face).join('')}</span><span><b>${esc(m.name)}</b> ×${c.n}<br><small>${ps.map(a => esc(a.name)).join(' · ') || '떠난 모험가'} 것 · 월말(${left}주 뒤) 판매 시 모험가 ${fmt(sale - fee)}G · 길드 ${fmt(fee)}G</small></span><button class="ux-btn sm" data-cbuy="${i}" ${s.gold < cost ? 'disabled title="금고가 모자랍니다"' : ''}>${fmt(cost)}G에 사들이기</button></div>`; });
+    R += `<div class="tr-warn">위탁 소재는 길드 것이 아니라서 요리 · 리퀘스트 납품에 쓸 수 없습니다. 사들이면 창고로 들어옵니다.</div><div class="tr-note">위탁 수수료는 판매가의 <b>${Math.round(cf * 100)}%</b>입니다. 금고가 넉넉하면 다음 귀환부터는 다시 자동으로 매입합니다.</div></div>`;
+    return `<div class="bk2 bk-tr"><section class="bk-l">${L}</section><section class="bk-r">${R}</section></div>`;
   }
   function qFeeHtml(q) {   // 2026-11-17 V2 E5-4: 이 의뢰 수수료 + 실수령 미리 보기 (책 오른쪽 쪽)
     const O = s.cfg.econ.feeOpt || [0.1, 0.15, 0.2], open = Gm.feeOptions(s), base = Gm.questFee(s, { g: q.g }), cur = Gm.questFee(s, q), R = q.reward * (q.x2 ? 2 : 1);
@@ -1738,6 +1758,7 @@
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
+      { const cb = e.target.closest('[data-cbuy]'); if (cb && popup === 'trade') { if (cb.disabled) return; const r = Gm.consignBuy(s, +cb.dataset.cbuy); toast(r.ok ? `위탁 소재 ${r.n}개를 ${fmt(r.cost)}G에 사들였습니다.` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); renderPopup(); return; } }
       { const c = e.target.closest('[data-ct]'); if (c && popup === 'advs') { if (!c.disabled) contractClick(c.dataset.ct); return; } }
       const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs], [data-rq], [data-rqact], [data-rqnom]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
       if (t.dataset.rq) { rqSel = t.dataset.rq; rqMsg = ''; renderPopup(); return; }
