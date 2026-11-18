@@ -68,7 +68,8 @@
     for (const m of ms) {
       const together = (m.with || []).includes(b.id) || (b.mem || []).some(x => x.k === m.k && x.q === m.q && x.w === m.w);
       const sets = (TM[m.k] || []).filter(st => condOk(st.cond, m, { style: STYLE(a), voiceB: VOICE(b), together, rel: rel || '' })); if (!sets.length) continue;
-      const st = sets[Math.floor(Math.random() * sets.length)];
+      const fresh = sets.filter(x => !(m.used || []).includes(x.id)), pool = fresh.length ? fresh : sets;   // 같은 기억을 두 번째 말할 때는 다른 세트로 (같은 대화 되풀이 방지)
+      const st = pool[Math.floor(Math.random() * pool.length)];
       const base = { together, rel: rel || '' };
       const o = pickRow(st.open, Object.assign({ style: STYLE(a), voice: VOICE(a) }, base)), r = pickRow(st.reply, Object.assign({ voice: VOICE(b) }, base));
       if (!o || !r) continue;
@@ -76,7 +77,7 @@
       const wn = (m.with || []).map(id => (s.advs.find(x => x.id === id) || {}).name).filter(Boolean)[0] || '동료';
       const V = { a: a.name, b: b.name, q: m.q || '그 의뢰', mon: m.mon || '몬스터', with: wn, weeks: m.weeks || 1, giver: m.giver || '의뢰인', part: m.part || '장비', g: m.g || 'F', lv: m.lv || '', cls: m.cls || '' };
       const fill = t => t.replace(/\{(\w+)(?::([^}]+))?\}/g, (m0, k, sfx) => V[k] != null ? josa(V[k], sfx) : m0);
-      G.memSaid(a, m);
+      (m.used = m.used || []).push(st.id); G.memSaid(a, m);
       return [fill(o), fill(r)].concat(c ? [fill(c)] : []);
     }
     return null;
