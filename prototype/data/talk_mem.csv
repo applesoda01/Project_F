@@ -146,3 +146,27 @@ qlv_1,qlv,reply,new ban,그래? 한동안 정보가 흐리다던데.,
 qlv_1,qlv,reply,new jon,그럼 정보부터 확인해 봐요.,
 qlv_1,qlv,close,ban,그만큼 보수도 늘었으니까!,
 qlv_1,qlv,close,jon,보수가 늘었으니 힘내요.,
+gen_hurt_01,hurt mon @bold @jon @together,open,,저번 주 {mon}한테 물려서 쓰러졌어.,Kanana-2 3B 생성 · Claude 검수 (고침: 띄어쓰기)
+gen_hurt_01,hurt mon @bold @jon @together,reply,,그때 우리도 조심했잖아요.,
+gen_hurt_02,hurt mon @bold @jon @new,open,,{mon}한테 물려서 며칠이나 쓰러져 있었어!,"Kanana-2 3B 생성 · Claude 검수 (고침: ""이틀간이나""→""며칠이나"", 대답 줄임)"
+gen_hurt_02,hurt mon @bold @jon @new,reply,,"조심하세요, 무리하면 큰일 나요.",
+gen_hurt_03,hurt mon @bold @ban @new,open,,지난주에 {mon}한테 물려서 쓰러졌어.,"Kanana-2 3B 생성 · Claude 검수 (고침: 대답 앞 ""오, 말조심!"" 뺌)"
+gen_hurt_03,hurt mon @bold @ban @new,reply,,그때 조심했어야지.,
+gen_hurt_04,hurt mon @calm @jon @new,open,,지난주엔 {mon}한테 물려서 2주 동안 쉬었어.,"Kanana-2 3B 생성 · Claude 검수 (고침: ""쉬었잖아""→""쉬었어"")"
+gen_hurt_04,hurt mon @calm @jon @new,reply,,{mon} 조심해요.,
+gen_fail_01,fail !late mon @bold @ban @new,open,,「{q}」에서 {mon} 놈들한테 처참히 졌다!,"Kanana-2 3B 생성 · Claude 검수 (고침: ""또"" 뺌)"
+gen_fail_01,fail !late mon @bold @ban @new,reply,,그 작전도 실패했구나!,
+gen_fail_02,fail !late mon @calm @ban @together,open,,「{q}」에서 {mon}에게 져서 실패했다.,"Kanana-2 3B 생성 · Claude 검수 (고침: ""졌다""→""졌지"")"
+gen_fail_02,fail !late mon @calm @ban @together,reply,,그때 우리도 다 같이 졌지.,
+gen_fail_03,fail late @calm @ban @together,open,,"「{q}」, 기한을 넘겼네.",Kanana-2 3B 생성 · Claude 검수
+gen_fail_03,fail late @calm @ban @together,reply,,"다들 늑장 부렸으니, 다음엔 더 신경 쓰자.",
+gen_win_01,win_big fz @bold @jon @together,open,,"「{q}」, 정보 흐린 걸 직접 해냈어!",Kanana-2 3B 생성 · Claude 검수
+gen_win_01,win_big fz @bold @jon @together,reply,,"그 일, 함께여서 고마워요.",
+gen_win_02,win_big fz @calm @ban @together,open,,"「{q}」, 정보 흐리던 거 해냈어.","Kanana-2 3B 생성 · Claude 검수 (고침: ""도와줬지""→""해냈지"")"
+gen_win_02,win_big fz @calm @ban @together,reply,,같이 힘내서 해냈지!,
+gen_qlv_01,qlv @bold @jon @new,open,,"「{q}」, Lv{lv}로 강해졌지?",Kanana-2 3B 생성 · Claude 검수
+gen_qlv_01,qlv @bold @jon @new,reply,,그래도 조심할게요!,
+gen_gift_01,gift @calm @ban @new,open,,어제 마스터가 {g}급 {part} 하나 줬어.,"Kanana-2 3B 생성 · Claude 검수 (고침: 띄어쓰기, 맺음 줄 뺌)"
+gen_gift_01,gift @calm @ban @new,reply,,"오, 보여 줘! 어때, 쓸 만해?",
+gen_grow_01,grow grade @calm @jon @new,open,,{g}급 모험가로 승급했다.,"Kanana-2 3B 생성 · Claude 검수 (고침: ""축하드려요"" 더함)"
+gen_grow_01,grow grade @calm @jon @new,reply,,처음 듣네요. 축하드려요.,
