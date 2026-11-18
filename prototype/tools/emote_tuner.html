@@ -33,7 +33,7 @@ button.on{background:var(--acc);color:#fff}
 .fc{position:absolute;left:0;top:0;width:100%;height:100%}
 .row{display:grid;grid-template-columns:44px minmax(0,1fr) 64px;gap:8px;align-items:center;margin:8px 0}
 .row input[type=range]{width:100%}
-.row input[type=number]{width:64px;font:inherit;font-size:13px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
+.row input[type=text]{width:64px;font:inherit;font-size:13px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}
 .seg{display:flex;flex-wrap:wrap;gap:4px}
 .hint{font-size:12px;color:var(--muted)}
 textarea{width:100%;height:54px;font:12px/1.4 ui-monospace,monospace;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
@@ -72,9 +72,9 @@ textarea{width:100%;height:54px;font:12px/1.4 ui-monospace,monospace;border:1px 
   </div>
   <div style="display:grid;gap:14px;align-content:start;min-width:0">
     <div class="card"><h2>위치 (모험가 중심 기준)</h2>
-      <div class="row"><label>좌우</label><input type="range" id="dx" min="-300" max="300" step="1"><input type="number" id="dxN" step="1"></div>
-      <div class="row"><label>상하</label><input type="range" id="dy" min="-250" max="250" step="1"><input type="number" id="dyN" step="1"></div>
-      <div class="row"><label>크기</label><input type="range" id="sz" min="24" max="200" step="1"><input type="number" id="szN" step="1"></div>
+      <div class="row"><label>좌우</label><input type="range" id="dx" min="-300" max="300" step="1"><input type="text" inputmode="decimal" id="dxN"></div>
+      <div class="row"><label>상하</label><input type="range" id="dy" min="-250" max="250" step="1"><input type="text" inputmode="decimal" id="dyN"></div>
+      <div class="row"><label>크기</label><input type="range" id="sz" min="24" max="200" step="1"><input type="text" inputmode="decimal" id="szN"></div>
       <div class="hint">좌우: + 오른쪽 · 상하: − 위쪽 (px). 숫자 칸에 직접 넣어도 되고, 막대 밖 값도 들어갑니다.</div>
       <div class="seg" style="margin-top:10px"><button id="reset">지금 게임 값으로</button><button id="flipPos">위치만 좌우 맞바꾸기</button></div>
       <div class="hint" id="gameVal"></div>
@@ -85,10 +85,10 @@ textarea{width:100%;height:54px;font:12px/1.4 ui-monospace,monospace;border:1px 
         <canvas id="symCv" width="560" height="542" style="position:absolute;left:0;top:0;width:280px;height:271px"></canvas>
       </div>
       <div class="row"><label>진하기</label><input type="range" id="symOp" min="0" max="100" value="45"><span class="hint">사진</span></div>
-      <div class="row"><label>가로</label><input type="range" id="sdx" min="-30" max="30" step="0.5"><input type="number" id="sdxN" step="0.5"></div>
-      <div class="row"><label>세로</label><input type="range" id="sdy" min="-30" max="30" step="0.5"><input type="number" id="sdyN" step="0.5"></div>
-      <div class="row"><label>크기</label><input type="range" id="sk" min="50" max="160" step="1"><input type="number" id="skN" step="1"></div>
-      <div class="hint">8종 기호(느낌표 · 땀방울 …)가 한꺼번에 같이 움직여요. 기호를 끌어도 됩니다. 단위: 얼굴 가로의 % · 크기 %. 사진은 원본 방향이라 이 칸은 반전 없이 보여요.</div>
+      <div class="row"><label>가로</label><input type="range" id="sdx" min="-200" max="200" step="0.5"><input type="text" inputmode="decimal" id="sdxN"></div>
+      <div class="row"><label>세로</label><input type="range" id="sdy" min="-200" max="200" step="0.5"><input type="text" inputmode="decimal" id="sdyN"></div>
+      <div class="row"><label>크기</label><input type="range" id="sk" min="20" max="300" step="1"><input type="text" inputmode="decimal" id="skN"></div>
+      <div class="hint">8종 기호(느낌표 · 땀방울 …)가 한꺼번에 같이 움직여요. 기호를 끌어도 됩니다. 단위: 얼굴 가로의 % (−200 ~ 200) · 크기 %. 숫자 칸에 직접 쓰고 Enter. 사진은 원본 방향이라 이 칸은 반전 없이 보여요.</div>
       <div class="seg" style="margin-top:8px"><button id="symReset">기호 처음대로</button></div>
     </div>
     <div class="card"><h2>결과</h2>
@@ -112,6 +112,10 @@ let V = Object.assign({}, GAME), cur = 'win', playing = true, zoom = 1, drag = n
 try { const s = JSON.parse(localStorage.getItem('emotePos2') || 'null'); if (s && s.game && JSON.stringify(s.game) === JSON.stringify(GAME)) V = Object.assign(V, s.V); if (s && s.gsym && JSON.stringify(s.gsym) === JSON.stringify(GSYM) && s.SY) SY = s.SY; } catch (e) {}
 const store = () => { try { localStorage.setItem('emotePos2', JSON.stringify({ V, game: GAME, SY, gsym: GSYM })); } catch (e) {} };
 $('gameVal').textContent = `지금 게임 값: 좌우 ${GAME.dx} · 상하 ${GAME.dy} · 크기 ${GAME.size} · 그림 ${GAME.mirror ? '좌우 반전' : '원본'}`;
+// 숫자 칸: 직접 써 넣기 (Enter 또는 칸을 벗어나면 반영 · 쓰는 중에는 값을 덮어쓰지 않음). 막대 범위 밖 값도 됨
+const numIn = (id, set) => { const el = $(id); const go = () => { const v = parseFloat(el.value.replace(',', '.')); if (!isNaN(v)) set(v); else ui(); };
+  el.onchange = go; el.onkeydown = e => { if (e.key === 'Enter') { go(); el.select(); } }; el.onfocus = () => el.select(); };
+const setNum = (id, v) => { const el = $(id); if (document.activeElement !== el) el.value = v; };
 const g = $('cv').getContext('2d');
 function frame(now) {
   g.setTransform(2, 0, 0, 2, 0, 0); g.clearRect(0, 0, 600, 500);
@@ -125,11 +129,11 @@ function frame(now) {
 function ui() {
   const W = V.size, H = W * FACE_H, x = CX + V.dx - W / 2, y = CY + V.dy - H / 2;
   Object.assign($('guide').style, { left: x + 'px', top: y + 'px', width: W + 'px', height: H + 'px' });
-  for (const k of ['dx', 'dy']) { $(k).value = V[k]; $(k + 'N').value = V[k]; } $('sz').value = V.size; $('szN').value = V.size;
+  for (const k of ['dx', 'dy']) { $(k).value = V[k]; setNum(k + 'N', V[k]); } $('sz').value = V.size; setNum('szN', V.size);
   $('dir').textContent = '그림 방향: ' + (V.mirror ? '좌우 반전' : '원본'); $('playBtn').textContent = playing ? '⏸ 멈춤' : '▶ 움직임'; $('playBtn').classList.toggle('on', playing);
   $('kinds').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.k === cur));
   $('symRef').src = `../assets/emote/ref_${cur}.jpg`;
-  for (const [id, v] of [['sdx', SY.dx * 100], ['sdy', SY.dy * 100], ['sk', SY.k * 100]]) { $(id).value = v; $(id + 'N').value = Math.round(v * 10) / 10; }
+  for (const [id, v] of [['sdx', SY.dx * 100], ['sdy', SY.dy * 100], ['sk', SY.k * 100]]) { $(id).value = v; setNum(id + 'N', Math.round(v * 10) / 10); }
   $('out').value = JSON.stringify({ dir: V.mirror ? 'mirror' : 'original', anchor: '모험가 중심 (발 − 70px)', dx: V.dx, dy: V.dy, size: V.size, sym: { dx: +SY.dx.toFixed(4), dy: +SY.dy.toFixed(4), k: +SY.k.toFixed(3) } });
   store();
 }
@@ -141,14 +145,14 @@ $('playBtn').onclick = () => { playing = !playing; t0 = performance.now(); ui();
 $('zoom').onclick = () => { zoom = zoom === 1 ? 2 : 1; const st = $('stage'); st.style.transform = `scale(${zoom})`; st.parentElement.style.height = 500 * zoom + 'px'; st.style.marginRight = (600 * (zoom - 1)) + 'px'; $('zoom').textContent = zoom === 1 ? '2배로 보기' : '1배로 보기'; };
 for (const [id, key] of [['dx', 'dx'], ['dy', 'dy'], ['sz', 'size']]) {
   const set = v => { if (!isNaN(v)) { V[key] = Math.round(v); ui(); } };
-  $(id).oninput = e => set(+e.target.value); $(id + 'N').onchange = e => set(+e.target.value);
+  $(id).oninput = e => set(+e.target.value); numIn(id + 'N', set);
 }
 $('reset').onclick = () => { V = Object.assign({}, GAME); ui(); };
 $('symReset').onclick = () => { SY = Object.assign({}, GSYM); ui(); };
 $('symOp').oninput = e => { $('symRef').style.opacity = e.target.value / 100; };
 for (const [id, key, d] of [['sdx', 'dx', 100], ['sdy', 'dy', 100], ['sk', 'k', 100]]) {
   const set = v => { if (!isNaN(v)) { SY[key] = v / d; ui(); } };
-  $(id).oninput = e => set(+e.target.value); $(id + 'N').onchange = e => set(+e.target.value);
+  $(id).oninput = e => set(+e.target.value); numIn(id + 'N', set);
 }
 let sdrag = null;
 $('symBox').addEventListener('pointerdown', e => { sdrag = { x0: e.clientX, y0: e.clientY, dx: SY.dx, dy: SY.dy }; $('symBox').setPointerCapture(e.pointerId); e.preventDefault(); });
