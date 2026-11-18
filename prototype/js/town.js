@@ -412,6 +412,12 @@
 #tInfo h3{margin:0 0 4px;font-size:27px}
 #tInfo .tg{display:inline-block;padding:1px 10px;border-radius:9px;font-size:17px;font-weight:700;background:#6fc47a;color:#fff;margin-left:8px;vertical-align:middle}
 #tInfo .tg.off{background:#c0705c}
+#tInfo .gbDesc{color:#6b5440;font-size:19px}
+#tInfo .gbRow{display:flex;gap:8px;margin:8px 0 12px;flex-wrap:wrap}
+#tInfo .gbRow span{background:#fff6e2;border:1px solid #dcc59c;border-radius:10px;padding:2px 10px;font-size:17px;color:#5a3a22}
+#tInfo .gbRow b{color:#7a4a12}
+#tInfo .gbGo{display:flex;justify-content:flex-end}
+#tInfo .gbGo button{font-weight:700;font-size:22px;font-family:inherit;padding:8px 26px;border-radius:12px;border:2px solid #7a4a12;background:linear-gradient(#f3c66b,#d99a32);color:#4a2a08;box-shadow:0 3px 0 #8a5a1a;cursor:pointer}
 #tDev{right:26px;top:84px;width:330px;max-height:820px;overflow:auto;padding:12px 14px;font-size:17px;line-height:1.35}
 #tDev h4{margin:2px 0 6px;font-size:19px}
 #tDev label{display:flex;align-items:center;gap:6px;padding:1px 0;cursor:pointer}
@@ -447,6 +453,15 @@
     if (!sel) { box.style.display = 'none'; return; }
     const stt = status(sel, s), nm = sel.id === 'castle' ? `영주의 성 (${curStage(s) + 1}단계)` : sel.name;
     box.style.display = 'block';
+    if (sel.id === 'guild') {   // 2026-11-18 (시안 확인): 길드 본관 = 설명 + 지금 상태 + '길드로 가기'
+      const al = s.advs.filter(a => a.alive), cap = root.GuildGame && root.GuildGame.advCap ? root.GuildGame.advCap(s) : al.length;
+      box.innerHTML = `<h3>길드 본관<span class="tg">${'FEDCBAS'[s.grade] || 'F'}급</span></h3>
+<div class="gbDesc">마스터가 운영하는 모험가 길드. 의뢰를 받고, 먹고 쉬어 가는 곳입니다.</div>
+<div class="gbRow"><span>모험가 <b>${al.length}/${cap}</b>명</span><span>길드에 <b>${al.filter(a => a.state === 'town').length}</b>명</span><span>원정 <b>${al.filter(a => a.state === 'quest').length}</b>명</span><span>금고 <b>${Math.floor(s.gold).toLocaleString()}G</b></span></div>
+<div class="gbGo"><button data-goguild="1">길드로 가기 ▶</button></div>`;
+      const go = box.querySelector('[data-goguild]'); if (go) go.onclick = () => Town.close();
+      return;
+    }
     box.innerHTML = `<h3>${nm}<span class="tg ${stt.on ? '' : 'off'}">${stt.on ? '운영 중' : '잠김'}</span></h3>
 <div>등장 단계: ${STAGE_NAMES[sel.st]} 이상 · 규모 ${sel.w}×${sel.d}칸</div><div>해금 조건: ${sel.req}</div>${stt.on ? '' : `<div style="color:var(--muted)">${stt.text}</div>`}`;   // 운영 중일 때는 위 배지와 같은 말이라 생략
   }
