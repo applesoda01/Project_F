@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qwen 대화 시험</title>
+<!-- 2026-11-18 실험: 작은 Qwen(WebLLM, 브라우저 WebGPU)이 우리 소재(성격 · 기억 · 관계)로 모험가 대화를 잘 만드는지 시험.
+     게임과 연결되지 않은 따로 페이지. 모델은 처음 한 번 브라우저 저장소로 내려받음(0.8B 약 0.6GB · 2B 약 1.3GB · 4B 약 2.4GB, 대략). 제안서: docs/design/proposal_adv_memory_v1.md -->
+<style>
+:root{--bg:#f6efe1;--card:#fffaf0;--ink:#3b2a1e;--muted:#8a7258;--line:#d8bf8f;--acc:#2f7f7a;--bad:#b23b2e;--ok:#2f7f52;--warn:#a8741a}
+@media (prefers-color-scheme: dark){:root{--bg:#1f1a14;--card:#2a231b;--ink:#efe3cf;--muted:#b49c80;--line:#5a4732;--acc:#5fb0a8;--bad:#e07a6e;--ok:#7fc79a;--warn:#e0b25a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;padding:20px max(16px,env(safe-area-inset-left,0px)) 40px max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:17px;margin:22px 0 8px}
+.sub{color:var(--muted);margin:0 0 14px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+select,button{font:inherit;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+button.go{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700}button:disabled{opacity:.5}
+#prog{flex-basis:100%;color:var(--muted);font-size:13px;min-height:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.sc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;min-width:0}
+.sc h3{margin:0 0 6px;font-size:15px}.sc .mat{font-size:13px;color:var(--muted);white-space:pre-wrap}
+.out{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+.ln b{color:var(--acc)}.ln{margin:2px 0}
+.chk{font-size:12px;color:var(--muted)}.chk .no{color:var(--bad)}.chk .yes{color:var(--ok)}
+pre{white-space:pre-wrap;font-size:12px;color:var(--muted);margin:4px 0 0;max-height:120px;overflow:auto}
+#sum{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;overflow-x:auto}
+table{border-collapse:collapse;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:4px 10px;text-align:left}
+</style>
+</head>
+<body>
+<h1>Qwen 대화 시험</h1>
+<p class="sub">작은 Qwen이 성격 · 기억 · 관계를 받아 모험가 대화 3줄을 만드는지 봅니다. 브라우저(WebGPU)에서만 돌고, 게임과는 연결되지 않습니다.</p>
+<div class="bar">
+  <select id="model">
+    <option value="Qwen3.5-0.8B-q4f16_1-MLC">Qwen3.5 0.8B (가장 작음 · 약 0.6GB)</option>
+    <option value="Qwen3.5-2B-q4f16_1-MLC">Qwen3.5 2B (약 1.3GB)</option>
+    <option value="Qwen3.5-4B-q4f16_1-MLC">Qwen3.5 4B (약 2.4GB)</option>
+  </select>
+  <button id="load" class="go">모델 불러오기</button>
+  <select id="reps"><option value="1">시나리오마다 1번</option><option value="3" selected>시나리오마다 3번</option></select>
+  <button id="runAll" disabled>전부 생성</button>
+  <button id="copy" disabled>결과 복사 (JSON)</button>
+  <div id="prog">WebGPU 확인 중…</div>
+</div>
+<h2>요약</h2>
+<div id="sum">아직 결과 없음</div>
+<h2>시나리오 (우리 소재)</h2>
+<div class="grid" id="scs"></div>
+
+<script type="module">
+const $ = id => document.getElementById(id);
+// 말투 (게임 talk.csv 규칙과 같게)
+const TONE = {
+  bold: '호탕: 반말, 자신만만하고 큰소리, 느낌표',
+  careful: '조심: 존댓말(~요), 걱정이 많고 조심스러움',
+  friendly: '다정: 친근한 반말, 상대를 챙김',
+  loner: '무뚝뚝: 아주 짧은 반말, 말줄임표(…)',
+  plain: '보통: 담백한 반말'
+};
+const REACT = { 2: '무모함 — 위험을 가볍게 여기고 다음엔 이긴다고 함', 0: '신중함 — 위험을 피하려 하고 걱정함', 1: '보통 — 담담함' };
+const SPEND = { 2: '헤픔 — 돈 · 먹는 것 이야기를 자주 함', 0: '알뜰 — 아끼는 이야기를 함', 1: '보통' };
+const SOCIAL = { 2: '사교적 — 상대에게 되물음', 0: '독불장군 — 대답이 짧음', 1: '보통' };
+const P = (name, cls, tone, risk, spend, social) => ({ name, cls, tone, risk, spend, social });
+const A = { 가빈: P('가빈', '전사', 'bold', 2, 2, 2), 루나: P('루나', '성직자', 'careful', 0, 0, 2), 잭: P('잭', '도적', 'loner', 1, 1, 0), 미라벨: P('미라벨', '궁수', 'friendly', 1, 2, 2), 테오: P('테오', '마법사', 'plain', 1, 0, 1) };
+// 시나리오: 상황 · 기억(말 거는 사람 a의 것) · 듣는 사람 처지 · 관계
+const SC = [
+  { id: 'hurt_table', title: '식탁 · 부상 기억 · 단짝 · 함께 안 감', place: '길드 식탁에 마주 앉아 식사 중', a: '가빈', b: '루나', rel: '단짝(친밀도 72)', mem: '지난주 「광견병 물리치료」 의뢰에서 들개 3마리에게 물려 쓰러졌고 2주 동안 부상으로 쉼', heard: '처음 들음 (루나는 그 의뢰에 같이 가지 않음)' },
+  { id: 'fail_return', title: '귀환 · 함께 실패 · 서먹', place: '의뢰에서 막 돌아와 길드 입구', a: '잭', b: '가빈', rel: '서먹(친밀도 20)', mem: '방금 「무명천 사수작전」 의뢰를 같이 갔다가 도적 2명에게 져서 실패함', heard: '함께 겪음 (같은 파티)' },
+  { id: 'qlv_depart', title: '출발 · 의뢰가 강해짐 · 보통', place: '의뢰를 받고 출발하기 직전', a: '미라벨', b: '테오', rel: '보통(친밀도 45)', mem: '자주 하던 「오늘 저녁 삼겹살」 의뢰가 Lv2로 올라, 멧돼지가 더 강해졌는데 정확히 얼마나 강한지는 모름', heard: '들은 적 있음' },
+  { id: 'gift_idle', title: '잡담 · 마스터 선물 · 보통', place: '로비에서 할 일 없이 서 있음', a: '잭', b: '미라벨', rel: '보통(친밀도 50)', mem: '어제 길드 마스터에게 F급 방어구를 선물받음', heard: '처음 들음' },
+  { id: 'win_table', title: '식탁 · 어려운 의뢰 성공 · 단짝 · 함께 감', place: '길드 식탁에서 술 한잔', a: '루나', b: '가빈', rel: '단짝(친밀도 80)', mem: '예상 성공률 60%였던 「농작물 서리범들」 의뢰를 둘이 함께 성공함. 루나가 쓰러질 뻔한 가빈을 치유해 살림', heard: '함께 겪음 (같은 파티)' },
+  { id: 'nomin_idle', title: '잡담 · 지명받음 · 서먹', place: '게시판 앞', a: '테오', b: '잭', rel: '서먹(친밀도 25)', mem: '마을 주민 굼바 아저씨가 「밤마다 짖는 들개 떼」 리퀘스트에 테오를 콕 집어 지명했고 테오가 수락함', heard: '처음 들음' }
+];
+const who = n => { const p = A[n]; return `${p.name}(${p.cls}) — 말투 ${TONE[p.tone]} · 성향: 모험심 ${REACT[p.risk]}, 소비 ${SPEND[p.spend]}, 사교 ${SOCIAL[p.social]}`; };
+const SYS = `너는 판타지 마을의 모험가 길드를 배경으로 한 게임의 대사 작가다.
+규칙:
+- 두 모험가 A와 B가 나누는 짧은 대화를 정확히 3줄 쓴다. 순서는 A, B, A.
+- 한 줄은 한국어 28자 이내. 이모지 · 영어 · 현대 물건(휴대폰, 컴퓨터, 자동차 등) 금지.
+- 각 인물의 말투와 성향을 지킨다. A의 기억 내용을 구체적으로(의뢰 이름이나 몬스터) 언급한다.
+- B는 '듣는 사람 처지'에 맞게 반응한다(함께 겪었으면 '우리', 처음 들었으면 놀라거나 묻기).
+- 관계가 단짝이면 다정하게, 서먹하면 퉁명스럽게.
+- 출력은 JSON 배열만: [{"who":"A","line":"..."},{"who":"B","line":"..."},{"who":"A","line":"..."}]`;
+const userMsg = sc => `장소: ${sc.place}
+A: ${who(sc.a)}
+B: ${who(sc.b)}
+관계: ${sc.rel}
+A의 기억: ${sc.mem}
+B의 처지: ${sc.heard}`;
+
+const MODERN = /(휴대폰|핸드폰|컴퓨터|자동차|인터넷|카톡|커피|버스|택시|[A-Za-z]{3,})/;
+function check(sc, text) {
+  const t = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  let arr = null; try { const m = t.match(/\[[\s\S]*\]/); arr = m ? JSON.parse(m[0]) : null; } catch (e) { arr = null; }
+  const lines = Array.isArray(arr) ? arr.filter(x => x && typeof x.line === 'string') : [];
+  const c = {
+    json: !!arr && lines.length === 3,
+    order: lines.length === 3 && lines.map(x => x.who).join('') === 'ABA',
+    len: lines.length > 0 && lines.every(x => [...x.line].length <= 32),
+    korean: lines.length > 0 && lines.every(x => (x.line.match(/[가-힣]/g) || []).length >= Math.min(4, x.line.length * 0.5)),
+    modern: lines.length > 0 && !lines.some(x => MODERN.test(x.line)),
+    memory: lines.length > 0 && (() => { const keys = (sc.mem.match(/「[^」]+」|들개|도적|멧돼지|방어구|굼바|치유/g) || []).map(k => k.replace(/[「」]/g, '')); return keys.some(k => lines.some(x => x.line.includes(k.split(' ')[0]))); })()
+  };
+  return { lines, c, raw: t };
+}
+
+const scBox = $('scs');
+scBox.innerHTML = SC.map(sc => `<div class="sc" id="sc_${sc.id}"><h3>${sc.title}</h3><div class="mat">${userMsg(sc)}</div><button data-one="${sc.id}" disabled>이것만 생성</button><div class="out"></div></div>`).join('');
+
+let engine = null, busy = false; const results = []; window.__results = results; window.__status = 'idle';
+const prog = t => { $('prog').textContent = t; window.__status = t; };
+if (!navigator.gpu) prog('이 브라우저는 WebGPU를 지원하지 않습니다. 최신 Chrome · Edge에서 열어 주세요.');
+else prog('WebGPU 사용 가능 — 모델을 골라 불러오세요. (처음 한 번 내려받고, 다음부터는 저장된 것을 씀)');
+
+$('load').onclick = async () => {
+  if (busy) return; busy = true; $('load').disabled = true;
+  const id = $('model').value, t0 = performance.now();
+  try {
+    const webllm = await import('https://esm.run/@mlc-ai/web-llm@0.2.87');
+    if (engine) { try { await engine.unload(); } catch (e) {} }
+    engine = await webllm.CreateMLCEngine(id, { initProgressCallback: r => prog(`${id}: ${r.text}`) });
+    window.__loadSec = (performance.now() - t0) / 1000;
+    prog(`${id} 준비됨 (불러오기 ${window.__loadSec.toFixed(0)}초)`);
+    document.querySelectorAll('[data-one],#runAll').forEach(b => b.disabled = false);
+  } catch (e) { prog('불러오기 실패: ' + (e && e.message || e)); }
+  busy = false; $('load').disabled = false;
+};
+
+async function gen(sc) {
+  const t0 = performance.now();
+  const r = await engine.chat.completions.create({
+    messages: [{ role: 'system', content: SYS }, { role: 'user', content: userMsg(sc) }],
+    temperature: 0.8, top_p: 0.9, max_tokens: 220, extra_body: { enable_thinking: false }
+  });
+  const ms = performance.now() - t0, text = r.choices[0].message.content || '', u = r.usage || {};
+  const k = check(sc, text);
+  const rec = { model: $('model').value, sc: sc.id, ms: Math.round(ms), tokens: u.completion_tokens || null, tps: u.extra && u.extra.decode_tokens_per_s ? +u.extra.decode_tokens_per_s.toFixed(1) : null, lines: k.lines.map(x => `${x.who === 'A' ? sc.a : sc.b}: ${x.line}`), check: k.c, raw: k.raw };
+  results.push(rec); show(sc, rec); summary(); return rec;
+}
+function show(sc, rec) {
+  const o = document.querySelector(`#sc_${sc.id} .out`);
+  const ck = Object.entries(rec.check).map(([k, v]) => `<span class="${v ? 'yes' : 'no'}">${{ json: '형식', order: '순서', len: '길이', korean: '한국어', modern: '세계관', memory: '기억 언급' }[k]} ${v ? '○' : '×'}</span>`).join(' · ');
+  o.insertAdjacentHTML('beforeend', `<div>${rec.lines.length ? rec.lines.map(l => `<div class="ln"><b>${l.split(':')[0]}</b>:${l.slice(l.indexOf(':') + 1)}</div>`).join('') : '<div class="ln" style="color:var(--bad)">줄을 못 읽음</div>'}<div class="chk">${ck} · ${(rec.ms / 1000).toFixed(1)}초${rec.tps ? ` · ${rec.tps} 토큰/초` : ''}</div>${rec.lines.length ? '' : `<pre>${rec.raw.replace(/</g, '&lt;')}</pre>`}</div>`);
+}
+function summary() {
+  const by = {}; for (const r of results) (by[r.model] = by[r.model] || []).push(r);
+  const pct = (a, k) => Math.round(100 * a.filter(r => r.check[k]).length / a.length) + '%';
+  $('sum').innerHTML = `<table><tr><th>모델</th><th>대화 수</th><th>형식</th><th>순서</th><th>길이</th><th>한국어</th><th>세계관</th><th>기억 언급</th><th>평균 시간</th></tr>${Object.entries(by).map(([m, a]) => `<tr><td>${m.replace('-q4f16_1-MLC', '')}</td><td>${a.length}</td><td>${pct(a, 'json')}</td><td>${pct(a, 'order')}</td><td>${pct(a, 'len')}</td><td>${pct(a, 'korean')}</td><td>${pct(a, 'modern')}</td><td>${pct(a, 'memory')}</td><td>${(a.reduce((t, r) => t + r.ms, 0) / a.length / 1000).toFixed(1)}초</td></tr>`).join('')}</table><p class="chk">자동 검사는 형식 · 길이 같은 겉모습만 봅니다. 대사가 자연스러운지는 사람이 읽어 봐야 합니다.</p>`;
+  $('copy').disabled = !results.length;
+}
+scBox.onclick = async e => { const b = e.target.closest('[data-one]'); if (!b || !engine || busy) return; busy = true; prog('생성 중…'); await gen(SC.find(s => s.id === b.dataset.one)); prog('완료'); busy = false; };
+$('runAll').onclick = async () => {
+  if (!engine || busy) return; busy = true; const n = +$('reps').value;
+  for (let k = 0; k < n; k++) for (const sc of SC) { prog(`생성 중… ${sc.title} (${k + 1}/${n})`); try { await gen(sc); } catch (e) { prog('오류: ' + e.message); } }
+  prog(`전부 생성 완료 (${SC.length * n}개)`); window.__done = true; busy = false;
+};
+$('copy').onclick = async () => { const t = JSON.stringify(results, null, 1); try { await navigator.clipboard.writeText(t); prog('결과를 복사했습니다'); } catch (e) { prog('복사 실패 — 개발자 도구에서 __results 를 보세요'); } };
+</script>
+</body>
+</html>
