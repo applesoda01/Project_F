@@ -1,8 +1,10 @@
 # 기획 안내서 버전과 배포
 
+> **2026-11-18 V3 추가 (사용자 요청):** V2는 처음 공유된 상태(`1755881`, 11-17 14:03)로 되돌려 보존하고, 그 뒤 Claude가 수정 · 기록 · 반영한 내용은 **V3**(`docs/book-v3/` → `docs/book/v3/`)로 옮겼다. V3는 V2 대비 변경을 **파란색**으로 표시한다. **앞으로 책 수정은 V3에만** 한다. 문서 검사는 V1 → V2(`book-preservation-exceptions.json`)와 V1 → V3(`book-preservation-exceptions-v3.json`)를 각각 확인한다.
+
 ## 저장소에 보관하는 HTML
 
-- 최신 열람 파일: `docs/book/v2/index.html`.
+- 최신 열람 파일: `docs/book/v3/index.html` (V3 반영판). V2 개선안 원본 열람: `docs/book/v2/index.html`.
 - 버전 선택용 원본 HTML: `docs/book/v1/index.html`.
 - 공통 파일: `docs/book/_book-ui.css`, `docs/book/_book-ui.js`.
 - 기존 `docs/book/src`, `book.toml`, `theme` 원고·설정은 유지한다.
@@ -14,7 +16,8 @@
 ## 원고
 
 - `docs/book/`: 원본 v1. `6df6325` 기준 파일 보존.
-- `docs/book-v2/`: 안내서 v2. 기존 `docs/design/v2/` 재분류 기획서와 다른 버전 체계.
+- `docs/book-v2/`: 안내서 v2 (처음 공유된 개선안, 보존). 기존 `docs/design/v2/` 재분류 기획서와 다른 버전 체계.
+- `docs/book-v3/`: 안내서 v3 (V2 이후 Claude 반영판 · 앞으로 수정하는 곳).
 - `docs/book-v2/src/changes.md`: 기능 ID별 변경 비교.
 - `docs/book-v2/src/features.md`: 버전별 기능·기획 상태·게임 구현 상태.
 - `docs/references/guild-economy-contracts-2026-11-16/original.html`: 첨부 원문 보관. 책에 별도 장으로 게시하지 않는다.

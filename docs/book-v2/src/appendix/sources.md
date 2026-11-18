@@ -35,7 +35,7 @@
 | 발주·수행·예약 | [게시판](../ch04/board.md), [지명](../ch04/nomination.md) |
 | 소유·매입·위탁 | [물약과 소재](../ch06/potion.md), [장비](../ch06/gear.md) |
 | 서비스·시설·마을 경제 | [시설](../ch07/facilities.md), [요리](../ch06/cooking.md), [마을](../ch07/town.md) |
-| 수수료·보상·지원·예산 | [경제](../ch09/README.md) |
+| 요율·보상·지원·예산 | [경제](../ch09/README.md) |
 | UI 예시 | 해당 시스템 장 + [책 UI 안내](../ch10/book.md) |
 | 호환·단계·검증 | [범위](../ch01/scope.md), [장부](../ch09/ledger.md), [미결](pending.md) |
 

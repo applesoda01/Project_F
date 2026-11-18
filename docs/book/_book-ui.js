@@ -30,7 +30,7 @@
     for (const item of record.items.slice(0, 3)) {
       const section = document.createElement('div');
       section.className = 'change-item';
-      section.append(paragraph('V1 · ', item.before), paragraph('V2 · ', item.after, 'change-after'));
+      section.append(paragraph((data.dataset.from || 'V1') + ' · ', item.before), paragraph((data.dataset.to || 'V2') + ' · ', item.after, 'change-after'));
       if (item.reason) section.append(paragraph('이유 · ', item.reason));
       section.append(paragraph('', item.state, 'change-state'));
       body.append(section);
@@ -44,7 +44,7 @@
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
     const trigger = event.target.closest('[data-book-change]');
     if (!trigger) return;
-    // Preserve normal article links; clicking a red heading or summary button opens the dialog.
+    // Preserve normal article links; clicking a red (V2) or blue (V3) heading or summary button opens the dialog.
     const link = event.target.closest('a');
     if (trigger.classList.contains('book-change') && link && !link.classList.contains('header')) return;
     event.preventDefault();

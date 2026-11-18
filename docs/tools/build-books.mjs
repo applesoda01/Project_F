@@ -21,11 +21,13 @@ if (existsSync(output) && readdirSync(output).length) {
 const href = (from, to) => relative(dirname(from), to).split(sep).join('/');
 const escape = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 const mainContent = html => html.match(/<main>([\s\S]*?)<\/main>/)?.[1] || '';
-const changeIndex = {};
-const pageBlocks = new Map();
+const changeIndexes = { v2: {}, v3: {} };
+const pageBlocksBy = { v2: new Map(), v3: new Map() };
+const PREV = { v2: 'V1', v3: 'V2' };   // 2026-11-18: V3는 V2(처음 공유한 개선안) 대비 변경을 파란색으로 표시
 
-function collectChanges(v1, v2) {
-  const rows = comparisonRows(readFileSync(join(repo, 'docs/book-v2/src/changes.md'), 'utf8'));
+function collectChanges(v1, v2, version = 'v2') {
+  const changeIndex = changeIndexes[version], pageBlocks = pageBlocksBy[version];
+  const rows = version === 'v2' ? comparisonRows(readFileSync(join(repo, 'docs/book-v2/src/changes.md'), 'utf8')) : [];
   for (const entry of readdirSync(v2, { recursive: true, withFileTypes: true })) {
     if (!entry.isFile() || !entry.name.endsWith('.html') || ['print.html', 'original.html', '404.html'].includes(entry.name)) continue;
     const file = join(entry.parentPath, entry.name);
@@ -41,9 +43,9 @@ function collectChanges(v1, v2) {
     const items = rows.filter(row => row.page === page || ids.has(row.id));
     const headings = parts.filter(part => part.changed && /^\s*<h[23]\b/.test(part.html)).slice(0, 3).map(part => plainText(part.html));
     changeIndex[page] = { title, items: items.length ? items : [{
-      before: before ? `기존 「${plainText(before.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/)?.[1] || title)}」 설명` : 'V1에는 이 문서가 없습니다.',
+      before: before ? `기존 「${plainText(before.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/)?.[1] || title)}」 설명` : `${PREV[version]}에는 이 문서가 없습니다.`,
       after: parts[0]?.removed ? `기존 설명 삭제: ${parts[0].removed.join(' · ').slice(0, 180)}` : headings.length ? `${headings.join(' · ')} 설명을 ${before ? '추가·수정' : '추가'}했습니다.` : `「${title}」 ${before ? '안내를 보완' : '문서를 새로 추가'}했습니다.`,
-      state: page.startsWith('proposal/') ? '첨부 개선안 수록 / 새 게임 규칙은 제안·미반영' : '문서 변경 / 게임 구현 완료를 뜻하지 않음',
+      state: version === 'v3' ? 'Claude가 V2 이후 수정 · 기록 · 반영한 내용 (결정 · 측정 · 게임 반영 기록은 본문 참조)' : page.startsWith('proposal/') ? '첨부 개선안 수록 / 새 게임 규칙은 제안·미반영' : '문서 변경 / 게임 구현 완료를 뜻하지 않음',
     }] };
   }
 }
@@ -55,7 +57,7 @@ function decorate(dir, version) {
     const file = join(entry.parentPath, entry.name);
     const page = relative(dir, file).split(sep).join('/');
     // The root is a compatibility copy of v1; version folders are decorated separately.
-    if (dir === output && /^(v1|v2)[\\/]/.test(page)) continue;
+    if (dir === output && /^(v1|v2|v3)[\\/]/.test(page)) continue;
     let html = readFileSync(file, 'utf8');
     // Preserve the attached standalone HTML byte for byte, including its own layout.
     if (!html.includes('<main>') || page === 'proposal/original.html') continue;
@@ -67,18 +69,20 @@ function decorate(dir, version) {
       const fixed = target.replace(/README\.html$/, 'index.html');
       return existsSync(resolve(dirname(file), fixed)) ? `href="${fixed}${suffix}"` : original;
     });
-    const options = ['v1', 'v2'].map(targetVersion => {
+    const changeIndex = changeIndexes[version] || {}, pageBlocks = pageBlocksBy[version] || new Map(), marked = version === 'v2' || version === 'v3';
+    const options = ['v1', 'v2', 'v3'].map(targetVersion => {
       let target = join(output, targetVersion, page);
       const missing = !existsSync(target);
       if (missing) target = join(output, targetVersion, 'index.html');
-      const label = targetVersion === 'v1' ? 'V1 원본' : 'V2 개선안';
+      const label = targetVersion === 'v1' ? 'V1 원본' : targetVersion === 'v2' ? 'V2 개선안' : 'V3 반영판';
       const current = targetVersion === version ? ' selected' : '';
       return `<option value="${escape(href(file, target))}"${current}>${label}${missing ? ' (첫 페이지)' : ''}</option>`;
     });
-    const changes = href(file, join(output, 'v2/changes.html'));
-    const history = href(file, join(output, 'v2/versions.html'));
+    const changes = href(file, join(output, version === 'v3' ? 'v3/changes.html' : 'v2/changes.html'));
+    const history = href(file, join(output, version === 'v3' ? 'v3/versions.html' : 'v2/versions.html'));
     const status = version === 'v1'
       ? 'v1 원본 보존 · 2026-11-16 기준 문서. 이 판의 본문은 수정하지 않았습니다.'
+      : version === 'v3' ? 'V3 반영판 · V2(처음 공유한 개선안) 이후 Claude가 수정 · 기록 · 반영한 판. 파란 목차·본문을 클릭하면 V2 대비 변경 요약을 볼 수 있습니다.'
       : 'V2 개정 제안판 · 신규 게임 규칙 미반영. 붉은 목차·본문을 클릭하면 V1 대비 변경 요약을 볼 수 있습니다.';
     const nav = `<nav class="book-version-menu" aria-label="문서 버전"><select id="book-version-select" aria-label="문서 버전 선택">${options.join('')}</select><a href="${escape(history)}">버전 이력</a></nav>`;
     html = html.replace('<div class="right-buttons">', `<div class="right-buttons">\n${nav}`);
@@ -88,15 +92,15 @@ function decorate(dir, version) {
         const resolved = relative(dir, resolve(dirname(file), target)).split(sep).join('/');
         return ['versions.html', 'features.html'].includes(resolved) ? '' : item;
       });
-      if (version !== 'v2') return sidebar;
+      if (!marked) return sidebar;
       return sidebar.replace(/<a\b([^>]*href="([^"]*)"[^>]*)>([\s\S]*?)<\/a>/g, (link, attributes, target, label) => {
         const key = relative(dir, resolve(dirname(file), target)).split(sep).join('/');
         if (!changeIndex[key]) return link;
         const classes = /class="/.test(attributes) ? attributes.replace('class="', 'class="book-toc-change ') : `${attributes} class="book-toc-change"`;
-        return `<a${classes} data-book-change="${escape(key)}" aria-haspopup="dialog" title="V1 대비 변경 요약 보기">${label}<span class="book-change-tag" aria-hidden="true">변경</span></a>`;
+        return `<a${classes} data-book-change="${escape(key)}" aria-haspopup="dialog" title="${PREV[version]} 대비 변경 요약 보기">${label}<span class="book-change-tag" aria-hidden="true">변경</span></a>`;
       });
     });
-    if (version === 'v2' && pageBlocks.has(page)) {
+    if (marked && pageBlocks.has(page)) {
       // Mark after link normalization; partitioning uses the same top-level block order.
       const normalized = changedBlocks('', mainContent(html));
       const originalParts = pageBlocks.get(page);
@@ -106,13 +110,14 @@ function decorate(dir, version) {
     const css = href(file, join(output, '_book-ui.css'));
     const js = href(file, join(output, '_book-ui.js'));
     html = html.replace('</head>', `<link rel="stylesheet" href="${escape(css)}">\n</head>`)
+      .replace('<html', version === 'v3' ? '<html data-book-version="v3"' : '<html')
       .replace('<main>', `<main>\n<p class="book-version-status">${status}</p>`);
     let extra = '';
-    if (version === 'v2') {
-      const root = href(file, join(output, 'v2/index.html')).replace(/index\.html$/, '');
+    if (marked) {
+      const root = href(file, join(output, version + '/index.html')).replace(/index\.html$/, '');
       const json = JSON.stringify(changeIndex).replaceAll('<', '\\u003c');
-      extra = `<script type="application/json" id="book-change-data" data-book-root="${escape(root || './')}">${json}</script>
-<dialog id="book-change-dialog" aria-labelledby="book-change-title"><button type="button" class="dialog-close" aria-label="변경 요약 닫기">×</button><h2 id="book-change-title">V1 대비 변경 요약</h2><div id="book-change-body"></div><div class="dialog-actions"><a id="book-change-open" href="${escape(href(file, file))}">문서 열기</a><a href="${escape(changes)}">전체 변경 비교표</a></div></dialog>`;
+      extra = `<script type="application/json" id="book-change-data" data-book-root="${escape(root || './')}" data-from="${PREV[version]}" data-to="${version.toUpperCase()}">${json}</script>
+<dialog id="book-change-dialog" aria-labelledby="book-change-title"><button type="button" class="dialog-close" aria-label="변경 요약 닫기">×</button><h2 id="book-change-title">${PREV[version]} 대비 변경 요약</h2><div id="book-change-body"></div><div class="dialog-actions"><a id="book-change-open" href="${escape(href(file, file))}">문서 열기</a><a href="${escape(changes)}">전체 변경 비교표</a></div></dialog>`;
     }
     html = html.replace('</body>', `${extra}<script src="${escape(js)}"></script>\n</body>`);
     writeFileSync(file, html);
@@ -121,7 +126,7 @@ function decorate(dir, version) {
 
 const work = mkdtempSync(join(tmpdir(), 'project-f-mdbook-'));
 try {
-  for (const [version, source] of [['v1', 'docs/book'], ['v2', 'docs/book-v2']]) {
+  for (const [version, source] of [['v1', 'docs/book'], ['v2', 'docs/book-v2'], ['v3', 'docs/book-v3']]) {
     const result = spawnSync(process.env.MDBOOK || 'mdbook', ['build', join(repo, source), '-d', join(work, version)], { stdio: 'inherit' });
     if (result.error) throw result.error;
     if (result.status !== 0) throw new Error(`mdBook ${version} build failed (${result.status})`);
@@ -130,12 +135,15 @@ try {
   cpSync(join(work, 'v1'), output, { recursive: true });
   cpSync(join(work, 'v1'), join(output, 'v1'), { recursive: true });
   cpSync(join(work, 'v2'), join(output, 'v2'), { recursive: true });
-  collectChanges(join(work, 'v1'), join(work, 'v2'));
+  cpSync(join(work, 'v3'), join(output, 'v3'), { recursive: true });
+  collectChanges(join(work, 'v1'), join(work, 'v2'), 'v2');
+  collectChanges(join(work, 'v2'), join(work, 'v3'), 'v3');
   cpSync(join(repo, 'docs/tools/book-ui.css'), join(output, '_book-ui.css'));
   cpSync(join(repo, 'docs/tools/book-ui.js'), join(output, '_book-ui.js'));
   decorate(output, 'v1');
   decorate(join(output, 'v1'), 'v1');
   decorate(join(output, 'v2'), 'v2');
+  decorate(join(output, 'v3'), 'v3');
   console.log(`Books built: ${output}`);
 } finally {
   // Only the exact temporary directory created above is removed.

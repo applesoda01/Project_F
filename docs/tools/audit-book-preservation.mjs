@@ -1,10 +1,10 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-export function auditPreservation() {
+// 2026-11-18: V3 추가 — V1 → V2(처음 공유한 개선안)와 V1 → V3(Claude 반영판)를 각각 검사
+export function auditPreservation(revised = 'docs/book-v2/src', exceptionsFile = 'docs/tools/book-preservation-exceptions.json') {
   const baseline = 'docs/book/src';
-  const revised = 'docs/book-v2/src';
-  const exceptions = JSON.parse(readFileSync('docs/tools/book-preservation-exceptions.json', 'utf8'));
+  const exceptions = JSON.parse(readFileSync(exceptionsFile, 'utf8'));
   const pages = [], failures = [];
   for (const entry of readdirSync(baseline, { recursive: true, withFileTypes: true })) {
     if (!entry.isFile() || !entry.name.endsWith('.md') || entry.name === 'SUMMARY.md') continue;

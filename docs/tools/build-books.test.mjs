@@ -49,11 +49,18 @@ test('real books preserve v1 and provide portable version links, including new c
   assert.match(changedRegions, /assets\/ui\/contract-tabs.png/);
   assert.doesNotMatch(changedRegions, /모험가는 명성 10마다 1명씩 오고/);
   const metadata = JSON.parse(added.match(/<script type="application\/json" id="book-change-data"[^>]*>([\s\S]*?)<\/script>/)[1]);
-  assert.ok(metadata['ch03/lifecycle.html'].items.some(item => item.after.includes('F급 + 집무실 소수 계약')));
+  assert.ok(metadata['ch03/lifecycle.html'].items.some(item => item.after.includes('E급 소수 계약')));
   assert.ok(metadata['ch03/lifecycle.html'].items.every(item => item.state.includes('미반영')));
-  for (const version of ['v1', 'v2']) {
+  for (const version of ['v1', 'v2', 'v3']) {
     assert.ok(existsSync(join(output, version, 'searchindex.js')));
   }
+  // 2026-11-18 V3: V2(처음 공유한 개선안) 대비 변경을 파란색으로 표시하는 반영판
+  const v3 = readFileSync(join(output, 'v3/ch03/lifecycle.html'), 'utf8');
+  assert.match(v3, /<html[^>]*data-book-version="v3"/);
+  assert.match(v3, /<option[^>]+selected>V3 반영판/);
+  assert.match(v3, /data-from="V2" data-to="V3"/);
+  assert.match(v3, /<section class="book-change/);
+  assert.match(readFileSync(join(output, 'v2/ch03/lifecycle.html'), 'utf8'), /<option value="\.\.\/\.\.\/v3\/ch03\/lifecycle.html">V3 반영판/);
   for (const removed of ['proposal', 'ch03/contracts.html', 'ch04/commission.html', 'ch06/ownership.html']) {
     assert.equal(existsSync(join(output, 'v2', removed)), false);
   }

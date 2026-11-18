@@ -9,6 +9,10 @@
 :root { --book-change-color: #b42332; --book-change-fill: #fff5f5; }
 .navy, .coal, .ayu { --book-change-color: #ff9b9b; --book-change-fill: #33252b; }
 .rust { --book-change-color: #a61f2e; --book-change-fill: #f5e4dd; }
+/* 2026-11-18 V3: Claude가 V2 이후 수정 · 기록 · 반영한 부분은 파란색 */
+[data-book-version="v3"] { --book-change-color: #1f5fbf; --book-change-fill: #eef4ff; }
+[data-book-version="v3"].navy, [data-book-version="v3"].coal, [data-book-version="v3"].ayu { --book-change-color: #8fb8ff; --book-change-fill: #1f2a3d; }
+[data-book-version="v3"].rust { --book-change-color: #1f4f9f; --book-change-fill: #e3ebf7; }
 .chapter li a.book-toc-change:link,
 .chapter li a.book-toc-change:visited,
 .chapter li a.book-toc-change.active,
