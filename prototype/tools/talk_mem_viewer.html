@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>기억 대화 검수</title>
+<!-- 2026-11-18: data/talk_mem.csv (모험가 기억 대화 세트) 를 플레이 없이 직접 읽고 검수하는 도구. 설계 docs/design/proposal_adv_memory_v1.md 3장
+     - 세트마다 성향(무모 · 신중 · 담담) × 듣는 사람 말씨(반말 · 존댓말) × 함께 겪음/처음 조합을 실제 이름 · 의뢰로 채워 3줄 대화로 보여 줌 (게임 speech.js 고르기 규칙과 같음)
+     - 대화마다 "좋음 / 고칠 것 + 메모" 표시 → 이 브라우저에 저장, "검수 결과 복사"로 Claude에게 붙여 넣기
+     - 사이트에서는 ../data/talk_mem.csv 를 바로 읽음. 파일로 열었을 때는 "CSV 파일 열기" -->
+<style>
+:root{--ink:#3b2a1e;--muted:#8a735a;--paper:#fffaf0;--line:rgba(120,82,44,.28);--line2:rgba(120,82,44,.5);--wood:#5a3a22;--gold:#c9963e;--green:#3f7a2e;--red:#b5452f;--bg:#f3e6c8;--chip:#efe0c0;--a:#2f5f8f;--b:#7a3f8f;--k:#5f6f3a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#f0e4cf;--muted:#b8a184;--paper:#2b241c;--line:rgba(230,200,160,.18);--line2:rgba(230,200,160,.35);--wood:#3a2616;--bg:#1d1813;--chip:#3a3024;--green:#8fcf72;--red:#ef8a76;--a:#8fb8ef;--b:#d49ae6;--k:#bccf8a;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans KR","Malgun Gothic",system-ui,sans-serif;color:var(--ink);background:var(--bg);font-size:15px;line-height:1.55}
+.top{position:sticky;top:0;z-index:5;background:var(--wood);color:#f6e7c8;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.top h1{font-size:18px;margin:0 10px 0 0}
+.top .st{font-size:13px;opacity:.85;margin-right:auto}
+button,select,input,textarea{font:inherit;color:var(--ink)}
+button{font-size:13px;font-weight:700;background:var(--chip);border:1px solid var(--line2);border-radius:8px;padding:5px 11px;cursor:pointer}
+.top button{background:#f6e7c8;color:#3b2a1e}
+.filters{display:flex;flex-wrap:wrap;gap:10px 14px;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line2);background:var(--paper)}
+.fg{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.fg>b{font-size:12px;color:var(--muted);margin-right:2px}
+.fg label{font-size:13px;background:var(--chip);border:1px solid var(--line);border-radius:14px;padding:2px 10px;cursor:pointer;user-select:none}
+.fg input{display:none}.fg input:checked+span{font-weight:700;color:var(--ink)}
+.fg label:has(input:checked){border-color:var(--gold);background:color-mix(in srgb,var(--gold) 25%,var(--chip))}
+.fg label span{color:var(--muted)}
+main{padding:14px max(16px,env(safe-area-inset-right,0px)) 60px max(16px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}
+@media (max-width:420px){main{grid-template-columns:1fr}}
+.set{background:var(--paper);border:1px solid var(--line2);border-radius:10px;padding:10px 12px;min-width:0}
+.set h3{margin:0 0 6px;font-size:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;background:var(--chip);color:var(--muted)}
+.tag.A{color:#fff;background:var(--a)}.tag.B{color:#fff;background:var(--b)}.tag.K{color:#fff;background:var(--k)}
+.cv{border-top:1px dashed var(--line2);padding:7px 0 6px}
+.cv .ctx{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cv p{margin:2px 0}.cv p b{display:inline-block;min-width:3.6em;color:var(--muted);font-weight:700}
+.cv.ok{background:color-mix(in srgb,var(--green) 10%,transparent)}.cv.fix{background:color-mix(in srgb,var(--red) 10%,transparent)}
+.rv{display:flex;gap:4px;margin-left:auto}.rv button{padding:1px 8px;font-size:12px}
+.rv .on.ok{background:var(--green);color:#fff}.rv .on.fix{background:var(--red);color:#fff}
+textarea{width:100%;min-height:42px;margin-top:4px;border:1px solid var(--line2);border-radius:6px;background:var(--bg);padding:4px 6px;font-size:13px}
+.empty{color:var(--muted);padding:30px}
+.sum{font-size:13px;color:var(--muted);padding:6px max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>기억 대화 검수</h1>
+  <span class="st" id="st">불러오는 중…</span>
+  <button id="rand">무작위 10개</button>
+  <button id="all">전체 보기</button>
+  <button id="copy">검수 결과 복사</button>
+  <label style="font-size:13px;cursor:pointer">CSV 파일 열기 <input type="file" id="file" accept=".csv" style="display:none"></label>
+</div>
+<div class="filters" id="filters"></div>
+<div class="sum" id="sum"></div>
+<main id="main"></main>
+<script>
+'use strict';
+const KIND = { hurt: '부상', fail: '실패', win_big: '어려운 성공', saved: '구해 줌', gift: '선물', grow: '성장', nomin: '지명', qlv: '의뢰 Lv업' };
+const TOGETHER = { hurt: 1, fail: 1, win_big: 1, saved: 1, qlv: 1 };
+const STYLE = { bold: '무모 · 호탕', careful: '신중 · 존댓말', calm: '담담' }, VOICE = { ban: '반말', jon: '존댓말' };
+const SPK = { bold: '가빈', careful: '루나', calm: '테오' }, LIS = { ban: '미라벨', jon: '에이미' };
+const VAL = { q: '광견병 물리치료', mon: '들개', with: '노아', weeks: 2, giver: '굼바', part: '방어구', g: 'E', cls: '기사' };
+const AUTHOR = m => /Fable/.test(m) ? 'B' : /Kanana/.test(m) ? 'K' : 'A';
+const AUTHOR_NAME = { A: 'Opus 5.5', B: 'Fable 5.2', K: 'Kanana-2 3B' };
+let SETS = [], view = 'all', randKeys = null;
+const REV_KEY = 'talkMemReview_v1';
+let REV = {}; try { REV = JSON.parse(localStorage.getItem(REV_KEY) || '{}'); } catch (e) { REV = {}; }
+const saveRev = () => { try { localStorage.setItem(REV_KEY, JSON.stringify(REV)); } catch (e) { /* 저장 불가 */ } };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// ---------- CSV ----------
+function parseCSV(t) {
+  t = t.replace(/^﻿/, ''); const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; continue; }
+    if (c === '"') q = true; else if (c === ',') { row.push(f); f = ''; } else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; } else f += c;
+  }
+  if (f || row.length) { row.push(f); rows.push(row); }
+  return rows.filter(r => r.length > 1);
+}
+function load(text) {
+  const rows = parseCSV(text).slice(1), m = new Map();
+  for (const [id, mem, role, cond, line, memo] of rows) {
+    if (!id) continue; const k = mem.split(/\s+/);
+    if (!m.has(id)) m.set(id, { id, kind: k[0], cond: k.slice(1), open: [], reply: [], close: [], memo: '' });
+    const S = m.get(id); if (memo && !S.memo) S.memo = memo;
+    if (S[role]) S[role].push([(cond || '').split(/\s+/).filter(Boolean), line]);
+  }
+  SETS = [...m.values()].map(S => Object.assign(S, { author: AUTHOR(S.memo), narrow: S.cond.some(c => c[0] === '@') }));
+  buildFilters(); render();
+}
+
+// ---------- 게임과 같은 고르기 (js/speech.js memTalk) ----------
+function tagOk(t, cx) {
+  if (t === 'bold' || t === 'careful' || t === 'calm') return cx.style === t;
+  if (t === 'jon' || t === 'ban') return cx.voice === t;
+  if (t === 'together') return cx.together; if (t === 'new') return !cx.together;
+  if (t === 'good' || t === 'bad') return cx.rel === t;
+  return true;
+}
+function rowsFor(rows, cx) {   // 관계가 맞는 줄이 있으면 그 줄들, 없으면 관계 없는 줄들 (게임은 관계 줄을 30%로 고름 — 여기서는 둘 다 보여 줌)
+  const ok = rows.filter(([tg]) => tg.every(t => tagOk(t, cx)));
+  const rel = ok.filter(([tg]) => tg.includes('good') || tg.includes('bad')), base = ok.filter(([tg]) => !tg.includes('good') && !tg.includes('bad'));
+  return { base: base.map(r => r[1]), rel: rel.map(r => r[1]) };
+}
+function narrowOk(S, cx) {
+  for (const c of S.cond) {
+    if (c[0] !== '@') continue; const t = c.slice(1);
+    if ((t === 'bold' || t === 'careful' || t === 'calm') && cx.style !== t) return false;
+    if ((t === 'jon' || t === 'ban') && cx.voiceB !== t) return false;
+    if (t === 'together' && !cx.together) return false; if (t === 'new' && cx.together) return false;
+    if ((t === 'good' || t === 'bad') && cx.rel !== t) return false;
+  }
+  return true;
+}
+function josa(v, sfx) {
+  if (!sfx) return String(v); const [x, y] = sfx.split('/'), s = String(v), c = s.charCodeAt(s.length - 1);
+  if (c < 0xac00 || c > 0xd7a3) return s + y; const j = (c - 0xac00) % 28;
+  if (x === '으로' && j === 8) return s + y; return s + (j ? x : y);
+}
+function fill(t, S, style, voice) {
+  const V = Object.assign({}, VAL, { a: SPK[style], b: LIS[voice], lv: S.kind === 'qlv' ? 2 : 10 });
+  return t.replace(/\{(\w+)(?::([^}]+))?\}/g, (m, k, sfx) => V[k] != null ? josa(V[k], sfx) : m);
+}
+
+// ---------- 필터 ----------
+const F = { kind: new Set(), author: new Set(), style: new Set(['bold', 'careful', 'calm']), voice: new Set(['ban', 'jon']), tg: new Set(['new', 'together']), rel: 'none', rv: 'all', narrow: 'all' };
+function chips(name, items, set, multi) {
+  return `<div class="fg"><b>${name}</b>${items.map(([v, l]) => `<label><input type="${multi ? 'checkbox' : 'radio'}" name="${name}" value="${v}" ${(multi ? set.has(v) : set === v) ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>`;
+}
+function buildFilters() {
+  const kinds = Object.keys(KIND).filter(k => SETS.some(s => s.kind === k));
+  const el = document.getElementById('filters');
+  el.innerHTML = '<div class="fg" style="flex-basis:100%;font-size:12px;color:var(--muted)">기억 · 쓴 쪽은 아무것도 안 고르면 전부 보입니다. 검수 표시는 이 브라우저에 저장됩니다.</div>' + chips('기억', kinds.map(k => [k, `${KIND[k]} ${SETS.filter(s => s.kind === k).length}`]), F.kind, true)
+    + chips('쓴 쪽', ['A', 'B', 'K'].map(a => [a, `${AUTHOR_NAME[a]} ${SETS.filter(s => s.author === a).length}`]), F.author, true)
+    + chips('말 거는 사람', Object.entries(STYLE).map(([k, v]) => [k, `${SPK[k]} (${v})`]), F.style, true)
+    + chips('듣는 사람', Object.entries(VOICE).map(([k, v]) => [k, `${LIS[k]} (${v})`]), F.voice, true)
+    + chips('처지', [['new', '처음 들음'], ['together', '함께 겪음']], F.tg, true)
+    + chips('관계', [['none', '보통'], ['good', '단짝'], ['bad', '서먹']], F.rel, false)
+    + chips('세트', [['all', '전부'], ['wide', '넓은 세트만'], ['narrow', '좁은 세트만']], F.narrow, false)
+    + chips('검수', [['all', '전부'], ['todo', '안 본 것'], ['ok', '좋음'], ['fix', '고칠 것']], F.rv, false);
+  el.onchange = e => {
+    const i = e.target; if (!i.name) return;
+    const key = { '기억': 'kind', '쓴 쪽': 'author', '말 거는 사람': 'style', '듣는 사람': 'voice', '처지': 'tg', '관계': 'rel', '세트': 'narrow', '검수': 'rv' }[i.name];
+    if (F[key] instanceof Set) { if (i.checked) F[key].add(i.value); else F[key].delete(i.value); } else F[key] = i.value;
+    randKeys = null; render();
+  };
+}
+
+// ---------- 그리기 ----------
+function combos(S) {   // 이 세트에서 보여 줄 조합 (필터 안에서)
+  const out = [], tgs = TOGETHER[S.kind] ? ['new', 'together'] : ['new'];
+  for (const style of ['bold', 'careful', 'calm']) for (const voice of ['ban', 'jon']) for (const tg of tgs) {
+    if (!F.style.has(style) || !F.voice.has(voice) || !F.tg.has(tg)) continue;
+    const cx = { style, voiceB: voice, together: tg === 'together', rel: F.rel === 'none' ? '' : F.rel };
+    if (S.narrow && !narrowOk(S, cx)) continue;
+    out.push({ style, voice, tg, key: `${S.id}|${style}|${voice}|${tg}|${F.rel}` });
+  }
+  return out;
+}
+function convHTML(S, c) {
+  const together = c.tg === 'together', rel = F.rel === 'none' ? '' : F.rel, VA = c.style === 'careful' ? 'jon' : 'ban';
+  const o = rowsFor(S.open, { style: c.style, voice: VA, together, rel }), r = rowsFor(S.reply, { voice: c.voice, together, rel }), cl = rowsFor(S.close, { voice: VA, together, rel });
+  const pick = x => (rel && x.rel.length ? x.rel : x.base);
+  const line = (who, x, cls) => { const L = pick(x); return L.length ? L.map((t, i) => `<p><b>${i ? '' : who}</b>${esc(fill(t, S, c.style, c.voice))}${x.rel.length && rel && i === 0 ? ' <span class="tag">관계 줄</span>' : ''}</p>`).join('') : (cls === 'close' ? '' : `<p><b>${who}</b><span style="color:var(--red)">(맞는 줄 없음 — 게임에선 이 세트를 건너뜀)</span></p>`); };
+  const R = REV[c.key] || {};
+  return `<div class="cv ${R.v || ''}" data-k="${esc(c.key)}"><div class="ctx">${SPK[c.style]}(${STYLE[c.style]}) → ${LIS[c.voice]}(${VOICE[c.voice]}) · ${together ? '함께 겪음' : '처음 들음'}${rel ? ' · ' + (rel === 'good' ? '단짝' : '서먹') : ''}
+    <span class="rv"><button data-v="ok" class="${R.v === 'ok' ? 'on ok' : ''}">좋음</button><button data-v="fix" class="${R.v === 'fix' ? 'on fix' : ''}">고칠 것</button></span></div>
+    ${line(SPK[c.style], o)}${line(LIS[c.voice], r)}${line(SPK[c.style], cl, 'close')}
+    ${R.v === 'fix' ? `<textarea placeholder="어디를 어떻게? (예: 둘째 줄 말투가 어색함)">${esc(R.note || '')}</textarea>` : ''}</div>`;
+}
+function visible() {
+  const out = [];
+  for (const S of SETS) {
+    if (F.kind.size && !F.kind.has(S.kind)) continue;
+    if (F.author.size && !F.author.has(S.author)) continue;
+    if (F.narrow === 'wide' && S.narrow) continue; if (F.narrow === 'narrow' && !S.narrow) continue;
+    let cs = combos(S);
+    if (F.rv !== 'all') cs = cs.filter(c => { const v = (REV[c.key] || {}).v; return F.rv === 'todo' ? !v : v === F.rv; });
+    if (randKeys) cs = cs.filter(c => randKeys.has(c.key));
+    if (cs.length) out.push([S, cs]);
+  }
+  return out;
+}
+function render() {
+  const V = visible(), n = V.reduce((t, [, c]) => t + c.length, 0), keys = Object.keys(REV);
+  document.getElementById('st').textContent = `세트 ${SETS.length}개 (넓은 ${SETS.filter(s => !s.narrow).length} · 좁은 ${SETS.filter(s => s.narrow).length}) · 검수 좋음 ${keys.filter(k => REV[k].v === 'ok').length} · 고칠 것 ${keys.filter(k => REV[k].v === 'fix').length}`;
+  document.getElementById('sum').textContent = `${randKeys ? '무작위 10개 · ' : ''}보이는 세트 ${V.length}개 · 대화 ${n}개 — 이름 · 의뢰는 예시 값(${VAL.q} · ${VAL.mon} · ${VAL.giver} …)`;
+  document.getElementById('main').innerHTML = V.length ? V.map(([S, cs]) => `<section class="set"><h3>${esc(S.id)} <span class="tag">${KIND[S.kind] || S.kind}${S.cond.filter(c => c[0] !== '@').length ? ' · ' + esc(S.cond.filter(c => c[0] !== '@').join(' ')) : ''}</span><span class="tag ${S.author}">${AUTHOR_NAME[S.author]}</span>${S.narrow ? '<span class="tag">좁은 세트</span>' : ''}</h3>${cs.map(c => convHTML(S, c)).join('')}</section>`).join('') : '<div class="empty">조건에 맞는 대화가 없습니다.</div>';
+}
+document.getElementById('main').onclick = e => {
+  const b = e.target.closest('.rv button'); if (!b) return; const k = b.closest('.cv').dataset.k, v = b.dataset.v;
+  REV[k] = REV[k] || {}; REV[k].v = REV[k].v === v ? undefined : v; if (!REV[k].v && !REV[k].note) delete REV[k]; saveRev(); render();
+};
+document.getElementById('main').oninput = e => { if (e.target.tagName !== 'TEXTAREA') return; const k = e.target.closest('.cv').dataset.k; REV[k] = REV[k] || { v: 'fix' }; REV[k].note = e.target.value; saveRev(); };
+document.getElementById('rand').onclick = () => {
+  const all = []; for (const S of SETS) { if (F.kind.size && !F.kind.has(S.kind)) continue; if (F.author.size && !F.author.has(S.author)) continue; for (const c of combos(S)) all.push(c.key); }
+  for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; }
+  randKeys = new Set(all.slice(0, 10)); render();
+};
+document.getElementById('all').onclick = () => { randKeys = null; render(); };
+document.getElementById('copy').onclick = async () => {
+  const L = ['| 세트 | 조합 | 판정 | 메모 |', '| --- | --- | --- | --- |'];
+  for (const [k, R] of Object.entries(REV)) { if (!R.v) continue; const [id, st, vo, tg, rel] = k.split('|'); L.push(`| ${id} | ${SPK[st]}→${LIS[vo]} · ${tg === 'together' ? '함께' : '처음'}${rel !== 'none' ? ' · ' + rel : ''} | ${R.v === 'ok' ? '좋음' : '고칠 것'} | ${(R.note || '').replace(/\|/g, '/').replace(/\n/g, ' ')} |`); }
+  const t = L.join('\n');
+  try { await navigator.clipboard.writeText(t); alertMsg(`검수 ${L.length - 2}건을 복사했습니다. 대화창에 붙여 넣어 주세요.`); } catch (e) { prompt('복사가 막혀 있습니다. 아래를 직접 복사하세요.', t); }
+};
+function alertMsg(t) { const s = document.getElementById('sum'); s.textContent = t; s.style.color = 'var(--green)'; setTimeout(() => { s.style.color = ''; render(); }, 2500); }
+document.getElementById('file').onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => load(r.result); r.readAsText(f, 'utf-8'); };
+fetch('../data/talk_mem.csv?t=' + Date.now()).then(r => { if (!r.ok) throw 0; return r.text(); }).then(load).catch(() => { document.getElementById('st').textContent = '대사 파일을 못 읽었습니다 — "CSV 파일 열기"로 prototype/data/talk_mem.csv 를 골라 주세요'; });
+</script>
+</body>
+</html>
