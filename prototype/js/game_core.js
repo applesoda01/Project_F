@@ -1203,11 +1203,14 @@
   }
   // 명성 방문 (2026-11-17 결정: 5마다, progression_v1 2-2 · HUD '다음 모험가까지 명성 N'과 같은 규칙): 명성이 fameStep의 배수(5 · 10 · 15…)에 처음 닿을 때마다 1명.
   //   상한(길드 등급별)이 차 있으면 기다렸다가 자리가 나면(승급 등) 옴. 명성이 깎였다가 다시 올라도 같은 칸은 한 번만. 예전 저장은 지금 명성까지는 이미 온 것으로 봄
+  const fameStepOf = s => { const st = (s.cfg.adv || {}).fameStep; return Array.isArray(st) ? (st[Math.min(s.grade, st.length - 1)] || st[st.length - 1]) : st; };   // 지금 등급의 명성 간격
+  function fameNextOf(s) { if (s.fameNext == null) { const st = fameStepOf(s) || 5; s.fameNext = (Math.floor((s.fame || 0) / st) + 1) * st; } return s.fameNext; }   // 다음 모험가가 오는 명성 (예전 저장은 지금 명성 다음 칸부터)
   function fameArrivals(s) {
     const st = (s.cfg.adv || {}).fameStep; if (!st) return;
     { const z = (s.cfg.adv || {}).zeroFameVisit || 0; if (z && (s.fame || 0) === 0 && s.week > 0 && s.week % z === 0 && s.advs.filter(x => x.alive).length < advCap(s)) spawnAdv(s, {}); }   // 2026-11-17 대책 ②: 명성 0인 동안 8주마다 1명 방문
-    const due = Math.floor((s.fame || 0) / st); if (s.fameMs == null) s.fameMs = due;
-    while (s.fameMs < due && s.advs.filter(x => x.alive).length < advCap(s)) { s.fameMs++; spawnAdv(s, {}); }
+    // 2026-11-18 결정 32: 등급별 명성 간격(F 6 · E 10 [임시]) · 상한이 차 있을 때 닿은 칸은 넘김(대기 없음 → 승급 때 몰려오지 않음)
+    const nx = fameNextOf(s);
+    while ((s.fame || 0) >= s.fameNext) { if (s.advs.filter(x => x.alive).length < advCap(s)) spawnAdv(s, {}); else if ((s.cfg.adv || {}).fameSkip === 0) break; else s.fameSkip = (s.fameSkip || 0) + 1; s.fameNext += fameStepOf(s); }   // adv.fameSkip 0 = 예전처럼 자리가 날 때까지 기다림
   }
   function stepWeekTail(s) {
     fameArrivals(s);
@@ -1220,6 +1223,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

@@ -40,7 +40,8 @@
       adv: {
         arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,       // arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)
         zeroFameVisit: 0, founderMix: 1,   // 2026-11-17 의뢰 0건 판 대책 ②: 명성 0인 동안 N주마다 1명 방문 (0이면 끔)
-        fameStep: 5,                                       // 2026-11-17: 명성 5마다 새 모험가 1명 (게임 fameArrivals와 같음). 0이면 예전 확률 방식
+        fameSkip: 1,                                       // 결정 32: 1 = 상한이 차 있을 때 닿은 칸은 넘김, 0 = 예전처럼 기다림
+        fameStep: [6, 10, 10, 10, 10, 10, 10],             // 2026-11-18 결정 32: 등급별 명성 간격 (F 6 · E 10 [임시], D 이상 가안). 0이면 예전 확률 방식
         startCount: 5, startCore: 15, startOther: 6,
         attachSuccess: 2, attachPerMonthInTown: 1,
         visitBaseWeeks: 2,
@@ -847,8 +848,8 @@
       weekly();
       { const z = cfg.adv.zeroFameVisit || 0, cap0 = (cfg.adv.capByGrade || [8, 12, 16, 20, 24, 28, 32])[s.grade] || 8; if (z && (s.fame || 0) === 0 && s.week > 0 && s.week % z === 0 && s.advs.filter(x => x.alive).length < cap0) newAdv({}); }   // 대책 ② (게임과 같음)
       { const st = cfg.adv.fameStep; if (st) {   // 명성 방문 (게임 fameArrivals와 같은 규칙: 명성 fameStep(5)마다 1명, 상한이 차면 기다림)
-        const due = Math.floor(s.fame / st), cap = (cfg.adv.capByGrade || [8, 12, 16, 20, 24, 28, 32])[s.grade] || 8; s.fameMs = s.fameMs || 0;
-        while (s.fameMs < due && s.advs.filter(x => x.alive).length < cap) { s.fameMs++; const ext = R() < 0.05 && s.grade > 0 ? Math.min(6, s.grade + (R() < 0.3 ? 2 : 1)) : 0; const a = newAdv({ grade: ext }); if (s.demonFlagFallback) { a.demonHeir = true; a.heirWeek = s.week; s.demonFlagFallback = false; s.st.demonFallback = true; } }
+        const cap = (cfg.adv.capByGrade || [8, 12, 16, 20, 24, 28, 32])[s.grade] || 8, stp = () => Array.isArray(st) ? (st[Math.min(s.grade, st.length - 1)] || st[st.length - 1]) : st; if (s.fameNext == null) s.fameNext = stp();   // 결정 32 (게임과 같음): 등급별 간격 · 차면 넘김
+        while (s.fame >= s.fameNext) { const room = s.advs.filter(x => x.alive).length < cap; if (!room && cfg.adv.fameSkip === 0) break; s.fameNext += stp(); if (!room) continue; const ext = R() < 0.05 && s.grade > 0 ? Math.min(6, s.grade + (R() < 0.3 ? 2 : 1)) : 0; const a = newAdv({ grade: ext }); if (s.demonFlagFallback) { a.demonHeir = true; a.heirWeek = s.week; s.demonFlagFallback = false; s.st.demonFallback = true; } }
       } }
       if (s.week % WPM === WPM - 1) monthly();
       if (s.week % WPY === WPY - 1) {

@@ -70,14 +70,14 @@
       if (face && face.dataset.st !== String(st)) { face.dataset.st = st; face.src = 'assets/ui/hud/trust/trust_' + st + '.png'; }
       if (bar) { const d = (t - 50) / 50; bar.style.left = d >= 0 ? '50%' : (50 + d * 50) + '%'; bar.style.width = Math.abs(d) * 50 + '%'; bar.style.background = `hsl(${Math.round(t * 1.2)},62%,42%)`; }
       if (box) hudTip(box, `${NAME[st]}\n${TRUST_TXT[st]}`); }   // 2026-11-16: 숫자 대신 말로
-    { const A = s.cfg.adv || {}, step = A.fameStep || 10, f = s.fame || 0, n = s.advs.filter(a => a.alive).length;   // 명성: 다음 모험가까지 막대 · 모험가: 인원 / 등급 상한
+    { const step = Gm.fameStepOf(s) || 10, f = s.fame || 0, n = s.advs.filter(a => a.alive).length, nx = Gm.fameNextOf(s);   // 명성: 다음 모험가까지 막대 · 모험가: 인원 / 등급 상한 (2026-11-18 결정 32: 등급별 간격, 다음 칸 = s.fameNext)
       const cap = Gm.advCap(s), GL = 'FEDCBAS'[s.grade] || 'F', full = n >= cap;
-      const into = f - Math.floor(f / step) * step, left = Math.ceil((step - into) * 10) / 10;
+      const left = Math.max(0, Math.ceil((nx - f) * 10) / 10), into = Math.max(0, Math.min(step, step - left));
       q('#hFame').textContent = Math.floor(f);
       const fb = q('#hFameBar'), fw = q('#hFameBarW'), fx = q('#hFameBox');
       if (fb) fb.style.width = (full ? 100 : into / step * 100) + '%';
       if (fw) fw.classList.toggle('cap', full);
-      if (fx) hudTip(fx, full ? `모험가가 상한이라 새 모험가가 오지 않아요.\n길드 등급이 오르면 다시 찾아와요.` : `명성이 ${left} 더 쌓이면 새 모험가가 찾아와요.`);
+      if (fx) hudTip(fx, full ? `모험가가 상한(${cap}명)이라 새 모험가가 오지 않아요.\n이때 쌓인 명성 칸은 넘어가고, 길드 등급이 오르면 다음 칸부터 다시 찾아와요.` : `명성이 ${left} 더 쌓이면 새 모험가가 찾아와요.\n(${GL}급: 명성 ${step}마다 1명)`);
       q('#hAdv').textContent = n;
       const ac = q('#hAdvCap'), ax = q('#hAdvBox');
       if (ac) { ac.textContent = ' / ' + cap; ac.classList.toggle('full', full); }
