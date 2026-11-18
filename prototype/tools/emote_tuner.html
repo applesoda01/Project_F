@@ -110,7 +110,7 @@ const KS = Emote.KINDS, NM = Emote.NAME, FACE_H = 296 / 330, CX = 300, CY = 250;
 const GAME = { dx: Emote.POS.dx, dy: Emote.POS.dy, size: Emote.POS.size, mirror: !!Emote.POS.mirror };
 const $ = id => document.getElementById(id);
 let SY = { dx: Emote.SYM.dx, dy: Emote.SYM.dy, k: Emote.SYM.k }; const GSYM = Object.assign({}, SY);
-const ONE = Object.keys(Emote.SYMK);   // 따로 조절할 수 있는 기호 (신남 · 헤헤 · 반짝)
+const ONE = Object.keys(Emote.SYMK);   // 기호마다 따로 조절 (8종 모두)
 let SK = JSON.parse(JSON.stringify(Emote.SYMK)); const GSYMK = JSON.stringify(SK); let mode = 'all';
 let V = Object.assign({}, GAME), cur = 'win', playing = true, zoom = 1, drag = null, t0 = performance.now();
 try { const s = JSON.parse(localStorage.getItem('emotePos2') || 'null'); if (s && s.game && JSON.stringify(s.game) === JSON.stringify(GAME)) V = Object.assign(V, s.V); if (s && s.gsym && JSON.stringify(s.gsym) === JSON.stringify(GSYM) && s.SY) SY = s.SY; if (s && s.gsymk === GSYMK && s.SK) SK = s.SK; } catch (e) {}
@@ -142,7 +142,7 @@ function ui() {
   for (const [id, v] of [['sdx', T.dx * 100], ['sdy', T.dy * 100], ['sk', T.k * 100]]) { $(id).value = v; setNum(id + 'N', Math.round(v * 10) / 10); }
   $('mAll').classList.toggle('on', mode === 'all'); $('mOne').classList.toggle('on', mode === 'one'); $('mOne').disabled = !ONE.includes(cur);
   $('sFlip').disabled = !ONE.includes(cur); $('sFlip').checked = !!(SK[cur] && SK[cur].flip);
-  $('mHint').textContent = mode === 'one' ? `「${NM[cur]}」 기호만 움직입니다 (8종 묶음 값 위에 더해짐).` : (ONE.includes(cur) ? '8종 기호가 같이 움직입니다. 이 기호만 옮기려면 「이 기호만」.' : '8종 기호가 같이 움직입니다. 「이 기호만」은 신남 · 헤헤 · 반짝에서 쓸 수 있어요.');
+  $('mHint').textContent = mode === 'one' ? `「${NM[cur]}」 기호만 움직입니다 (8종 묶음 값 위에 더해짐).` : (ONE.includes(cur) ? '8종 기호가 같이 움직입니다. 이 기호만 옮기려면 「이 기호만」.' : '8종 기호가 같이 움직입니다.');
   $('out').value = JSON.stringify({ dir: V.mirror ? 'mirror' : 'original', anchor: '모험가 중심 (발 − 70px)', dx: V.dx, dy: V.dy, size: V.size, sym: { dx: +SY.dx.toFixed(4), dy: +SY.dy.toFixed(4), k: +SY.k.toFixed(3) }, symk: Object.fromEntries(ONE.map(k => [k, { dx: +SK[k].dx.toFixed(4), dy: +SK[k].dy.toFixed(4), k: +SK[k].k.toFixed(3), flip: !!SK[k].flip }])) });
   store();
 }

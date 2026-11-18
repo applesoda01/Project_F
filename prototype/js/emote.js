@@ -10,8 +10,8 @@
   const PARTS = { win: { e: [0.13, 0.291, 0.752], s: [0.879, -0.021, 0.173] }, sweat: { e: [0.109, 0.188, 0.758], s: [0.752, -0.024, 0.242] }, note: { e: [0.133, 0.312, 0.752], s: [0.739, -0.042, 0.379] }, heart: { e: [0.133, 0.376, 0.661], s: [0.721, -0.033, 0.376] }, anger: { e: [0.1, 0.239, 0.791], s: [0.782, -0.073, 0.345] }, smile: { e: [0.112, 0.321, 0.752], s: [0.727, -0.094, 0.336] }, qex: { e: [0.076, 0.155, 0.791], s: [0.803, -0.121, 0.321] }, spark: { e: [0.103, 0.17, 0.797], s: [0.779, -0.164, 0.364] } };
   const POS = { dx: 63, dy: -81, size: 62, mirror: true };   // 로비 (게임 화면 1920 기준 px)
   const SYM = { dx: -0.85, dy: 0, k: 1 };   // 2026-11-18 22:47 사용자 확정 (기호를 얼굴 반대편으로)
-  // 기호별 추가 보정 + 기호 그림만 좌우 뒤집기 (사용자 22:47: 신남 · 헤헤 · 반짝만 반전 · 따로 위치 조절)
-  const SYMK = { note: { dx: 0, dy: 0, k: 1, flip: true }, smile: { dx: 0, dy: 0, k: 1, flip: true }, spark: { dx: 0, dy: 0, k: 1, flip: true } };   // 기호 묶음 보정 (8종 모두 같이, 단위 = 얼굴 가로 · k = 크기 배율, 기호 가운데 기준) — tools/emote_tuner.html 에서 맞춤
+  // 기호별 추가 보정 + 기호 그림만 좌우 뒤집기 (사용자 22:51 고침: 신남 · 헤헤 · 반짝을 뺀 나머지를 반전. 「?!」는 글자라 따로 늘 바로 읽히게 둠)
+  const SYMK = { win: { dx: 0, dy: 0, k: 1, flip: true }, sweat: { dx: 0, dy: 0, k: 1, flip: true }, note: { dx: 0, dy: 0, k: 1, flip: false }, heart: { dx: 0, dy: 0, k: 1, flip: true }, anger: { dx: 0, dy: 0, k: 1, flip: true }, smile: { dx: 0, dy: 0, k: 1, flip: false }, qex: { dx: 0, dy: 0, k: 1, flip: false }, spark: { dx: 0, dy: 0, k: 1, flip: false } };   // 기호 묶음 보정 (8종 모두 같이, 단위 = 얼굴 가로 · k = 크기 배율, 기호 가운데 기준) — tools/emote_tuner.html 에서 맞춤
   const FACE_H = 296 / 330;
   const E = { base: 'assets/emote/', KINDS, NAME, POS, PARTS, SYM, SYMK };
   function symBox(P, o, q) {   // 기호 상자 [x, y, w] (얼굴 가로 단위) = 원래 자리 + 묶음 보정 + 기호별 보정
