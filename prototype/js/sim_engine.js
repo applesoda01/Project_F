@@ -39,7 +39,7 @@
       },
       adv: {
         arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,       // arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)
-        zeroFameVisit: 8, founderMix: 1,   // 2026-11-17 의뢰 0건 판 대책 ②: 명성 0인 동안 N주마다 1명 방문 (0이면 끔)
+        zeroFameVisit: 0, founderMix: 1,   // 2026-11-17 의뢰 0건 판 대책 ②: 명성 0인 동안 N주마다 1명 방문 (0이면 끔)
         fameStep: 5,                                       // 2026-11-17: 명성 5마다 새 모험가 1명 (게임 fameArrivals와 같음). 0이면 예전 확률 방식
         startCount: 5, startCore: 15, startOther: 6,
         attachSuccess: 2, attachPerMonthInTown: 1,
