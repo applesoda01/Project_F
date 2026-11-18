@@ -268,8 +268,9 @@
     const L = Speech.talk(ac.a, p.o.a, p.sit); if (!L) return false;
     const o = p.o;
     if (ac.pose === 'stand') ac.face = o.x < ac.x; if (o.pose === 'stand') o.face = ac.x < o.x;   // 서 있으면 서로 마주 봄
-    say(ac, L[0], 1.8, 'talk');
-    D.timers.push({ t: D.t + 1.2, fn: () => { if (D.actors.get(o.id) === o) say(o, L[1], 1.8, 'talk'); } });
+    const E = L.emo || [];   // 2026-11-18 감정 아이콘 (이름표 레벨 뒤)
+    say(ac, L[0], 1.8, 'talk', E[0]);
+    D.timers.push({ t: D.t + 1.2, fn: () => { if (D.actors.get(o.id) === o) say(o, L[1], 1.8, 'talk', E[1]); } });
     if (L[2]) D.timers.push({ t: D.t + 2.4, fn: () => { if (D.actors.get(ac.id) === ac) say(ac, L[2], 1.6, 'talk'); } });
     D.talk.busy = D.t + (L[2] ? 4 : 3);   // 대화 중에는 다른 사람 혼잣말을 미룸 (기록이 섞이지 않게)
     D.talk.next = D.t + 4 + 20 + Math.random() * 20; ac.talkCool = o.talkCool = D.t + 60;
@@ -283,12 +284,12 @@
     if (!o || !o.a || !ac.a || D.actors.get(o.id) !== o || !Speech.talk) return -1;
     const L = Speech.talk(ac.a, o.a, sit, null, q); if (!L) return -1;
     const d = Math.max(0, (D.talk.busy || 0) + 0.3 - D.t), here = x => D.actors.get(x.id) === x;
-    const line = (who, txt, t) => t > 0 ? D.timers.push({ t: D.t + t, fn: () => { if (here(who)) say(who, txt, 1.8, 'talk'); } }) : say(who, txt, 1.8, 'talk');
-    line(ac, L[0], d); line(o, L[1], d + 1.2);
+    const E = L.emo || [], line = (who, txt, t, e) => t > 0 ? D.timers.push({ t: D.t + t, fn: () => { if (here(who)) say(who, txt, 1.8, 'talk', e); } }) : say(who, txt, 1.8, 'talk', e);
+    line(ac, L[0], d, E[0]); line(o, L[1], d + 1.2, E[1]);
     D.talk.busy = D.t + d + 3; D.talk.next = Math.max(D.talk.next, D.talk.busy + 20 + Math.random() * 20); ac.talkCool = o.talkCool = D.talk.busy + 57;
     return d + 2.6;
   }
-  function say(ac, text, dur, grp) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text, null, ac.a, grp); } }   // 얼굴·직업 표시용으로 모험가를 함께 넘김
+  function say(ac, text, dur, grp, emo) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (emo) ac.emo = { k: emo, t0: D.t, until: D.t + (dur || 1.8) + 0.7 }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text, null, ac.a, grp); } }   // 얼굴·직업 표시용으로 모험가를 함께 넘김
 
   // ---------- 매 프레임 ----------
   D.update = function (dt) {
@@ -439,12 +440,25 @@
     if (!dark) g.strokeText(nm, tx1, ty + NP.ndy); g.fillStyle = dark ? '#3a2616' : NP.nameColor; g.fillText(nm, tx1, ty + NP.ndy);
     g.font = `700 ${NP.lfs}px ${FF}`;
     if (!dark) g.strokeText(lv, tx2, ty + NP.ldy); g.fillStyle = dark ? '#9a6228' : NP.lvColor; g.fillText(lv, tx2, ty + NP.ldy);
+    if (ac.emo) emote(g, ac, tx2 + lw, ty);   // 2026-11-18 감정 아이콘: 레벨 글자 뒤 (조금 겹쳐도 됨)
     let extra = 0;
     if (ac.lab) {   // 상태 문구 (2026-11-12): 명찰 바로 위 작은 글씨
       g.font = `700 14px ${FF}`; g.textAlign = 'center'; g.lineWidth = 3.5; g.strokeStyle = NP.outline;
       const sy = y0 - 9; g.strokeText(ac.lab, ac.x + NP.dx, sy); g.fillStyle = '#f1dfb8'; g.fillText(ac.lab, ac.x + NP.dx, sy); extra = 18;
     }
     g.restore(); return (headY(ac) - y0) + 8 + NP.bubbleGap + extra;   // 말풍선 꼬리 끝이 명찰 위 8px 에 오도록
+  }
+  // 감정 아이콘 (2026-11-18, 시안 3): 생각풍선 방울 끝이 레벨 글자 끝(x)에 살짝 겹치게. 튕기며 등장 · 끝 0.3초 투명 [임시 크기 58px]
+  const EMO_ON = false;   // 2026-11-18 그림 시안 확정 전까지 게임 화면에는 끔 (대화 극장에서만 보임) — 확정되면 true
+  function emote(g, ac, x, y) {
+    if (!EMO_ON) return;
+    const e = ac.emo; if (!e || D.t > e.until) { ac.emo = null; return; }
+    const im = root.Emote && Emote.img(e.k); if (!im || !im.complete || !im.naturalWidth) return;
+    const age = D.t - e.t0, a = Math.min(1, age / 0.22), k = a >= 1 ? 1 : 1 + 1.7 * Math.pow(a - 1, 3) + 0.7 * Math.pow(a - 1, 2), sc = 0.5 + 0.5 * Math.max(0, Math.min(1.1, k));
+    const S = 58 * sc, bob = Math.sin(age * 3) * 1.5, ox = x - 1, oy = y + 9 + bob;   // (ox, oy) = 방울 끝 기준점 — 작은 방울이 숫자를 가리지 않게 끝에 바로 붙임
+    g.save(); g.globalAlpha *= Math.min(1, a * 1.5, Math.max(0, e.until - D.t) / 0.3);
+    g.shadowColor = 'rgba(40,22,8,.35)'; g.shadowBlur = 4; g.shadowOffsetY = 2;
+    g.drawImage(im, ox, oy - S, S, S); g.restore();
   }
   // 리나 응대 진행 막대 (2026-11-12): 응대받는 모험가 머리(명찰) 위에 노란 막대가 0 → 가득 차면 응대 끝. 모험가 막대(게이지 노랑)와 같은 색
   function serveBar(g, ac, up) {

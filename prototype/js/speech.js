@@ -60,8 +60,12 @@
   function pickRow(rows, cx) {   // 관계 태그 줄이 맞으면 그쪽을 먼저 (30%), 아니면 관계 태그 없는 줄
     const ok = rows.filter(([tg]) => tg.every(t => tagOk(t, cx))), relFit = ok.filter(([tg]) => tg.includes('good') || tg.includes('bad')), base = ok.filter(([tg]) => !tg.includes('good') && !tg.includes('bad'));
     const set = relFit.length && (Math.random() < 0.3 || !base.length) ? relFit : base;
-    return set.length ? set[Math.floor(Math.random() * set.length)][1] : null;
+    const row = set.length ? set[Math.floor(Math.random() * set.length)] : null; pickRow.tg = row ? row[0] : [];   // 고른 줄의 태그 (감정 아이콘용)
+    return row ? row[1] : null;
   }
+  // 감정 아이콘 고르기 (2026-11-18, js/emote.js) [임시]: 말 걸기 = 기억 종류, 대답 = 고른 줄이 서먹(bad) 줄이면 욱 · 단짝(good) 줄이면 헤헤 · 함께 다친 기억이면 식은땀
+  const EMO_OPEN = m => ({ win_big: 'win', qlv: 'win', hurt: 'sweat', fail: 'sweat', gift: 'note', saved: m.role === 'got' ? 'heart' : 'sweat', grow: 'spark', nomin: 'qex' })[m.k] || null;
+  const EMO_REPLY = (tg, together, m) => tg.includes('bad') ? 'anger' : tg.includes('good') ? 'smile' : together && (m.k === 'hurt' || m.k === 'fail') ? 'sweat' : null;
   function memTalk(a, b, rel) {
     const s = getS && getS(), G = root.GuildGame; if (!s || !G || !G.memOf) return null;
     const ms = G.memOf(s, a).slice().reverse();   // 최근 일부터
@@ -71,14 +75,16 @@
       const fresh = sets.filter(x => !(m.used || []).includes(x.id)), pool = fresh.length ? fresh : sets;   // 같은 기억을 두 번째 말할 때는 다른 세트로 (같은 대화 되풀이 방지)
       const st = pool[Math.floor(Math.random() * pool.length)];
       const base = { together, rel: rel || '' };
-      const o = pickRow(st.open, Object.assign({ style: STYLE(a), voice: VOICE(a) }, base)), r = pickRow(st.reply, Object.assign({ voice: VOICE(b) }, base));
+      const o = pickRow(st.open, Object.assign({ style: STYLE(a), voice: VOICE(a) }, base)), r = pickRow(st.reply, Object.assign({ voice: VOICE(b) }, base)), rTg = pickRow.tg;
       if (!o || !r) continue;
       const c = pickRow(st.close, Object.assign({ voice: VOICE(a) }, base));
       const wn = (m.with || []).map(id => (s.advs.find(x => x.id === id) || {}).name).filter(Boolean)[0] || '동료';
       const V = { a: a.name, b: b.name, q: m.q || '그 의뢰', mon: m.mon || '몬스터', with: wn, weeks: m.weeks || 1, giver: m.giver || '의뢰인', part: m.part || '장비', g: m.g || 'F', lv: m.lv || '', cls: m.cls || '' };
       const fill = t => t.replace(/\{(\w+)(?::([^}]+))?\}/g, (m0, k, sfx) => V[k] != null ? josa(V[k], sfx) : m0);
       (m.used = m.used || []).push(st.id); G.memSaid(a, m);
-      return [fill(o), fill(r)].concat(c ? [fill(c)] : []);
+      const L = [fill(o), fill(r)].concat(c ? [fill(c)] : []);
+      L.emo = [EMO_OPEN(m), EMO_REPLY(rTg, together, m)];   // 2026-11-18 감정 아이콘 (말 건 사람 · 대답한 사람) — 맺음 줄은 없음
+      return L;
     }
     return null;
   }
