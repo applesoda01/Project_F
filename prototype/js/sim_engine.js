@@ -55,7 +55,7 @@
         tavernPerAdvWeek: 4, tavernGradeMult: 1.6,
         feeOpt: [0.1, 0.15, 0.2], restK: 0.5,   // 결정 22: 높은 수수료를 거르는 세기 [임시]
         subsidyMode: 1, subsidyRate: 0.5, subsidyEvery: 1,   // 2026-11-17 V2 결정 13: 반기 지급 · 성공 보상 합의 50% [임시] (0 = 예전 매달 고정)   // 2026-11-17 V2 결정 11: 의뢰별 요율 선택지 [임시]
-        resaleRate: 0, matBuyRate: 0.7, consignFee: 0.1, orderMult: 1.5, orderMax: 2,   // 2026-11-17 V2 결정 12: 소재 자동 차익 8% 없앰 → 자동 매입 70% · 위탁 10% [임시] (balance.csv와 같게)
+        resaleRate: 0, matBuyRate: 0.7, consignFee: 0.1, orderMult: 1.5, orderMax: 2, orderBias: 0.5,   // 2026-11-17 V2 결정 12: 소재 자동 차익 8% 없앰 → 자동 매입 70% · 위탁 10% [임시] (balance.csv와 같게)
         effectCost: [0.10, 0.20, 0.35],
         effectOpen: 0,                             // 시설 효과 개방 (0 = 끔. 2026-11-12: 프로토타입 게임에는 없으므로 시뮬레이터도 끔)
         mealPriceRate: 0.15, mealMargin: 0.60, mealBuyRate: [0.30, 0.60, 0.90],

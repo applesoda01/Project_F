@@ -66,6 +66,7 @@ econ,matBuyRate,0.7,의뢰 소재 자동 매입가 = 판매가 × 이 값 (버�
 econ,consignFee,0.1,위탁 소재 판매 수수료 (금고가 모자라 매입 못 한 소재 · 월말 판매) [임시] (V2 결정 12)
 econ,orderMult,1.5,길드 발주 1개 값 = 판매가 × 이 값 [임시] (V2 결정 24)
 econ,orderMax,2,길드 발주 동시 건수 [임시] (V2 결정 25)
+econ,orderBias,0.5,발주 중 새 의뢰가 발주 소재 의뢰로 바뀌는 비율 [임시] (V2 결정 26)
 econ,effectCost,0.1|0.2|0.35,
 econ,mealPriceRate,0.25,
 econ,mealMargin,0.6,

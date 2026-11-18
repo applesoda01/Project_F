@@ -118,7 +118,8 @@
   // 2026-11-18 결정 25: 발주 소재가 나오는 의뢰는 '주우면 받는 발주 값 × 나올 확률'만큼 실수령을 더 크게 봄
   const orderBonus = (s, q) => { const O = s.orders, T = QBYID[q.tid]; if (!O || !O.length || !T) return 0; let b = 0; for (const r of T.rewards || []) { const o = O.find(x => x.m === r.m && x.got < x.n); if (o) b += o.price * r.p / 100; } return b; };
   const questEff = (s, q) => (Math.floor(q.reward * (q.x2 ? 2 : 1) * (1 - questFee(s, q)) + 1e-9) + orderBonus(s, q)) / (q.weeks || s.cfg.quest.weeks[q.g]);
-  const pickOrder = (s, a) => needsMoney(s, a) ? (x, y) => (questEff(s, y) - questEff(s, x)) || (y.g - x.g) : (x, y) => (y.g - x.g) || (orderBonus(s, y) - orderBonus(s, x)) || (questFee(s, x) - questFee(s, y));
+  const ordHit = (s, q) => orderBonus(s, q) > 0 ? 1 : 0;   /* 2026-11-18 결정 26: 발주한 소재가 나오는 의뢰를 가장 먼저 맡음 */
+  const pickOrder = (s, a) => needsMoney(s, a) ? (x, y) => (ordHit(s, y) - ordHit(s, x)) || (questEff(s, y) - questEff(s, x)) || (y.g - x.g) : (x, y) => (ordHit(s, y) - ordHit(s, x)) || (y.g - x.g) || (questFee(s, x) - questFee(s, y));
   // 게시판 칸 배분: 버튼 4단계의 비중. 칸 수 = 최대 칸 × 비중 ÷ 합 (최대 나머지 방식으로 합을 정확히 맞춤)
   const FILTER_W = [0, 1, 2, 4], FILTER_NAME = ['없음', '적게', '보통', '우선'];
   const filterLevel = w => w >= 4 ? 3 : w >= 2 ? 2 : w >= 1 ? 1 : 0;
@@ -161,10 +162,13 @@
   function makeQuest(s, g) {
     const Q = s.cfg.quest; const type = ri(s, 5); const n = Q.reqCount[g]; const req = [type];
     while (req.length < n) { const k = ri(s, 5); if (!req.includes(k)) req.push(k); }
-    const C = TPL[type + '_' + g], T = !C ? null : C.length > 1 ? C[Math.floor(s.R() * C.length)] : C[0];   // 후보 1개면 난수를 쓰지 않아 예전과 같은 결과
+    let C = TPL[type + '_' + g];
+    { const B = s.cfg.econ.orderBias || 0, O = s.orders;   // 2026-11-18 결정 26: 발주 중에는 새 의뢰의 orderBias [임시] 비율이 그 소재를 얻는 의뢰로 바뀜 (발주가 없으면 난수를 쓰지 않아 예전과 같은 결과)
+      if (B > 0 && O && O.length && s.R() < B) { const W = []; for (const k in TPL) if (k.endsWith('_' + g)) for (const t of TPL[k]) if ((t.rewards || []).some(r => O.some(o => o.m === r.m && o.got < o.n))) W.push(t); if (W.length) C = [W[Math.floor(s.R() * W.length)]]; } }
+    const T = !C ? null : C.length > 1 ? C[Math.floor(s.R() * C.length)] : C[0];   // 후보 1개면 난수를 쓰지 않아 예전과 같은 결과
     const DF = (Q.diff || [])[g] || 1;   // 난이도 배수 (2026-11-16): 판정 기준치와 적 체력 · 공격력에 곱함
     const R0 = (T ? T.ref : Q.ref[g]) * n * (0.85 + s.R() * 0.30) * DF;
-    const q = { id: s.nextId++, g, type, req: T && T.stats && T.stats.length ? T.stats.slice() : req, r: R0 / n, reward: T ? T.reward : Q.reward[g], posted: s.week };
+    const q = { id: s.nextId++, g, type: T && T.type >= 0 ? T.type : type, req: T && T.stats && T.stats.length ? T.stats.slice() : req, r: R0 / n, reward: T ? T.reward : Q.reward[g], posted: s.week };
     if (T) Object.assign(q, { tid: T.id, name: T.name, weeks: T.weeks, fameS: T.fameS, fameF: T.fameF, trustS: T.trustS, trustF: T.trustF, death: T.death });
     if (COMBAT && T && T.enemies && T.enemies.length) {
       // 개체 차이: 실제 적은 게시 정보보다 강하거나 약할 수 있음(±enemyVar). 모험가는 게시 정보(seen)로 판단, 정보실이 있으면 실제에 가까워짐
