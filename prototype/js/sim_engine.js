@@ -39,7 +39,8 @@
       },
       adv: {
         arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,       // arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)
-        zeroFameVisit: 0, founderMix: 1,   // 2026-11-17 의뢰 0건 판 대책 ②: 명성 0인 동안 N주마다 1명 방문 (0이면 끔)
+        zeroFameVisit: 0, founderMix: 1, founderWarrior: 1,   // founderWarrior: 2026-11-18 결정 33 — 첫 모험가는 전사, 나머지는 전사 외
+          // 2026-11-17 의뢰 0건 판 대책 ②: 명성 0인 동안 N주마다 1명 방문 (0이면 끔)
         fameSkip: 1,                                       // 결정 32: 1 = 상한이 차 있을 때 닿은 칸은 넘김, 0 = 예전처럼 기다림
         fameStep: [6, 10, 10, 10, 10, 10, 10],             // 2026-11-18 결정 32: 등급별 명성 간격 (F 6 · E 10 [임시], D 이상 가안). 0이면 예전 확률 방식
         startCount: 5, startCore: 15, startOther: 6,
@@ -829,7 +830,7 @@
     }
 
     // 시작 모험가 3명
-    for (let i = 0; i < A.startCount; i++) newAdv({ attach: 20, home: true });   // 창립 멤버: 늘 길드에 머묾 (게임과 같음)
+    for (let i = 0; i < A.startCount; i++) newAdv({ attach: 20, home: true, core: A.founderWarrior ? (i === 0 ? 0 : 1 + ri(4)) : undefined });   // 창립 멤버: 늘 길드에 머묾 (게임과 같음) · 결정 33: 첫 모험가 전사
     if (A.founderMix !== 0) { const f = s.advs.filter(a => a.home); if (f.length >= 2 && f.every(a => a.risk === 0)) f[1].risk = 1; }   // 의뢰 0건 판 대책 ① (게임과 같음)
     // 로비 배치 (2026-11-12): 놓인 장식(cfg.run.deco 목록) · 테이블 세트 수. 테이블은 첫 주에 2세트, 이후 매달 금고 여유(구매 뒤 1,000G 이상)가 있으면 1세트씩 4세트까지 (게임 autoPlace와 같음)
     s.deco = new Set((cfg.run && cfg.run.deco) || []); s.tables = 0; s.x2Owed = 0;

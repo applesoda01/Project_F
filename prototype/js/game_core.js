@@ -44,7 +44,7 @@
       ui: { expView: null } // 화면 배치 저장. expView: 원정 미니 뷰 위치 {x, y}(1920×1080 기준 왼쪽 위), null이면 기본 자리
     };
     attachRng(s);
-    for (let i = 0; i < cfg.adv.startCount; i++) spawnAdv(s, { attach: 20, quiet: true, home: true })   // 창립 멤버: 늘 길드에 머묾 (2026-11-16);
+    for (let i = 0; i < cfg.adv.startCount; i++) { let core; if ((cfg.adv || {}).founderWarrior) core = i === 0 ? 0 : 1 + ri(s, 4); spawnAdv(s, { attach: 20, quiet: true, home: true, core }); }   // 창립 멤버: 늘 길드에 머묾 (2026-11-16) · 2026-11-18 결정 33: 첫 모험가는 전사(튜토리얼에서 오는 첫 모험가), 나머지는 전사 외 무작위 (adv.founderWarrior 0이면 예전처럼 무작위)
     if ((s.cfg.adv || {}).founderMix !== 0) { const f = s.advs.filter(a => a.home); if (f.length >= 2 && f.every(a => a.risk === 0)) f[1].risk = 1; }   // 2026-11-17 의뢰 0건 판 대책 ① (adv.founderMix 0이면 끔): 창립 2명이 둘 다 신중이면 2번째를 보통으로 (economy_v2_zero_quest.md)
     initHouses(s);   // 2026-11-13 시작 인구만큼 초가
     log(s, '길드가 문을 열었습니다. 모험가 ' + cfg.adv.startCount + '명이 첫 손님으로 찾아왔습니다.', 'guild');
