@@ -53,7 +53,7 @@
   function hasBatchim(w) { const c = w.charCodeAt(w.length - 1); return c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; }
   function J(w, a, b) { return w + (hasBatchim(w) ? a : b); }
   const names = party => party.map(m => m.name).join('·');
-  function blankLedger() { return { matBuy: 0, consign: 0, cpay: 0, csup: 0, fee: 0, resale: 0, meal: 0, tavern: 0, subsidy: 0, upkeep: 0, other: 0, reqIn: 0, scout: 0, quests: 0, success: 0, popAdd: 0, build: 0, dishes: {}, wd: [], builds: [], inTown: 0 }; }   // build·dishes·wd·builds·inTown: 장부 화면 내역용 (운영 순이익 net에는 건설비를 넣지 않음 = 관문 1 기준)
+  function blankLedger() { return { order: 0, matBuy: 0, consign: 0, cpay: 0, csup: 0, fee: 0, resale: 0, meal: 0, tavern: 0, subsidy: 0, upkeep: 0, other: 0, reqIn: 0, scout: 0, quests: 0, success: 0, popAdd: 0, build: 0, dishes: {}, wd: [], builds: [], inTown: 0 }; }   // build·dishes·wd·builds·inTown: 장부 화면 내역용 (운영 순이익 net에는 건설비를 넣지 않음 = 관문 1 기준)
   const ri = (s, n) => Math.floor(s.R() * n);
   // 기록용 의뢰 이름: 편집기에서 지은 이름이 있으면 「이름」, 기본 이름(○○ F급 의뢰)이면 등급·유형
   function qn(q) { return q.name && !/급 의뢰/.test(q.name) ? `${GR[q.g]}급 「${q.name}」` : `${GR[q.g]}급 ${QTYPE[q.type]}`; }
@@ -115,8 +115,10 @@
   function setQuestFee(s, qid, r) { const q = s.board.find(x => x.id === qid); if (!q || !feeOk(s, r)) return false; q.fee = r; return true; }
   // 모험가가 의뢰를 고르는 순서 (결정 11): 돈이 필요한 모험가는 주당 실수령(혼자 간다고 볼 때) 높은 순, 아니면 지금처럼 등급 높은 순 + 같은 등급이면 요율 낮은 순
   function needsMoney(s, a) { const GE = s.cfg.gear; if (a.spend === 2) return true; const ng = Math.min(s.grade, a.gear + 1); if (ng <= a.gear) return false; return a.wallet < GE.weaponPrice[ng] * GE.setMult * (1 + GE.reserveMult[a.spend] * 0.5); }
-  const questEff = (s, q) => Math.floor(q.reward * (q.x2 ? 2 : 1) * (1 - questFee(s, q)) + 1e-9) / (q.weeks || s.cfg.quest.weeks[q.g]);
-  const pickOrder = (s, a) => needsMoney(s, a) ? (x, y) => (questEff(s, y) - questEff(s, x)) || (y.g - x.g) : (x, y) => (y.g - x.g) || (questFee(s, x) - questFee(s, y));
+  // 2026-11-18 결정 25: 발주 소재가 나오는 의뢰는 '주우면 받는 발주 값 × 나올 확률'만큼 실수령을 더 크게 봄
+  const orderBonus = (s, q) => { const O = s.orders, T = QBYID[q.tid]; if (!O || !O.length || !T) return 0; let b = 0; for (const r of T.rewards || []) { const o = O.find(x => x.m === r.m && x.got < x.n); if (o) b += o.price * r.p / 100; } return b; };
+  const questEff = (s, q) => (Math.floor(q.reward * (q.x2 ? 2 : 1) * (1 - questFee(s, q)) + 1e-9) + orderBonus(s, q)) / (q.weeks || s.cfg.quest.weeks[q.g]);
+  const pickOrder = (s, a) => needsMoney(s, a) ? (x, y) => (questEff(s, y) - questEff(s, x)) || (y.g - x.g) : (x, y) => (y.g - x.g) || (orderBonus(s, y) - orderBonus(s, x)) || (questFee(s, x) - questFee(s, y));
   // 게시판 칸 배분: 버튼 4단계의 비중. 칸 수 = 최대 칸 × 비중 ÷ 합 (최대 나머지 방식으로 합을 정확히 맞춤)
   const FILTER_W = [0, 1, 2, 4], FILTER_NAME = ['없음', '적게', '보통', '우선'];
   const filterLevel = w => w >= 4 ? 3 : w >= 2 ? 2 : w >= 1 ? 1 : 0;
@@ -405,6 +407,10 @@
     const ids = (party || []).map(a => a.id); let paid = 0;
     for (const r of T.rewards || []) {
       if (s.R() * 100 >= r.p) continue;
+      { const o = (s.orders || []).find(x => x.m === r.m && x.got < x.n);   // 결정 25: 발주 중인 소재 → 걸어 둔 돈에서 1개 값을 파티에게, 창고로 (금고는 발주 때 이미 냄)
+        if (o && ids.length) { o.got++; s.mats[r.m] = (s.mats[r.m] || 0) + 1; payParty(s, ids, o.price); buyNote(s, r.m, ids, o.price, 1, true); if (!s.knownMats[r.m]) s.knownMats[r.m] = true;
+          if (o.got >= o.n) { const m = MAT[r.m]; log(s, `발주한 ${m ? m.name : '소재'} ${o.n}개가 다 모였습니다.`, 'grow'); s.orders = s.orders.filter(x => x !== o); }
+          continue; } }
       const bp = matBuyPrice(s, r.m);
       if (!ids.length || s.gold >= bp) { s.mats[r.m] = (s.mats[r.m] || 0) + 1; if (ids.length && bp) { s.gold -= bp; paid += bp; s.month.matBuy = (s.month.matBuy || 0) - bp; s.month.matBuyN = (s.month.matBuyN || 0) + 1; buyNote(s, r.m, ids, bp, 1); } }
       else { s.consign = s.consign || []; const key = ids.join(','), e = s.consign.find(x => x.m === r.m && x.ids.join(',') === key); if (e) e.n++; else s.consign.push({ m: r.m, ids: ids.slice(), n: 1 }); }   // 위탁: 길드 창고에 넣지 않음 (요리 · 납품에 못 씀)
@@ -412,9 +418,34 @@
     }
     if (paid) payParty(s, ids, paid);
   }
-  function buyNote(s, m, ids, g, n) {   // 매입 기록 (E4-4 화면용, 최근 40줄) — 같은 주 · 같은 소재 · 같은 파티는 한 줄로
+  function buyNote(s, m, ids, g, n, ord) {   // 매입 기록 (E4-4 화면용, 최근 40줄) — 같은 주 · 같은 소재 · 같은 파티는 한 줄로
     const L = s.buyLog = s.buyLog || [], key = ids.join(','), e = L.find(x => x.w === s.week && x.m === m && x.ids.join(',') === key);
-    if (e) { e.n += n; e.g += g; } else { L.unshift({ w: s.week, m, ids: ids.slice(), n, g }); if (L.length > 40) L.length = 40; }
+    if (e && !!e.ord === !!ord) { e.n += n; e.g += g; } else { L.unshift({ w: s.week, m, ids: ids.slice(), n, g, ord: !!ord }); if (L.length > 40) L.length = 40; }
+  }
+  // ---------- 길드 발주 (경제 개편 V2 6단계 · 결정 24 · 25): 선지급 모으기 ----------
+  const orderPrice = (s, m) => Math.floor(matBase(m) * (s.cfg.econ.orderMult != null ? s.cfg.econ.orderMult : 1.5) + 1e-9);   // 1개 값 = 판매가 × 1.5 [임시]
+  function orderWhy(s, m, n) {
+    const E = s.cfg.econ, max = E.orderMax != null ? E.orderMax : 2;
+    if (!MAT[m]) return '없는 소재입니다';
+    if (!Number.isInteger(n) || n < 1 || n > 30) return '개수는 1~30개입니다';
+    if ((s.orders || []).length >= max) return `발주는 동시에 ${max}건까지입니다`;
+    if ((s.orders || []).some(o => o.m === m)) return '이미 발주한 소재입니다';
+    const cost = orderPrice(s, m) * n; if (s.gold < cost) return `금고가 모자랍니다 (${cost}G 필요)`;
+    return null;
+  }
+  function orderPlace(s, m, n) {
+    const why = orderWhy(s, m, n); if (why) return { ok: false, why };
+    const price = orderPrice(s, m), cost = price * n;
+    s.gold -= cost; s.month.order = (s.month.order || 0) - cost;
+    (s.orders = s.orders || []).push({ id: s.uidNext++, m, n, got: 0, price, w: s.week });
+    log(s, `${MAT[m].name} ${n}개를 발주했습니다. (1개 ${price}G · ${cost}G 먼저 냄)`, 'sys');
+    return { ok: true, cost };
+  }
+  function orderCancel(s, id) {   // 도중에 거두면 남은 개수만큼 돌려받음
+    const o = (s.orders || []).find(x => x.id === id); if (!o) return { ok: false, why: '발주가 없습니다' };
+    const back = (o.n - o.got) * o.price; s.gold += back; s.month.order = (s.month.order || 0) + back;
+    s.orders = s.orders.filter(x => x !== o); log(s, `${MAT[o.m].name} 발주를 거두고 ${back}G를 돌려받았습니다.`, 'sys');
+    return { ok: true, back };
   }
   function consignBuy(s, i) {   // 2026-11-18 E4-4: 위탁 보관 중인 소재를 지금 매입가(판매가 × 70% [임시])로 사들여 창고로
     const e = (s.consign || [])[i]; if (!e) return { ok: false, why: '위탁품이 없습니다' };
@@ -684,7 +715,7 @@
       if (a.wallet >= price * (1 + GE.reserveMult[a.spend] * 0.5)) { a.wallet -= price; a.gear = ng; log(s, `${J(a.name, '이', '가')} ${GR[ng]}급 장비를 샀습니다. (${Math.round(price)}G)`, 'grow', { who: [a.name] }); }
     }
     proposeClasses(s);
-    const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other + (s.month.reqIn || 0) + (s.month.scout || 0) + (s.month.prep || 0) + (s.month.cpay || 0) + (s.month.csup || 0) + (s.month.matBuy || 0) + (s.month.consign || 0);   // 4단계: 소재 매입(음수) · 위탁 수수료   // 2026-11-17 V2: 계약 보수 · 지원(음수)   // 2026-11-16: 리퀘스트 보상(납품 금화) · 지명 섭외비 포함
+    const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other + (s.month.reqIn || 0) + (s.month.scout || 0) + (s.month.prep || 0) + (s.month.cpay || 0) + (s.month.csup || 0) + (s.month.matBuy || 0) + (s.month.consign || 0) + (s.month.order || 0);   // 4단계: 소재 매입(음수) · 위탁 수수료   // 2026-11-17 V2: 계약 보수 · 지원(음수)   // 2026-11-16: 리퀘스트 보상(납품 금화) · 지명 섭외비 포함
     s.month.net = net; s.month.grade = s.grade; s.month.feeRate = feeRate(s);
     s.lastMonth = s.month; s.history.push(Object.assign({ week: s.week }, s.month));
     log(s, `${dateLabel(s.week)} 결산: 운영 순이익 ${Math.round(net)}G (의뢰 ${s.month.quests}건, 성공 ${s.month.success}건)`, 'ledger', { net: Math.round(net), nq: s.month.quests, nok: s.month.success });
@@ -1170,6 +1201,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
