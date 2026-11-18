@@ -502,6 +502,7 @@
 
     function bossStep() {
       const g = s.grade;
+      if (g === 0 && COMBAT && !(cfg.run && cfg.run.noMain)) return;   // 2026-11-18 E8-1: F급에는 승급용 보스 의뢰가 없음 (게임과 같음 — F → E는 리퀘스트 8회 + 메인 퀘스트). 예전엔 첫해 판당 3.3번 돌아 수수료 · 보조금 실적이 게임보다 많았음
       if (g >= 6 || s.phase !== 'normal') return;
       const need = PROMO_FAC[g];
       if (need && !has(need)) return;
