@@ -361,7 +361,7 @@ if os.path.exists(CPATH) and not errors:          # 밸런스에 오류가 있�
 # 세트 = 말 걸기 · 대답 · 맺음을 함께 쓴 묶음 (꼬이지 않게). 기억 칸 = 종류 + 세트 조건, 조건 칸 = 줄을 고르는 태그
 TM_KINDS = ['win_big', 'fail', 'hurt', 'saved', 'gift', 'grow', 'nomin', 'qlv']
 TM_TOGETHER = {'win_big', 'fail', 'hurt', 'saved', 'qlv'}   # 듣는 사람도 함께 겪을 수 있는 기억
-TM_SETCOND = {'mon', 'late', '!late', 'fz', '!fz', 'got', 'gave', 'lv', 'grade', 'class', 'yes', 'no'}
+TM_SETCOND = {'mon', 'late', '!late', 'fz', '!fz', 'got', 'gave', 'lv', 'grade', 'class', 'yes', 'no', '@bold', '@careful', '@calm', '@jon', '@ban', '@together', '@new', '@good', '@bad'}   # @… = 좁은 세트 (그 조합에서만, 생성기 talk_gen.html 이 만듦)
 TM_TAGS = {'bold', 'careful', 'calm', 'jon', 'ban', 'together', 'new', 'good', 'bad'}
 TM_VARS = {'a', 'b', 'q', 'mon', 'with', 'weeks', 'giver', 'part', 'g', 'lv', 'cls'}
 talk_mem = {}
@@ -389,6 +389,9 @@ if os.path.exists(os.path.join(DATA, 'talk_mem.csv')):
             if all((not (set(tg) & g)) or (n in tg) for n in need for g in groups if n in g): return True
         return False
     for sid, S_ in sets.items():
+        if any(c.startswith('@') for c in S_['cond']):   # 좁은 세트: 조합이 정해져 있어 빠진 경우 검사를 하지 않음 (말 걸기 · 대답은 있어야 함)
+            if not S_['open'] or not S_['reply']: err('talk_mem.csv', '-', f'세트 {sid}: 말 걸기 · 대답이 있어야 합니다')
+            talk_mem.setdefault(S_['kind'], []).append({k: S_[k] for k in ('id', 'cond', 'open', 'reply', 'close')}); continue
         tg_states = ['new', 'together'] if S_['kind'] in TM_TOGETHER else ['new']
         for st_ in ('bold', 'careful', 'calm'):
             for t_ in tg_states:

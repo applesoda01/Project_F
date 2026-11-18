@@ -41,8 +41,9 @@
     if (x === '으로' && jong === 8) return v + y;   // ㄹ 받침 + 으로/로 → 로
     return v + (jong ? x : y);
   }
-  function condOk(cond, m) {
+  function condOk(cond, m, cx) {
     for (const c of cond) {
+      if (c[0] === '@') { const t = c.slice(1); if (cx && !((t === 'bold' || t === 'careful' || t === 'calm') ? cx.style === t : (t === 'jon' || t === 'ban') ? cx.voiceB === t : t === 'together' ? cx.together : t === 'new' ? !cx.together : (t === 'good' || t === 'bad') ? cx.rel === t : true)) return false; continue; }   // 좁은 세트 조건 (생성기 세트)
       const not = c[0] === '!', k = not ? c.slice(1) : c;
       const v = k === 'mon' ? !!m.mon : k === 'late' ? !!m.late : k === 'fz' ? !!m.fz : (k === 'got' || k === 'gave') ? m.role === k : (k === 'lv' || k === 'grade' || k === 'class') ? m.what === k : k === 'yes' ? m.yes === true : k === 'no' ? m.yes === false : true;
       if (not ? v : !v) return false;
@@ -65,9 +66,9 @@
     const s = getS && getS(), G = root.GuildGame; if (!s || !G || !G.memOf) return null;
     const ms = G.memOf(s, a).slice().reverse();   // 최근 일부터
     for (const m of ms) {
-      const sets = (TM[m.k] || []).filter(st => condOk(st.cond, m)); if (!sets.length) continue;
-      const st = sets[Math.floor(Math.random() * sets.length)];
       const together = (m.with || []).includes(b.id) || (b.mem || []).some(x => x.k === m.k && x.q === m.q && x.w === m.w);
+      const sets = (TM[m.k] || []).filter(st => condOk(st.cond, m, { style: STYLE(a), voiceB: VOICE(b), together, rel: rel || '' })); if (!sets.length) continue;
+      const st = sets[Math.floor(Math.random() * sets.length)];
       const base = { together, rel: rel || '' };
       const o = pickRow(st.open, Object.assign({ style: STYLE(a), voice: VOICE(a) }, base)), r = pickRow(st.reply, Object.assign({ voice: VOICE(b) }, base));
       if (!o || !r) continue;

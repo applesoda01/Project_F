@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>기억 대화 생성기</title>
+<!-- 2026-11-18: 제안서 docs/design/proposal_adv_memory_v1.md 4장 A — 카카오 Kanana-2 3B(GGUF, wllama WebGPU)로 기억 대화 "좁은 세트" 후보를 만든다.
+     조합 하나(기억 종류 × 말 거는 사람 모험심 × 듣는 사람 말씨 × 함께 겪었나)마다 3줄 대화 1개 → 구체 값(이름 · 의뢰 · 몬스터)을 빈칸({a} {q} {mon}…)으로 되돌림 → 자동 검사.
+     결과는 window.__gen 에 쌓이고 "CSV 복사"로 talk_mem.csv 행을 얻음. 사람(또는 Claude) 검수 뒤 talk_mem.csv 에 붙임. 게임과 연결되지 않은 따로 페이지 -->
+<style>
+:root{--bg:#f6efe1;--card:#fffaf0;--ink:#3b2a1e;--muted:#8a7258;--line:#d8bf8f;--acc:#2f7f7a;--bad:#b23b2e;--ok:#2f7f52}
+@media (prefers-color-scheme: dark){:root{--bg:#1f1a14;--card:#2a231b;--ink:#efe3cf;--muted:#b49c80;--line:#5a4732;--acc:#5fb0a8;--bad:#e07a6e;--ok:#7fc79a}}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,"Malgun Gothic",sans-serif;padding:20px max(16px,env(safe-area-inset-left,0px)) 40px max(16px,env(safe-area-inset-right,0px))}
+h1{font-size:22px;margin:0 0 6px}.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+select,button{font:inherit;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}button.go{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700}
+#prog{flex-basis:100%;color:var(--muted);font-size:13px}
+.it{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:8px 0}.it small{color:var(--muted)}.it .no{color:var(--bad)}.it .yes{color:var(--ok)}
+</style>
+</head>
+<body>
+<h1>기억 대화 생성기</h1>
+<div class="bar">
+  <select id="model"><option value="https://huggingface.co/mradermacher/kanana-2-3b-instruct-GGUF/resolve/main/kanana-2-3b-instruct.Q4_K_M.gguf">카카오 Kanana-2 3B</option><option value="https://huggingface.co/ssolunar/Kanana-2-1.3b-instruct-Q4_K_M-GGUF/resolve/main/Kanana-2-1.3b-instruct-Q4_K_M.gguf">카카오 Kanana-2 1.3B</option></select>
+  <button id="load" class="go">모델 불러오기</button>
+  <select id="reps"><option value="1" selected>조합마다 1개</option><option value="2">조합마다 2개</option></select>
+  <button id="run" disabled>전부 만들기</button>
+  <button id="csv" disabled>통과한 것 CSV 복사</button>
+  <div id="prog">대기</div>
+</div>
+<div id="out"></div>
+<script type="module">
+const $ = id => document.getElementById(id);
+// 말 거는 사람 (모험심 → 말투) · 듣는 사람 (말씨)
+const SPK = { bold: { name: '가빈', desc: '전사, 무모하고 호탕함, 반말, 자신만만' }, careful: { name: '루나', desc: '성직자, 신중하고 조심스러움, 존댓말(~요), 걱정이 많음' }, calm: { name: '테오', desc: '마법사, 담담함, 담백한 반말' } };
+const LIS = { jon: { name: '에이미', desc: '조심스러운 성격, 존댓말(~요)' }, ban: { name: '미라벨', desc: '다정한 성격, 친근한 반말' } };
+const VOICE = { bold: 'ban', careful: 'jon', calm: 'ban' };
+// 기억 종류 (talk_mem.csv 기억 칸) · 구체 값 · 함께 겪을 수 있나
+const TYPES = [
+  { mem: 'hurt mon', tg: 1, v: { q: '광견병 물리치료', mon: '들개' }, say: (w) => `지난주 「광견병 물리치료」 의뢰에서 들개에게 물려 쓰러졌고 2주 동안 쉬었다${w ? ' (듣는 사람도 그 의뢰에 같이 갔다)' : ''}` },
+  { mem: 'fail !late mon', tg: 1, v: { q: '무명천 사수작전', mon: '도적' }, say: (w) => `「무명천 사수작전」 의뢰에서 도적에게 져서 실패했다${w ? ' (듣는 사람도 같은 파티였다)' : ''}` },
+  { mem: 'fail late', tg: 1, v: { q: '농작물 서리범들' }, say: (w) => `늑장을 부리다 「농작물 서리범들」 의뢰 기한을 넘겨 실패했다${w ? ' (듣는 사람도 같이 늑장을 부렸다)' : ''}` },
+  { mem: 'win_big !fz', tg: 1, v: { q: '농작물 서리범들', mon: '멧돼지' }, say: (w) => `성공할 확률이 낮던 「농작물 서리범들」 의뢰(상대는 멧돼지)를 해냈다${w ? ' (듣는 사람과 함께 해냈다)' : ''}` },
+  { mem: 'win_big fz', tg: 1, v: { q: '오늘 저녁 삼겹살' }, say: (w) => `막 강해져서 정보가 흐리던 「오늘 저녁 삼겹살」 의뢰를 해냈다${w ? ' (듣는 사람과 함께 해냈다)' : ''}` },
+  { mem: 'saved got', tg: 1, v: { q: '잡초 말고 약초', with: '노아' }, say: (w) => w ? '「잡초 말고 약초」 의뢰에서 쓰러질 뻔했는데 바로 듣는 사람이 치유해 살려 주었다' : '「잡초 말고 약초」 의뢰에서 쓰러질 뻔했는데 동료 노아가 치유해 살려 주었다' },
+  { mem: 'saved gave', tg: 1, v: { q: '잡초 말고 약초', with: '노아' }, say: (w) => w ? '「잡초 말고 약초」 의뢰에서 바로 듣는 사람이 쓰러질 뻔했는데 내가 치유해 살렸다' : '「잡초 말고 약초」 의뢰에서 동료 노아가 쓰러질 뻔했는데 내가 치유해 살렸다' },
+  { mem: 'qlv', tg: 1, v: { q: '오늘 저녁 삼겹살', lv: '2' }, say: (w) => `자주 하던 「오늘 저녁 삼겹살」 의뢰가 Lv2로 올라 멧돼지가 더 강해졌고, 얼마나 강한지는 모른다${w ? ' (듣는 사람도 그 의뢰를 자주 했다)' : ''}` },
+  { mem: 'gift', tg: 0, v: { part: '방어구', g: 'E' }, say: () => '어제 길드 마스터에게 E급 방어구를 선물받았다' },
+  { mem: 'grow lv', tg: 0, v: { lv: '10' }, say: () => '레벨 10이 되었다' },
+  { mem: 'grow grade', tg: 0, v: { g: 'E' }, say: () => 'E급 모험가로 승급했다' },
+  { mem: 'grow class', tg: 0, v: { cls: '기사' }, say: () => '기사로 전직했다' },
+  { mem: 'nomin yes', tg: 0, v: { giver: '굼바', q: '밤마다 짖는 들개 떼' }, say: () => '마을 사람 굼바 씨가 「밤마다 짖는 들개 떼」 리퀘스트에 나를 지명했고 수락했다' },
+  { mem: 'nomin no', tg: 0, v: { giver: '굼바', q: '밤마다 짖는 들개 떼' }, say: () => '마을 사람 굼바 씨가 「밤마다 짖는 들개 떼」 리퀘스트에 나를 지명했지만 거절했다' }
+];
+const JOBS = []; for (const T of TYPES) for (const st of ['bold', 'careful', 'calm']) for (const vo of ['jon', 'ban']) for (const w of (T.tg ? [1, 0] : [0])) JOBS.push({ T, st, vo, w });
+const SYS = '판타지 마을 모험가 길드의 두 모험가 대화를 3줄 쓴다. 형식: "이름: 대사" 3줄, 첫 사람 → 둘째 사람 → 첫 사람. 한 줄 25자 이내. 괄호 · 따옴표 · 설명 금지. 첫 사람은 자기 기억을 구체적으로(의뢰 이름이나 몬스터) 말한다. 둘째 사람은 함께 겪었으면 "그때 우리…"처럼, 처음 들으면 놀라거나 묻는다. 각자 말투를 지킨다.';
+const EX = [
+  ['상황: 길드 식탁. 첫 사람 잭(무뚝뚝, 짧은 반말)의 기억: 지난주 들개에게 물려 다쳤다. 둘째 사람 소피(다정, 반말)는 처음 듣는다.', '잭: …지난주 들개한테 물린 데가 아직 쑤셔.\n소피: 정말? 왜 말 안 했어. 괜찮아?\n잭: …괜찮아. 신경 쓰지 마.'],
+  ['상황: 의뢰에서 돌아온 길드 입구. 첫 사람 오웬(호탕, 반말)의 기억: 도적에게 져서 실패했다. 둘째 사람 노아(조심, 존댓말)도 같은 파티였다.', '오웬: 도적 놈들, 다음엔 가만 안 둬!\n노아: 그때 우리 둘 다 너무 서둘렀어요.\n오웬: 그래, 다음엔 작전부터 짜자.']
+];
+const userMsg = j => `상황: 길드 식탁. 첫 사람 ${SPK[j.st].name}(${SPK[j.st].desc})의 기억: ${j.T.say(j.w)}. 둘째 사람 ${LIS[j.vo].name}(${LIS[j.vo].desc})는 ${j.w ? '그 일을 함께 겪었다' : '처음 듣는다'}.`;
+const tidy = t => t.replace(/<\/?think>/g, '').replace(/\([^)]*\)/g, '').replace(/["“”]/g, '').replace(/[ \t]+(?=[가-힣]{1,4}\s*[:：])/g, '\n').replace(/[ \t]{2,}/g, ' ');
+const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+function toSlots(j, line, who) {   // 구체 값 → 빈칸
+  let t = line; const V = j.T.v;
+  if (V.q) t = t.split(`「${V.q}」`).join('「{q}」').split(V.q).join('「{q}」');
+  if (j.w && (j.T.mem.startsWith('saved'))) t = t.split(LIS[j.vo].name).join('{b}');
+  for (const k of ['with', 'mon', 'giver', 'part', 'cls']) if (V[k]) t = t.split(V[k]).join(`{${k}}`);
+  if (V.lv) t = t.split('Lv' + V.lv).join('Lv{lv}').split('레벨 ' + V.lv).join('레벨 {lv}').split('레벨' + V.lv).join('레벨 {lv}');
+  if (V.g) t = t.split(V.g + '급').join('{g}급');
+  t = t.split(SPK[j.st].name).join('{a}').split(LIS[j.vo].name).join('{b}');
+  return t;
+}
+function judge(j, text) {
+  const L = tidy(text).split('\n').map(x => x.trim()).filter(Boolean).map(x => { const m = x.match(/^([가-힣]{1,4})\s*[:：]\s*(.+)$/); return m ? { who: m[1], line: m[2].trim() } : null; }).filter(Boolean);
+  const A = SPK[j.st].name, B = LIS[j.vo].name, why = [];
+  if (L.length < 2) why.push('줄 부족');
+  if (L[0] && L[0].who !== A) why.push('순서');
+  if (L[1] && L[1].who !== B) why.push('순서');
+  if (L[2] && L[2].who !== A) why.push('순서');
+  for (const x of L.slice(0, 3)) { if ([...x.line].length > 34) why.push('길이'); if (/[A-Za-z]{2,}/.test(x.line.replace(/Lv\d/g, ''))) why.push('영어'); }
+  const ends = (x, jon) => jon ? /(요|니다|죠|까)[.!?…~]*$/.test(x) : !/(요|니다)[.!?…~]*$/.test(x);
+  if (L[0] && !ends(L[0].line, VOICE[j.st] === 'jon')) why.push('말씨(첫줄)');
+  if (L[1] && !ends(L[1].line, j.vo === 'jon')) why.push('말씨(대답)');
+  const ex = EX.flatMap(e => e[1].split('\n').map(s => s.split(': ')[1]));
+  if (L.some(x => ex.includes(x.line))) why.push('예시 베낌');
+  const slots = L.slice(0, 3).map((x, i) => toSlots(j, x.line, i === 1 ? 'b' : 'a'));
+  const memOk = j.T.mem.startsWith('grow') || j.T.mem === 'gift' ? true : /\{(q|mon|with|giver)\}/.test(slots[0] || '') || (j.T.mem.startsWith('saved') && /\{b\}|치유|살/.test(slots[0] || ''));
+  if (!memOk) why.push('기억 안 말함');
+  return { lines: L.slice(0, 3), slots, why: [...new Set(why)] };
+}
+let wl = null; window.__gen = [];
+const prog = t => { $('prog').textContent = t; window.__status = t; };
+$('load').onclick = async () => {
+  $('load').disabled = true; const url = $('model').value, t0 = performance.now();
+  try {
+    const W = 'https://cdn.jsdelivr.net/npm/@wllama/wllama@3.8.1/esm/'; const { Wllama } = await import(W + 'index.js');
+    if (wl) { try { await wl.exit(); } catch (e) {} }
+    wl = new Wllama({ default: W + 'wasm/wllama.wasm' });
+    await wl.loadModelFromUrl(url, { n_ctx: 2048, progressCallback: ({ loaded, total }) => prog(`불러오는 중 ${Math.round(loaded / 1048576)} / ${Math.round(total / 1048576)}MB`) });
+    prog(`준비됨 (${((performance.now() - t0) / 1000).toFixed(0)}초) · 조합 ${JOBS.length}개`); $('run').disabled = false;
+  } catch (e) { prog('불러오기 실패: ' + e.message); }
+  $('load').disabled = false;
+};
+$('run').onclick = async () => {
+  $('run').disabled = true; window.__done = false; const reps = +$('reps').value; let k = 0;
+  for (let r = 0; r < reps; r++) for (const j of JOBS) {
+    k++; prog(`만드는 중 ${k} / ${JOBS.length * reps} — ${j.T.mem} · ${j.st} · ${j.vo} · ${j.w ? '함께' : '처음'}`);
+    const t0 = performance.now(); let text = '';
+    try {
+      const res = await wl.createChatCompletion({ messages: [{ role: 'system', content: SYS }, ...EX.flatMap(([u, a]) => [{ role: 'user', content: u }, { role: 'assistant', content: a }]), { role: 'user', content: userMsg(j) }], max_tokens: 120, temperature: 0.85, top_p: 0.9, top_k: 40 });
+      text = res && res.choices ? res.choices[0].message.content : String(res);
+    } catch (e) { text = 'ERR ' + e.message; }
+    const J = judge(j, text), rec = { mem: j.T.mem, st: j.st, vo: j.vo, w: j.w, ms: Math.round(performance.now() - t0), raw: text, lines: J.lines.map(x => `${x.who}: ${x.line}`), slots: J.slots, why: J.why };
+    window.__gen.push(rec);
+    $('out').insertAdjacentHTML('afterbegin', `<div class="it"><small>${esc(rec.mem)} · ${rec.st} · ${rec.vo} · ${rec.w ? '함께' : '처음'} · ${(rec.ms / 1000).toFixed(1)}초 · ${rec.why.length ? `<span class="no">${esc(rec.why.join(', '))}</span>` : '<span class="yes">통과</span>'}</small><div>${rec.lines.map(esc).join('<br>') || esc(rec.raw)}</div></div>`);
+  }
+  window.__done = true; prog(`끝 — ${window.__gen.length}개 중 통과 ${window.__gen.filter(r => !r.why.length).length}개`); $('run').disabled = false; $('csv').disabled = false;
+};
+$('csv').onclick = async () => {
+  const rows = []; let n = 0;
+  for (const r of window.__gen.filter(x => !x.why.length && x.slots.length >= 2)) {
+    n++; const id = `gen_${r.mem.split(' ')[0]}_${String(n).padStart(3, '0')}`, mem = `${r.mem} @${r.st} @${r.vo} @${r.w ? 'together' : 'new'}`;
+    rows.push([id, mem, 'open', '', r.slots[0], 'Kanana-2 3B 생성'], [id, mem, 'reply', '', r.slots[1], ''], ...(r.slots[2] ? [[id, mem, 'close', '', r.slots[2], '']] : []));
+  }
+  const csv = rows.map(r => r.map(c => /[",\n]/.test(c) ? `"${c.replace(/"/g, '""')}"` : c).join(',')).join('\n');
+  try { await navigator.clipboard.writeText(csv); prog(`CSV ${rows.length}줄 복사함`); } catch (e) { prog('복사 실패 — window.__gen 을 보세요'); }
+};
+</script>
+</body>
+</html>
