@@ -416,7 +416,7 @@
       const fee = q.boss ? 0 : q.reward != null ? 0 : 0;
       const reward = (q.T ? q.T.reward : Q.reward[q.g]) * (q.boss ? 2 : 1) * (q.x2 ? 2 : 1);   // ×2 의뢰는 골드만 2배
       if (ok) {
-        s.st.qDone++; s.subHalf = (s.subHalf || 0) + (q.T ? q.T.reward : Q.reward[q.g]) * (q.boss ? 2 : 1); s.popAdd += T.perSuccess[q.g] || 0;   // 반기 보조금 실적 (게임과 같음, ×2 전)   // 의뢰 성공 → 인구 (2026-11-13)
+        s.st.qDone++; s.subHalf = (s.subHalf || 0) + (q.T ? q.T.reward : Q.reward[q.g]); s.popAdd += T.perSuccess[q.g] || 0;   // 성과 보조금 실적: 기본 보상만 (게임과 같음 — ×2 · 보스 배수 전, 2026-11-18 보스 ×2 집계를 빼서 게임에 맞춤)   // 의뢰 성공 → 인구 (2026-11-13)
         if (q.T) { let paid = 0; for (const r of q.T.rewards || []) if (R() * 100 < r.p) { const bp = Math.floor(matBase(r.m) * (E.matBuyRate != null ? E.matBuyRate : 0.7) + 1e-9); if (s.gold >= bp) { s.mats[r.m] = (s.mats[r.m] || 0) + 1; s.gold -= bp; s.op -= bp; paid += bp; } else (s.consign = s.consign || []).push({ m: r.m, ps: party.slice() }); } splitPay(party, paid); }   // 소재 획득 → 자동 매입 (게임 dropMats와 같음)
         if (q.T && s.deco.has('locker')) { const b = baseMat(q.T); if (b) s.mats[b] = (s.mats[b] || 0) + cfg.deco.mat; }   // 사물함: 기본 소재 +1
         for (const d of DISH) if (!s.dishes[d.name] && d.g <= s.grade && d.mats.every(m => s.mats[m] > 0)) { for (const m of d.mats) s.mats[m]--; s.dishes[d.name] = s.week; s.meals[d.g]++; s.st.mealsUnlocked.push(s.week); }
