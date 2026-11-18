@@ -201,7 +201,7 @@
 | 배속 바는 하단 좌측, 평소엔 일시정지/재생 박스만 보이고 마우스를 올리면 1×·2×·4×가 펼쳐짐 (8배속 제거) | 화면 정리, 조작 빈도 낮음 | prototype/index.html `#hudTR` |
 | 배속 바 외형은 상단 HUD와 같은 명패 ③ 스타일(양 끝 이미지 + 늘어나는 가운데 조각) | 디자인 통일. 양 끝은 정수 px로 이어 붙여 이중 그림자 방지 | assets/ui/hud/plaque_mid_s.png |
 | "시스템 메뉴"는 "옵션"으로 부르고 하단 HUD로 이동 | 사용자 결정 | |
-| 배속 바 조절기(박스 크기·펼침 폭·글자 위치)를 별도 도구로 유지 | 값을 숫자로 받아 그대로 적용 | docs/tools/speedbar_tuner_v2.html |
+| 배속 바 조절기(박스 크기·펼침 폭·글자 위치)를 별도 도구로 유지 | 값을 숫자로 받아 그대로 적용 | archive/tools/old_tuners/speedbar_tuner_v2.html (2026-11-18 이동, 최신은 docs/tools/speedbar_tuner_v6.html) |
 
 ## 2026-10-27
 
