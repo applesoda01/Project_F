@@ -9,8 +9,13 @@
   const NAME = { win: '해냈다!', sweat: '식은땀', note: '신남', heart: '고마워', anger: '욱', smile: '헤헤', qex: '어?!', spark: '반짝' };
   const PARTS = { win: { e: [0.13, 0.291, 0.752], s: [0.879, -0.021, 0.173] }, sweat: { e: [0.109, 0.188, 0.758], s: [0.752, -0.024, 0.242] }, note: { e: [0.133, 0.312, 0.752], s: [0.739, -0.042, 0.379] }, heart: { e: [0.133, 0.376, 0.661], s: [0.721, -0.033, 0.376] }, anger: { e: [0.1, 0.239, 0.791], s: [0.782, -0.073, 0.345] }, smile: { e: [0.112, 0.321, 0.752], s: [0.727, -0.094, 0.336] }, qex: { e: [0.076, 0.155, 0.791], s: [0.803, -0.121, 0.321] }, spark: { e: [0.103, 0.17, 0.797], s: [0.779, -0.164, 0.364] } };
   const POS = { dx: 63, dy: -81, size: 62, mirror: true };   // 로비 (게임 화면 1920 기준 px)
+  const SYM = { dx: 0, dy: 0, k: 1 };   // 기호 묶음 보정 (8종 모두 같이, 단위 = 얼굴 가로 · k = 크기 배율, 기호 가운데 기준) — tools/emote_tuner.html 에서 맞춤
   const FACE_H = 296 / 330;
-  const E = { base: 'assets/emote/', KINDS, NAME, POS, PARTS };
+  const E = { base: 'assets/emote/', KINDS, NAME, POS, PARTS, SYM };
+  function symBox(P, o) {   // 기호 상자 [x, y, w] (얼굴 가로 단위) = 원래 자리 + 묶음 보정
+    const Q = o || SYM, w = P.s[2] * Q.k, c = P.s[0] + P.s[2] / 2 + Q.dx;
+    return [c - w / 2, P.s[1] + Q.dy - (w - P.s[2]) / 2, w];
+  }
   const cache = {};
   function img(n) {
     if (typeof Image === 'undefined') return null;
@@ -39,13 +44,15 @@
   E.draw = function (g, k, cx, cy, age, remain, opt) {
     const P = PARTS[k]; if (!P) return;
     const mir = (opt && opt.mirror != null) ? opt.mirror : POS.mirror, W = (opt && opt.size) || POS.size, H = W * FACE_H;
-    const face = img(mir ? 'face' : 'face_r'), ex = img('e_' + k), sy = img('s_' + k); if (!ok(face) || !ok(ex) || !ok(sy)) return;
-    const x0 = cx - W / 2, y0 = cy - H / 2, ox = x0 + W * (mir ? 0.04 : 0.96), oy = y0 + H * 0.96;   // 등장 기준점 = 꼬리 끝
+    const face = img('face_r'), ex = img('e_' + k), sy = img('s_' + k); if (!ok(face) || !ok(ex) || !ok(sy)) return;
+    const x0 = cx - W / 2, y0 = cy - H / 2, ox = x0 + W * 0.96, oy = y0 + H * 0.96;   // 등장 기준점 = 꼬리 끝
     const a = Math.min(1, Math.max(0, age) / 0.18), kk = a >= 1 ? 1 : 1 + 1.7 * Math.pow(a - 1, 3) + 0.7 * Math.pow(a - 1, 2);
     const out = Math.max(0, Math.min(1, remain / 0.35)), sc = (0.5 + 0.5 * Math.max(0, Math.min(1.12, kk))) * (0.55 + 0.45 * out);
     const { f, s } = motion(k, Math.max(0, age));
-    const bx = p => (mir ? 1 - p[0] - p[2] : p[0]) * W;
-    g.save(); g.globalAlpha *= Math.min(1, a * 1.5, out); g.translate(ox, oy - (1 - out) * 0.06 * H); g.scale(sc, sc); g.translate(-ox, -oy);
+    const bx = p => p[0] * W;
+    // 반전 (2026-11-18 고침): 원본 배치 그대로 그린 뒤 아이콘 전체를 거울처럼 뒤집음 (예전: 자리만 뒤집고 그림은 그대로 → 표정 · 기호가 원본과 달라 보였음)
+    g.save(); if (mir) { g.translate(cx, 0); g.scale(-1, 1); g.translate(-cx, 0); }
+    g.globalAlpha *= Math.min(1, a * 1.5, out); g.translate(ox, oy - (1 - out) * 0.06 * H); g.scale(sc, sc); g.translate(-ox, -oy);
     g.shadowColor = 'rgba(40,22,8,.35)'; g.shadowBlur = 4; g.shadowOffsetY = 2;
     // 얼굴 + 표정
     g.save(); const fx = x0 + W / 2, fy = y0 + H;   // 얼굴 기준점: 아래 가운데
@@ -55,17 +62,18 @@
     g.restore();
     // 기호
     if (s.k > 0.01) {
-      const sw = P.s[2] * W, sh = sw * sy.naturalHeight / sy.naturalWidth, scx = x0 + bx(P.s) + sw / 2, scy = y0 + P.s[1] * W + sh / 2;
+      const B = symBox(P, opt && opt.sym), sw = B[2] * W, sh = sw * sy.naturalHeight / sy.naturalWidth, scx = x0 + B[0] * W + sw / 2, scy = y0 + B[1] * W + sh / 2;
       g.save(); g.shadowColor = 'transparent'; g.globalAlpha *= Math.max(0, Math.min(1, s.a));
-      g.translate(scx + s.x * sw, scy + s.y * sw); g.rotate(s.r * Math.PI / 180); g.scale(s.k, s.k); g.drawImage(sy, -sw / 2, -sh / 2, sw, sh); g.restore();
+      g.translate(scx + s.x * sw, scy + s.y * sw); g.rotate(s.r * Math.PI / 180); g.scale(s.k, s.k); if (mir && k === 'qex') g.scale(-1, 1);   /* 「?!」 글자만은 뒤집지 않음 (거꾸로 읽히지 않게) */
+      g.drawImage(sy, -sw / 2, -sh / 2, sw, sh); g.restore();
     }
     g.restore();
   };
   // HTML (대화 극장): 움직임 없이 한 장. mirror 기본 = 로비와 같음
   E.html = function (k, W, mirror) {
     const P = PARTS[k]; if (!P) return ''; const mir = mirror == null ? POS.mirror : mirror, H = W * FACE_H;
-    const bx = p => (mir ? 1 - p[0] - p[2] : p[0]) * W, im = (n, l, t, w) => `<img src="${E.base}${n}.png" style="position:absolute;left:${l}px;top:${t}px;width:${w}px" alt="">`;
-    return `<span style="position:relative;display:inline-block;width:${W}px;height:${H}px">${im(mir ? 'face' : 'face_r', 0, 0, W)}${im('e_' + k, bx(P.e), P.e[1] * W, P.e[2] * W)}${im('s_' + k, bx(P.s), P.s[1] * W, P.s[2] * W)}</span>`;
+    const im = (n, l, t, w, ex) => `<img src="${E.base}${n}.png" style="position:absolute;left:${l}px;top:${t}px;width:${w}px${ex || ''}" alt="">`;
+    return `<span style="position:relative;display:inline-block;width:${W}px;height:${H}px${mir ? ';transform:scaleX(-1)' : ''}">${im('face_r', 0, 0, W)}${im('e_' + k, P.e[0] * W, P.e[1] * W, P.e[2] * W)}${im('s_' + k, symBox(P)[0] * W, symBox(P)[1] * W, symBox(P)[2] * W, mir && k === 'qex' ? ';transform:scaleX(-1)' : '')}</span>`;
   };
   E.svg = (k) => E.html(k, 40);   // 예전 이름 (대화 극장 호환)
   root.Emote = E;
