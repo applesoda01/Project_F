@@ -9,7 +9,7 @@ function autoContract(g){if(!Gm.contractOpen(g))return;
  const al=g.advs.filter(a=>a.alive&&!Gm.contractWhy(g,a)).sort((x,y)=>Gm.earnMonthly(g,y)-Gm.earnMonthly(g,x));if(!al.length)return;
  const a=al[0];for(let p=25;p<=60;p+=5){if(Gm.contractPropose(g,a.id,{pay:p}).ok)return true;}}
 function run(name,mode,contract,W){let net=0,e48=0,neg=0,signed=0,cpay=0,calls=0,lowSum=[];const gold=[],ew=[],low=[];
- for(let i=0;i<100;i++){const c=Sim.defaults();c.econ.subsidyMode=mode;const g=Gm.newGame(c,7000+i);Gm.autoPlace(g,true);let e=null,mn=1e9,sg=false;
+ for(let i=0;i<100;i++){const c=Sim.defaults();c.econ.subsidyMode=mode;c.econ.subsidyEvery=6;const g=Gm.newGame(c,7000+i);Gm.autoPlace(g,true);let e=null,mn=1e9,sg=false;   // 이 비교는 반기 지급 기준 (2026-11-18 결정 23으로 게임 기본은 4주마다)
   for(let w=0;w<W;w++){Gm.autoRequests(g);Gm.stepWeek(g);Gm.autoCook(g);if(g.week%4===0)Gm.autoPlace(g,false);if(contract&&autoContract(g))sg=true;if(g.week>=2&&g.week<=24)mn=Math.min(mn,g.gold);if(e==null&&g.grade>0)e=g.week;}
   net+=g.history.reduce((t,m)=>t+m.net,0)/g.history.length;neg+=g.history.filter(m=>m.net<0).length;if(e!=null&&e<=48)e48++;ew.push(e==null?999:e);gold.push(Math.round(g.gold));low.push(Math.round(mn));if(sg||g.advs.some(a=>a.contract))signed++;cpay+=g.history.reduce((t,m)=>t+(m.cpay||0)+(m.csup||0),0);}
  const me=P(ew);console.log(name.padEnd(22),W+'주','| 월 순이익',(Math.round(net/100)+'G').padStart(5),'| 48주 안 승급',String(e48).padStart(3),'· 중앙',me>W?W+'+':me+'주','| 2~24주 금고 저점 중앙 · 하위10%',P(low)+'G ·',P(low,.1)+'G','| 적자 달',neg,'| 연말 금고',P(gold)+'G','| 계약 판',signed,'· 계약 비용/판',Math.round(cpay/100)+'G');}
