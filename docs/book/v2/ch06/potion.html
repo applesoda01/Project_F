@@ -202,12 +202,25 @@
 <blockquote>
 <p><strong>지금 코드에는 "소재 자동 차익"(의뢰 성공 때 보상의 8%가 저절로 길드 수입)이 남아 있습니다.</strong> 설계상으로는 없애고 직접 판매만 남기기로 했지만 아직 정리하지 않았습니다. 첫해 월 평균 55G로 운영 수입의 약 9%입니다(<a href="../ch09/issues.html">9장</a>).</p>
 </blockquote><section class="book-change" data-book-change="ch06/potion.html" aria-label="V1 대비 변경된 내용"><button type="button" class="book-change-trigger" aria-haspopup="dialog">변경 요약</button>
+<h2 id="의뢰에서-소재를-얻는-방법--결정-27-2026-11-18-게임-반영"><a class="header" href="#의뢰에서-소재를-얻는-방법--결정-27-2026-11-18-게임-반영">의뢰에서 소재를 얻는 방법 — 결정 27 (2026-11-18, 게임 반영)</a></h2>
+<p><strong>의뢰에 성공하면 몬스터 1마리 · 탐색 포인트 1곳마다 그 의뢰의 보상표에서 1개씩 뽑습니다.</strong> 예전에는 의뢰 하나에 보상표를 1번만 굴렸습니다.</p></section><section class="book-change book-change-partial" data-book-change="ch06/potion.html" aria-label="V1 대비 일부 변경"><button type="button" class="book-change-trigger" aria-haspopup="dialog">변경 요약</button>
+<div class="table-wrapper"><table><thead><tr><th>항목</th><th>규칙</th></tr></thead><tbody>
+<tr class="book-unit-change"><td>뽑는 횟수</td><td>전투 의뢰 = 몬스터 수, 몬스터 없는 의뢰 = 탐색 포인트 <strong>2~3곳 [임시]</strong> (<code>econ.drawPts</code>)</td></tr>
+<tr class="book-unit-change"><td>무엇이 나오나</td><td>보상표의 주 소재(확률 30% 이상)에서 확률을 비율로 써서 1개 — 100 : 70이면 59% : 41%</td></tr>
+<tr class="book-unit-change"><td>희귀 소재</td><td>확률 30% 미만은 지금처럼 <strong>의뢰당 1번만</strong> 굴림</td></tr>
+<tr class="book-unit-change"><td>길드 발주 중</td><td>보상표에 발주 소재가 있으면 뽑기마다 발주 소재</td></tr>
+<tr class="book-unit-change"><td>소재 값</td><td>그대로</td></tr>
+<tr class="book-unit-change"><td>몬스터 도감</td><td>몬스터별 '떨구는 소재' 목록은 쓰지 않음 — 도감 표기는 나중에 정리</td></tr>
+</tbody></table>
+</div></section><section class="book-change" data-book-change="ch06/potion.html" aria-label="V1 대비 변경된 내용"><button type="button" class="book-change-trigger" aria-haspopup="dialog">변경 요약</button>
+<p><strong>예시:</strong> "고철이나 줍자"(보상표 고철 조각 · 무명천, 슬라임 2마리) → 평소에는 고철 · 무명천 중에서 2개, 고철 발주 중이면 고철 2개.</p>
+<p>측정(100판 · 48주): 소재 한 달 12.5 → 16.2개 · 매입 49 → 65G · 판매 3 → 12G · 월 순이익 475 → 479G · 48주 안 E 승급 82 → 88판. 값을 낮추는 보정은 필요 없었습니다.</p>
 <h2 id="소재-소유지원-추가--item-01--제안미반영"><a class="header" href="#소재-소유지원-추가--item-01--제안미반영">소재 소유·지원 추가 — ITEM-01 / 제안·미반영</a></h2>
 <p>물약 지원은 개인 잔액과 약정 한도를 확인해 실제 구입액만 분담합니다. 길드 소유 소재만 요리·제작·시설 개방·지원·납품에 쓸 수 있습니다. 실제 매입·판매·위탁 거래를 도입하면 해당 거래의 자동 차익 8%는 대체합니다. 가격·매입가·수수료·수량부터 검증하고 큰 시세 변동은 제외합니다.</p>
 <div class="table-wrapper"><table><thead><tr><th>획득 상황</th><th>소유자 / 제한</th></tr></thead><tbody>
 <tr><td>일반 전리품</td><td>개인 또는 파티 공동 소유</td></tr>
 <tr><td>의뢰인 납품품</td><td>의뢰 조건에 따라 인도. 판매 불가</td></tr>
-<tr><td>길드 발주 납품품</td><td>보수 지급·인도 완료 후 길드</td></tr>
+<tr><td>길드 발주 소재</td><td>가져온 파티에 1개 값 지급 후 길드 창고 (선지급한 돈에서) [결정 25]</td></tr>
 <tr><td>매입 / 자발적 기증</td><td>거래·기증 확정 후 길드</td></tr>
 <tr><td>위탁품</td><td>판매 전까지 원소유자. 요리·제작·납품 사용 불가</td></tr>
 <tr><td>길드 투자 탐사</td><td>출발 전 합의한 지분</td></tr>

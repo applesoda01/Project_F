@@ -213,14 +213,16 @@
 </ul>
 <h2 id="6단계--리퀘스트-발주"><a class="header" href="#6단계--리퀘스트-발주">6단계 — 리퀘스트 발주</a></h2>
 <ul>
+<li><input disabled="" type="checkbox" checked=""/>
+길드 발주를 선지급 모으기로 정함(결정 25): 발주 때 금고에서 바로 내고, 1개씩 지급, 거두면 남은 돈 반환. 맡는 사람이 따로 없어 수주 후 취소 · 불이행 처리가 필요 없음. (2026-11-18)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+게시판 쏠림 50% [임시] · 발주 소재 의뢰 우선(결정 26), 몬스터 · 탐색 포인트마다 소재 뽑기(결정 27). 관문 1 479G · 96.0%.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+화면: 리퀘스트 장 길드 발주 책갈피 · 게시판 발주 띠와 표시 (시안 확인 후 연결).</li>
 <li><input disabled="" type="checkbox"/>
-길드200G 발주: 게시 시 예약, 완료 시 지급·인도1회, 미수주 취소 시 예약만 해제하는 사례를 작성한다.</li>
-<li><input disabled="" type="checkbox"/>
-수주 후 취소·불이행 책임을 확정한 뒤 처리한다. 이미 발생한 지급 의무를 임의 해제하지 않는다.</li>
-<li><input disabled="" type="checkbox"/>
-외부 의뢰의 지급자·보수·기간·실패 책임을 표시한다. 자동 게시판 의뢰와 구분한다.</li>
-<li><input disabled="" type="checkbox"/>
-자가 발주에 수수료·보조금·반복 성장 이득이 붙지 않는지 검사한다.</li>
+외부 의뢰의 지급자·보수·기간·실패 책임을 표시한다. 자동 게시판 의뢰와 구분한다. <strong>(보류)</strong></li>
+<li><input disabled="" type="checkbox" checked=""/>
+자가 발주에 수수료·보조금·명성 · 신뢰 실적이 붙지 않음 (발주 지급은 의뢰 보상과 별도, 결정 25).</li>
 </ul>
 <p><strong>대상:</strong> <code>prototype/js/game_core.js</code>, <code>sim_engine.js</code>, <code>ui.js</code>, 기존 책 UI 스타일·설정 데이터, 신규 예정 <code>prototype/tools/economy_contract_check.js</code>.</p>
 <p><strong>완료 조건:</strong> 거래별 현금·원가·소유권·실적이 한 번만 반영됩니다. 후속 장기 호위·선수금 사업은 <a href="later.html">5장 후속 개발</a>에서 분리합니다. 근거: <a href="../ch06/potion.html">거래</a> · <a href="../ch04/board.html">의뢰 관리</a> · <a href="../ch04/requests.html">리퀘스트</a>.</p>

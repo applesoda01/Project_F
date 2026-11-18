@@ -277,6 +277,7 @@
 <tr><td>V2</td><td>2026-11-17</td><td>계약·발주·소유권·경제를 기존 장에 통합 개정</td><td>신규 규칙 미반영</td></tr>
 <tr><td>V2 문서 UI</td><td>2026-11-17</td><td>우측 버전 선택·붉은 변경 표시·클릭 요약</td><td>문서 기능</td></tr>
 <tr><td>V2 화면 예시</td><td>2026-11-17</td><td>기존 책 리소스를 활용한 UI 01~06</td><td>정적 시안, 게임 미구현</td></tr>
+<tr><td>V2 6단계</td><td>2026-11-18</td><td>길드 발주(결정 24~26) · 몬스터 · 탐색 포인트마다 소재 뽑기(결정 27)</td><td>게임 반영</td></tr>
 </tbody></table>
 </div>
 <h2 id="버전-관리"><a class="header" href="#버전-관리">버전 관리</a></h2>
@@ -337,7 +338,7 @@
 <tr><td>GAME-01</td><td>게임 정체성</td><td>간접 육성·자유 모험가 중심</td><td>유지 + 선택적 정식 계약</td><td>기존 유지 + 제안</td><td>신규 계약 미반영</td><td>P1</td><td><a href="ch01/concept.html">상세</a></td></tr>
 <tr><td>ADV-01</td><td>소속·관계·거주</td><td>애착·상주·인구 기준 혼재</td><td>계약·애착·거주·활동·창립 이력 분리</td><td>제안 / 수치 통일 미결</td><td>미반영</td><td>P0–P1</td><td><a href="ch03/lifecycle.html">상세</a></td></tr>
 <tr><td>ADV-02</td><td>정식 계약 운영</td><td>계약·급여 체계 없음(첨부 기준)</td><td>F급 + 집무실 소수 계약(정원 1명 · 기간 8/12주 · 섭외비 0 · 범위 안 거절 없음 · 기본 20%·25G·10G [임시] · 수락 복합식 · 지명 4주 2번 · 금고 마이너스는 자동 지급만), 기본값+조건 직접 선택, 보수·실비·예약·종료</td><td>제안 / 수치 검증용</td><td>미반영</td><td>P1</td><td><a href="ch03/lifecycle.html">상세</a></td></tr>
-<tr><td>QUEST-01</td><td>발주·지명</td><td>기존 분류, 자유 지명 비용·확률</td><td>자동 의뢰 유지 + 의뢰 관리 수수료, 리퀘스트의 길드 발주·외부 의뢰</td><td>제안</td><td>미반영</td><td>P1–P3</td><td><a href="ch04/board.html">상세</a></td></tr>
+<tr><td>QUEST-01</td><td>발주·지명</td><td>기존 분류, 자유 지명 비용·확률</td><td>자동 의뢰 유지 + 의뢰 관리 수수료, 리퀘스트의 <strong>길드 발주(선지급 모으기 · 게시판 쏠림 · 소재 뽑기, 결정 24~27)</strong> · 외부 의뢰(보류)</td><td>길드 발주 결정</td><td>길드 발주 반영 (2026-11-18)</td><td>P1–P3</td><td><a href="ch04/requests.html">상세</a></td></tr>
 <tr><td>ITEM-01</td><td>소재·장비 소유</td><td>공용 재고·자동 차익 존재 기록</td><td>개인/길드/위탁, 매입·판매·대여 구분 — 자동 매입 70% [임시] · 위탁 10% [임시] · 자동 차익 폐지(결정 12)</td><td>결정 2026-11-17</td><td>미반영</td><td>P2</td><td><a href="ch06/potion.html">상세</a></td></tr>
 <tr><td>GUILD-01</td><td>시설</td><td>관리소 전직, 정보실 수수료 효과 기획</td><td>집무실 계약 기능(관리소 연결은 프로토타입 뒤), 정보실 서비스 역할</td><td>제안</td><td>미반영</td><td>P1–P2</td><td><a href="ch07/facilities.html">상세</a></td></tr>
 <tr><td>TOWN-01</td><td>마을·인구</td><td>거주/애착 기준 불일치 기록</td><td>독립 상점 유지, 지역 기여/실제 거주 분리</td><td>유지 + 제안 / 경계 미결</td><td>재확인 필요</td><td>P0</td><td><a href="ch07/town.html">상세</a></td></tr>
@@ -1079,7 +1080,7 @@
 <tr><td>높은 수수료 거름</td><td>돈이 필요한 모험가는 10%보다 높은 의뢰를 확률로 거름: (수수료 − 10%) ÷ 10% × 0.5 [임시] → 15% 25% · 20% 50%, 다 거르면 그 주는 쉼. 모두 20%면 수수료 수입은 두 배지만 월 순이익 431G(10%는 435G) · 승급 65 → 54판 [결정 22]</td></tr>
 <tr><td>적용</td><td>새 의뢰부터. 이미 출발한 의뢰·기존 계약은 조건 유지</td></tr>
 <tr><td>경영</td><td>적용 수수료와 수익 조회·관리 화면 바로가기만 제공. 별도 설정값 중복 없음</td></tr>
-<tr><td>추가 발주</td><td><a href="ch04/requests.html">리퀘스트의 길드 발주·외부 의뢰</a>에서 관리</td></tr>
+<tr><td>길드 발주</td><td><a href="ch04/requests.html">리퀘스트 장 → 길드 발주</a>에서 관리. 발주 중에는 새 의뢰의 50% [임시]가 발주 소재 의뢰로 바뀌고, 게시판 위에 발주 띠 · 카드에 <strong>발주</strong> 표시 [결정 26 · 2026-11-18]</td></tr>
 </tbody></table>
 </div>
 <p>기획 시안·게임 미구현. <a href="ch04/../ch09/income.html">수수료 정산 규칙</a>.</p>
@@ -1178,27 +1179,37 @@
 <li><strong>돈 내기</strong>는 장부에서 "시설 건설비"처럼 투자 지출로 잡혀 운영 순이익에서 빠집니다.</li>
 <li>납품 금화 보상은 수입 "리퀘스트 보상"으로 잡힙니다. 첫해 월 평균 95G입니다(<a href="ch04/../ch09/measure.html">9장</a>).</li>
 </ul>
-<h2 id="길드-발주외부-의뢰--quest-01--제안미반영"><a class="header" href="#길드-발주외부-의뢰--quest-01--제안미반영">길드 발주·외부 의뢰 — QUEST-01 / 제안·미반영</a></h2>
-<p>기존 리퀘스트와 28개 부탁을 유지하고, 우측 하위 탭으로 추가 업무를 구분합니다. 자동 게시판 의뢰는 기존 <strong>의뢰</strong> 메뉴에 남습니다.</p>
-<div class="table-wrapper"><table><thead><tr><th>우측 탭</th><th>역할</th></tr></thead><tbody>
-<tr><td>기존 리퀘스트</td><td>기존 부탁 목록·해결·지명</td></tr>
-<tr><td>길드 발주</td><td>길드가 지급자. 납품·업무 조건과 예산 예약</td></tr>
-<tr><td>외부 의뢰</td><td>주민·상단·왕국의 추가 제안. 지급자·기간·대가·실패 책임</td></tr>
+<h2 id="길드-발주--quest-01--결정게임-반영-2026-11-18"><a class="header" href="#길드-발주--quest-01--결정게임-반영-2026-11-18">길드 발주 — QUEST-01 / 결정·게임 반영 (2026-11-18)</a></h2>
+<p><strong>급한 소재를 돈으로 앞당기는 기능입니다.</strong> 마스터가 소재와 개수를 정하면 그 값을 금고에서 먼저 내고, 개수가 다 찰 때까지 게시판이 그 소재 쪽으로 기울어 모험가가 먼저 가져옵니다. 외부 의뢰(주민 · 상단 · 왕국의 추가 제안)는 <strong>보류</strong>입니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>규칙</th><th>내용</th><th>근거</th></tr></thead><tbody>
+<tr><td>1개 값</td><td>소재 판매가 × <strong>1.5 [임시]</strong> — 고철 조각(6G)이면 9G. 평소 자동 매입(70% [임시])보다 2배 넘게 비쌈</td><td>결정 24</td></tr>
+<tr><td>선지급</td><td>발주할 때 개수 × 1개 값을 <strong>금고에서 바로 냄</strong>. 기한 없음</td><td>결정 25</td></tr>
+<tr><td>지급</td><td>그 소재를 가져온 파티에 1개 값씩 지급, 소재는 길드 창고로. 다 차면 발주 끝, 이후는 평소 매입</td><td>결정 25</td></tr>
+<tr><td>거두기</td><td>도중에 거두면 <strong>남은 개수만큼의 돈</strong>을 돌려받음 (화면에서 한 번 더 확인)</td><td>결정 25</td></tr>
+<tr><td>동시 건수</td><td><strong>2건까지 [임시]</strong> · 같은 소재 중복 불가 · 1~30개 · 지금 길드 등급 의뢰에서 나오지 않는 소재는 불가</td><td>결정 25</td></tr>
+<tr><td>게시판 쏠림</td><td>발주 중에는 새 의뢰의 <b>50% [임시]</b>가 그 소재가 나오는 의뢰로 바뀜(의뢰 수 · 수입은 그대로)</td><td>결정 26</td></tr>
+<tr><td>모험가</td><td>발주 소재가 나오는 의뢰를 <strong>가장 먼저</strong> 맡음</td><td>결정 26</td></tr>
+<tr><td>한 번에 모아 오는 양</td><td>몬스터 1마리 · 탐색 포인트 1곳마다 1개, 발주 중이면 모두 발주 소재 (<a href="ch04/../ch06/potion.html">물약과 소재</a>)</td><td>결정 27</td></tr>
+<tr><td>길드 실적</td><td>명성 · 신뢰 · 보조금 실적은 오르지 않음. 맡은 사람이 따로 없어 실패 · 취소 처리 없음</td><td>결정 25</td></tr>
 </tbody></table>
 </div>
-<h2 id="길드-발주-화면"><a class="header" href="#길드-발주-화면">길드 발주 화면</a></h2>
-<p><img src="ch04/../assets/ui/request-tabs.png" alt="UI 02 — 리퀘스트의 길드 발주와 예산 예약" /></p>
-<p><a href="ch04/../assets/ui/request-tabs.png">큰 이미지 보기</a> · <strong>기획 시안 / 미구현 / 금액 예시</strong></p>
-<div class="table-wrapper"><table><thead><tr><th>시점</th><th>200G 소재 발주 예시</th></tr></thead><tbody>
-<tr><td>게시 전</td><td>납품품·수량·보수·기한·수행 방식·보조금 제외 표시</td></tr>
-<tr><td>게시</td><td>길드 소유 현금 중 200G 예약. 현금은 아직 차감하지 않음</td></tr>
-<tr><td>완료</td><td>현금 −200G, 수행자 합계 +200G, 예약 해제·물품 인도 1회</td></tr>
-<tr><td>미수주 취소</td><td>예약만 해제. 환급 명목의 돈 생성 없음</td></tr>
-<tr><td>길드 수입</td><td>수수료 0, 자가 실적 보조금 0</td></tr>
-<tr><td>계약 모험가 업무</td><td>급여 포함 업무+실비 또는 명시한 별도 보수 중 하나로 표시</td></tr>
-</tbody></table>
-</div>
-<p>자가 납품 반복으로 외부 실적·보조금·무한 성장을 만들지 않습니다. 난도·기간·위험·기준 가격에 따른 발주 보수 공식은 미결입니다.</p>
+<p><strong>예시 — 고철 조각 10개 발주</strong></p>
+<ol>
+<li>리퀘스트 장 → 길드 발주에서 고철 조각 10개를 고르면 <strong>90G</strong>(9G × 10)가 금고에서 나갑니다.</li>
+<li>게시판에 "고철이나 줍자" 같은 의뢰가 자주 올라오고, 카드에 <strong>발주</strong> 표시가 붙습니다.</li>
+<li>퀸 · 니나 파티가 슬라임 2마리 의뢰를 성공하면 고철 2개를 가져오고, 두 사람이 18G를 나눠 받습니다. 게시판 띠가 "고철 조각 2/10"이 됩니다.</li>
+<li>급한 일이 끝나 6/10에서 거두면 남은 4개 값 <strong>36G</strong>가 금고로 돌아옵니다.</li>
+</ol>
+<p>측정(50판): 10개가 다 모이는 기간은 처음 규칙(돈 보너스만) 17주 → 게시판 쏠림 + 소재 뽑기 후 <strong>중앙값 8주</strong>입니다. 발주를 하지 않으면 경제는 그대로입니다(관문 1 479G · 96.0%).</p>
+<h2 id="길드-발주-화면-게임-반영"><a class="header" href="#길드-발주-화면-게임-반영">길드 발주 화면 (게임 반영)</a></h2>
+<p><img src="ch04/../assets/ui/guild-order-v2.png" alt="UI 02 — 리퀘스트 장의 길드 발주 책갈피" /></p>
+<p><a href="ch04/../assets/ui/guild-order-v2.png">큰 이미지 보기</a> · <strong>게임 화면 시안, 2026-11-18 사용자 확인 후 연결</strong></p>
+<ul>
+<li><strong>왼쪽 쪽:</strong> 발주 중(진행 막대 · 1개 값 · 남은 돈 · 거두기) · 빈 자리 · 들어온 소재(누가 몇 개, 지급액).</li>
+<li><strong>오른쪽 쪽:</strong> 아는 소재 중 길드 등급까지 고르기(발주 중 · 나오지 않는 소재는 흐림) → 개수 1~30 → 나오는 의뢰 → 1개 값과 지금 낼 돈 → 발주하기. 막히면 이유를 버튼 아래에 적음.</li>
+</ul>
+<p><img src="ch04/../assets/ui/guild-order-board-v2.png" alt="의뢰 게시판의 발주 띠와 발주 표시" /></p>
+<p>의뢰 게시판에는 "길드 발주: 고철 조각 3/10" 띠가 붙고, 발주 소재가 나오는 의뢰 카드에 청록 테두리와 <strong>발주</strong> 표시가 붙습니다.</p>
 <h2 id="장기-계약탐사"><a class="header" href="#장기-계약탐사">장기 계약·탐사</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>사업</th><th>처리</th><th>범위</th></tr></thead><tbody>
 <tr><td>상단 호위</td><td>관리비·수행 보수·선수금·실패 책임 분리</td><td>P3</td></tr>
@@ -1632,12 +1643,25 @@
 <blockquote>
 <p><strong>지금 코드에는 "소재 자동 차익"(의뢰 성공 때 보상의 8%가 저절로 길드 수입)이 남아 있습니다.</strong> 설계상으로는 없애고 직접 판매만 남기기로 했지만 아직 정리하지 않았습니다. 첫해 월 평균 55G로 운영 수입의 약 9%입니다(<a href="ch06/../ch09/issues.html">9장</a>).</p>
 </blockquote>
+<h2 id="의뢰에서-소재를-얻는-방법--결정-27-2026-11-18-게임-반영"><a class="header" href="#의뢰에서-소재를-얻는-방법--결정-27-2026-11-18-게임-반영">의뢰에서 소재를 얻는 방법 — 결정 27 (2026-11-18, 게임 반영)</a></h2>
+<p><strong>의뢰에 성공하면 몬스터 1마리 · 탐색 포인트 1곳마다 그 의뢰의 보상표에서 1개씩 뽑습니다.</strong> 예전에는 의뢰 하나에 보상표를 1번만 굴렸습니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>항목</th><th>규칙</th></tr></thead><tbody>
+<tr><td>뽑는 횟수</td><td>전투 의뢰 = 몬스터 수, 몬스터 없는 의뢰 = 탐색 포인트 <strong>2~3곳 [임시]</strong> (<code>econ.drawPts</code>)</td></tr>
+<tr><td>무엇이 나오나</td><td>보상표의 주 소재(확률 30% 이상)에서 확률을 비율로 써서 1개 — 100 : 70이면 59% : 41%</td></tr>
+<tr><td>희귀 소재</td><td>확률 30% 미만은 지금처럼 <strong>의뢰당 1번만</strong> 굴림</td></tr>
+<tr><td>길드 발주 중</td><td>보상표에 발주 소재가 있으면 뽑기마다 발주 소재</td></tr>
+<tr><td>소재 값</td><td>그대로</td></tr>
+<tr><td>몬스터 도감</td><td>몬스터별 '떨구는 소재' 목록은 쓰지 않음 — 도감 표기는 나중에 정리</td></tr>
+</tbody></table>
+</div>
+<p><strong>예시:</strong> "고철이나 줍자"(보상표 고철 조각 · 무명천, 슬라임 2마리) → 평소에는 고철 · 무명천 중에서 2개, 고철 발주 중이면 고철 2개.</p>
+<p>측정(100판 · 48주): 소재 한 달 12.5 → 16.2개 · 매입 49 → 65G · 판매 3 → 12G · 월 순이익 475 → 479G · 48주 안 E 승급 82 → 88판. 값을 낮추는 보정은 필요 없었습니다.</p>
 <h2 id="소재-소유지원-추가--item-01--제안미반영"><a class="header" href="#소재-소유지원-추가--item-01--제안미반영">소재 소유·지원 추가 — ITEM-01 / 제안·미반영</a></h2>
 <p>물약 지원은 개인 잔액과 약정 한도를 확인해 실제 구입액만 분담합니다. 길드 소유 소재만 요리·제작·시설 개방·지원·납품에 쓸 수 있습니다. 실제 매입·판매·위탁 거래를 도입하면 해당 거래의 자동 차익 8%는 대체합니다. 가격·매입가·수수료·수량부터 검증하고 큰 시세 변동은 제외합니다.</p>
 <div class="table-wrapper"><table><thead><tr><th>획득 상황</th><th>소유자 / 제한</th></tr></thead><tbody>
 <tr><td>일반 전리품</td><td>개인 또는 파티 공동 소유</td></tr>
 <tr><td>의뢰인 납품품</td><td>의뢰 조건에 따라 인도. 판매 불가</td></tr>
-<tr><td>길드 발주 납품품</td><td>보수 지급·인도 완료 후 길드</td></tr>
+<tr><td>길드 발주 소재</td><td>가져온 파티에 1개 값 지급 후 길드 창고 (선지급한 돈에서) [결정 25]</td></tr>
 <tr><td>매입 / 자발적 기증</td><td>거래·기증 확정 후 길드</td></tr>
 <tr><td>위탁품</td><td>판매 전까지 원소유자. 요리·제작·납품 사용 불가</td></tr>
 <tr><td>길드 투자 탐사</td><td>출발 전 합의한 지분</td></tr>
@@ -2132,6 +2156,7 @@
 <ul>
 <li>시설 유지비는 없습니다(2026-11-05 삭제).</li>
 <li>원래 설계의 정보 구매(100~2,000G), 길드 발주 의뢰, 선물, 강화 · 주문 제작은 프로토타입 밖입니다.</li>
+<li>그중 길드 발주는 2026-11-18 선지급 모으기 방식으로 들어갔습니다(<a href="ch09/../ch04/requests.html">리퀘스트</a>, 결정 24~27).</li>
 </ul>
 <h2 id="첫해-금고-100판"><a class="header" href="#첫해-금고-100판">첫해 금고 (100판)</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>항목</th><th style="text-align: right">값</th></tr></thead><tbody>
@@ -2148,7 +2173,7 @@
 <tr><td>보수</td><td>근무 주수 적립 → 월말 실제 지급 1회</td></tr>
 <tr><td>물약·식사·치료 지원</td><td>약정 한도 안의 실제 사용액만</td></tr>
 <tr><td>영입금</td><td>도입 시 계약 성립 때 1회</td></tr>
-<tr><td>길드 발주</td><td>게시 때 예약, 완료 때 지급·인도</td></tr>
+<tr><td>길드 발주</td><td>발주할 때 개수 × 1개 값(판매가 × 1.5 [임시])을 금고에서 바로 냄, 거두면 남은 돈 돌려받음. 장부 '길드 발주' 줄 [결정 24 · 25]</td></tr>
 <tr><td>소재 매입</td><td>거래 때 현금 감소. 판매 시 원가 중복 차감 금지</td></tr>
 <tr><td>자유 지명</td><td>섭외비 금액은 그대로, <strong>부탁받은 자유 모험가 지갑으로</strong>(거절해도 받음). 길드 지출 · 순이익은 그대로 [결정 2026-11-17]</td></tr>
 <tr><td>사망·해지</td><td>발생 보수·약정 위로금 정산</td></tr>
@@ -2488,7 +2513,7 @@
 <h2 id="화면-예시--ui-01--제안미반영"><a class="header" href="#화면-예시--ui-01--제안미반영">화면 예시 — UI-01 / 제안·미반영</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>시안</th><th>기존 동선</th><th>설계 확인점</th></tr></thead><tbody>
 <tr><td><a href="ch10/../ch03/lifecycle.html">UI 01 계약</a></td><td>모험가 → 우측 계약제안</td><td>소속/애착/거주, 기간·급여·지원, 계약 후 가용액</td></tr>
-<tr><td><a href="ch10/../ch04/requests.html">UI 02 발주</a></td><td>리퀘스트 → 우측 길드 발주</td><td>지급자·보수·예산 예약·자가 실적 제외</td></tr>
+<tr><td><a href="ch10/../ch04/requests.html">UI 02 발주</a></td><td>리퀘스트 → 우측 길드 발주 <strong>(게임 반영 2026-11-18)</strong></td><td>발주 중 · 거두기 · 들어온 소재 / 소재 · 개수 · 나오는 의뢰 · 지금 낼 돈, 게시판 발주 띠 · 표시</td></tr>
 <tr><td><a href="ch10/../ch04/nomination.html">UI 03 지명</a></td><td>리퀘스트 → 지명</td><td>자유 수락·비용 / 계약 모험가 가용 조건·예약</td></tr>
 <tr><td><a href="ch10/../ch06/potion.html">UI 04 거래</a></td><td>경영 → 우측 매입 / 위탁</td><td>소유자·매입원가·위탁·사용 제한</td></tr>
 <tr><td><a href="ch10/../ch09/ledger.html">UI 05 장부</a></td><td>경영 → 장부</td><td>현금·운영 손익·가용액·예치금</td></tr>
@@ -2882,14 +2907,16 @@
 </ul>
 <h2 id="6단계--리퀘스트-발주"><a class="header" href="#6단계--리퀘스트-발주">6단계 — 리퀘스트 발주</a></h2>
 <ul>
+<li><input disabled="" type="checkbox" checked=""/>
+길드 발주를 선지급 모으기로 정함(결정 25): 발주 때 금고에서 바로 내고, 1개씩 지급, 거두면 남은 돈 반환. 맡는 사람이 따로 없어 수주 후 취소 · 불이행 처리가 필요 없음. (2026-11-18)</li>
+<li><input disabled="" type="checkbox" checked=""/>
+게시판 쏠림 50% [임시] · 발주 소재 의뢰 우선(결정 26), 몬스터 · 탐색 포인트마다 소재 뽑기(결정 27). 관문 1 479G · 96.0%.</li>
+<li><input disabled="" type="checkbox" checked=""/>
+화면: 리퀘스트 장 길드 발주 책갈피 · 게시판 발주 띠와 표시 (시안 확인 후 연결).</li>
 <li><input disabled="" type="checkbox"/>
-길드200G 발주: 게시 시 예약, 완료 시 지급·인도1회, 미수주 취소 시 예약만 해제하는 사례를 작성한다.</li>
-<li><input disabled="" type="checkbox"/>
-수주 후 취소·불이행 책임을 확정한 뒤 처리한다. 이미 발생한 지급 의무를 임의 해제하지 않는다.</li>
-<li><input disabled="" type="checkbox"/>
-외부 의뢰의 지급자·보수·기간·실패 책임을 표시한다. 자동 게시판 의뢰와 구분한다.</li>
-<li><input disabled="" type="checkbox"/>
-자가 발주에 수수료·보조금·반복 성장 이득이 붙지 않는지 검사한다.</li>
+외부 의뢰의 지급자·보수·기간·실패 책임을 표시한다. 자동 게시판 의뢰와 구분한다. <strong>(보류)</strong></li>
+<li><input disabled="" type="checkbox" checked=""/>
+자가 발주에 수수료·보조금·명성 · 신뢰 실적이 붙지 않음 (발주 지급은 의뢰 보상과 별도, 결정 25).</li>
 </ul>
 <p><strong>대상:</strong> <code>prototype/js/game_core.js</code>, <code>sim_engine.js</code>, <code>ui.js</code>, 기존 책 UI 스타일·설정 데이터, 신규 예정 <code>prototype/tools/economy_contract_check.js</code>.</p>
 <p><strong>완료 조건:</strong> 거래별 현금·원가·소유권·실적이 한 번만 반영됩니다. 후속 장기 호위·선수금 사업은 <a href="development/later.html">5장 후속 개발</a>에서 분리합니다. 근거: <a href="development/../ch06/potion.html">거래</a> · <a href="development/../ch04/board.html">의뢰 관리</a> · <a href="development/../ch04/requests.html">리퀘스트</a>.</p>
@@ -3053,6 +3080,8 @@
 <tr><td>일반 수수료</td><td>의뢰별 10 · 15 · 20%, 기본 10% — 모험가는 주당 실수령으로 고름</td><td>결정 2026-11-17 [임시]</td></tr>
 <tr><td>소재 자동 매입 · 위탁</td><td>귀환 때 판매가의 70% 자동 매입 · 위탁 수수료 10%, 자동 차익 8% 폐지</td><td>결정 2026-11-17 [임시]</td></tr>
 <tr><td>왕국 보조금</td><td><strong>4주마다(월말) [임시]</strong>, 그 달 성공 의뢰 기본 보상 합 × 50% [임시] (<code>econ.subsidyEvery</code> 1 · <code>econ.subsidyRate</code> 0.5)</td><td>결정 13(2026-11-17) · 결정 23(2026-11-18, 반기 → 4주마다)</td></tr>
+<tr><td>길드 발주</td><td>1개 값 = 판매가 × 1.5 [임시] (<code>econ.orderMult</code>) · 동시 2건 [임시] (<code>econ.orderMax</code>) · 게시판 쏠림 50% [임시] (<code>econ.orderBias</code>) · 선지급, 거두면 남은 돈 반환</td><td>결정 24~26 (2026-11-18)</td></tr>
+<tr><td>소재 뽑기</td><td>몬스터 1마리 · 탐색 포인트 1곳마다 보상표에서 1개, 포인트 2~3곳 [임시] (<code>econ.drawMode</code> 1 · <code>econ.drawPts</code>) · 희귀는 의뢰당 1번</td><td>결정 27 (2026-11-18)</td></tr>
 <tr><td>정수 배분</td><td>기준액 내림 · 나머지는 대장부터 1G씩 · 길드 몫 버림</td><td>결정 2026-11-17</td></tr>
 <tr><td>섭외비</td><td>금액 그대로, 부탁받은 자유 모험가 지갑으로</td><td>결정 2026-11-17</td></tr>
 <tr><td>계약 수수료·보수·지원 (F급 기본)</td><td>20% · 월 25G · 지원 한도 월 10G / 범위 15~30% · 0~60G · 0~30G</td><td>결정 2026-11-17 [임시]</td></tr>
