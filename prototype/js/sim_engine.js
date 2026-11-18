@@ -70,6 +70,7 @@
         mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02
       },
       gear: {
+        pieceBuy: 1, giftAttach: [1, 2, 3, 4, 5, 6, 7],   // 2026-11-18 대장간: 장비 1칸씩 사기 · 선물 애착 [임시]
         weaponPrice: [150, 400, 1000, 2500, 6000, 14000, 30000], setMult: 3.0,
         weaponStat: [3, 5, 8, 12, 16, 21, 27], armorStat: [1, 2, 4, 6, 8, 10, 13],
         accStat: [2, 3, 5, 7, 10, 13, 17], weaponAtk: [10, 18, 28, 40, 55, 72, 92],
@@ -206,7 +207,7 @@
       const a = {
         id: s.nextId++, core, stage: 1, pair: null, cls: 'base', stats, lv: 1, xp: 0, bank: 0,
         grade: 0, ach: 0, attach: opts.attach || 0, home: !!opts.home, risk: opts.risk != null ? opts.risk : ri(3), spend: ri(3), social: ri(3),
-        wallet: 0, gear: -1, pots: 0, busy: 0, alive: true, joined: s.week, heirOf: opts.heirOf || null, heirWeek: opts.heirOf ? s.week : null,
+        wallet: 0, gear: -1, eq: [-1, -1, -1], pots: 0, busy: 0, alive: true, joined: s.week, heirOf: opts.heirOf || null, heirWeek: opts.heirOf ? s.week : null,
         demonHeir: !!opts.demonHeir, demonMark: false, rebirth: !!opts.rebirth, external: g > 0
       };
       if (g > 0) { // 외부 고등급 방문자: 등급에 맞게 성장시킴
@@ -219,13 +220,15 @@
 
     function finalStat(a, i) {
       let v = Math.min(G.statCap, a.stats[i]);
-      if (a.gear >= 0) {
-        if (i === a.core) v += GE.weaponStat[a.gear] + GE.accStat[a.gear];
-        if (a.pair && a.pair.includes(i) && i !== a.core) v += GE.armorStat[a.gear];
+      { const e = eqOf(a);   // 2026-11-18 장비 3칸 (게임과 같음)
+        if (i === a.core) v += (e[0] >= 0 ? GE.weaponStat[e[0]] : 0) + (e[2] >= 0 ? GE.accStat[e[2]] : 0);
+        if (a.pair && a.pair.includes(i) && i !== a.core && e[1] >= 0) v += GE.armorStat[e[1]];
       }
       return v;
     }
-    const power = a => { let t = 0; for (let i = 0; i < 5; i++) t += finalStat(a, i); return t + (a.gear >= 0 ? GE.weaponAtk[a.gear] : 0) * 0.5; };
+    const eqOf = a => Array.isArray(a.eq) ? a.eq : [a.gear, a.gear, a.gear];
+    const eqNext = a => { if (GE.pieceBuy === 0) { const e0 = eqOf(a), lo = Math.min(...e0), g0 = Math.min(s.grade, lo + 1); return g0 <= lo ? null : { k: -1, g: g0, price: GE.weaponPrice[g0] * GE.setMult }; } const e = eqOf(a), ord = a.core === 0 || a.core === 3 ? [1, 0, 2] : [0, 1, 2]; let b = null; for (const k of ord) { const g = Math.min(s.grade, e[k] + 1); if (g <= e[k]) continue; if (!b || e[k] < e[b.k]) b = { k, g, price: GE.weaponPrice[g] }; } return b; };   // 게임 eqNext와 같음
+    const power = a => { let t = 0; for (let i = 0; i < 5; i++) t += finalStat(a, i); const w = eqOf(a)[0]; return t + (w >= 0 ? GE.weaponAtk[w] : 0) * 0.5; };
     const skillBonus = a => [0.03, 0.06, 0.10][a.stage - 1];
 
     function makeQuest(g, boss) {
@@ -264,7 +267,7 @@
       if (bottleneck) p /= 2;
       return p;
     }
-    const unitOf = (a, mealB, sm) => CB.unit(a, i => finalStat(a, i) * (sm ? sm(a, i) : 1), a.gear, mealB);
+    const unitOf = (a, mealB, sm) => CB.unit(a, i => finalStat(a, i) * (sm ? sm(a, i) : 1), eqOf(a), mealB);
     // 예상 성공 확률: 전투 의뢰는 예측 전투, 비전투 의뢰는 능력치 판정
     function questP(party, q) { return q.combat ? CB.predict(party.map(a => unitOf(a, 0)), q.seen, q.g, party[0].risk) : successP(party, q); }
     function perceived(a, p) {
@@ -411,7 +414,7 @@
         for (const a of party) { const want = C.potionCarry[a.spend] - (R() < 0.5 ? 1 : 0); while (a.pots < want && a.wallet >= price) { a.wallet -= price; a.pots++; s.st.potionGold += price; } }
         fightRes = CB.fight(party.map(a => unitOf(a, mealB, sm)), q.enemies, q.g, R, party[0].risk);
         ok = fightRes.win; s.st.combatQ++; if (ok) s.st.combatWin++;
-        if (q.g <= 1) { const k = q.g * 2 + (party.every(m => m.gear >= q.g) ? 1 : 0); s.st.gearFx[k][1]++; if (ok) s.st.gearFx[k][0]++; }   // F·E급: 그 등급 장비를 다 갖춘 파티인지
+        if (q.g <= 1) { const k = q.g * 2 + (party.every(m => Math.min(...eqOf(m)) >= q.g) ? 1 : 0); s.st.gearFx[k][1]++; if (ok) s.st.gearFx[k][0]++; }   // F·E급: 그 등급 장비를 다 갖춘 파티인지
       } else {
         const p = Math.min(0.97, successP(party, q, sm) * (1 + mealB));
         ok = R() < p;
@@ -469,7 +472,7 @@
         const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
         const hi = Math.min(s.grade, a.grade + range[1]), lo = Math.min(hi, Math.max(0, a.grade + range[0]));   // 게임과 같음 (2026-11-12)
         const th = A.departTh[a.risk];
-        const GE = cfg.gear, ngr = Math.min(s.grade, a.gear + 1), needy = a.spend === 2 || (ngr > a.gear && a.wallet < GE.weaponPrice[ngr] * GE.setMult * (1 + GE.reserveMult[a.spend] * 0.5));   // 게임 needsMoney 와 같음 (V2 결정 11)
+        const GE = cfg.gear, nxe = eqNext(a), needy = a.spend === 2 || (!!nxe && a.wallet < nxe.price * (1 + GE.reserveMult[a.spend] * 0.5));   // 게임 needsMoney 와 같음 (V2 결정 11)
         const effq = q => Math.floor((q.T ? q.T.reward : Q.reward[q.g]) * (q.x2 ? 2 : 1) * (1 - feeRate()) + 1e-9) / (q.T ? q.T.weeks : Q.weeks[q.g]);
         const cands = s.board.map((q, i) => ({ q, i })).filter(o => o.q.g >= lo && o.q.g <= hi).sort(needy ? (x, y) => (effq(y.q) - effq(x.q)) || (y.q.g - x.q.g) : (x, y) => y.q.g - x.q.g);
         const base0 = (E.feeOpt || [0.1])[0], skipP = needy && E.restK ? Math.min(1, Math.max(0, feeRate() - base0) / base0 * E.restK) : 0;   // 게임과 같은 보완(결정 22) — 시뮬레이터는 수수료가 하나
@@ -661,10 +664,8 @@
       // 장비 구매
       for (const a of s.advs) {
         if (!a.alive) continue;
-        const ng = Math.min(s.grade, a.gear + 1);
-        if (ng <= a.gear) continue;
-        const price = GE.weaponPrice[ng] * GE.setMult;
-        if (a.wallet >= price * (1 + GE.reserveMult[a.spend] * 0.5)) { a.wallet -= price; a.gear = ng; }
+        const n = eqNext(a); if (!n) continue;   // 2026-11-18: 한 달에 1칸 (게임과 같음)
+        if (a.wallet >= n.price * (1 + GE.reserveMult[a.spend] * 0.5)) { a.wallet -= n.price; const e = eqOf(a).slice(); if (n.k < 0) e.fill(n.g); else e[n.k] = n.g; a.eq = e; a.gear = Math.min(...e); }
       }
       if (s.gold < 0) s.st.negMonths++;
       if (s.week < WPY) s.st.firstNetF.push(s.op);
@@ -843,7 +844,7 @@
       if (!s.rebirthAdded && s.week === (EN.rebirthYear - 1) * WPY) {
         s.rebirthAdded = true; s.st.rebirth = true;
         const a = newAdv({ risk: 0 }); a.rebirth = true; a.stage = 3; a.cls = 'ext'; a.pair = [0, 1, 2]; a.lv = 45;
-        a.stats = [0, 0, 0, 0, 0].map(() => EN.rebirthTotal / 5); a.grade = Math.min(6, s.grade + 2); a.gear = s.grade;
+        a.stats = [0, 0, 0, 0, 0].map(() => EN.rebirthTotal / 5); a.grade = Math.min(6, s.grade + 2); a.gear = s.grade; a.eq = [s.grade, s.grade, s.grade];
       }
       if (!s.demonFlagFallback && !s.st.demonFallback && s.week === EN.demonHeirFallbackYear * WPY && !s.advs.some(a => a.alive && a.demonHeir)) s.demonFlagFallback = true;
       weekly();

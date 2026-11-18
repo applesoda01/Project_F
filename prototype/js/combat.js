@@ -41,7 +41,8 @@
     // 모험가 → 전투 수치. a: { core, lv, risk, spend }, stat(i): 장비 판정 능력치까지 더한 최종 능력치, gearG: 장비 등급(-1 없음)
     function unit(a, stat, gearG, mealB) {
       const c = a.core, st = i => stat(i);
-      const W = gearG >= 0 ? gear(WEAPON[c], gearG) : null, Ar = gearG >= 0 ? gear(ARMOR[c], gearG) : null;
+      const gw = Array.isArray(gearG) ? gearG[0] : gearG, ga = Array.isArray(gearG) ? gearG[1] : gearG;   // 2026-11-18: 장비 3칸 [무기, 방어구, 장신구] 또는 예전 한 벌 등급
+      const W = gw >= 0 ? gear(WEAPON[c], gw) : null, Ar = ga >= 0 ? gear(ARMOR[c], ga) : null;
       const sum = k => (W ? W[k] : 0) + (Ar ? Ar[k] : 0);
       const maxHp = C.classHp[c] + a.lv * C.classHpLv[c] + st(0) * C.hpPerStr + sum('hp');
       const maxMp = C.classMp[c] + a.lv * C.classMpLv[c] + st(2) * C.mpPerMind + sum('mp');
