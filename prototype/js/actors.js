@@ -466,9 +466,9 @@
   D.bubbles = function (g) {
     for (const ac of D.actors.values()) {
       const G = ac.gl; if (G) { ac.x += G.x; ac.y += G.y; }
+      if (ac.emo) emote(g, ac);   // 감정 아이콘 (2026-11-18): 명찰(이름 · 레벨) 뒤에 깔리게 먼저 그림
       let up = plate(g, ac);   // 명찰이 있으면 말풍선은 그 위로
       up += serveBar(g, ac, up);   // 리나에게 응대받는 중이면 명찰 위에 노란 진행 막대
-      if (ac.emo) emote(g, ac);   // 감정 아이콘 (2026-11-18)
       if (ac.bubble) bubble(g, ac.x, headY(ac) - up, ac.bubble.text, false, D.t - (ac.bubble.t0 == null ? D.t - 1 : ac.bubble.t0), ac.bubble.until - D.t);
       if (G) { ac.x -= G.x; ac.y -= G.y; }
     }

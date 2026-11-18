@@ -1,6 +1,6 @@
 /* 감정 아이콘 (2026-11-18 확정) — 얼굴 말풍선 + 표정 + 기호. 그림: assets/emote/ (GPT 생성 부품 · 사용자 제공)
    - 부품 배치: GPT 8종 원본에 겹쳐 맞춘 좌표 (단위 = 얼굴 가로). 조절 도구: tools/emote_tuner.html
-   - 로비 위치 (사용자 확정 22:10): 모험가 중심(발과 머리의 가운데) 기준 좌우 −58 · 상하 −73 · 가로 62px, 그림 좌우 반전
+   - 로비 위치 (사용자 확정 22:19): 모험가 중심(발과 머리의 가운데) 기준 좌우 +63 · 상하 −81 · 가로 62px, 그림 좌우 반전 · 명찰 뒤에 깔림
    - 움직임: 등장 톡 · 종류별 (얼굴 / 기호 따로) · 끝 0.35초 작아지며 흐려짐 — 시안 docs/design/mockups/talk_emote/emote_v11_*.gif [임시 값]
    Emote.draw(g, k, cx, cy, age, remain) → 캔버스 · Emote.html(k, W) → HTML (대화 극장) */
 (function (root) {
@@ -8,7 +8,7 @@
   const KINDS = ['win', 'sweat', 'note', 'heart', 'anger', 'smile', 'qex', 'spark'];
   const NAME = { win: '해냈다!', sweat: '식은땀', note: '신남', heart: '고마워', anger: '욱', smile: '헤헤', qex: '어?!', spark: '반짝' };
   const PARTS = { win: { e: [0.13, 0.291, 0.752], s: [0.879, -0.021, 0.173] }, sweat: { e: [0.109, 0.188, 0.758], s: [0.752, -0.024, 0.242] }, note: { e: [0.133, 0.312, 0.752], s: [0.739, -0.042, 0.379] }, heart: { e: [0.133, 0.376, 0.661], s: [0.721, -0.033, 0.376] }, anger: { e: [0.1, 0.239, 0.791], s: [0.782, -0.073, 0.345] }, smile: { e: [0.112, 0.321, 0.752], s: [0.761, -0.073, 0.279] }, qex: { e: [0.076, 0.155, 0.791], s: [0.803, -0.121, 0.321] }, spark: { e: [0.103, 0.17, 0.797], s: [0.779, -0.164, 0.364] } };
-  const POS = { dx: -58, dy: -73, size: 62, mirror: true };   // 로비 (게임 화면 1920 기준 px)
+  const POS = { dx: 63, dy: -81, size: 62, mirror: true };   // 로비 (게임 화면 1920 기준 px)
   const FACE_H = 296 / 330;
   const E = { base: 'assets/emote/', KINDS, NAME, POS, PARTS };
   const cache = {};
