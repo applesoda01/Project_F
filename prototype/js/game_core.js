@@ -170,6 +170,48 @@
     { const e = eqOf(a); if (i === a.core) v += (e[0] >= 0 ? GE.weaponStat[e[0]] : 0) + (e[2] >= 0 ? GE.accStat[e[2]] : 0); }   // 장신구 칸: 주력 능력치 +3 × 등급 순번   // 장신구: 주력 능력치 +3×등급 순번 (직업 제한 없는 장신구를 주력에 맞게 착용한다고 봄)
     return v;
   }
+  // ---------- 모험가 기억 · 친밀도 (2026-11-18, docs/design/proposal_adv_memory_v1.md 2장) ----------
+  //   대사 고르기 전용 기록. 규칙 · 난수(s.R)에 영향 없음 → 관문 1 · 시뮬레이터 그대로.
+  //   a.mem = 최근 일 [{ k: 종류, w: 주, n: 말한 횟수, …빈칸 재료 }] 최대 5개 · 8주 지나면 흐려짐 · 2번 말하면 지움 [임시]
+  //   종류: win_big(어려운 의뢰 성공) · fail(실패, late=늦장) · hurt(부상) · saved(구해 줌 got/gave) · gift(마스터 선물) · grow(레벨 5단위 · 승급 · 전직) · nomin(지명 수락 · 거절) · qlv(하던 의뢰가 Lv업)
+  //   s.rel["작은id-큰id"] = 친밀도 0~100 (처음 30, 숨김) — 같은 파티 성공 +1~+4(성향 궁합) · 실패 −2 [임시]
+  const MEM = { max: 5, weeks: 8, say: 2, hard: 75 };
+  function remember(s, a, k, o) {
+    if (!a || !a.alive) return;
+    const m = Object.assign({ k, w: s.week, n: 0 }, o || {});
+    a.mem = (a.mem || []).filter(x => s.week - x.w < MEM.weeks); a.mem.push(m); if (a.mem.length > MEM.max) a.mem.shift();
+    s.memN = s.memN || {}; s.memN[k] = (s.memN[k] || 0) + 1;
+  }
+  const memOf = (s, a) => (a && a.mem || []).filter(x => s.week - x.w < MEM.weeks && x.n < MEM.say);   // 지금 말할 수 있는 기억
+  function memSaid(a, m) { m.n++; if (m.n >= MEM.say) a.mem = (a.mem || []).filter(x => x !== m); }
+  const relKey = (i, j) => i < j ? i + '-' + j : j + '-' + i;
+  const relOf = (s, i, j) => { const v = s.rel && s.rel[relKey(i, j)]; return v == null ? 30 : v; };
+  function relAdd(s, i, j, d) { if (i === j) return; s.rel = s.rel || {}; const k = relKey(i, j); s.rel[k] = Math.max(0, Math.min(100, relOf(s, i, j) + d)); }
+  const relStep = (a, b) => { let d = 3; if (Math.abs(a.risk - b.risk) === 2) d -= 2; if (a.social === 2 && b.social === 2) d += 1; if (a.social === 0 || b.social === 0) d -= 1; return Math.max(1, Math.min(4, d)); };   // 성향 궁합 (제안서 3-1)
+  const relTier = v => v >= 70 ? 'good' : v < 30 ? 'bad' : '';
+  function memQuest(s, x, ok, party, lv0) {   // 귀환 때: 파티원마다 기억 · 친밀도
+    const q = x.q, F = x.fight, qname = q.name || qn(q), mon = F && F.enemies && F.enemies[0] ? F.enemies[0].name : null;
+    const ids = party.filter(Boolean).map(a => a.id), others = id => ids.filter(j => j !== id);
+    for (const a of party) {
+      if (!a) continue;
+      if (ok && !q.rq && ((x.rate != null && x.rate < MEM.hard) || q.fz)) remember(s, a, 'win_big', { q: qname, mon, with: others(a.id), rate: x.rate, fz: !!q.fz });   // fz: 막 강해진(정보 흐린) 의뢰를 해냄
+      if (!ok) remember(s, a, 'fail', { q: qname, mon, with: others(a.id), late: !!x.late });
+      if (F) { const u = F.units.find(z => z.id === a.id); if (u && u.down && a.alive && a.state === 'injured') remember(s, a, 'hurt', { q: qname, mon, weeks: Math.max(1, a.until - s.week), with: others(a.id) }); }
+    }
+    if (F && F.log) {   // 쓰러질 뻔한 동료를 치유 (치유 전 체력 30% 미만) → 받은 사람 got · 준 사람 gave, 원정마다 한 쌍 한 번
+      const seen = {};
+      for (const e of F.log) {
+        if (e.t !== 'heal' || e.by === e.to) continue;
+        const u = F.units.find(z => z.id === e.to); if (!u || e.hp == null || e.d == null || (e.hp - e.d) >= u.maxHp * 0.3) continue;
+        const key = e.by + '>' + e.to; if (seen[key]) continue; seen[key] = 1;
+        const by = s.advs.find(z => z.id === e.by), to = s.advs.find(z => z.id === e.to);
+        remember(s, to, 'saved', { q: qname, with: [e.by], role: 'got' }); remember(s, by, 'saved', { q: qname, with: [e.to], role: 'gave' });
+      }
+    }
+    if (lv0 != null && s.qlv && s.qlv[q.tid] && s.qlv[q.tid].lv > lv0) for (const a of party) remember(s, a, 'qlv', { q: qname, lv: s.qlv[q.tid].lv, mon });
+    for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) { const a = party[i], b = party[j]; if (a && b) relAdd(s, a.id, b.id, ok ? relStep(a, b) : -2); }
+  }
+
   // 의뢰 레벨 (2026-11-18 결정 35 D안): 같은 게시판 의뢰를 qlv.need번 성공하면 Lv+1 (상한 qlv.max). 레벨당 적 · 판정 +foe, 보상 금화 · 소재 +pay.
   //   레벨이 막 오르면 그 의뢰가 qlv.fresh번 끝날 때까지 적 정보 오차가 qlv.var로 커짐 ("들개가 늘었다는데 몇 마리인지는 몰라요")
   const QLV = s => { const L = s.cfg.qlv; return L && L.on ? L : null; };
@@ -228,7 +270,7 @@
       const need = G.lvA * Math.pow(a.lv, G.lvB);
       if (a.xp < need) break;
       if (a.lv >= lvCapOf(s, a)) { a.bank += a.xp; a.xp = 0; break; }
-      a.xp -= need; a.lv++;
+      a.xp -= need; a.lv++; if (a.lv % 5 === 0) remember(s, a, 'grow', { what: 'lv', lv: a.lv });
       const gr = growthOf(a);
       for (let i = 0; i < 5; i++) a.stats[i] = Math.min(G.statCap, a.stats[i] + gr[i]);
       // 같은 주에 여러 번 오르면 한 줄로 합침 (Lv 1 → 3)
@@ -243,7 +285,7 @@
     if (a.lv >= lvReq[n] && a.ach >= achReq[n]) {
       const gb = (s.cfg.growth.gradeStat || [])[n] || 0, cap = s.cfg.growth.statCap;   // 2026-11-12: 승급 보너스 = 능력치 5개에 각각 고정값
       for (let i = 0; i < 5; i++) a.stats[i] = Math.min(cap, a.stats[i] + gb);
-      a.grade = n; a.ach = 0; if (a.career) a.career.push({ week: s.week, text: `${GR[n]}급 모험가로 승급` }); log(s, `${J(a.name, '이', '가')} ${GR[n]}급 모험가가 되었습니다.`, 'grow', { who: [a.name], gup: { id: a.id, g: n, bonus: gb } }); }   // gup: 축하 팝업용
+      a.grade = n; a.ach = 0; if (a.career) a.career.push({ week: s.week, text: `${GR[n]}급 모험가로 승급` }); remember(s, a, 'grow', { what: 'grade', g: GR[n] }); log(s, `${J(a.name, '이', '가')} ${GR[n]}급 모험가가 되었습니다.`, 'grow', { who: [a.name], gup: { id: a.id, g: n, bonus: gb } }); }   // gup: 축하 팝업용
   }
 
   // ---------- 직업과 전직 (M3-1 성장 · M3-2 전직) ----------
@@ -317,7 +359,7 @@
     const from = a.cls;
     a.stage = c2 ? 2 : 3; a.cls = name; a.line = c.line.slice(); a.fin = !!(c2 && c2.fin);
     for (const k of a.skills) if (a.line.includes(k.line)) k.form = name; // 바탕 능력치가 새 직업 조건에 있는 스킬만 진화
-    a.career.push({ week: s.week, text: `${from} → ${name} 전직` });
+    a.career.push({ week: s.week, text: `${from} → ${name} 전직` }); remember(s, a, 'grow', { what: 'class', cls: name });
     const lastJ = (name.charCodeAt(name.length - 1) - 0xac00) % 28; // ㄹ 받침(8)이거나 받침이 없으면 '로'
     log(s, `${J(a.name, '이', '가')} ${name}${lastJ === 0 || lastJ === 8 ? '로' : '으로'} 전직했습니다!`, 'promo', { who: [a.name], done: true });
     const bank = a.bank; a.bank = 0; if (bank > 0) gainXp(s, a, bank); // 상한에 막혀 쌓아 둔 경험치 반영
@@ -507,7 +549,7 @@
     const g = eqOf(a)[k] + 1, price = s.cfg.gear.weaponPrice[g], att = ((s.cfg.gear.giftAttach || [1, 2])[g]) || 1;
     s.gold -= price; s.month.gift = (s.month.gift || 0) - price; setEq(a, k, g); a.attach = Math.min(100, a.attach + att);
     (s.smithLog = s.smithLog || []).unshift({ w: s.week, id: a.id, k, g, price, t: 'gift' }); if (s.smithLog.length > 30) s.smithLog.length = 30;
-    (a.career = a.career || []).push({ week: s.week, text: `마스터에게 ${GR[g]}급 ${EQ_NAME[k]}를 선물받음` });
+    (a.career = a.career || []).push({ week: s.week, text: `마스터에게 ${GR[g]}급 ${EQ_NAME[k]}를 선물받음` }); remember(s, a, 'gift', { part: EQ_NAME[k], g: GR[g] });
     log(s, `${J(a.name, '이', '가')} 마스터에게 ${GR[g]}급 ${EQ_NAME[k]}를 선물받았습니다. (${price}G · 애착 +${att})`, 'grow', { who: [a.name] });
     return { ok: true, g, price, att };
   }
@@ -664,6 +706,7 @@
       const q = x.q, F = x.fight; s.month.quests++; seeMons(s, q);
       const ok = x.ok != null ? x.ok : F ? F.win : s.R() < x.p;   // 예전 저장(출발 때 결과 없음)은 귀환 때 판정
       if (F) { s.stats.combat++; if (ok) s.stats.combatWin++; }
+      const lv0 = s.qlv && q.tid && s.qlv[q.tid] ? s.qlv[q.tid].lv : null;   // 기억(qlv)용: 이번 귀환으로 의뢰 레벨이 올랐는지
       qlvAfter(s, q, ok);
       if (ok) {
         if (!q.self) s.subHalf = (s.subHalf || 0) + q.reward;   // 반기 보조금 실적: 외부 의뢰의 기본 보상(×2 전), 원정 번호당 한 번(정산 1회 보장), 길드 자가 발주 제외 (V2 결정 13)
@@ -705,6 +748,7 @@
         a.state = 'injured'; a.until = s.week + wk; a.injuredAt = s.week; a.injuredFrom = q.name || `${GR[q.g]}급 ${QTYPE[q.type]} 의뢰`;   // 모험가 팝업 오버 창용
         log(s, `${J(a.name, '이', '가')} 전투에서 쓰러져 부상을 입었습니다. ${wk}주 동안 쉽니다.`, 'injury', { who: [a.name] });
       }
+      memQuest(s, x, ok, party, lv0);   // 2026-11-18 모험가 기억 (대사용, 규칙 영향 없음)
     }
   }
 
@@ -1060,6 +1104,7 @@
     const yes = reqR(s) < reqChance(s, r, a) || !!r.tut;   // 튜토리얼 리퀘스트(FT0006)는 지명하면 꼭 수락
     if (yes && cActive(s, a)) a.contract.calls.push(s.week);
     if (yes) r.party.push(aid); else r.refused[aid] = s.week;
+    remember(s, a, 'nomin', { yes, giver: reqGiver(s, r), q: reqName(s, r) });   // 기억 (대사용)
     const L = yes ? ['맡겨 주세요!', '좋아요, 가죠.', '마스터 부탁이라면야.'] : ['이번엔 좀…', '죄송해요, 다음에요.', '그건 내키지 않네요.'];
     return { ok: yes, asked: true, fee, line: L[Math.floor(reqR(s) * L.length)] };
   }
@@ -1300,6 +1345,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, MEM, memOf, memSaid, relOf, relTier, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
