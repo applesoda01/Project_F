@@ -67,6 +67,8 @@ econ,consignFee,0.1,위탁 소재 판매 수수료 (금고가 모자라 매입 �
 econ,orderMult,1.5,길드 발주 1개 값 = 판매가 × 이 값 [임시] (V2 결정 24)
 econ,orderMax,2,길드 발주 동시 건수 [임시] (V2 결정 25)
 econ,orderBias,0.5,발주 중 새 의뢰가 발주 소재 의뢰로 바뀌는 비율 [임시] (V2 결정 26)
+econ,drawMode,1,소재 뽑기: 1이면 몬스터 1마리 · 탐색 포인트 1곳마다 보상표에서 1개 (V2 결정 27) · 0이면 예전(의뢰당 1번)
+econ,drawPts,2|3,몬스터 없는 의뢰의 탐색 포인트 수 최소|최대 [임시] (V2 결정 27)
 econ,effectCost,0.1|0.2|0.35,
 econ,mealPriceRate,0.25,
 econ,mealMargin,0.6,

@@ -406,10 +406,22 @@
   const matSellPrice = (s, id) => matBase(id) + (upg(s, '판매창구') ? (s.cfg.econ.upSell || 3) : 0);   // 판매 창구 업그레이드 +3G
   const matBuyPrice = (s, id) => Math.floor(matBase(id) * (s.cfg.econ.matBuyRate != null ? s.cfg.econ.matBuyRate : 0.7) + 1e-9);
   function payParty(s, ids, total) { const ps = ids.map(id => s.advs.find(a => a.id === id)).filter(a => a && a.alive); if (!ps.length || total <= 0) return; const sp = econSplit(total, ps.map(() => 0)); ps.forEach((a, i) => { a.wallet += sp.net[i]; }); }
+  // 2026-11-18 결정 27: 몬스터 1마리 · 탐색 포인트 1곳마다 보상표의 주 소재(30% 이상)에서 확률 비율대로 1개 (발주 중인 소재가 있으면 그것), 희귀 소재(30% 미만)는 의뢰당 1번. 몬스터 없는 의뢰는 포인트 econ.drawPts [임시] 2~3곳
+  function drawList(s, q, T) {
+    const RW = T.rewards || [], E = s.cfg.econ; if (!E.drawMode) return RW;
+    const main = RW.filter(r => r.p >= 30), rare = RW.filter(r => r.p < 30), P = E.drawPts || [2, 3];
+    const k = q.enemies && q.enemies.length ? q.enemies.length : P[0] + Math.floor(s.R() * (P[1] - P[0] + 1));
+    const tot = main.reduce((a, r) => a + r.p, 0), om = main.find(r => (s.orders || []).some(o => o.m === r.m && o.got < o.n)), out = [];
+    for (let i = 0; i < k && main.length; i++) {
+      if (om) { out.push({ m: om.m, p: 100 }); continue; }
+      let x = s.R() * tot, pick = main[main.length - 1]; for (const r of main) { x -= r.p; if (x <= 0) { pick = r; break; } } out.push({ m: pick.m, p: 100 });
+    }
+    return out.concat(rare);
+  }
   function dropMats(s, q, party) {
     const T = QBYID[q.tid]; if (!T) return;
     const ids = (party || []).map(a => a.id); let paid = 0;
-    for (const r of T.rewards || []) {
+    for (const r of drawList(s, q, T)) {
       if (s.R() * 100 >= r.p) continue;
       { const o = (s.orders || []).find(x => x.m === r.m && x.got < x.n);   // 결정 25: 발주 중인 소재 → 걸어 둔 돈에서 1개 값을 파티에게, 창고로 (금고는 발주 때 이미 냄)
         if (o && ids.length) { o.got++; s.mats[r.m] = (s.mats[r.m] || 0) + 1; payParty(s, ids, o.price); buyNote(s, r.m, ids, o.price, 1, true); if (!s.knownMats[r.m]) s.knownMats[r.m] = true;
