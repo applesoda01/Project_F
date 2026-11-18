@@ -33,6 +33,7 @@
     Director.onWeek(before, s, Lobby.Board);
     const fresh = []; for (const L of s.log) { if (L === top) break; fresh.push(L); }
     UI.onLogs(fresh.reverse());
+    Tutorial.onWeek();
     if (s.grade > g0) UI.gradeUp(s.grade);
     if (s.week % Gm.WPM === 0) save(true);
   }
@@ -43,26 +44,29 @@
     const n = newest(); let t = null; try { if (n) t = localStorage.getItem(slotKey(n)); } catch (e) { /* 저장소 없음 */ }
     if (n) useSlot(n);   // 불러온 슬롯이 이어서 자동 저장되는 슬롯이 된다
     if (!t) { UI.toast('저장된 게임이 없습니다.', 'warn'); return; }
-    try { const ns = Gm.deserialize(t); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); swap(ns, UI.lines('load', { date: Gm.dateLabel(ns.week) })); }
+    try { const ns = Gm.deserialize(t); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); swap(ns, UI.lines('load', { date: Gm.dateLabel(ns.week) })); tutGo(); }
     catch (e) { UI.toast('저장 데이터를 불러오지 못했습니다.', 'warn'); }
   }
   function saveTo(n) { useSlot(n); save(); }   // 이 칸에 저장 → 이후 자동 저장도 이 칸
   function loadSlot(n) {
     let t = null; try { t = localStorage.getItem(slotKey(n)); } catch (e) { /* 저장소 없음 */ }
     if (!t) { UI.toast('빈 슬롯입니다.', 'warn'); return; }
-    try { const ns = Gm.deserialize(t); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); useSlot(n); swap(ns, UI.lines('load', { date: Gm.dateLabel(ns.week) })); }
+    try { const ns = Gm.deserialize(t); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); useSlot(n); swap(ns, UI.lines('load', { date: Gm.dateLabel(ns.week) })); tutGo(); }
     catch (e) { UI.toast('저장 데이터를 불러오지 못했습니다.', 'warn'); }
   }
+  // 2026-11-18 튜토리얼: 새 게임은 모험가 0명으로 시작하고 튜토리얼이 첫 전사(FT0002) · 두 번째 모험가(FT0005)를 데려옴 (docs/design/튜토리얼.md)
+  function freshGame() { const c = Sim.defaults(); c.adv.startCount = 0; const ns = Tutorial.fresh(Gm.newGame(c, (Date.now() % 1e9) >>> 0)); Gm.stepWeek(ns); return ns; }
+  function tutGo() { if (!Tutorial.active()) return false; if (s.tut.started) Tutorial.resume(); else { s.tut.started = true; Tutorial.start(); } return true; }
   function newGame() {
     // 새 게임은 비어 있는 첫 슬롯에서 시작한다 (모두 차 있으면 지금 슬롯을 덮어쓴다)
     const e0 = firstEmpty(); if (e0) useSlot(e0);
-    const ns = Gm.newGame(Sim.defaults(), (Date.now() % 1e9) >>> 0); Gm.stepWeek(ns);
-    swap(ns, UI.lines('newgame'));
+    swap(freshGame(), null); playPrologue(() => { if (!tutGo()) UI.say(UI.lines('newgame')); });
   }
 
   UI.init(stage, s, { setSpeed, save, load, newGame, slots: () => ({ cur: slot, list: Array.from({ length: SLOTS }, (_, i) => slotInfo(i + 1)) }), saveTo, loadSlot,   // 책 설정 장 오른쪽: 슬롯 3칸 정보 · 칸 골라 저장 / 불러오기 (2026-11-13)
     changed: () => UI.hud(), promoted: a => Director.celebrate(a.id), town: () => Town.open() });
   Town.init(stage, () => s, {});
+  Tutorial.init(() => s, { setSpeed, getSpeed: () => speed });
   Gm.live = true;   // 게임 화면: 침공은 마을 화면에서 차례마다 보여 줌 (검증 · 시뮬레이터는 한 번에 처리)
   if (window.Invasion) Invasion.init(stage, () => s, { setSpeed, getSpeed: () => speed, save });
   Expedition.init(stage, () => s); // 원정 현황 패널 + 미니 뷰 (expedition.js)
@@ -137,7 +141,8 @@
       useSlot(n);
       if (k === 'load') { const i = slotInfo(n); try { const ns = Gm.deserialize(i.raw); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); swap(ns, null); } catch (er) { UI.toast('저장 데이터를 불러오지 못했습니다.', 'warn'); return; } close(false); return; }
       if (k === 'ovw') { try { localStorage.removeItem(slotKey(n)); localStorage.removeItem(stampKey(n)); } catch (er) { /* 무시 */ } }
-      close(mode === 'new');   // 새로 시작: 프롤로그 영상 뒤 길드
+      if (k === 'new' || k === 'ovw') swap(freshGame(), null);   // 2026-11-18 튜토리얼: 새로 시작 = 모험가 0명 + 튜토리얼
+      close(k === 'new' || k === 'ovw');   // 새로 시작: 프롤로그 영상 뒤 길드 (영상이 끝나거나 스킵하면 FT0001)
     };
     document.addEventListener('keydown', onKey);
     draw(); root.classList.add('on');
@@ -192,10 +197,10 @@
     if (speed > 0) { acc += dt * 1000 * speed; let n = 0; while (acc >= WEEK_MS) { acc -= WEEK_MS; step(); n++; } if (n) UI.hud(); }
     UI.weekBar(acc / WEEK_MS);
     Expedition.update(dt, acc / WEEK_MS, speed);
-    // 화면 속 동작 빠르기: 배속이 오르면 함께 빨라지되 최대 3배 (일시정지면 멈춤)
-    const as = speed === 0 ? 0 : Math.min(3, Math.max(1, speed * 0.6)), adt = dt * as;
+    // 화면 속 동작 빠르기: 배속이 오르면 함께 빨라지되 최대 3배 (일시정지면 멈춤 — 기본 튜토리얼 동안은 멈춰 있어도 모험가가 걸어 들어오고 나감)
+    const as = speed === 0 && !Tutorial.active() ? 0 : Math.min(3, Math.max(1, speed * 0.6)), adt = dt * as;
     if (window.Invasion) Invasion.check(s);
-    Lobby.update(s, dt); Lina.update(adt); Director.update(adt); UI.update(dt); Town.wf = acc / WEEK_MS; Town.still = still || reduce || !Snd.opt.fx; Town.update(s, dt); Snd.update(s, dt);
+    Lobby.update(s, dt); Lina.update(adt); Director.update(adt); UI.update(dt); Tutorial.update(dt); Town.wf = acc / WEEK_MS; Town.still = still || reduce || !Snd.opt.fx; Town.update(s, dt); Snd.update(s, dt);
     const g = stage.begin();
     if (Town.active) Town.draw(g, s, T); else Lobby.draw(g, s, T, { debug, still: still || reduce || !Snd.opt.fx, weekFrac: acc / WEEK_MS });
     requestAnimationFrame(frame);
@@ -211,7 +216,7 @@
     Assets.loadLazy(window.ASSET_MANIFEST);   // 마을 주민 걷기 그림 등 큰 그림은 타이틀 뒤에 받음
     Lobby.update(s, 0); Director.init(s); UI.hud();
     requestAnimationFrame(frame);
-    const go = () => { started = true; UI.say(UI.lines('start')); };
+    const go = () => { started = true; if (!tutGo()) UI.say(UI.lines('start')); };
     if (/[?&](lab|sky|temp|nopick)/.test(location.search)) go(); else titleThenPick(go);
   });
 })();

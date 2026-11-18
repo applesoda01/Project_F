@@ -357,13 +357,29 @@ if os.path.exists(CPATH) and not errors:          # 밸런스에 오류가 있�
                    'enhance': ENH,      # 강화 결과 = 기본값 + round(기본값 × enhance[n-1] / 100) (반올림, 편집기와 같음)
                    'quests': out_q}
 
+# ---------- 튜토리얼 대사 (2026-11-18, docs/design/튜토리얼.md) ----------
+# 번호(FT0001…) · 구간(1, 2… = 화면 안내로 끊기는 묶음) · 순서 · 화자(리나 · {전사} · {모험가} · 대장장이…) · 표정(리나만) · 대사
+tutorial = {}
+if os.path.exists(os.path.join(DATA, 'tutorial.csv')):
+    for ln, r in read('tutorial.csv', ['번호', '구간', '순서', '화자', '표정', '대사', '메모']):
+        tid = r['번호']
+        if not re.match(r'^[FEDCBAS][TMS]\d{4}$', tid): err('tutorial.csv', ln, f"번호 '{tid}' 는 (등급)(유형)(4자리) 모양이어야 합니다 (예: FT0001)"); continue
+        if not r['대사']: err('tutorial.csv', ln, '대사가 비었습니다'); continue
+        if r['화자'] == '리나' and r['표정'] not in FACES: err('tutorial.csv', ln, f"리나 표정 '{r['표정']}' 은 {' '.join(FACES)} 중 하나여야 합니다")
+        for v in re.findall(r'\{([^}]+)\}', r['대사'] + r['화자']):
+            if v not in ('전사', '모험가'): err('tutorial.csv', ln, f"{{{v}}} 는 쓸 수 없습니다 (전사 · 모험가)")
+        try: part, order = int(r['구간']), float(r['순서'])
+        except ValueError: err('tutorial.csv', ln, '구간 · 순서는 숫자여야 합니다'); continue
+        tutorial.setdefault(tid, {}).setdefault(part, []).append((order, {'name': r['화자'], 'face': r['표정'], 'text': r['대사']}))
+    tutorial = {k: [[x for _, x in sorted(v[p_], key=lambda t: t[0])] for p_ in sorted(v)] for k, v in tutorial.items()}
+
 # ---------- 결과 ----------
 for w_ in warns: print('  경고:', w_)
 if errors:
     print(f'오류 {len(errors)}건 — 파일을 만들지 않았습니다.')
     for e in errors: print('  -', e)
     sys.exit(1)
-data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog}
+data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial}
 if content is not None: data['content'] = content       # 편집기 데이터가 없으면 넣지 않음 (게임은 balance 값만 씀)
 # 로비 배치 칸 (2026-11-12, tools/lobby_grid_editor.html 로 칠한 값). 없으면 게임은 모든 바닥 칸을 놓기 가능으로 봄
 _lg = os.path.join(DATA, 'lobby_grid.json')

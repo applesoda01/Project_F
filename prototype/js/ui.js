@@ -202,7 +202,7 @@
       }
       UI.logLine(L.text, L.kind); // 로그박스로 흘려보냄 (알림은 전직 제안만 따로 띄움)
       if (L.kind === 'promo' && L.text.includes('제안합니다')) toast(L.text, L.kind);
-      if (L.kind === 'ledger' && UI.autoReport) UI.open('ledger');   // 월말: 리나 브리핑 대신 장부 창을 보여 준다
+      if (L.kind === 'ledger' && UI.autoReport && !(root.Tutorial && root.Tutorial.active())) UI.open('ledger');   // 2026-11-18: 기본 튜토리얼 중에는 열지 않음 (FT0010에서 장부 안내)   // 월말: 리나 브리핑 대신 장부 창을 보여 준다
       if (L.kind === 'promo' && L.text.includes('제안합니다')) { const nm = L.text.split(/[이가] \d차/)[0]; UI.say(UI.lines('promo_ready', { name: nm })); }
     }
   };
@@ -485,6 +485,9 @@
     go();
     if (root.BookFX && !wasOpen) root.BookFX.openCover();
   };
+  UI.popupName = () => popup;   // 2026-11-18 튜토리얼: 지금 펼친 장
+  UI.repop = () => { if (popup) renderPopup(); };   // 지금 장을 다시 그림 (튜토리얼이 재료를 준 뒤 등)
+  UI.dlgBusy = () => !!(Dlg.cur || Dlg.lines.length);
   UI.closeFx = function () { if (root.BookFX && popup) root.BookFX.closeCover(() => UI.close()); else UI.close(); };   // 책끈 · Esc · 바깥 누르기 = 표지 덮으며 닫기
   let bookHold = false, bookSp = 1;   // 책이 펼쳐진 동안 시간 정지: 닫으면 펼치기 전 속도로
   UI.close = function () { if (bookHold) { bookHold = false; document.body.classList.remove('bookOn'); hooks.setSpeed && hooks.setSpeed(bookSp); } mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
@@ -1923,7 +1926,8 @@
     if (bs !== Dlg.bs) { Dlg.bs = bs; drawStand(); }
   }
   function next() {
-    const L = Dlg.lines.shift();
+    let L = Dlg.lines.shift();
+    while (L && L.fn) { try { L.fn(); } catch (e) { console.error(e); } L = Dlg.lines.shift(); }   // 2026-11-18 튜토리얼: {fn} 줄 = 대사 사이에서 실행할 일 (대사창에는 안 나옴)
     if (!L) { Dlg.open = false; Dlg.cur = null; Dlg.wait = 0; q('#dlg').classList.remove('open'); q('#logBox').classList.remove('hide'); stage.ui.classList.remove('dlgOn'); root.Lina.chatting = false; return; }
     Dlg.open = true; Dlg.cur = L; Dlg.shown = 0; Dlg.t = 0; Dlg.hold = 0;
     const first = !stage.ui.classList.contains('dlgOn');
