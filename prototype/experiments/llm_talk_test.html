@@ -38,6 +38,8 @@ table{border-collapse:collapse;font-size:14px}td,th{border-bottom:1px solid var(
     <option value="Qwen3.5-4B-q4f16_1-MLC">Qwen3.5 4B (2.3GB 실측)</option>
     <option value="gemma3-1b-it-q4f16_1-MLC">Gemma 3 1B (가벼움)</option>
     <option value="gemma-4-E2B-it-q4f16_1-MLC">Gemma 4 E2B</option>
+    <option value="gguf:https://huggingface.co/ssolunar/Kanana-2-1.3b-instruct-Q4_K_M-GGUF/resolve/main/Kanana-2-1.3b-instruct-Q4_K_M.gguf">카카오 Kanana-2 1.3B (GGUF Q4_K_M · 0.85GB · wllama)</option>
+    <option value="gguf:https://huggingface.co/mradermacher/kanana-2-3b-instruct-GGUF/resolve/main/kanana-2-3b-instruct.Q4_K_M.gguf">카카오 Kanana-2 3B (GGUF Q4_K_M · 2.2GB · wllama)</option>
   </select>
   <button id="load" class="go">모델 불러오기</button>
   <select id="pv"><option value="2" selected>질문 B: 예시 2개 + "이름: 대사" 줄</option><option value="1">질문 A: 규칙 + JSON</option></select>
@@ -143,9 +145,18 @@ $('load').onclick = async () => {
   if (busy) return; busy = true; $('load').disabled = true;
   const id = $('model').value, t0 = performance.now();
   try {
-    const webllm = await import('https://esm.run/@mlc-ai/web-llm@0.2.87');
-    if (engine) { try { await engine.unload(); } catch (e) {} }
-    engine = window.__engine = await webllm.CreateMLCEngine(id, { initProgressCallback: r => prog(`${id}: ${r.text}`) });
+    if (engine) { try { await (engine.unload ? engine.unload() : engine.exit()); } catch (e) {} }
+    if (id.startsWith('gguf:')) {   // 2026-11-18: WebLLM에 없는 모델(카카오 Kanana-2)은 GGUF를 wllama(llama.cpp 웹 버전, WebGPU)로 돌림
+      const W = 'https://cdn.jsdelivr.net/npm/@wllama/wllama@3.8.1/esm/';
+      const { Wllama } = await import(W + 'index.js');
+      const wl = new Wllama({ default: W + 'wasm/wllama.wasm' });
+      await wl.loadModelFromUrl(id.slice(5), { n_ctx: 2048, progressCallback: ({ loaded, total }) => prog(`내려받는 중 ${Math.round(loaded / 1048576)} / ${Math.round(total / 1048576)}MB`) });
+      window.__wllama = wl;
+      engine = window.__engine = { exit: () => wl.exit(), chat: { completions: { create: async o => { const r = await wl.createChatCompletion({ messages: o.messages, max_tokens: o.max_tokens, temperature: o.temperature, top_p: o.top_p, top_k: 40 }); return r && r.choices ? r : { choices: [{ message: { content: String(r) } }] }; } } } };
+    } else {
+      const webllm = await import('https://esm.run/@mlc-ai/web-llm@0.2.87');
+      engine = window.__engine = await webllm.CreateMLCEngine(id, { initProgressCallback: r => prog(`${id}: ${r.text}`) });
+    }
     window.__loadSec = (performance.now() - t0) / 1000;
     prog(`${id} 준비됨 (불러오기 ${window.__loadSec.toFixed(0)}초)`);
     document.querySelectorAll('[data-one],#runAll').forEach(b => b.disabled = false);
