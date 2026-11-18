@@ -38,6 +38,7 @@ table{border-collapse:collapse;font-size:14px}td,th{border-bottom:1px solid var(
     <option value="Qwen3.5-4B-q4f16_1-MLC">Qwen3.5 4B (약 2.4GB)</option>
   </select>
   <button id="load" class="go">모델 불러오기</button>
+  <select id="pv"><option value="2" selected>질문 B: 예시 2개 + "이름: 대사" 줄</option><option value="1">질문 A: 규칙 + JSON</option></select>
   <select id="reps"><option value="1">시나리오마다 1번</option><option value="3" selected>시나리오마다 3번</option></select>
   <button id="runAll" disabled>전부 생성</button>
   <button id="copy" disabled>결과 복사 (JSON)</button>
@@ -81,6 +82,22 @@ const SYS = `너는 판타지 마을의 모험가 길드를 배경으로 한 게
 - B는 '듣는 사람 처지'에 맞게 반응한다(함께 겪었으면 '우리', 처음 들었으면 놀라거나 묻기).
 - 관계가 단짝이면 다정하게, 서먹하면 퉁명스럽게.
 - 출력은 JSON 배열만: [{"who":"A","line":"..."},{"who":"B","line":"..."},{"who":"A","line":"..."}]`;
+// 질문 B (2026-11-18 2차): 작은 모델은 JSON · 긴 규칙을 못 지켜서, 예시 2개를 보여 주고 "이름: 대사" 3줄만 쓰게 함
+const T2 = { bold: '호탕, 반말', careful: '조심, 존댓말', friendly: '다정, 반말', loner: '무뚝뚝, 짧은 반말', plain: '보통, 반말' };
+const SYS2 = `판타지 마을 모험가 길드의 두 모험가 대화를 3줄 쓴다. 형식은 반드시 예시처럼 "이름: 대사" 3줄. 한 줄 25자 이내. 설명 · 따옴표 · 괄호 금지.
+
+예시1)
+상황: 식탁. 가빈(호탕, 반말)이 지난주 들개에게 물려 다침. 루나(조심, 존댓말)는 처음 들음. 둘은 친함.
+가빈: 지난주 들개한테 물린 데가 아직 욱신거려!
+루나: 그러니까 같이 가자고 했잖아요. 다음엔 꼭 불러요.
+가빈: 알았어, 대신 오늘 고기는 네가 사!
+
+예시2)
+상황: 귀환. 잭(무뚝뚝, 짧은 반말)과 가빈(호탕, 반말)이 함께 도적에게 져서 실패함. 둘은 서먹함.
+잭: …네가 먼저 뛰어들어서 그래.
+가빈: 뭐? 네가 뒤에서 구경만 했잖아!
+잭: …다음엔 따로 가.`;
+const user2 = sc => { const a = A[sc.a], b = A[sc.b]; return `상황: ${sc.place}. ${a.name}(${T2[a.tone]})의 기억: ${sc.mem}. ${b.name}(${T2[b.tone]})는 ${sc.heard}. 관계: ${sc.rel}.\n${a.name}:`; };
 const userMsg = sc => `장소: ${sc.place}
 A: ${who(sc.a)}
 B: ${who(sc.b)}
@@ -91,8 +108,16 @@ B의 처지: ${sc.heard}`;
 const MODERN = /(휴대폰|핸드폰|컴퓨터|자동차|인터넷|카톡|커피|버스|택시|[A-Za-z]{3,})/;
 function check(sc, text) {
   const t = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  if (+$('pv').value === 2) {   // "이름: 대사" 줄 읽기 (첫 줄은 질문 끝의 'A이름:' 뒤에서 시작)
+    const L = (A[sc.a].name + ':' + t).split('\n').map(x => x.trim()).filter(Boolean).map(x => { const m = x.match(/^([가-힣]{1,4})\s*[:：]\s*(.+)$/); return m ? { who: m[1] === sc.a ? 'A' : m[1] === sc.b ? 'B' : '?', line: m[2].replace(/^["“]|["”]$/g, '') } : null; }).filter(Boolean).slice(0, 3);
+    return finish(sc, L, t);
+  }
   let arr = null; try { const m = t.match(/\[[\s\S]*\]/); arr = m ? JSON.parse(m[0]) : null; } catch (e) { arr = null; }
   const lines = Array.isArray(arr) ? arr.filter(x => x && typeof x.line === 'string') : [];
+  return finish(sc, lines, t, !!arr);
+}
+function finish(sc, lines, t, parsed = true) {
+  const arr = parsed;
   const c = {
     json: !!arr && lines.length === 3,
     order: lines.length === 3 && lines.map(x => x.who).join('') === 'ABA',
@@ -118,7 +143,7 @@ $('load').onclick = async () => {
   try {
     const webllm = await import('https://esm.run/@mlc-ai/web-llm@0.2.87');
     if (engine) { try { await engine.unload(); } catch (e) {} }
-    engine = await webllm.CreateMLCEngine(id, { initProgressCallback: r => prog(`${id}: ${r.text}`) });
+    engine = window.__engine = await webllm.CreateMLCEngine(id, { initProgressCallback: r => prog(`${id}: ${r.text}`) });
     window.__loadSec = (performance.now() - t0) / 1000;
     prog(`${id} 준비됨 (불러오기 ${window.__loadSec.toFixed(0)}초)`);
     document.querySelectorAll('[data-one],#runAll').forEach(b => b.disabled = false);
@@ -129,12 +154,12 @@ $('load').onclick = async () => {
 async function gen(sc) {
   const t0 = performance.now();
   const r = await engine.chat.completions.create({
-    messages: [{ role: 'system', content: SYS }, { role: 'user', content: userMsg(sc) }],
+    messages: +$('pv').value === 2 ? [{ role: 'system', content: SYS2 }, { role: 'user', content: user2(sc) }] : [{ role: 'system', content: SYS }, { role: 'user', content: userMsg(sc) }],
     temperature: 0.8, top_p: 0.9, max_tokens: 220, extra_body: { enable_thinking: false }
   });
   const ms = performance.now() - t0, text = r.choices[0].message.content || '', u = r.usage || {};
   const k = check(sc, text);
-  const rec = { model: $('model').value, sc: sc.id, ms: Math.round(ms), tokens: u.completion_tokens || null, tps: u.extra && u.extra.decode_tokens_per_s ? +u.extra.decode_tokens_per_s.toFixed(1) : null, lines: k.lines.map(x => `${x.who === 'A' ? sc.a : sc.b}: ${x.line}`), check: k.c, raw: k.raw };
+  const rec = { pv: +$('pv').value, model: $('model').value, sc: sc.id, ms: Math.round(ms), tokens: u.completion_tokens || null, tps: u.extra && u.extra.decode_tokens_per_s ? +u.extra.decode_tokens_per_s.toFixed(1) : null, lines: k.lines.map(x => `${x.who === 'A' ? sc.a : sc.b}: ${x.line}`), check: k.c, raw: k.raw };
   results.push(rec); show(sc, rec); summary(); return rec;
 }
 function show(sc, rec) {
