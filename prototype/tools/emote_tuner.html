@@ -79,7 +79,9 @@ textarea{width:100%;height:54px;font:12px/1.4 ui-monospace,monospace;border:1px 
       <div class="seg" style="margin-top:10px"><button id="reset">지금 게임 값으로</button><button id="flipPos">위치만 좌우 맞바꾸기</button></div>
       <div class="hint" id="gameVal"></div>
     </div>
-    <div class="card"><h2>기호 묶음 — 보내 주신 사진에 맞추기</h2>
+    <div class="card"><h2>기호 위치 — 보내 주신 사진에 맞추기</h2>
+      <div class="seg" style="margin-bottom:8px"><button id="mAll" class="on">8종 묶음</button><button id="mOne">이 기호만</button><label class="hint" style="display:flex;align-items:center;gap:4px"><input type="checkbox" id="sFlip"> 기호 좌우 반전</label></div>
+      <div class="hint" id="mHint" style="margin-bottom:6px"></div>
       <div style="position:relative;width:280px;height:271px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;touch-action:none" id="symBox">
         <img id="symRef" src="../assets/emote/ref_win.jpg" style="position:absolute;left:0;top:0;width:280px;opacity:.45;pointer-events:none">
         <canvas id="symCv" width="560" height="542" style="position:absolute;left:0;top:0;width:280px;height:271px"></canvas>
@@ -89,7 +91,7 @@ textarea{width:100%;height:54px;font:12px/1.4 ui-monospace,monospace;border:1px 
       <div class="row"><label>세로</label><input type="range" id="sdy" min="-200" max="200" step="0.5"><input type="text" inputmode="decimal" id="sdyN"></div>
       <div class="row"><label>크기</label><input type="range" id="sk" min="20" max="300" step="1"><input type="text" inputmode="decimal" id="skN"></div>
       <div class="hint">8종 기호(느낌표 · 땀방울 …)가 한꺼번에 같이 움직여요. 기호를 끌어도 됩니다. 단위: 얼굴 가로의 % (−200 ~ 200) · 크기 %. 숫자 칸에 직접 쓰고 Enter. 사진은 원본 방향이라 이 칸은 반전 없이 보여요.</div>
-      <div class="seg" style="margin-top:8px"><button id="symReset">기호 처음대로</button></div>
+      <div class="seg" style="margin-top:8px"><button id="symReset">기호 전부 지금 게임 값으로</button></div>
     </div>
     <div class="card"><h2>결과</h2>
       <div class="seg" style="margin-bottom:6px"><button id="copy">JSON 복사</button><button id="save">파일 저장</button></div>
@@ -108,9 +110,11 @@ const KS = Emote.KINDS, NM = Emote.NAME, FACE_H = 296 / 330, CX = 300, CY = 250;
 const GAME = { dx: Emote.POS.dx, dy: Emote.POS.dy, size: Emote.POS.size, mirror: !!Emote.POS.mirror };
 const $ = id => document.getElementById(id);
 let SY = { dx: Emote.SYM.dx, dy: Emote.SYM.dy, k: Emote.SYM.k }; const GSYM = Object.assign({}, SY);
+const ONE = Object.keys(Emote.SYMK);   // 따로 조절할 수 있는 기호 (신남 · 헤헤 · 반짝)
+let SK = JSON.parse(JSON.stringify(Emote.SYMK)); const GSYMK = JSON.stringify(SK); let mode = 'all';
 let V = Object.assign({}, GAME), cur = 'win', playing = true, zoom = 1, drag = null, t0 = performance.now();
-try { const s = JSON.parse(localStorage.getItem('emotePos2') || 'null'); if (s && s.game && JSON.stringify(s.game) === JSON.stringify(GAME)) V = Object.assign(V, s.V); if (s && s.gsym && JSON.stringify(s.gsym) === JSON.stringify(GSYM) && s.SY) SY = s.SY; } catch (e) {}
-const store = () => { try { localStorage.setItem('emotePos2', JSON.stringify({ V, game: GAME, SY, gsym: GSYM })); } catch (e) {} };
+try { const s = JSON.parse(localStorage.getItem('emotePos2') || 'null'); if (s && s.game && JSON.stringify(s.game) === JSON.stringify(GAME)) V = Object.assign(V, s.V); if (s && s.gsym && JSON.stringify(s.gsym) === JSON.stringify(GSYM) && s.SY) SY = s.SY; if (s && s.gsymk === GSYMK && s.SK) SK = s.SK; } catch (e) {}
+const store = () => { try { localStorage.setItem('emotePos2', JSON.stringify({ V, game: GAME, SY, gsym: GSYM, SK, gsymk: GSYMK })); } catch (e) {} };
 $('gameVal').textContent = `지금 게임 값: 좌우 ${GAME.dx} · 상하 ${GAME.dy} · 크기 ${GAME.size} · 그림 ${GAME.mirror ? '좌우 반전' : '원본'}`;
 // 숫자 칸: 직접 써 넣기 (Enter 또는 칸을 벗어나면 반영 · 쓰는 중에는 값을 덮어쓰지 않음). 막대 범위 밖 값도 됨
 const numIn = (id, set) => { const el = $(id); const go = () => { const v = parseFloat(el.value.replace(',', '.')); if (!isNaN(v)) set(v); else ui(); };
@@ -120,10 +124,10 @@ const g = $('cv').getContext('2d');
 function frame(now) {
   g.setTransform(2, 0, 0, 2, 0, 0); g.clearRect(0, 0, 600, 500);
   const life = 2.6, t = ((now - t0) / 1000) % life, age = playing && !drag ? t : 1, remain = playing && !drag ? life - t : 9;
-  Emote.draw(g, cur, CX + V.dx, CY + V.dy, age, remain, { mirror: V.mirror, size: V.size, sym: SY });
+  Emote.draw(g, cur, CX + V.dx, CY + V.dy, age, remain, { mirror: V.mirror, size: V.size, sym: SY, symk: SK });
   // 기호 묶음 칸: 사진 칸과 같은 배율 (사진 450px 중 얼굴 가로 330px, 왼쪽 60 · 위 120 여백)
   const sg = $('symCv').getContext('2d'), R = 280 / 450, FW = 330 * R; sg.setTransform(2, 0, 0, 2, 0, 0); sg.clearRect(0, 0, 280, 271);
-  Emote.draw(sg, cur, 60 * R + FW / 2, 120 * R + FW * FACE_H / 2, 1, 9, { mirror: false, size: FW, sym: SY });
+  Emote.draw(sg, cur, 60 * R + FW / 2, 120 * R + FW * FACE_H / 2, 1, 9, { mirror: false, size: FW, sym: SY, symk: SK });
   requestAnimationFrame(frame);
 }
 function ui() {
@@ -133,8 +137,13 @@ function ui() {
   $('dir').textContent = '그림 방향: ' + (V.mirror ? '좌우 반전' : '원본'); $('playBtn').textContent = playing ? '⏸ 멈춤' : '▶ 움직임'; $('playBtn').classList.toggle('on', playing);
   $('kinds').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.k === cur));
   $('symRef').src = `../assets/emote/ref_${cur}.jpg`;
-  for (const [id, v] of [['sdx', SY.dx * 100], ['sdy', SY.dy * 100], ['sk', SY.k * 100]]) { $(id).value = v; setNum(id + 'N', Math.round(v * 10) / 10); }
-  $('out').value = JSON.stringify({ dir: V.mirror ? 'mirror' : 'original', anchor: '모험가 중심 (발 − 70px)', dx: V.dx, dy: V.dy, size: V.size, sym: { dx: +SY.dx.toFixed(4), dy: +SY.dy.toFixed(4), k: +SY.k.toFixed(3) } });
+  if (mode === 'one' && !ONE.includes(cur)) mode = 'all';
+  const T = mode === 'one' ? SK[cur] : SY;
+  for (const [id, v] of [['sdx', T.dx * 100], ['sdy', T.dy * 100], ['sk', T.k * 100]]) { $(id).value = v; setNum(id + 'N', Math.round(v * 10) / 10); }
+  $('mAll').classList.toggle('on', mode === 'all'); $('mOne').classList.toggle('on', mode === 'one'); $('mOne').disabled = !ONE.includes(cur);
+  $('sFlip').disabled = !ONE.includes(cur); $('sFlip').checked = !!(SK[cur] && SK[cur].flip);
+  $('mHint').textContent = mode === 'one' ? `「${NM[cur]}」 기호만 움직입니다 (8종 묶음 값 위에 더해짐).` : (ONE.includes(cur) ? '8종 기호가 같이 움직입니다. 이 기호만 옮기려면 「이 기호만」.' : '8종 기호가 같이 움직입니다. 「이 기호만」은 신남 · 헤헤 · 반짝에서 쓸 수 있어요.');
+  $('out').value = JSON.stringify({ dir: V.mirror ? 'mirror' : 'original', anchor: '모험가 중심 (발 − 70px)', dx: V.dx, dy: V.dy, size: V.size, sym: { dx: +SY.dx.toFixed(4), dy: +SY.dy.toFixed(4), k: +SY.k.toFixed(3) }, symk: Object.fromEntries(ONE.map(k => [k, { dx: +SK[k].dx.toFixed(4), dy: +SK[k].dy.toFixed(4), k: +SK[k].k.toFixed(3), flip: !!SK[k].flip }])) });
   store();
 }
 $('kinds').innerHTML = KS.map(k => `<button data-k="${k}">${NM[k]}</button>`).join('');
@@ -148,15 +157,18 @@ for (const [id, key] of [['dx', 'dx'], ['dy', 'dy'], ['sz', 'size']]) {
   $(id).oninput = e => set(+e.target.value); numIn(id + 'N', set);
 }
 $('reset').onclick = () => { V = Object.assign({}, GAME); ui(); };
-$('symReset').onclick = () => { SY = Object.assign({}, GSYM); ui(); };
+$('symReset').onclick = () => { SY = Object.assign({}, GSYM); SK = JSON.parse(GSYMK); ui(); };
+$('mAll').onclick = () => { mode = 'all'; ui(); }; $('mOne').onclick = () => { mode = 'one'; ui(); };
+$('sFlip').onchange = e => { if (SK[cur]) { SK[cur].flip = e.target.checked; ui(); } };
+const TG = () => mode === 'one' && SK[cur] ? SK[cur] : SY;
 $('symOp').oninput = e => { $('symRef').style.opacity = e.target.value / 100; };
 for (const [id, key, d] of [['sdx', 'dx', 100], ['sdy', 'dy', 100], ['sk', 'k', 100]]) {
-  const set = v => { if (!isNaN(v)) { SY[key] = v / d; ui(); } };
+  const set = v => { if (!isNaN(v)) { TG()[key] = v / d; ui(); } };
   $(id).oninput = e => set(+e.target.value); numIn(id + 'N', set);
 }
 let sdrag = null;
-$('symBox').addEventListener('pointerdown', e => { sdrag = { x0: e.clientX, y0: e.clientY, dx: SY.dx, dy: SY.dy }; $('symBox').setPointerCapture(e.pointerId); e.preventDefault(); });
-$('symBox').addEventListener('pointermove', e => { if (!sdrag) return; const FW = 330 * 280 / 450; SY.dx = sdrag.dx + (e.clientX - sdrag.x0) / FW; SY.dy = sdrag.dy + (e.clientY - sdrag.y0) / FW; ui(); });
+$('symBox').addEventListener('pointerdown', e => { const T = TG(); sdrag = { T, x0: e.clientX, y0: e.clientY, dx: T.dx, dy: T.dy }; $('symBox').setPointerCapture(e.pointerId); e.preventDefault(); });
+$('symBox').addEventListener('pointermove', e => { if (!sdrag) return; const FW = 330 * 280 / 450; sdrag.T.dx = sdrag.dx + (e.clientX - sdrag.x0) / FW; sdrag.T.dy = sdrag.dy + (e.clientY - sdrag.y0) / FW; ui(); });
 $('symBox').addEventListener('pointerup', () => { sdrag = null; });
 $('copy').onclick = () => { const t = $('out'), ok = () => { $('copy').textContent = '복사됨 ✓'; setTimeout(() => $('copy').textContent = 'JSON 복사', 1500); };
   (navigator.clipboard ? navigator.clipboard.writeText(t.value).then(ok) : Promise.reject()).catch(() => { t.select(); try { document.execCommand('copy'); ok(); } catch (e) {} }); };

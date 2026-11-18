@@ -9,13 +9,16 @@
   const NAME = { win: '해냈다!', sweat: '식은땀', note: '신남', heart: '고마워', anger: '욱', smile: '헤헤', qex: '어?!', spark: '반짝' };
   const PARTS = { win: { e: [0.13, 0.291, 0.752], s: [0.879, -0.021, 0.173] }, sweat: { e: [0.109, 0.188, 0.758], s: [0.752, -0.024, 0.242] }, note: { e: [0.133, 0.312, 0.752], s: [0.739, -0.042, 0.379] }, heart: { e: [0.133, 0.376, 0.661], s: [0.721, -0.033, 0.376] }, anger: { e: [0.1, 0.239, 0.791], s: [0.782, -0.073, 0.345] }, smile: { e: [0.112, 0.321, 0.752], s: [0.727, -0.094, 0.336] }, qex: { e: [0.076, 0.155, 0.791], s: [0.803, -0.121, 0.321] }, spark: { e: [0.103, 0.17, 0.797], s: [0.779, -0.164, 0.364] } };
   const POS = { dx: 63, dy: -81, size: 62, mirror: true };   // 로비 (게임 화면 1920 기준 px)
-  const SYM = { dx: 0, dy: 0, k: 1 };   // 기호 묶음 보정 (8종 모두 같이, 단위 = 얼굴 가로 · k = 크기 배율, 기호 가운데 기준) — tools/emote_tuner.html 에서 맞춤
+  const SYM = { dx: -0.85, dy: 0, k: 1 };   // 2026-11-18 22:47 사용자 확정 (기호를 얼굴 반대편으로)
+  // 기호별 추가 보정 + 기호 그림만 좌우 뒤집기 (사용자 22:47: 신남 · 헤헤 · 반짝만 반전 · 따로 위치 조절)
+  const SYMK = { note: { dx: 0, dy: 0, k: 1, flip: true }, smile: { dx: 0, dy: 0, k: 1, flip: true }, spark: { dx: 0, dy: 0, k: 1, flip: true } };   // 기호 묶음 보정 (8종 모두 같이, 단위 = 얼굴 가로 · k = 크기 배율, 기호 가운데 기준) — tools/emote_tuner.html 에서 맞춤
   const FACE_H = 296 / 330;
-  const E = { base: 'assets/emote/', KINDS, NAME, POS, PARTS, SYM };
-  function symBox(P, o) {   // 기호 상자 [x, y, w] (얼굴 가로 단위) = 원래 자리 + 묶음 보정
-    const Q = o || SYM, w = P.s[2] * Q.k, c = P.s[0] + P.s[2] / 2 + Q.dx;
-    return [c - w / 2, P.s[1] + Q.dy - (w - P.s[2]) / 2, w];
+  const E = { base: 'assets/emote/', KINDS, NAME, POS, PARTS, SYM, SYMK };
+  function symBox(P, o, q) {   // 기호 상자 [x, y, w] (얼굴 가로 단위) = 원래 자리 + 묶음 보정 + 기호별 보정
+    const Q = o || SYM, K = q || { dx: 0, dy: 0, k: 1 }, w = P.s[2] * Q.k * (K.k || 1), c = P.s[0] + P.s[2] / 2 + Q.dx + (K.dx || 0);
+    return [c - w / 2, P.s[1] + Q.dy + (K.dy || 0) - (w - P.s[2]) / 2, w];
   }
+  const symk = (k, opt) => (opt && opt.symk ? opt.symk[k] : SYMK[k]) || null;
   const cache = {};
   function img(n) {
     if (typeof Image === 'undefined') return null;
@@ -62,9 +65,10 @@
     g.restore();
     // 기호
     if (s.k > 0.01) {
-      const B = symBox(P, opt && opt.sym), sw = B[2] * W, sh = sw * sy.naturalHeight / sy.naturalWidth, scx = x0 + B[0] * W + sw / 2, scy = y0 + B[1] * W + sh / 2;
+      const KQ = symk(k, opt), B = symBox(P, opt && opt.sym, KQ), sw = B[2] * W, sh = sw * sy.naturalHeight / sy.naturalWidth, scx = x0 + B[0] * W + sw / 2, scy = y0 + B[1] * W + sh / 2;
       g.save(); g.shadowColor = 'transparent'; g.globalAlpha *= Math.max(0, Math.min(1, s.a));
       g.translate(scx + s.x * sw, scy + s.y * sw); g.rotate(s.r * Math.PI / 180); g.scale(s.k, s.k); if (mir && k === 'qex') g.scale(-1, 1);   /* 「?!」 글자만은 뒤집지 않음 (거꾸로 읽히지 않게) */
+      if (KQ && KQ.flip) g.scale(-1, 1);   /* 기호 그림만 좌우 뒤집기 (신남 · 헤헤 · 반짝) */
       g.drawImage(sy, -sw / 2, -sh / 2, sw, sh); g.restore();
     }
     g.restore();
@@ -73,7 +77,7 @@
   E.html = function (k, W, mirror) {
     const P = PARTS[k]; if (!P) return ''; const mir = mirror == null ? POS.mirror : mirror, H = W * FACE_H;
     const im = (n, l, t, w, ex) => `<img src="${E.base}${n}.png" style="position:absolute;left:${l}px;top:${t}px;width:${w}px${ex || ''}" alt="">`;
-    return `<span style="position:relative;display:inline-block;width:${W}px;height:${H}px${mir ? ';transform:scaleX(-1)' : ''}">${im('face_r', 0, 0, W)}${im('e_' + k, P.e[0] * W, P.e[1] * W, P.e[2] * W)}${im('s_' + k, symBox(P)[0] * W, symBox(P)[1] * W, symBox(P)[2] * W, mir && k === 'qex' ? ';transform:scaleX(-1)' : '')}</span>`;
+    return `<span style="position:relative;display:inline-block;width:${W}px;height:${H}px${mir ? ';transform:scaleX(-1)' : ''}">${im('face_r', 0, 0, W)}${im('e_' + k, P.e[0] * W, P.e[1] * W, P.e[2] * W)}${(B => im('s_' + k, B[0] * W, B[1] * W, B[2] * W, ((mir && k === 'qex') !== !!(SYMK[k] && SYMK[k].flip)) ? ';transform:scaleX(-1)' : ''))(symBox(P, null, SYMK[k]))}</span>`;
   };
   E.svg = (k) => E.html(k, 40);   // 예전 이름 (대화 극장 호환)
   root.Emote = E;
