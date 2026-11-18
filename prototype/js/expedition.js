@@ -134,9 +134,10 @@
     const x = e.x, F = x.fight, party = x.party.map(pid => advOf(s, pid)).filter(Boolean).sort((a, b) => ROW[a.core] - ROW[b.core]);
     sel = id;
     const unitOf = a => (F && F.units.find(u => u.id === a.id)) || null;
+    const mpLog = !!(F && F.log && F.log.some(z => z.mp != null));   // 2026-11-18: 마력 기록이 없는 예전 원정(마력 기록 도입 전 저장)은 마력 막대를 숨김 — 가득 찬 채 고정되던 문제
     view = { id, cam: 0, t: 0, phaseT: 0, phase: null, ev: timeline(F), applied: 0, fresh: true, sparks: [], nums: [], combat: !!F, say: [],
       actors: party.map((a, i) => { const u = unitOf(a), k = CLS[a.core] + '_' + sexOf(a); ['walk', 'run', 'attack', 'fall'].forEach(n => img(k + '_' + n));
-        return { id: a.id, name: a.name, adv: a, k, i, x: 0, anim: 'walk', t: Math.random(), flash: 0, glow: 0, dodge: 0, dir: 1, hp: u ? u.maxHp : 1, maxHp: u ? u.maxHp : 1, mp: u ? u.maxMp : 0, maxMp: u ? u.maxMp : 0, acts: actTimes(F, a.id), down: false, show: 0 }; }),
+        return { id: a.id, name: a.name, adv: a, k, i, x: 0, anim: 'walk', t: Math.random(), flash: 0, glow: 0, dodge: 0, dir: 1, hp: u ? u.maxHp : 1, maxHp: u ? u.maxHp : 1, mp: u ? u.maxMp : 0, maxMp: u && mpLog ? u.maxMp : 0, acts: actTimes(F, a.id), down: false, show: 0 }; }),
       enemies: (F ? F.enemies : []).map((m, i) => ({ n: m.name, boss: m.boss, scale: m.boss ? 140 : 100, im: monImg(m.mon), sd: sdOn() ? MONSD[m.mon] : null, mt: 0, act: 'idle', x: 540 + i * 56, flash: 0, crit: 0, alpha: 1, hp: m.maxHp, maxHp: m.maxHp, shown: 1 })) };
     if (sdOn()) { view.actors.forEach(a => ['walk', 'run', 'attack', 'fall', 'search', 'idle'].forEach(n => sdSheet(a.k, n))); view.enemies.forEach(m => m.sd && ['idle', 'attack', 'fall'].forEach(n => monSheet(m.sd[0], n))); }   // 2026-11-16: 쓸 SD 시트를 열 때 미리 읽음 (처음 쓰는 순간 예전 도트가 잠깐 보이던 문제)
     ev.classList.add('on'); requestAnimationFrame(() => ev.classList.add('vis')); updSmall(); render();
