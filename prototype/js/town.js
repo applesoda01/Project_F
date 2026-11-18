@@ -431,7 +431,9 @@
     ui.querySelector('#tNone').onclick = () => { const u = unl(getS()); B.forEach(b => { if (b.special) u[b.id] = false; }); refreshUi(); };
     cv.addEventListener('mousemove', e => { if (!Town.active) return; mouse = stage.toGame(e.clientX, e.clientY); hover = pick(getS(), mouse.x, mouse.y); cv.style.cursor = hover ? 'pointer' : ''; });
     cv.addEventListener('mouseleave', () => { hover = null; mouse = { x: -1, y: -1 }; });
-    cv.addEventListener('click', e => { if (!Town.active) return; const p = stage.toGame(e.clientX, e.clientY); sel = pick(getS(), p.x, p.y); refreshUi(); });
+    cv.addEventListener('click', e => { if (!Town.active) return; const p = stage.toGame(e.clientX, e.clientY); sel = pick(getS(), p.x, p.y);
+      if (sel && sel.id === 'smith' && unl(getS()).smith && root.Smithy) { root.Smithy.getS = getS; root.Smithy.open(); sel = null; }   // 2026-11-18: 대장간(해금 뒤)을 누르면 대장간 창
+      refreshUi(); });
   }
   function refreshUi() {
     const s = getS(), q = x => ui.querySelector(x);
@@ -452,7 +454,7 @@
   Town.init = function (st, getState, h) {
     stage = st; getS = getState; hooks = h || {}; cv = st.canvas; buildUi();
     cv.style.pointerEvents = 'auto';
-    root.addEventListener('keydown', e => { if (e.key === 'Escape' && Town.active) Town.close(); });
+    root.addEventListener('keydown', e => { if (e.key !== 'Escape' || !Town.active) return; if (root.Smithy && root.Smithy.isOpen()) { root.Smithy.close(); return; } Town.close(); });
   };
   // 하단 hub 의 '마을' 버튼: 마을 화면에서는 '길드'로 바뀜
   function hubLabel(inTown) {
@@ -466,6 +468,7 @@
     hubLabel(true); if (hooks.onOpen) hooks.onOpen();
   };
   Town.close = function () { if (root.Invasion && root.Invasion.on) return;   // 침공을 보는 동안은 닫지 않음
+    if (root.Smithy) root.Smithy.close();
     Town.active = false; if (ui) ui.classList.remove('on'); const dg = document.getElementById('dlg'); if (dg) dg.style.visibility = ''; hover = null; cv.style.cursor = ''; hubLabel(false); if (hooks.onClose) hooks.onClose(); };
   Town.refresh = () => { if (Town.active) refreshUi(); };
   Town._res = res; Town.px = px; Town.py = py; root.Town = Town;

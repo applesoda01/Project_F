@@ -187,6 +187,7 @@
     setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 400); }, 3800);
   }
   UI.toast = toast;
+  UI.faceStyle = (...a) => faceStyle(...a);   // 대장간 창 등 다른 창에서 얼굴 그림을 씀
   UI.onLogs = function (logs) { // 새 기록들 (오래된 것부터)
     const gups = logs.filter(L => L.gup).map(L => L.gup); if (gups.length) gupShow(gups);   // 2026-11-12 모험가 승급 축하 카드
     for (const L of logs) {
