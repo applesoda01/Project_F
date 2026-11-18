@@ -92,9 +92,9 @@ const NM = { win: '해냈다!', sweat: '식은땀', note: '신남', heart: '고�
 // 부품 배치 (고정): GPT 8종 원본에 부품을 겹쳐 맞춘 좌표 (2026-11-18). 단위 = 얼굴 가로
 const PARTS = {"win":{"e":{"x":0.13,"y":0.291,"w":0.752},"s":{"x":0.879,"y":-0.021,"w":0.173}},"sweat":{"e":{"x":0.109,"y":0.188,"w":0.758},"s":{"x":0.752,"y":-0.024,"w":0.242}},"note":{"e":{"x":0.133,"y":0.312,"w":0.752},"s":{"x":0.739,"y":-0.042,"w":0.379}},"heart":{"e":{"x":0.133,"y":0.376,"w":0.661},"s":{"x":0.721,"y":-0.033,"w":0.376}},"anger":{"e":{"x":0.1,"y":0.239,"w":0.791},"s":{"x":0.782,"y":-0.073,"w":0.345}},"smile":{"e":{"x":0.112,"y":0.321,"w":0.752},"s":{"x":0.761,"y":-0.073,"w":0.279}},"qex":{"e":{"x":0.076,"y":0.155,"w":0.791},"s":{"x":0.803,"y":-0.121,"w":0.321}},"spark":{"e":{"x":0.103,"y":0.17,"w":0.797},"s":{"x":0.779,"y":-0.164,"w":0.364}}};
 const FACE_H = 296 / 330, CX = 300, CY = 250;   // 배경 속 모험가 중심
-const DEF = { dx: 86, dy: -100, size: 62 };      // [임시] 이름표 레벨 뒤 근처
+const DEF = { dx: -58, dy: -73, size: 62 };     // 2026-11-18 사용자 확정 (게임 js/emote.js POS 와 같음)
 const IMG = n => `../assets/emote/${n}.png`, $ = id => document.getElementById(id);
-let V = Object.assign({}, DEF), cur = 'win', mirror = false, playing = true, zoom = 1;
+let V = Object.assign({}, DEF), cur = 'win', mirror = true, playing = true, zoom = 1;
 try { const s = JSON.parse(localStorage.getItem('emotePos') || 'null'); if (s) { Object.assign(V, s.V || {}); mirror = !!s.mirror; } } catch (e) {}
 const store = () => { try { localStorage.setItem('emotePos', JSON.stringify({ V, mirror })); } catch (e) {} };
 

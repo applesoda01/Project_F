@@ -64,7 +64,7 @@
     return row ? row[1] : null;
   }
   // 감정 아이콘 고르기 (2026-11-18, js/emote.js) [임시]: 말 걸기 = 기억 종류, 대답 = 고른 줄이 서먹(bad) 줄이면 욱 · 단짝(good) 줄이면 헤헤 · 함께 다친 기억이면 식은땀
-  const EMO_OPEN = m => ({ win_big: 'win', qlv: 'win', hurt: 'sweat', fail: 'sweat', gift: 'note', saved: m.role === 'got' ? 'heart' : 'sweat', grow: 'spark', nomin: 'qex' })[m.k] || null;
+  const EMO_OPEN = m => ({ win_big: 'win', qlv: 'win', hurt: 'sweat', fail: 'sweat', gift: 'note', saved: m.role === 'got' ? 'heart' : 'sweat', grow: 'spark', nomin: m.yes ? 'qex' : 'sweat' })[m.k] || null;
   const EMO_REPLY = (tg, together, m) => tg.includes('bad') ? 'anger' : tg.includes('good') ? 'smile' : together && (m.k === 'hurt' || m.k === 'fail') ? 'sweat' : null;
   function memTalk(a, b, rel) {
     const s = getS && getS(), G = root.GuildGame; if (!s || !G || !G.memOf) return null;

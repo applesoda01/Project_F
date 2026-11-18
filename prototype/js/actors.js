@@ -440,7 +440,6 @@
     if (!dark) g.strokeText(nm, tx1, ty + NP.ndy); g.fillStyle = dark ? '#3a2616' : NP.nameColor; g.fillText(nm, tx1, ty + NP.ndy);
     g.font = `700 ${NP.lfs}px ${FF}`;
     if (!dark) g.strokeText(lv, tx2, ty + NP.ldy); g.fillStyle = dark ? '#9a6228' : NP.lvColor; g.fillText(lv, tx2, ty + NP.ldy);
-    if (ac.emo) emote(g, ac, tx2 + lw, ty);   // 2026-11-18 감정 아이콘: 레벨 글자 뒤 (조금 겹쳐도 됨)
     let extra = 0;
     if (ac.lab) {   // 상태 문구 (2026-11-12): 명찰 바로 위 작은 글씨
       g.font = `700 14px ${FF}`; g.textAlign = 'center'; g.lineWidth = 3.5; g.strokeStyle = NP.outline;
@@ -448,17 +447,12 @@
     }
     g.restore(); return (headY(ac) - y0) + 8 + NP.bubbleGap + extra;   // 말풍선 꼬리 끝이 명찰 위 8px 에 오도록
   }
-  // 감정 아이콘 (2026-11-18, 시안 3): 생각풍선 방울 끝이 레벨 글자 끝(x)에 살짝 겹치게. 튕기며 등장 · 끝 0.3초 투명 [임시 크기 58px]
-  const EMO_ON = false;   // 2026-11-18 그림 시안 확정 전까지 게임 화면에는 끔 (대화 극장에서만 보임) — 확정되면 true
-  function emote(g, ac, x, y) {
-    if (!EMO_ON) return;
+  // 감정 아이콘 (2026-11-18 확정, js/emote.js): 모험가 중심(발과 머리의 가운데) 기준 Emote.POS 자리에 얼굴 말풍선. 명찰과 따로 그림
+  function emote(g, ac) {
     const e = ac.emo; if (!e || D.t > e.until) { ac.emo = null; return; }
-    const im = root.Emote && Emote.img(e.k); if (!im || !im.complete || !im.naturalWidth) return;
-    const age = D.t - e.t0, a = Math.min(1, age / 0.22), k = a >= 1 ? 1 : 1 + 1.7 * Math.pow(a - 1, 3) + 0.7 * Math.pow(a - 1, 2), sc = 0.5 + 0.5 * Math.max(0, Math.min(1.1, k));
-    const S = 58 * sc, bob = Math.sin(age * 3) * 1.5, ox = x - 1, oy = y + 9 + bob;   // (ox, oy) = 방울 끝 기준점 — 작은 방울이 숫자를 가리지 않게 끝에 바로 붙임
-    g.save(); g.globalAlpha *= Math.min(1, a * 1.5, Math.max(0, e.until - D.t) / 0.3);
-    g.shadowColor = 'rgba(40,22,8,.35)'; g.shadowBlur = 4; g.shadowOffsetY = 2;
-    g.drawImage(im, ox, oy - S, S, S); g.restore();
+    if (!root.Emote || !Emote.draw) return;
+    const P = Emote.POS, cy = (ac.y + headY(ac)) / 2;
+    Emote.draw(g, e.k, ac.x + P.dx, cy + P.dy, D.t - e.t0, e.until - D.t);
   }
   // 리나 응대 진행 막대 (2026-11-12): 응대받는 모험가 머리(명찰) 위에 노란 막대가 0 → 가득 차면 응대 끝. 모험가 막대(게이지 노랑)와 같은 색
   function serveBar(g, ac, up) {
@@ -474,6 +468,7 @@
       const G = ac.gl; if (G) { ac.x += G.x; ac.y += G.y; }
       let up = plate(g, ac);   // 명찰이 있으면 말풍선은 그 위로
       up += serveBar(g, ac, up);   // 리나에게 응대받는 중이면 명찰 위에 노란 진행 막대
+      if (ac.emo) emote(g, ac);   // 감정 아이콘 (2026-11-18)
       if (ac.bubble) bubble(g, ac.x, headY(ac) - up, ac.bubble.text, false, D.t - (ac.bubble.t0 == null ? D.t - 1 : ac.bubble.t0), ac.bubble.until - D.t);
       if (G) { ac.x -= G.x; ac.y -= G.y; }
     }
