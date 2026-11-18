@@ -357,6 +357,47 @@ if os.path.exists(CPATH) and not errors:          # 밸런스에 오류가 있�
                    'enhance': ENH,      # 강화 결과 = 기본값 + round(기본값 × enhance[n-1] / 100) (반올림, 편집기와 같음)
                    'quests': out_q}
 
+# ---------- 기억 대화 세트 (2026-11-18, docs/design/proposal_adv_memory_v1.md 3-2) ----------
+# 세트 = 말 걸기 · 대답 · 맺음을 함께 쓴 묶음 (꼬이지 않게). 기억 칸 = 종류 + 세트 조건, 조건 칸 = 줄을 고르는 태그
+TM_KINDS = ['win_big', 'fail', 'hurt', 'saved', 'gift', 'grow', 'nomin', 'qlv']
+TM_TOGETHER = {'win_big', 'fail', 'hurt', 'saved', 'qlv'}   # 듣는 사람도 함께 겪을 수 있는 기억
+TM_SETCOND = {'mon', 'late', '!late', 'fz', '!fz', 'got', 'gave', 'lv', 'grade', 'class', 'yes', 'no'}
+TM_TAGS = {'bold', 'careful', 'calm', 'jon', 'ban', 'together', 'new', 'good', 'bad'}
+TM_VARS = {'a', 'b', 'q', 'mon', 'with', 'weeks', 'giver', 'part', 'g', 'lv', 'cls'}
+talk_mem = {}
+if os.path.exists(os.path.join(DATA, 'talk_mem.csv')):
+    sets = {}
+    for ln, r in read('talk_mem.csv', ['세트', '기억', '역할', '조건', '대사', '메모']):
+        sid, mem, role, tags, line = r['세트'], r['기억'].split(), r['역할'], r['조건'].split(), r['대사']
+        if not sid or not mem: err('talk_mem.csv', ln, '세트 · 기억 칸이 비었습니다'); continue
+        if mem[0] not in TM_KINDS: err('talk_mem.csv', ln, f"기억 '{mem[0]}' 을 모릅니다 ({' '.join(TM_KINDS)})"); continue
+        bad_c = [c for c in mem[1:] if c not in TM_SETCOND]
+        if bad_c: err('talk_mem.csv', ln, f"세트 조건 {bad_c} 을 모릅니다 ({' '.join(sorted(TM_SETCOND))})")
+        if role not in ('open', 'reply', 'close'): err('talk_mem.csv', ln, f"역할 '{role}' 은 open reply close 중 하나여야 합니다"); continue
+        bad_t = [t for t in tags if t not in TM_TAGS]
+        if bad_t: err('talk_mem.csv', ln, f"조건 태그 {bad_t} 을 모릅니다 ({' '.join(sorted(TM_TAGS))})")
+        if not line: err('talk_mem.csv', ln, '대사가 비었습니다'); continue
+        for v in re.findall(r'\{(\w+)(?::[^}]+)?\}', line):
+            if v not in TM_VARS: err('talk_mem.csv', ln, f"{{{v}}} 는 쓸 수 없습니다 ({' '.join(sorted(TM_VARS))})")
+        S_ = sets.setdefault(sid, {'id': sid, 'kind': mem[0], 'cond': mem[1:], 'open': [], 'reply': [], 'close': []})
+        if S_['kind'] != mem[0] or S_['cond'] != mem[1:]: err('talk_mem.csv', ln, f'세트 {sid} 안에서 기억 칸이 다릅니다')
+        S_[role].append([tags, line])
+    def covers(rows, need):   # need 태그를 모두 만족하는 줄이 있는가 (태그 없는 축은 아무 값이나 됨, 관계 태그 줄은 제외)
+        groups = [{'bold', 'careful', 'calm'}, {'jon', 'ban'}, {'together', 'new'}]
+        for tg, _ in rows:
+            if 'good' in tg or 'bad' in tg: continue
+            if all((not (set(tg) & g)) or (n in tg) for n in need for g in groups if n in g): return True
+        return False
+    for sid, S_ in sets.items():
+        tg_states = ['new', 'together'] if S_['kind'] in TM_TOGETHER else ['new']
+        for st_ in ('bold', 'careful', 'calm'):
+            for t_ in tg_states:
+                if not covers(S_['open'], [st_, t_]): err('talk_mem.csv', '-', f'세트 {sid}: 말 걸기에 {st_} · {t_} 경우가 없습니다')
+        for v_ in ('jon', 'ban'):
+            for t_ in tg_states:
+                if not covers(S_['reply'], [v_, t_]): err('talk_mem.csv', '-', f'세트 {sid}: 대답에 {v_} · {t_} 경우가 없습니다')
+        talk_mem.setdefault(S_['kind'], []).append({k: S_[k] for k in ('id', 'cond', 'open', 'reply', 'close')})
+
 # ---------- 튜토리얼 대사 (2026-11-18, docs/design/튜토리얼.md) ----------
 # 번호(FT0001…) · 구간(1, 2… = 화면 안내로 끊기는 묶음) · 순서 · 화자(리나 · {전사} · {모험가} · 대장장이…) · 표정(리나만) · 대사
 tutorial = {}
@@ -379,7 +420,7 @@ if errors:
     print(f'오류 {len(errors)}건 — 파일을 만들지 않았습니다.')
     for e in errors: print('  -', e)
     sys.exit(1)
-data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial}
+data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial, 'talkMem': talk_mem}
 if content is not None: data['content'] = content       # 편집기 데이터가 없으면 넣지 않음 (게임은 balance 값만 씀)
 # 로비 배치 칸 (2026-11-12, tools/lobby_grid_editor.html 로 칠한 값). 없으면 게임은 모든 바닥 칸을 놓기 가능으로 봄
 _lg = os.path.join(DATA, 'lobby_grid.json')

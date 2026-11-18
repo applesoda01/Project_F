@@ -67,6 +67,7 @@
     changed: () => UI.hud(), promoted: a => Director.celebrate(a.id), town: () => Town.open() });
   Town.init(stage, () => s, {});
   Tutorial.init(() => s, { setSpeed, getSpeed: () => speed });
+  if (window.Speech && Speech.bind) Speech.bind(() => s);   // 2026-11-18 기억 대화 · 친밀도
   Gm.live = true;   // 게임 화면: 침공은 마을 화면에서 차례마다 보여 줌 (검증 · 시뮬레이터는 한 번에 처리)
   if (window.Invasion) Invasion.init(stage, () => s, { setSpeed, getSpeed: () => speed, save });
   Expedition.init(stage, () => s); // 원정 현황 패널 + 미니 뷰 (expedition.js)

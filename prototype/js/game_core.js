@@ -174,8 +174,8 @@
   //   대사 고르기 전용 기록. 규칙 · 난수(s.R)에 영향 없음 → 관문 1 · 시뮬레이터 그대로.
   //   a.mem = 최근 일 [{ k: 종류, w: 주, n: 말한 횟수, …빈칸 재료 }] 최대 5개 · 8주 지나면 흐려짐 · 2번 말하면 지움 [임시]
   //   종류: win_big(어려운 의뢰 성공) · fail(실패, late=늦장) · hurt(부상) · saved(구해 줌 got/gave) · gift(마스터 선물) · grow(레벨 5단위 · 승급 · 전직) · nomin(지명 수락 · 거절) · qlv(하던 의뢰가 Lv업)
-  //   s.rel["작은id-큰id"] = 친밀도 0~100 (처음 30, 숨김) — 같은 파티 성공 +1~+4(성향 궁합) · 실패 −2 [임시]
-  const MEM = { max: 5, weeks: 8, say: 2, hard: 75 };
+  //   s.rel["작은id-큰id"] = 친밀도 0~100 (처음 40, 숨김) — 같은 파티 성공 +2~+7(성향 궁합, 기본 +5) · 실패 −3 · 로비 대화 주 1번 +1 [임시]
+  const MEM = { max: 5, weeks: 8, say: 2, hard: 75, relStart: 40, relWin: 5, relFail: -3 };   // [임시] 친밀도: 처음 40 · 같은 파티 성공 +5(궁합 ±) · 실패 −3
   function remember(s, a, k, o) {
     if (!a || !a.alive) return;
     const m = Object.assign({ k, w: s.week, n: 0 }, o || {});
@@ -185,9 +185,10 @@
   const memOf = (s, a) => (a && a.mem || []).filter(x => s.week - x.w < MEM.weeks && x.n < MEM.say);   // 지금 말할 수 있는 기억
   function memSaid(a, m) { m.n++; if (m.n >= MEM.say) a.mem = (a.mem || []).filter(x => x !== m); }
   const relKey = (i, j) => i < j ? i + '-' + j : j + '-' + i;
-  const relOf = (s, i, j) => { const v = s.rel && s.rel[relKey(i, j)]; return v == null ? 30 : v; };
+  const relBase = (s, i, j) => { const a = s.advs.find(x => x.id === i), b = s.advs.find(x => x.id === j); if (!a || !b) return MEM.relStart; let v = MEM.relStart; if (Math.abs(a.risk - b.risk) === 2) v -= 15; if (a.social === 2 && b.social === 2) v += 10; if (a.social === 0 || b.social === 0) v -= 10; return v; };   // 처음 친밀도 = 성향 궁합 (무모 · 신중 −15 · 둘 다 사교적 +10 · 독불장군 −10) [임시]
+  const relOf = (s, i, j) => { const v = s.rel && s.rel[relKey(i, j)]; return v == null ? relBase(s, i, j) : v; };
   function relAdd(s, i, j, d) { if (i === j) return; s.rel = s.rel || {}; const k = relKey(i, j); s.rel[k] = Math.max(0, Math.min(100, relOf(s, i, j) + d)); }
-  const relStep = (a, b) => { let d = 3; if (Math.abs(a.risk - b.risk) === 2) d -= 2; if (a.social === 2 && b.social === 2) d += 1; if (a.social === 0 || b.social === 0) d -= 1; return Math.max(1, Math.min(4, d)); };   // 성향 궁합 (제안서 3-1)
+  const relStep = (a, b) => { let d = MEM.relWin; if (Math.abs(a.risk - b.risk) === 2) d -= 2; if (a.social === 2 && b.social === 2) d += 1; if (a.social === 0 || b.social === 0) d -= 1; return Math.max(2, Math.min(7, d)); };   // 성향 궁합 (제안서 3-1)
   const relTier = v => v >= 70 ? 'good' : v < 30 ? 'bad' : '';
   function memQuest(s, x, ok, party, lv0) {   // 귀환 때: 파티원마다 기억 · 친밀도
     const q = x.q, F = x.fight, qname = q.name || qn(q), mon = F && F.enemies && F.enemies[0] ? F.enemies[0].name : null;
@@ -209,7 +210,7 @@
       }
     }
     if (lv0 != null && s.qlv && s.qlv[q.tid] && s.qlv[q.tid].lv > lv0) for (const a of party) remember(s, a, 'qlv', { q: qname, lv: s.qlv[q.tid].lv, mon });
-    for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) { const a = party[i], b = party[j]; if (a && b) relAdd(s, a.id, b.id, ok ? relStep(a, b) : -2); }
+    for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) { const a = party[i], b = party[j]; if (a && b) relAdd(s, a.id, b.id, ok ? relStep(a, b) : MEM.relFail); }
   }
 
   // 의뢰 레벨 (2026-11-18 결정 35 D안): 같은 게시판 의뢰를 qlv.need번 성공하면 Lv+1 (상한 qlv.max). 레벨당 적 · 판정 +foe, 보상 금화 · 소재 +pay.
@@ -1345,6 +1346,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, MEM, memOf, memSaid, relOf, relTier, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
