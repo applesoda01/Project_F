@@ -26,7 +26,7 @@ button.on{background:var(--acc);color:#fff}
 .cross::before,.cross::after{content:"";position:absolute;background:#e5332a;box-shadow:0 0 0 1px rgba(255,255,255,.7)}
 .cross::before{left:-14px;top:-1px;width:28px;height:2px}.cross::after{left:-1px;top:-14px;width:2px;height:28px}
 .guide{position:absolute;pointer-events:none;border:1px dashed rgba(229,51,42,.8)}
-.lemo{position:absolute;cursor:grab;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+.stage{cursor:default}
 .lemo.dragging{cursor:grabbing}
 .em{position:absolute;left:0;top:0;width:100%;height:100%}
 .em img{position:absolute;user-select:none;-webkit-user-drag:none;pointer-events:none}
@@ -61,13 +61,13 @@ textarea{width:100%;height:54px;font:12px/1.4 ui-monospace,monospace;border:1px 
 <div class="top">
   <h1>감정 아이콘 위치</h1>
   <div class="seg" id="kinds"></div>
-  <button id="dir">방향: 원본</button>
+  <button id="dir">그림 방향: 원본</button>
   <button id="playBtn" class="on">⏸ 멈춤</button>
   <button id="zoom">2배로 보기</button>
 </div>
 <div class="wrap">
   <div class="card"><h2>로비 (실제 게임 화면 1:1) — 아이콘을 끌어서 옮기세요</h2>
-    <div class="vp"><div class="stage" id="stage"><div class="cross"></div><div class="guide" id="guide"></div></div></div>
+    <div class="vp"><div class="stage" id="stage"><canvas id="cv" width="1200" height="1000" style="position:absolute;left:0;top:0;width:600px;height:500px"></canvas><div class="cross"></div><div class="guide" id="guide"></div></div></div>
     <div class="hint" style="margin-top:6px">빨간 십자 = 모험가 중심 · 점선 = 아이콘 상자. 방향키 1px (Shift = 10px). 끄는 동안에는 움직임이 잠깐 멈춥니다.</div>
   </div>
   <div style="display:grid;gap:14px;align-content:start;min-width:0">
@@ -76,7 +76,8 @@ textarea{width:100%;height:54px;font:12px/1.4 ui-monospace,monospace;border:1px 
       <div class="row"><label>상하</label><input type="range" id="dy" min="-250" max="250" step="1"><input type="number" id="dyN" step="1"></div>
       <div class="row"><label>크기</label><input type="range" id="sz" min="24" max="200" step="1"><input type="number" id="szN" step="1"></div>
       <div class="hint">좌우: + 오른쪽 · 상하: − 위쪽 (px). 숫자 칸에 직접 넣어도 되고, 막대 밖 값도 들어갑니다.</div>
-      <div class="seg" style="margin-top:10px"><button id="reset">처음대로</button></div>
+      <div class="seg" style="margin-top:10px"><button id="reset">지금 게임 값으로</button><button id="flipPos">위치만 좌우 맞바꾸기</button></div>
+      <div class="hint" id="gameVal"></div>
     </div>
     <div class="card"><h2>결과</h2>
       <div class="seg" style="margin-bottom:6px"><button id="copy">JSON 복사</button><button id="save">파일 저장</button></div>
@@ -85,62 +86,62 @@ textarea{width:100%;height:54px;font:12px/1.4 ui-monospace,monospace;border:1px 
     </div>
   </div>
 </div>
+<script src="../js/emote.js"></script>
 <script>
 'use strict';
-const KS = ['win', 'sweat', 'note', 'heart', 'anger', 'smile', 'qex', 'spark'];
-const NM = { win: '해냈다!', sweat: '식은땀', note: '신남', heart: '고마워', anger: '욱', smile: '헤헤', qex: '어?!', spark: '반짝' };
-// 부품 배치 (고정): GPT 8종 원본에 부품을 겹쳐 맞춘 좌표 (2026-11-18). 단위 = 얼굴 가로
-const PARTS = {"win":{"e":{"x":0.13,"y":0.291,"w":0.752},"s":{"x":0.879,"y":-0.021,"w":0.173}},"sweat":{"e":{"x":0.109,"y":0.188,"w":0.758},"s":{"x":0.752,"y":-0.024,"w":0.242}},"note":{"e":{"x":0.133,"y":0.312,"w":0.752},"s":{"x":0.739,"y":-0.042,"w":0.379}},"heart":{"e":{"x":0.133,"y":0.376,"w":0.661},"s":{"x":0.721,"y":-0.033,"w":0.376}},"anger":{"e":{"x":0.1,"y":0.239,"w":0.791},"s":{"x":0.782,"y":-0.073,"w":0.345}},"smile":{"e":{"x":0.112,"y":0.321,"w":0.752},"s":{"x":0.761,"y":-0.073,"w":0.279}},"qex":{"e":{"x":0.076,"y":0.155,"w":0.791},"s":{"x":0.803,"y":-0.121,"w":0.321}},"spark":{"e":{"x":0.103,"y":0.17,"w":0.797},"s":{"x":0.779,"y":-0.164,"w":0.364}}};
-const FACE_H = 296 / 330, CX = 300, CY = 250;   // 배경 속 모험가 중심
-const DEF = { dx: -58, dy: -73, size: 62 };     // 2026-11-18 사용자 확정 (게임 js/emote.js POS 와 같음)
-const IMG = n => `../assets/emote/${n}.png`, $ = id => document.getElementById(id);
-let V = Object.assign({}, DEF), cur = 'win', mirror = true, playing = true, zoom = 1;
-try { const s = JSON.parse(localStorage.getItem('emotePos') || 'null'); if (s) { Object.assign(V, s.V || {}); mirror = !!s.mirror; } } catch (e) {}
-const store = () => { try { localStorage.setItem('emotePos', JSON.stringify({ V, mirror })); } catch (e) {} };
-
-function build(k, W) {   // 반전이면 얼굴 그림과 x 를 뒤집음 (기호 그림은 그대로 → "?!" 읽힘)
-  const P = PARTS[k], box = p => `left:${(mirror ? 1 - p.x - p.w : p.x) * W}px;top:${p.y * W}px;width:${p.w * W}px`;
-  return `<div class="em" style="--org:${mirror ? '4% 96%' : '96% 96%'}"><div class="fc"><img src="${IMG(mirror ? 'face' : 'face_r')}" style="left:0;top:0;width:${W}px">` +
-    `<img class="ft" src="${IMG('e_' + k)}" style="${box(P.e)}"></div><img class="a0" src="${IMG('s_' + k)}" style="${box(P.s)}"></div>`;
+// 2026-11-18 고침: 게임과 똑같이 보이도록 게임의 js/emote.js 로 그림 (부품 배치 · 움직임 · 반전 모두 같은 코드).
+// 처음 값 = 지금 게임 값 (Emote.POS). 브라우저에 저장된 값은 "그때의 게임 값"이 지금과 같을 때만 이어서 씀 (예전 값이 덮어쓰지 않게)
+Emote.base = '../assets/emote/'; Emote.preload();
+const KS = Emote.KINDS, NM = Emote.NAME, FACE_H = 296 / 330, CX = 300, CY = 250;   // 배경 속 모험가 중심 (발 − 70px)
+const GAME = { dx: Emote.POS.dx, dy: Emote.POS.dy, size: Emote.POS.size, mirror: !!Emote.POS.mirror };
+const $ = id => document.getElementById(id);
+let V = Object.assign({}, GAME), cur = 'win', playing = true, zoom = 1, drag = null, t0 = performance.now();
+try { const s = JSON.parse(localStorage.getItem('emotePos2') || 'null'); if (s && s.game && JSON.stringify(s.game) === JSON.stringify(GAME)) V = Object.assign(V, s.V); } catch (e) {}
+const store = () => { try { localStorage.setItem('emotePos2', JSON.stringify({ V, game: GAME })); } catch (e) {} };
+$('gameVal').textContent = `지금 게임 값: 좌우 ${GAME.dx} · 상하 ${GAME.dy} · 크기 ${GAME.size} · 그림 ${GAME.mirror ? '좌우 반전' : '원본'}`;
+const g = $('cv').getContext('2d');
+function frame(now) {
+  g.setTransform(2, 0, 0, 2, 0, 0); g.clearRect(0, 0, 600, 500);
+  const life = 2.6, t = ((now - t0) / 1000) % life, age = playing && !drag ? t : 1, remain = playing && !drag ? life - t : 9;
+  Emote.draw(g, cur, CX + V.dx, CY + V.dy, age, remain, { mirror: V.mirror, size: V.size });
+  requestAnimationFrame(frame);
 }
-function draw() {
-  const st = $('stage'); st.querySelectorAll('.lemo').forEach(e => e.remove());
+function ui() {
   const W = V.size, H = W * FACE_H, x = CX + V.dx - W / 2, y = CY + V.dy - H / 2;
-  const d = document.createElement('div'); d.className = 'lemo' + (playing && !drag ? ' play ' + cur : '');
-  d.style.cssText += `;left:${x}px;top:${y}px;width:${W}px;height:${H}px`; d.innerHTML = build(cur, W); st.appendChild(d);
   Object.assign($('guide').style, { left: x + 'px', top: y + 'px', width: W + 'px', height: H + 'px' });
   for (const k of ['dx', 'dy']) { $(k).value = V[k]; $(k + 'N').value = V[k]; } $('sz').value = V.size; $('szN').value = V.size;
-  $('dir').textContent = '방향: ' + (mirror ? '좌우 반전' : '원본'); $('playBtn').textContent = playing ? '⏸ 멈춤' : '▶ 움직임'; $('playBtn').classList.toggle('on', playing);
+  $('dir').textContent = '그림 방향: ' + (V.mirror ? '좌우 반전' : '원본'); $('playBtn').textContent = playing ? '⏸ 멈춤' : '▶ 움직임'; $('playBtn').classList.toggle('on', playing);
   $('kinds').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.k === cur));
-  $('out').value = JSON.stringify({ dir: mirror ? 'mirror' : 'original', anchor: '모험가 중심 (발 − 70px)', dx: V.dx, dy: V.dy, size: V.size });
+  $('out').value = JSON.stringify({ dir: V.mirror ? 'mirror' : 'original', anchor: '모험가 중심 (발 − 70px)', dx: V.dx, dy: V.dy, size: V.size });
   store();
 }
 $('kinds').innerHTML = KS.map(k => `<button data-k="${k}">${NM[k]}</button>`).join('');
-$('kinds').onclick = e => { const b = e.target.closest('button'); if (b) { cur = b.dataset.k; draw(); } };
-$('dir').onclick = () => { mirror = !mirror; draw(); };
-$('playBtn').onclick = () => { playing = !playing; draw(); };
-$('zoom').onclick = () => { zoom = zoom === 1 ? 2 : 1; const st = $('stage'); st.style.transform = `scale(${zoom})`; st.parentElement.style.height = 500 * zoom + 'px'; st.parentElement.style.width = '100%'; st.style.marginRight = (600 * (zoom - 1)) + 'px'; $('zoom').textContent = zoom === 1 ? '2배로 보기' : '1배로 보기'; };
+$('kinds').onclick = e => { const b = e.target.closest('button'); if (b) { cur = b.dataset.k; t0 = performance.now(); ui(); } };
+$('dir').onclick = () => { V.mirror = !V.mirror; ui(); };
+$('flipPos').onclick = () => { V.dx = -V.dx; ui(); };
+$('playBtn').onclick = () => { playing = !playing; t0 = performance.now(); ui(); };
+$('zoom').onclick = () => { zoom = zoom === 1 ? 2 : 1; const st = $('stage'); st.style.transform = `scale(${zoom})`; st.parentElement.style.height = 500 * zoom + 'px'; st.style.marginRight = (600 * (zoom - 1)) + 'px'; $('zoom').textContent = zoom === 1 ? '2배로 보기' : '1배로 보기'; };
 for (const [id, key] of [['dx', 'dx'], ['dy', 'dy'], ['sz', 'size']]) {
-  const set = v => { if (!isNaN(v)) { V[key] = Math.round(v); draw(); } };
+  const set = v => { if (!isNaN(v)) { V[key] = Math.round(v); ui(); } };
   $(id).oninput = e => set(+e.target.value); $(id + 'N').onchange = e => set(+e.target.value);
 }
-$('reset').onclick = () => { V = Object.assign({}, DEF); draw(); };
+$('reset').onclick = () => { V = Object.assign({}, GAME); ui(); };
 $('copy').onclick = () => { const t = $('out'), ok = () => { $('copy').textContent = '복사됨 ✓'; setTimeout(() => $('copy').textContent = 'JSON 복사', 1500); };
   (navigator.clipboard ? navigator.clipboard.writeText(t.value).then(ok) : Promise.reject()).catch(() => { t.select(); try { document.execCommand('copy'); ok(); } catch (e) {} }); };
 $('save').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([$('out').value], { type: 'application/json' })); a.download = 'emote_pos.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
-let drag = null;
 $('stage').addEventListener('pointerdown', e => {
-  if (!e.target.closest('.lemo')) return; drag = { x0: e.clientX, y0: e.clientY, dx: V.dx, dy: V.dy };
-  $('stage').setPointerCapture(e.pointerId); draw(); e.preventDefault();
+  const r = $('stage').getBoundingClientRect(), px = (e.clientX - r.left) / zoom, py = (e.clientY - r.top) / zoom, W = V.size, H = W * FACE_H;
+  if (Math.abs(px - (CX + V.dx)) > W / 2 + 8 || Math.abs(py - (CY + V.dy)) > H / 2 + 8) return;
+  drag = { x0: e.clientX, y0: e.clientY, dx: V.dx, dy: V.dy }; $('stage').setPointerCapture(e.pointerId); e.preventDefault();
 });
-$('stage').addEventListener('pointermove', e => { if (!drag) return; V.dx = Math.round(drag.dx + (e.clientX - drag.x0) / zoom); V.dy = Math.round(drag.dy + (e.clientY - drag.y0) / zoom); draw(); });
-$('stage').addEventListener('pointerup', () => { if (drag) { drag = null; draw(); } });
+$('stage').addEventListener('pointermove', e => { if (!drag) return; V.dx = Math.round(drag.dx + (e.clientX - drag.x0) / zoom); V.dy = Math.round(drag.dy + (e.clientY - drag.y0) / zoom); ui(); });
+$('stage').addEventListener('pointerup', () => { if (drag) { drag = null; t0 = performance.now(); } });
 document.addEventListener('keydown', e => {
   if (/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
   const m = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]; if (!m) return;
-  e.preventDefault(); const s = e.shiftKey ? 10 : 1; V.dx += m[0] * s; V.dy += m[1] * s; draw();
+  e.preventDefault(); const s = e.shiftKey ? 10 : 1; V.dx += m[0] * s; V.dy += m[1] * s; ui();
 });
-draw();
+ui(); requestAnimationFrame(frame);
 </script>
 </body>
 </html>
