@@ -9,6 +9,7 @@
   function baseDefaults() { // 코드에 박힌 기본값 (data/balance.csv 가 없을 때만 그대로 쓰임)
     return {
       run: { runs: 100, maxYears: 20, seed: 1 },
+      late: { on: 1, base: -0.01, soft: 1 },   // 2026-11-18 결정 19 · 30: 늦장 실패
       quest: {
         ref: [15, 25, 35, 45, 60, 75, 90],        // 판정 기준치
         reqCount: [1, 1, 2, 2, 3, 3, 4],           // 요구 능력치 수
@@ -413,6 +414,7 @@
         const p = Math.min(0.97, successP(party, q, sm) * (1 + mealB));
         ok = R() < p;
       }
+      let late = false; { const L = cfg.late; if (L && L.on) { const pr = m => L.base + [0, 0.01, 0.04][m.spend] + [-0.01, 0, 0.03][m.social] + [-0.01, 0, 0.02][m.risk]; if (party.some(m => R() < Math.max(0, pr(m)))) { if (ok && L.soft) late = true; ok = false; } } }   // 결정 19 · 30 (게임과 같음)
       if (fightRes) for (const u of fightRes.units) {   // 전투의 대가: 물약 소모, 쓰러진 사람은 부상·사망 판정
         const a = u.a; a.pots = u.pots; s.st.potionsUsed += u.used;
         if (!u.down) continue;
@@ -446,8 +448,8 @@
         s.fame = Math.min(cfg.fame.cap, s.fame + (q.T ? q.T.fameS : cfg.fame.succ[q.g]) + (s.deco.has('banner') ? cfg.deco.fame : 0));
       } else {
         s.st.qFail++;
-        s.trust = Math.max(0, s.trust - (q.T && q.T.trustF != null ? q.T.trustF : Q.trustFail));
-        s.fame = Math.max(0, s.fame - (q.T ? q.T.fameF : cfg.fame.fail[q.g]));
+        if (!late) { s.trust = Math.max(0, s.trust - (q.T && q.T.trustF != null ? q.T.trustF : Q.trustFail));
+        s.fame = Math.max(0, s.fame - (q.T ? q.T.fameF : cfg.fame.fail[q.g])); }
         for (const a of party) {
           gainXp(a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate);
           if (q.combat) continue;   // 전투 의뢰는 위에서 쓰러진 사람만 판정

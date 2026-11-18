@@ -13,6 +13,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'data')
 OUT = os.path.join(ROOT, 'js', 'data_gen.js')
 SCHEMA = json.load(open(os.path.join(ROOT, 'tools', 'balance_schema.json'), encoding='utf-8'))
+ALLOW_NEG = {'late.base'}   # 음수를 허용하는 설정 (늦장 기본 확률: 성향 보정과 더해 0 아래는 0으로 침, 2026-11-18 결정 30)
 
 GRADES = ['F', 'E', 'D', 'C', 'B', 'A', 'S']
 STATS = ['힘', '민첩', '지력', '정신', '기교']
@@ -68,7 +69,7 @@ for ln, r in read('balance.csv', ['구분', '항목', '값', '설명']):
     else:
         if len(parts) != n: err('balance.csv', ln, f'{key} 는 값이 {n}개여야 합니다 (지금 {len(parts)}개, | 로 구분)'); continue
         val = parts
-    if any(x < 0 for x in (parts)): err('balance.csv', ln, f'{key} 에 음수가 있습니다')
+    if key not in ALLOW_NEG and any(x < 0 for x in (parts)): err('balance.csv', ln, f'{key} 에 음수가 있습니다')
     sec, k = key.split('.', 1); balance.setdefault(sec, {})[k] = val
 for key in SCHEMA:
     if key not in seen: err('balance.csv', '-', f'{key} 항목이 빠졌습니다')
