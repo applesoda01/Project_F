@@ -196,7 +196,7 @@
     if (COMBAT && T && T.enemies && T.enemies.length) {
       // 개체 차이: 실제 적은 게시 정보보다 강하거나 약할 수 있음(±enemyVar). 모험가는 게시 정보(seen)로 판단, 정보실이 있으면 실제에 가까워짐
       const f0 = 1 + (s.R() * 2 - 1) * (q.fz ? QL.var : (CB.C.enemyVar || 0)), f = f0 * DF, look = Math.min(1, 0.25 * effN(s, '정보실'));
-      q.enemies = []; q.seen = []; q.foe = f;
+      q.enemies = []; q.seen = []; q.foe = f0 * ((Q.diff || [])[g] || 1);   // 강약 표시(▲▼)는 개체 차이만 (의뢰 레벨 배수 제외)
       for (const e of T.enemies) for (let k = 0; k < e.count; k++) {
         q.enemies.push({ hp: e.hp * f, atk: e.atk * f, def: e.def || 0, name: e.name, mon: e.mon, boss: !!e.boss });
         q.seen.push({ hp: e.hp * DF * (1 + (f0 - 1) * look), atk: e.atk * DF * (1 + (f0 - 1) * look), def: e.def || 0, name: e.name, boss: !!e.boss });

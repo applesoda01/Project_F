@@ -803,3 +803,14 @@
 .qcard.od-hit{box-shadow:0 0 0 3px #2f7f7a88}
 .od-strip{display:flex;gap:8px;align-items:center;background:#e3f3ef;border:2px solid #8cc7bf;border-radius:10px;padding:6px 12px;margin:0 0 8px;font-size:17px;color:#24514d}
 .od-strip span{background:#fff;border-radius:8px;padding:1px 10px;border:1px solid #8cc7bf}.od-strip small{margin-left:auto;color:#4f7e79}
+
+/* 의뢰 레벨 (2026-11-18 결정 35, 시안 docs/design/mockups/quest_level) */
+.ql-b{display:inline-block;font-weight:700;font-size:13px;line-height:1;padding:3px 6px;border-radius:7px;margin-left:6px;vertical-align:2px;color:#fff;white-space:nowrap;flex:none}
+.ql-b.l1{background:linear-gradient(#b9a687,#8e7a5c);box-shadow:0 2px 0 #64543d}
+.ql-b.l2{background:linear-gradient(#c98a4b,#9a5f2c);box-shadow:0 2px 0 #6e4019}
+.ql-b.l3{background:linear-gradient(#9fb2c4,#6a7f94);box-shadow:0 2px 0 #4a5a6b}
+.ql-fog{display:inline-block;font-weight:700;font-size:13px;line-height:1;padding:3px 6px;border-radius:7px;margin-left:4px;background:#e9e1f5;color:#5b4a86;border:1px dashed #8a76b8;vertical-align:2px;white-space:nowrap;flex:none}
+.ql-box{margin:8px 0 0;padding:3px 12px;border-radius:8px;background:#fff7e6;border:1px solid #e2c48c;font-size:15px;color:#5a4636}
+.ql-box small{color:#8a7258;font-size:14px}
+.ql-warn{margin:4px 0;padding:3px 12px;border-radius:8px;background:#efe8fa;border:1px dashed #8a76b8;color:#4b3d73;font-size:15px;line-height:1.4}
+.ql-warn small{color:#6f6194}

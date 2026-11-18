@@ -598,6 +598,8 @@
     }
     return (dangerCache[T.id] = { n: need, rate, more: rate < 0.7 });
   }
+  // 의뢰 레벨 배지 (2026-11-18 결정 35, 시안 quest_level 확인): Lv1 · Lv2(구리) · Lv3(은), 막 오른 의뢰는 보라 '?'(정보 흐림)
+  const qlvBadge = (q, big) => q.lv ? `<span class="ql-b l${q.lv}" title="의뢰 레벨">Lv${q.lv}</span>${q.fz ? `<span class="ql-fog" title="레벨이 막 올라 적 정보가 부정확">${big ? '정보 흐림' : '?'}</span>` : ''}` : '';
   const foeBand = q => q.foe == null ? null : q.foe < 0.95 ? 'down' : q.foe > 1.05 ? 'up' : 'mid';
   // 의뢰 기한 막대 (2026-11-12): 남은 비율 = (기한 − 게시 후 지난 주 − 이번 주 진행률) ÷ 기한. 주 게이지와 같은 진행률로 매 프레임 줄어듦
   let wkFrac = 0;
@@ -622,7 +624,7 @@
       const T = QT[q.tid], d = danger(T, q.g), fb = foeBand(q), intel = !!s.built['정보실'];
       const sk = d.n ? `<span class="skulls" title="위험도">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}</span>` : '';
       const foe = d.n ? (intel ? (fb === 'up' ? '<i class="foe up" title="강한 무리">▲</i>' : fb === 'down' ? '<i class="foe down" title="약한 무리">▼</i>' : '') : '<i class="foe unk" title="정보실이 있으면 알 수 있음">?</i>') : '';
-      cards += `<div class="qcard age${ageOf(q)}${q.x2 ? ' x2' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}</div>
+      cards += `<div class="qcard age${ageOf(q)}${q.x2 ? ' x2' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q)}${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}</div>
         <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><button class="ux-btn danger sm" data-wd="${q.id}">취소</button></div>
         <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
     }
@@ -664,7 +666,7 @@
       const sk = d.n ? `<span class="skulls" title="위험도">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}</span>` : '<span class="bkq-nc">비전투</span>';
       const foe = d.n ? (intel ? (fb === 'up' ? '<i class="foe up" title="강한 무리">▲</i>' : fb === 'down' ? '<i class="foe down" title="약한 무리">▼</i>' : '') : '<i class="foe unk" title="정보실이 있으면 알 수 있음">?</i>') : '';
       const om = T && (s.orders || []).length ? (T.rewards || []).find(r => r.p >= 30 && s.orders.some(o => o.m === r.m && o.got < o.n)) : null;   // 2026-11-18 V2 6단계: 발주 소재가 나오는 의뢰
-      L += `<div class="qcard bk age${ageOf(q)}${q.x2 ? ' x2' : ''}${q.id === qSel ? ' sel' : ''}${om ? ' od-hit' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}${(() => { const f = Math.round(Gm.questFee(s, q) * 100); return `<span class="mk5-chip ${f >= 20 ? 'hi' : f >= 15 ? 'mid' : ''}" title="길드가 떼는 수수료${q.fee != null ? ' (이 의뢰만 따로 정함)' : ''}">수수료 ${f}%</span>`; })()}${om ? `<span class="od-chip" title="발주 · ${esc((MATS[om.m] || { name: '' }).name)}">발주</span>` : ''}</div>
+      L += `<div class="qcard bk age${ageOf(q)}${q.x2 ? ' x2' : ''}${q.id === qSel ? ' sel' : ''}${om ? ' od-hit' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q)}${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}${(() => { const f = Math.round(Gm.questFee(s, q) * 100); return `<span class="mk5-chip ${f >= 20 ? 'hi' : f >= 15 ? 'mid' : ''}" title="길드가 떼는 수수료${q.fee != null ? ' (이 의뢰만 따로 정함)' : ''}">수수료 ${f}%</span>`; })()}${om ? `<span class="od-chip" title="발주 · ${esc((MATS[om.m] || { name: '' }).name)}">발주</span>` : ''}</div>
         <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><span class="dlw${Gm.expireWeeks(s) - (s.week - q.posted) <= 1 ? ' low' : ''}">${Gm.expireWeeks(s) - (s.week - q.posted)}주</span></div>
         <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
     }
@@ -760,12 +762,14 @@
   }
   function qDetailHtml(q) {
     const T = QT[q.tid] || {}, d = danger(T, q.g), fb = foeBand(q), intel = !!s.built['정보실'], wk = T.weeks || 1;
-    let h = `<div class="t1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b><span class="ux-tag">${Gm.QTYPE[q.type]}</span><span class="ux-tag">${wk}주</span></div>`;
+    let h = `<div class="t1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q, true)}<span class="ux-tag">${Gm.QTYPE[q.type]}</span><span class="ux-tag">${wk}주</span></div>`;
     if (T.client || T.notice || T.tip) h += `<div class="note">${T.client ? `<b>${esc(T.client)}</b> ` : ''}${esc(T.notice || '')}${T.notice && T.tip ? '<br>' : ''}${esc(T.tip || '')}</div>`;   // 오버 메모(편집기)
+    const QL = s.cfg.qlv, LV = q.lv && QL && QL.on && s.qlv ? s.qlv[q.tid] : null, lvM = q.lv && QL ? 1 + QL.foe * (q.lv - 1) : 1;
+    if (LV) h += `<div class="ql-box">의뢰 레벨 <b>Lv${q.lv}</b> · ${LV.lv < QL.max ? `성공 <b>${LV.wins} / ${QL.need}</b> → Lv${LV.lv + 1}` : '<b>최고 레벨</b>'}${q.lv > 1 ? ` <small>· Lv1보다 적 +${Math.round(QL.foe * (q.lv - 1) * 100)}% · 보상 +${Math.round(QL.pay * (q.lv - 1) * 100)}% [임시]</small>` : ''}</div>`;
     if (d.n) {
-      h += '<div class="sec">출현 몬스터</div><div class="mons">' + (T.enemies || []).map(e => { const m = MONS[e.mon] || {}; return `<div class="mon"><span class="pic"${m.img ? ` style="background-image:url(assets/expedition/${m.img})"` : ''}></span><b>${esc(e.name)}</b> ×${e.count}${e.boss ? ' <span class="ux-tag injured">보스</span>' : ''}<small>체력 ${e.hp} · 공격 ${e.atk}</small></div>`; }).join('') + '</div>';
+      h += '<div class="sec">출현 몬스터</div><div class="mons">' + (T.enemies || []).map(e => { const m = MONS[e.mon] || {}; return `<div class="mon"><span class="pic"${m.img ? ` style="background-image:url(assets/expedition/${m.img})"` : ''}></span><b>${esc(e.name)}</b> ×${e.count}${e.boss ? ' <span class="ux-tag injured">보스</span>' : ''}<small>${q.fz ? '약 ' : ''}체력 ${Math.round(e.hp * lvM)} · 공격 ${Math.round(e.atk * lvM)}${q.fz ? ' ?' : ''}</small></div>`; }).join('') + '</div>';
       h += `<div class="sec">위험도</div><div class="row">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}<span>${GR[q.g]}급 모험가 <b>${d.n}명${d.more ? ' 이상' : ''}</b> 권장${d.more ? ' (장비가 필요할 수 있음)' : ''}</span></div>`;
-      h += `<div class="row">${intel ? (fb === 'up' ? '<i class="foe up">▲</i> 이번 무리는 평소보다 <b>강합니다</b>' : fb === 'down' ? '<i class="foe down">▼</i> 이번 무리는 평소보다 <b>약합니다</b>' : '이번 무리는 평소 수준입니다') : '<i class="foe unk">?</i> 정보실이 있으면 이번 무리의 강약을 알 수 있습니다'}</div>`;
+      h += q.fz && LV ? `<div class="ql-warn">레벨이 막 올라 <b>적 정보가 부정확</b>해요 — 실제는 훨씬 강하거나 약할 수 있음 <small>(앞으로 ${LV.fresh}번)</small></div>` : `<div class="row">${intel ? (fb === 'up' ? '<i class="foe up">▲</i> 이번 무리는 평소보다 <b>강합니다</b>' : fb === 'down' ? '<i class="foe down">▼</i> 이번 무리는 평소보다 <b>약합니다</b>' : '이번 무리는 평소 수준입니다') : '<i class="foe unk">?</i> 정보실이 있으면 이번 무리의 강약을 알 수 있습니다'}</div>`;
     } else h += `<div class="sec">요구 능력치 <small>비전투 의뢰</small></div><div class="row">${q.req.map(k => `<span class="ux-tag">${Gm.STATS[k]} ${Math.round(q.r)}</span>`).join(' ')}</div>`;
     const rw = (T.rewards || []).filter(r => MATS[r.m]);
     h += `<div class="sec">보상</div><div class="rw"><span class="gold big"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G${q.x2 ? ' <em class="qx2">×2</em>' : ''}</span>${rw.map(r => { const m = MATS[r.m], known = !!(s.knownMats || {})[r.m];   // 모르는 소재: 실루엣 + ? (이름은 ???)
