@@ -155,9 +155,9 @@ const CASES = [
     return { ok: ra === 0.25 && rb === Gm.questFee(g, q) && sum(Array.from(sp.net)) + sp.guild === 101,
       detail: `계약 ${Math.round(ra * 100)}% · 자유 ${Math.round(rb * 100)}% → 101G = 실수령 ${Array.from(sp.net).join(' · ')} + 길드 ${sp.guild}` };
   } },
-  { id: 'G1', name: 'V2 설정을 모두 예전 값으로 돌리면 관문 1 = 558G · 95.6%', need: [], src: 'E1-7 · 결정표 7장', run() {
+  { id: 'G1', name: 'V2 설정을 모두 예전 값으로 돌리면 관문 1 = 560G · 95.5% (대장간 해금 데이터 변경 전 558G · 95.6%)', need: [], src: 'E1-7 · 결정표 7장', run() {
     const r = gate(c => { c.econ.feePerInfo = 0.02; c.econ.subsidyMode = 0; c.econ.resaleRate = 0.08; c.econ.matBuyRate = 0; c.econ.restK = 0; c.contract.slots = 0; c.adv.zeroFameVisit = 0; c.adv.founderMix = 0; c.econ.drawMode = 0; c.late.on = 0; c.adv.fameStep = 5; c.adv.fameSkip = 0; c.adv.founderWarrior = 0; c.gear.pieceBuy = 0; });   // 2026-11-17 cd248c4: 의뢰 0건 판 대책 두 가지도 끔
-    return { ok: r.G === 558 && r.S === '95.6', detail: `게임 ${r.G}G · ${r.S}% (eb10e81 559G에서 −1G는 정수 배분 버림. 끈 것: 정보실 +2%p 복원 · 매달 보조금 · 자동 차익 8% · 매입 0 · 거름 0 · 계약 정원 0 · 의뢰 0건 대책 2가지)` };
+    return { ok: r.G === 560 && r.S === '95.5', detail: `게임 ${r.G}G · ${r.S}% (eb10e81 559G에서 −1G는 정수 배분 버림. 2026-11-18 대장간 리퀘스트 조건 완화(데이터)로 558 → 560G. 끈 것: 정보실 +2%p 복원 · 매달 보조금 · 자동 차익 8% · 매입 0 · 거름 0 · 계약 정원 0 · 의뢰 0건 대책 2가지)` };
   } },
   { id: 'G2', name: '지금 설정 관문 1 (기록용, 월 순이익 300~600G 안이면 통과)', need: [], src: '관문 1', run() {
     const r = gate(() => {});
