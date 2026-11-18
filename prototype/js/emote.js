@@ -55,7 +55,10 @@
     const bx = p => p[0] * W;
     // 반전 (2026-11-18 고침): 원본 배치 그대로 그린 뒤 아이콘 전체를 거울처럼 뒤집음 (예전: 자리만 뒤집고 그림은 그대로 → 표정 · 기호가 원본과 달라 보였음)
     g.save(); if (mir) { g.translate(cx, 0); g.scale(-1, 1); g.translate(-cx, 0); }
-    g.globalAlpha *= Math.min(1, a * 1.5, out); g.translate(ox, oy - (1 - out) * 0.06 * H); g.scale(sc, sc); g.translate(-ox, -oy);
+    // 등장 = 물풍선 띠용 (2026-11-18 사용자 확정 "더 말랑하게"): 아래 가운데 기준으로 쑥 커지며 세로로 늘었다 가로로 퍼졌다 출렁이다 멈춤 [임시: 세기 45% · 2.3번/초 · 잦아듦 4.2]
+    const ag = Math.max(0, age), gr = 1 - Math.pow(1 - Math.min(1, ag / 0.14), 3), wob = Math.exp(-ag * 4.2) * Math.sin(ag * 2 * Math.PI * 2.3);
+    const so = 0.55 + 0.45 * out, jx = gr * (1 - 0.45 * wob) * so, jy = gr * (1 + 0.45 * wob) * so, bxo = x0 + W / 2, byo = y0 + H;
+    g.globalAlpha *= Math.min(1, ag / 0.06, out); g.translate(bxo, byo - (1 - out) * 0.06 * H); g.scale(jx, jy); g.translate(-bxo, -byo);
     g.shadowColor = 'rgba(40,22,8,.35)'; g.shadowBlur = 4; g.shadowOffsetY = 2;
     // 얼굴 + 표정
     g.save(); const fx = x0 + W / 2, fy = y0 + H;   // 얼굴 기준점: 아래 가운데

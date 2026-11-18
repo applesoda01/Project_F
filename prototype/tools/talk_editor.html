@@ -97,7 +97,7 @@ button.pri{background:linear-gradient(#ffe8a8,#e9c46a);border-color:#a8782c}
 <div class="drop" id="drop">talk.csv 를 놓으세요</div>
 <script>
 'use strict';
-const HEAD = ['상황', '역할', '말투', '관계', '대사', '메모'];
+const HEAD = ['상황', '역할', '말투', '관계', '대사', '메모', '감정'];   // 2026-11-18 감정 열 (비움 또는 win sweat note heart anger smile qex spark) — 편집 화면에는 안 보이지만 저장할 때 그대로 지킴
 const SITS = [
   ['table', '식탁 잡담', '로비 · 같은 테이블에 앉은 두 사람'], ['board', '게시판 앞', '로비 · 함께 서성이는 두 사람 (25%)'], ['idle', '로비 잡담', '로비 · 가까이 선 두 사람 (30%)'],
   ['depart', '출발 전', '로비 · 파티 대표와 동료, 파티마다 1번'], ['return_ok', '귀환 (성공)', '로비 · 보고 뒤'], ['return_fail', '귀환 (실패)', '로비 · 보고 뒤'],
@@ -123,12 +123,12 @@ function parseCSV(text) {
   return out.filter(r => r.some(x => x !== ''));
 }
 const cell = v => /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
-const toCSV = () => '﻿' + [HEAD].concat(rows.map(r => [r.sit, r.role, r.tone, r.rel, r.text, r.memo])).map(r => r.map(cell).join(',')).join('\r\n') + '\r\n';
+const toCSV = () => '﻿' + [HEAD].concat(rows.map(r => [r.sit, r.role, r.tone, r.rel, r.text, r.memo, r.emo || ''])).map(r => r.map(cell).join(',')).join('\r\n') + '\r\n';
 
 function load(text, name) {
   const t = parseCSV(text), h = t.shift() || [];
-  if (HEAD.some((k, i) => h[i] !== k)) { alert('talk.csv 머리줄이 다릅니다: ' + h.join(',')); return; }
-  rows = t.map(r => ({ sit: r[0] || '', role: r[1] || '', tone: r[2] || '', rel: r[3] || '', text: r[4] || '', memo: r[5] || '' }));
+  if (HEAD.slice(0, 6).some((k, i) => h[i] !== k)) { alert('talk.csv 머리줄이 다릅니다: ' + h.join(',')); return; }
+  rows = t.map(r => ({ sit: r[0] || '', role: r[1] || '', tone: r[2] || '', rel: r[3] || '', text: r[4] || '', memo: r[5] || '', emo: r[6] || '' }));
   fileName = name || 'talk.csv'; editable = true; dirty = false; status(); draw();
 }
 function fromGame() {   // 파일을 열기 전: 게임 데이터에서 읽기 전용으로

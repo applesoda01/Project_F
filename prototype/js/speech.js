@@ -8,6 +8,7 @@
   // 대사는 data/speech.csv 에서 고친다 (data_gen.js 로 만들어 읽음)
   const SP = (root.GAME_DATA && root.GAME_DATA.speech) || { L: {}, rumor: [], lina: {} };
   const L = SP.L, RUMOR = SP.rumor;
+  const EMO = SP.emo || {}, emoOf = t => (t && EMO[t]) || null;   // 2026-11-18 대사 → 감정 아이콘 (speech.csv · talk.csv 의 감정 열)
 
   function tone(a) { if (!a) return 'plain'; if (a.risk === 2) return 'bold'; if (a.risk === 0) return 'careful'; if (a.social === 2) return 'friendly'; if (a.social === 0) return 'loner'; return 'plain'; }
   function line(a, ev, seed) {
@@ -99,7 +100,8 @@
     const fill = s => s.replace(/\{([abq])(?::([^}]+))?\}/g, (m0, k, sfx) => { const v = V[k]; if (!sfx) return v; const [x, y] = sfx.split('/'); const c = v.charCodeAt(v.length - 1); return v + (c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0 ? x : y); });   // {a:이/가} 같은 조사 처리 (2026-11-16)
     const o = pick('open', sit, tone(a), rel), r = pick('reply', sit, tone(b), rel); if (!o || !r) return null;
     const c = pick('close', sit, tone(a), rel);
-    return [fill(o), fill(r)].concat(c ? [fill(c)] : []);
+    const out = [fill(o), fill(r)].concat(c ? [fill(c)] : []); out.emo = [emoOf(o), emoOf(r), emoOf(c)];   // 채우기 전 글로 찾음
+    return out;
   }
-  root.Speech = { line, lina, tone, talk, memTalk, bind, TONE_NAME };
+  root.Speech = { line, lina, tone, talk, memTalk, bind, TONE_NAME, emoOf };
 })(this);

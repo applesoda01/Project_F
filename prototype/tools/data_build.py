@@ -100,9 +100,14 @@ for ln, r in read('skills.csv', ['계열', '단계', '직업', '스킬', '종류
 
 # ---------- 말풍선 ----------
 speech = {'L': {e: {t: [] for t in TONES} for e in EVENTS}, 'rumor': [], 'lina': {e: [] for e in LINA_EVENTS}}
-for ln, r in read('speech.csv', ['상황', '말투', '대사', '메모']):
+EMO_KINDS = ['win', 'sweat', 'note', 'heart', 'anger', 'smile', 'qex', 'spark']   # 감정 아이콘 (2026-11-18, js/emote.js)
+speech['emo'] = {}   # 대사 → 감정 아이콘 (말풍선이 뜰 때 이름표 옆에 같이 뜸)
+for ln, r in read('speech.csv', ['상황', '말투', '대사', '메모', '감정']):
     e, t, line = r['상황'], r['말투'], r['대사']
     if not line: err('speech.csv', ln, '대사가 비었습니다'); continue
+    if r['감정']:
+        if r['감정'] not in EMO_KINDS: err('speech.csv', ln, f"감정 '{r['감정']}' 은 비움 또는 {' '.join(EMO_KINDS)} 중 하나여야 합니다")
+        else: speech['emo'][line] = r['감정']
     if e == 'rumor': speech['rumor'].append(line)
     elif e in LINA_EVENTS: speech['lina'][e].append(line)
     elif e in EVENTS:
@@ -118,9 +123,12 @@ for e in LINA_EVENTS:
 TALK_SITS = ['table', 'board', 'idle', 'depart', 'return_ok', 'return_fail', 'battle_start', 'battle_hit', 'battle_heal', 'battle_win', 'battle_lose', 'town']
 TALK_ROLES = ['open', 'reply', 'close']
 talk = {}
-for ln, r in read('talk.csv', ['상황', '역할', '말투', '관계', '대사', '메모']):
+for ln, r in read('talk.csv', ['상황', '역할', '말투', '관계', '대사', '메모', '감정']):
     st, ro, t, rel, line = r['상황'], r['역할'], r['말투'], r['관계'], r['대사']
     if not line: err('talk.csv', ln, '대사가 비었습니다'); continue
+    if r['감정']:
+        if r['감정'] not in EMO_KINDS: err('talk.csv', ln, f"감정 '{r['감정']}' 은 비움 또는 {' '.join(EMO_KINDS)} 중 하나여야 합니다")
+        else: speech['emo'][line] = r['감정']   # {a} {b} {q} 가 든 줄은 채운 뒤 글이 달라짐 → Speech 가 채우기 전 글로 찾음
     if st not in TALK_SITS: err('talk.csv', ln, f"상황 '{st}' 을 모릅니다 ({' '.join(TALK_SITS)})"); continue
     if ro not in TALK_ROLES: err('talk.csv', ln, f"역할 '{ro}' 은 open reply close 중 하나여야 합니다"); continue
     if t not in TONES + ['any']: err('talk.csv', ln, f"말투 '{t}' 는 {' '.join(TONES)} any 중 하나여야 합니다"); continue

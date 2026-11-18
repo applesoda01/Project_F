@@ -271,7 +271,7 @@
     const E = L.emo || [];   // 2026-11-18 감정 아이콘 (이름표 레벨 뒤)
     say(ac, L[0], 1.8, 'talk', E[0]);
     D.timers.push({ t: D.t + 1.2, fn: () => { if (D.actors.get(o.id) === o) say(o, L[1], 1.8, 'talk', E[1]); } });
-    if (L[2]) D.timers.push({ t: D.t + 2.4, fn: () => { if (D.actors.get(ac.id) === ac) say(ac, L[2], 1.6, 'talk'); } });
+    if (L[2]) D.timers.push({ t: D.t + 2.4, fn: () => { if (D.actors.get(ac.id) === ac) say(ac, L[2], 1.6, 'talk', E[2]); } });
     D.talk.busy = D.t + (L[2] ? 4 : 3);   // 대화 중에는 다른 사람 혼잣말을 미룸 (기록이 섞이지 않게)
     D.talk.next = D.t + 4 + 20 + Math.random() * 20; ac.talkCool = o.talkCool = D.t + 60;
     if (p.sit === 'table') { ac.tableTalk = ac.seat; o.tableTalk = o.seat; }
@@ -289,7 +289,8 @@
     D.talk.busy = D.t + d + 3; D.talk.next = Math.max(D.talk.next, D.talk.busy + 20 + Math.random() * 20); ac.talkCool = o.talkCool = D.talk.busy + 57;
     return d + 2.6;
   }
-  function say(ac, text, dur, grp, emo) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (emo) ac.emo = { k: emo, t0: D.t, until: D.t + (dur || 1.8) + 0.7 }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text, null, ac.a, grp); } }   // 얼굴·직업 표시용으로 모험가를 함께 넘김
+  function say(ac, text, dur, grp, emo) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (emo === undefined && root.Speech && Speech.emoOf) emo = Speech.emoOf(text);   // 대사표(감정 열)에 적힌 감정
+    if (emo) ac.emo = { k: emo, t0: D.t, until: D.t + (dur || 1.8) + 0.7 }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text, null, ac.a, grp); } }   // 얼굴·직업 표시용으로 모험가를 함께 넘김
 
   // ---------- 매 프레임 ----------
   D.update = function (dt) {
