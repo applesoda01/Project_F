@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Qwen 대화 시험</title>
+<title>작은 모델 대화 시험</title>
 <!-- 2026-11-18 실험: 작은 Qwen(WebLLM, 브라우저 WebGPU)이 우리 소재(성격 · 기억 · 관계)로 모험가 대화를 잘 만드는지 시험.
      게임과 연결되지 않은 따로 페이지. 모델은 처음 한 번 브라우저 저장소로 내려받음(0.8B 약 0.6GB · 2B 약 1.3GB · 4B 약 2.4GB, 대략). 제안서: docs/design/proposal_adv_memory_v1.md -->
 <style>
@@ -33,9 +33,11 @@ table{border-collapse:collapse;font-size:14px}td,th{border-bottom:1px solid var(
 <p class="sub">작은 Qwen이 성격 · 기억 · 관계를 받아 모험가 대화 3줄을 만드는지 봅니다. 브라우저(WebGPU)에서만 돌고, 게임과는 연결되지 않습니다.</p>
 <div class="bar">
   <select id="model">
-    <option value="Qwen3.5-0.8B-q4f16_1-MLC">Qwen3.5 0.8B (가장 작음 · 약 0.6GB)</option>
-    <option value="Qwen3.5-2B-q4f16_1-MLC">Qwen3.5 2B (약 1.3GB)</option>
-    <option value="Qwen3.5-4B-q4f16_1-MLC">Qwen3.5 4B (약 2.4GB)</option>
+    <option value="Qwen3.5-0.8B-q4f16_1-MLC">Qwen3.5 0.8B (0.4GB 실측)</option>
+    <option value="Qwen3.5-2B-q4f16_1-MLC">Qwen3.5 2B (1.0GB 실측)</option>
+    <option value="Qwen3.5-4B-q4f16_1-MLC">Qwen3.5 4B (2.3GB 실측)</option>
+    <option value="gemma3-1b-it-q4f16_1-MLC">Gemma 3 1B (가벼움)</option>
+    <option value="gemma-4-E2B-it-q4f16_1-MLC">Gemma 4 E2B</option>
   </select>
   <button id="load" class="go">모델 불러오기</button>
   <select id="pv"><option value="2" selected>질문 B: 예시 2개 + "이름: 대사" 줄</option><option value="1">질문 A: 규칙 + JSON</option></select>
