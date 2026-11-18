@@ -608,7 +608,7 @@
   const cleanName = q => q.name || `${GR[q.g]}급 ${Gm.QTYPE[q.type]} 의뢰`;
   const gradeImg = (g, cls) => `<i class="ux-grade ${cls || ''}" style="background-image:url(assets/ui/hud/badge_${GR[g]}.png)" title="${GR[g]}급"></i>`;
   let qHover = null, qTimer = 0;
-  let qSel = null;
+  let qSel = null, feeOpen = false;   // feeOpen: 오른쪽 쪽 '이 의뢰 수수료' 칸 펼침 (2026-11-18: 평소 접어 둠 — 전투 의뢰 상세가 쪽을 넘쳐 의뢰 취소 버튼과 겹치던 문제)
   function renderBoard(b) {
     if (document.getElementById('pop').classList.contains('book')) return renderBoardBook(b);
     const cap = Gm.boardCap(s);
@@ -675,19 +675,20 @@
     let R;
     const q = s.board.find(x => x.id === qSel);
     let A = '';   // 의뢰 취소 버튼: 오른쪽 쪽 안이 아니라 책 그림 좌표에 고정 (--bkc-x, --bkc-y)
-    if (q) { R = `<div class="bkq-det">${qDetailHtml(q)}${qFeeHtml(q)}</div>`; A = `<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">의뢰 취소</button><small>등록비·위약금 ${fmt(Math.round(q.reward * 0.10))}G · 신뢰도 −2</small></div>`; }
+    if (q) { R = `<div class="bkq-det">${qDetailHtml(q, true)}</div>`; A = `${feeOpen ? qFeeHtml(q) : ''}<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">의뢰 취소</button><small>등록비·위약금 ${fmt(Math.round(q.reward * 0.10))}G · 신뢰도 −2</small></div>`; }
     else R = '<div class="bkq-none"><b>게시된 의뢰가 없습니다</b>의뢰는 매주 게시판에 들어옵니다.</div>';
     b.innerHTML = `<div class="bk2"><section class="bk-l">${L}</section><section class="bk-r">${R}</section>${A}</div>`;
     b.onclick = e => {
       const wd = e.target.closest('[data-wd]'); if (wd) { Gm.withdrawQuest(s, +wd.dataset.wd); hooks.changed(); return; }
       const gf = e.target.closest('[data-gfee]'); if (gf) { if (gf.disabled) return; const [g, r] = gf.dataset.gfee.split(':').map(Number); if (Gm.setGradeFee(s, g, r)) hooks.changed(); return; }   // E5-4 등급 기본 수수료
+      const fo = e.target.closest('[data-qfeeopen]'); if (fo && !e.target.closest('[data-qfee]')) { feeOpen = !feeOpen; renderBoardBook(b); return; }
       const qf = e.target.closest('[data-qfee]'); if (qf) { if (qf.disabled) return; const [id, r] = qf.dataset.qfee.split(':'), q = s.board.find(x => x.id === +id); if (q) { if (r === 'base') { delete q.fee; hooks.changed(); } else if (Gm.setQuestFee(s, +id, +r)) hooks.changed(); } return; }   // E5-4 이 의뢰 수수료
       const fb = e.target.closest('[data-fb]'); if (fb) {   // 이미 칠해진 맨 위 막대를 다시 누르면 없음
         const [g, k] = fb.dataset.fb.split(':').map(Number), lv = Gm.filterLevel(s.filter[g]), w = s.filter.slice(); w[g] = Gm.FILTER_W[lv === k ? 0 : k];
         if (!Gm.setFilter(s, w)) { toast('적어도 한 등급은 의뢰를 받아야 합니다.', 'warn'); return; }
         hooks.changed(); return;
       }
-      const c = e.target.closest('.qcard'); if (c) { qSel = +c.dataset.q; renderBoardBook(b); }
+      const c = e.target.closest('.qcard'); if (c) { if (+c.dataset.q !== qSel) feeOpen = false; qSel = +c.dataset.q; renderBoardBook(b); }
     };
     b.onmouseover = b.onmouseout = null;
   }
@@ -756,11 +757,11 @@
     const O = s.cfg.econ.feeOpt || [0.1, 0.15, 0.2], open = Gm.feeOptions(s), base = Gm.questFee(s, { g: q.g }), cur = Gm.questFee(s, q), R = q.reward * (q.x2 ? 2 : 1);
     const one = Gm.econSplit(R, [cur]), three = Gm.econSplit(R, [cur, cur, cur]), K = s.cfg.econ.restK || 0;
     const skip = r => Math.min(100, Math.round(Math.max(0, r - O[0]) / O[0] * K * 100));
-    return `<div class="mk5-q"><h4>이 의뢰 수수료</h4><span class="ct-seg"><button data-qfee="${q.id}:base" class="${q.fee == null ? 'on' : ''} df">${GR[q.g]}급 기본 ${Math.round(base * 100)}%</button>${O.map(r => { const ok = open.some(x => Math.abs(x - r) < 1e-9); return `<button data-qfee="${q.id}:${r}" class="${q.fee != null && Math.abs(q.fee - r) < 1e-9 ? 'on' : ''} ${ok ? '' : 'lk'}" ${ok ? '' : 'disabled'}>${ok ? '' : '🔒'}${Math.round(r * 100)}%</button>`; }).join('')}</span>
+    return `<div class="mk5-q pop"><h4 data-qfeeopen="1" class="fd-h">이 의뢰 수수료<i class="fd-ar">접기 ▾</i></h4><span class="ct-seg"><button data-qfee="${q.id}:base" class="${q.fee == null ? 'on' : ''} df">${GR[q.g]}급 기본 ${Math.round(base * 100)}%</button>${O.map(r => { const ok = open.some(x => Math.abs(x - r) < 1e-9); return `<button data-qfee="${q.id}:${r}" class="${q.fee != null && Math.abs(q.fee - r) < 1e-9 ? 'on' : ''} ${ok ? '' : 'lk'}" ${ok ? '' : 'disabled'}>${ok ? '' : '🔒'}${Math.round(r * 100)}%</button>`; }).join('')}</span>
       <div class="pv">혼자 가면 <b>모험가 실수령 ${fmt(one.net[0])}G</b> · 길드 <em>${fmt(one.guild)}G</em> &nbsp;|&nbsp; 3명이면 1인 실수령 ${three.net[2] === three.net[0] ? fmt(three.net[0]) : fmt(three.net[2]) + '~' + fmt(three.net[0])}G</div>
       <div class="nt">${cur > O[0] + 1e-9 ? `돈이 필요한 모험가는 이 의뢰를 ${skip(cur)}% 확률로 거릅니다. 남아서 기한이 지나면 사라지고 신뢰도 −1.` : `수수료를 올리면 돈이 필요한 모험가가 덜 고릅니다 (${O.slice(1).map(r => `${Math.round(r * 100)}% → ${skip(r)}% 거름`).join(' · ')}).`} 이미 출발한 의뢰는 출발 때 수수료 그대로입니다.</div></div>`;
   }
-  function qDetailHtml(q) {
+  function qDetailHtml(q, fee) {   // fee: 게시판 책 오른쪽 쪽이면 성공 · 실패 줄 끝에 '수수료 ○% 바꾸기' (누르면 수수료 칸이 의뢰 취소 위에 펼쳐짐)
     const T = QT[q.tid] || {}, d = danger(T, q.g), fb = foeBand(q), intel = !!s.built['정보실'], wk = T.weeks || 1;
     let h = `<div class="t1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q, true)}<span class="ux-tag">${Gm.QTYPE[q.type]}</span><span class="ux-tag">${wk}주</span></div>`;
     if (T.client || T.notice || T.tip) h += `<div class="note">${T.client ? `<b>${esc(T.client)}</b> ` : ''}${esc(T.notice || '')}${T.notice && T.tip ? '<br>' : ''}${esc(T.tip || '')}</div>`;   // 오버 메모(편집기)
@@ -775,7 +776,7 @@
     h += `<div class="sec">보상</div><div class="rw"><span class="gold big"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G${q.x2 ? ' <em class="qx2">×2</em>' : ''}</span>${rw.map(r => { const m = MATS[r.m], known = !!(s.knownMats || {})[r.m];   // 모르는 소재: 실루엣 + ? (이름은 ???)
       return `<span class="mat ${r.role === '주' ? 'main' : ''}" title="${known ? esc(m.name) : '???'}"><span class="ux-slot${known ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${known || m.icon ? matImg(m) : ''}</span><em>${r.p}%</em></span>`; }).join('')}</div>`;
     const fs = q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g], ff = q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g], ts = q.trustS != null ? q.trustS : s.cfg.quest.trustSucc, tf = q.trustF != null ? q.trustF : s.cfg.quest.trustFail;
-    h += `<div class="foot"><span>성공 명성 <b class="ux-plus">+${fs}</b> · 신뢰 <b class="ux-plus">+${ts}</b></span><span>실패 명성 <b class="ux-minus">−${ff}</b> · 신뢰 <b class="ux-minus">−${tf}</b></span></div>`;
+    h += `<div class="foot"><span>성공 명성 <b class="ux-plus">+${fs}</b> · 신뢰 <b class="ux-plus">+${ts}</b></span><span>실패 명성 <b class="ux-minus">−${ff}</b> · 신뢰 <b class="ux-minus">−${tf}</b></span>${fee ? `<span class="fd-chip${feeOpen ? ' on' : ''}" data-qfeeopen="1" title="이 의뢰만 수수료 바꾸기">수수료 <b>${Math.round(Gm.questFee(s, q) * 100)}%</b>${q.fee == null ? ' 기본' : ''} ${feeOpen ? '▾' : '▸'}</span>` : ''}</div>`;
     { const left = Gm.expireWeeks(s) - (s.week - q.posted);
       h += `<div class="foot muted">기한 ${left}주 남음 (지나면 사라지고 신뢰도 −${s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1}) · 취소하면 ${fmt(Math.round(q.reward * 0.10))}G, 신뢰도 −2</div>`; }
     return h;

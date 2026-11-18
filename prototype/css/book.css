@@ -814,3 +814,9 @@
 .ql-box small{color:#8a7258;font-size:14px}
 .ql-warn{margin:4px 0;padding:3px 12px;border-radius:8px;background:#efe8fa;border:1px dashed #8a76b8;color:#4b3d73;font-size:15px;line-height:1.4}
 .ql-warn small{color:#6f6194}
+/* 이 의뢰 수수료 칸 접기 (2026-11-18): 평소엔 성공 · 실패 줄 끝 칩만, 누르면 의뢰 취소 버튼 위로 펼쳐짐 (전투 의뢰 상세가 쪽을 넘쳐 겹치던 문제) */
+.bkq-det .fd-chip{margin-left:auto;padding:2px 10px;border:1.5px solid #b8862e;border-radius:12px;background:rgba(251,241,214,.8);color:#6a4614;cursor:pointer;white-space:nowrap}
+.bkq-det .fd-chip:hover,.bkq-det .fd-chip.on{background:#f6e3b4}.bkq-det .fd-chip b{color:#8a5a12}
+.mk5-q.pop{position:absolute;left:var(--bkc-x);top:calc(var(--bkc-y) - 14px);transform:translateY(-100%);width:calc(var(--bk-rw) - 24px);margin:0;z-index:3;background:#fbf1d6;box-shadow:0 6px 18px rgba(60,35,10,.28)}
+.mk5-q .fd-h{display:flex;align-items:baseline;cursor:pointer}
+.mk5-q .fd-ar{margin-left:auto;font-style:normal;font-weight:400;font-size:14px;color:#8a5a12}
