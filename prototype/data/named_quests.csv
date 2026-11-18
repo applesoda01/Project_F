@@ -17,7 +17,7 @@ f_req_don06,15,새 이웃 맞이,outsider,대장장이,donate,,pop>=230;done=f_r
 f_req_del02,16,숨은 맛 찾기,resident,그레타,deliver,,pop>=200;dishes>=5;stat.tec>=38,,,,,,,,,,mat_x004:3;mat_x003:2,,,,,,,,,,recipe:1,,요리를 여러 가지 해 본 길드라면 약초 할머니가 반길 것 같습니다.
 f_req_pers01,17,{이름}의 고향 편지,adventurer,{이름},search,,,calm65,,2-2,2,low,owner,42,,,,,,,,,owner:10,,,,ownerStat:2,,길드를 아주 좋아하는 모험가가 고민이 있어 보입니다.
 f_req_pers02,18,옛 동료와의 결판,adventurer,{이름},hunt,,done=f_req_bat03,wild8,,2-2,1,mid,owner,,B:도적:도적 두목,,,,,2,,,,,,,ownerXp:100,,거친 성격의 노련한 모험가에게 옛 사연이 있는 듯합니다.
-f_req_town01,19,떠돌이 대장장이,outsider,대장장이,town,,pop>=220;fame>=50;advs>=6;stat.tec>=42,,,,,,,,,,mat_mine_F:10;mat_hunt_F:5,1000,,,,,,,,smith,,,크고 이름난 마을에는 대장장이가 머물고 싶어 한다는데.
+f_req_town01,19,떠돌이 대장장이,outsider,대장장이,town,,pop>=180;fame>=30;advs>=5,,,,,,,,,,mat_mine_F:5;mat_hunt_F:5,1000,,,,,,,,smith,,,크고 이름난 마을에는 대장장이가 머물고 싶어 한다는데.
 f_req_town02,20,약초 할머니의 가게,resident,그레타,town,,pop>=200;trust>=75;mat.mat_x016>=5;stat.int>=38,,,,,,,,,,mat_x016:8;mat_x020:4,600,,,,,,,,potion,,,약초에 밝은 모험가가 있다면 할머니가 찾아올지도.
 f_req_srch04,21,봄 파종 일손,resident,굼바,search,spring,pop>=160;advs>=5,,,1-2,1,low,,18,,,,,,,2,,,mat_x004:4;mat_x019:2,,,,,봄이 오면 일손이 부족해지는 집이 있습니다.
 f_req_don07,22,꽃놀이 축제 준비,resident,바르톨,donate,spring,pop>=220;fame>=30,,,,,,,,,500,,,,3,,10,,,,,,yearly,봄에 마을이 크고 이름나면 축제가 열릴지도.
