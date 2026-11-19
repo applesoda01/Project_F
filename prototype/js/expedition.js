@@ -228,15 +228,19 @@
   function bar(x, y, w, h, v, col) { g.fillStyle = 'rgba(0,0,0,.75)'; g.fillRect(x - 1, y - 1, w + 2, h + 2); g.fillStyle = '#2a1010'; g.fillRect(x, y, w, h); const hw = Math.round(w * Math.max(0, Math.min(1, v))); g.fillStyle = col(v); g.fillRect(x, y, hw, h); g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(x, y, hw, 1); }
   const hpCol = v => v > 0.5 ? '#5fd16b' : v > 0.25 ? '#e8c13a' : '#e8443a', enCol = v => v > 0.5 ? '#e8443a' : v > 0.25 ? '#e8913a' : '#e8d23a';
   // 기록 1건 반영. fx=false 면 효과 없이 상태만 (미니 뷰를 교전 도중에 열었을 때)
+  // 2026-11-19 스킬 아이콘 (사용자 시안 확정): 스킬을 쓴 모험가 머리 위에 둥근 스킬 그림 약 1초 (명부 스킬 칸과 같은 그림). 한 사람에 하나만, 테두리 · 피해 숫자 = 스킬 색
+  const SK_FILE = ['skill_str_0', 'skill_agi_0', 'skill_int_0', 'skill_spi_0', 'skill_dex_0'], SK_COL = { double0: '#e8443a', double1: '#4caf50', fire: '#ff8a2a', stab: '#a05ad8', heal: '#5ab8f0' };
+  const SKI = {}; const skImg = f => { if (!SKI[f]) { const im = new Image(); im.src = 'assets/icons/' + f + '.png'; SKI[f] = im; } return SKI[f]; };
+  function skPop(v, a, k) { const core = a.adv ? a.adv.core : 0, key = k === 'double' ? 'double' + (core === 1 ? 1 : 0) : k; v.sks = (v.sks || []).filter(o => o.who !== a); v.sks.push({ who: a, f: SK_FILE[core], col: SK_COL[key] || '#fff', t: 0 }); return SK_COL[key] || null; }
   function apply(v, x, fx) {
     const A = id => v.actors.find(a => a.id === id), E = i => v.enemies[i];
     if (x.by && x.mp != null) { const b = A(x.by); if (b) b.mp = x.mp; }
     if (x.t === 'hit') { const m = E(x.to); if (!m) return; m.hp = x.hp; { const by = A(x.by); if (fx && by && !by.down) { by.atk = ATK_T; by.t = 0.15; } }   // 2026-11-16: 실제로 공격할 때만 공격 모션 (앞 준비 동작 0.15초 건너뜀)
-      if (fx) { m.flash = 0.25; if (x.c) m.crit = 0.4; if (x.d != null) v.nums.push({ who: m, e: 1, txt: String(x.d), crit: !!x.c, t: 0, k: numK(v, m), ox: Math.random() * 10 - 5 }); } }
+      if (fx) { m.flash = 0.25; if (x.c) m.crit = 0.4; const by2 = A(x.by), sc = x.k && by2 ? skPop(v, by2, x.k) : null; if (x.d != null) v.nums.push({ who: m, e: 1, txt: String(x.d), crit: !!x.c, t: 0, k: numK(v, m), ox: Math.random() * 10 - 5, col: sc, big: !!sc }); } }
     else { const a = A(x.to); if (!a) return;
       if (x.t === 'hurt') { if (fx) { const live = v.enemies.filter(m => m.hp > 0 && m.sd); if (live.length) { const m = live[Math.floor(Math.random() * live.length)]; m.act = 'attack'; m.mt = 0; } } a.hp = x.hp; if (fx && a.hp > 0) vTalk(v, 'battle_hit', other(v, a), a); if (fx) { a.flash = 0.3; if (x.d != null) v.nums.push({ who: a, txt: String(x.d), t: 0, k: numK(v, a), ox: Math.random() * 6 - 3 }); } }
       else if (x.t === 'miss') { if (fx) a.dodge = 0.3; }
-      else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx && x.t === 'heal' && x.by) { const by = A(x.by); if (by && !by.down) { by.atk = ATK_T; by.t = 0.15; } } if (fx && x.t === 'heal' && x.by && x.by !== x.to) vTalk(v, 'battle_heal', A(x.by), a); if (fx) { a.glow = 0.5; if (x.d != null && x.d > 0) v.nums.push({ who: a, txt: '+' + x.d, heal: true, t: 0, k: numK(v, a), ox: Math.random() * 6 - 3 }); for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
+      else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx && x.t === 'heal' && x.by) { const by = A(x.by); if (by && !by.down) { by.atk = ATK_T; by.t = 0.15; skPop(v, by, 'heal'); } } if (fx && x.t === 'heal' && x.by && x.by !== x.to) vTalk(v, 'battle_heal', A(x.by), a); if (fx) { a.glow = 0.5; if (x.d != null && x.d > 0) v.nums.push({ who: a, txt: '+' + x.d, heal: true, t: 0, k: numK(v, a), ox: Math.random() * 6 - 3 }); for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
       else if (x.t === 'down') { a.hp = 0; a.down = true; a.anim = 'fall'; a.t = 0; } }
   }
   function drawScene(dt) {
@@ -330,12 +334,16 @@
         if (a.maxMp > 0) bar(bx, SURF - 100, BW, 4, a.mp / a.maxMp, () => '#3a8ee8');
         g.globalAlpha = 1; } });
     drawSay(v, dt);
+    { const SKT = 1.0; v.sks = (v.sks || []).filter(o => (o.t += dt) < SKT);   // 스킬 아이콘: 0.15초에 1.15배로 톡 → 0.25초에 1배, 끝 0.25초에 흐려짐
+      for (const o of v.sks) { const a = o.who; if (a.x == null || a.down) continue; const im = skImg(o.f); if (!im.complete || !im.naturalWidth) continue;
+        const p = o.t < 0.15 ? 0.6 + (o.t / 0.15) * 0.55 : o.t < 0.25 ? 1.15 - (o.t - 0.15) / 0.1 * 0.15 : 1, r = 11 * p, cx = Math.round(a.x), cy = SURF - 124 - Math.min(o.t, 0.25) * 8;
+        g.save(); g.globalAlpha = Math.max(0, Math.min(1, (SKT - o.t) * 4)); g.beginPath(); g.arc(cx, cy, r + 2, 0, Math.PI * 2); g.fillStyle = o.col; g.fill(); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fillStyle = '#fff8e6'; g.fill(); g.clip(); g.imageSmoothingEnabled = true; g.drawImage(im, cx - r, cy - r, r * 2, r * 2); g.restore(); } }
     // 피해·회복 숫자: 대상 머리 위로 떠올랐다가 사라짐 (치명타는 크고 금색, 아군이 맞으면 붉게, 회복은 초록)
     v.nums = v.nums.filter(n => (n.t += dt) < NUM_T);
     // 2026-11-16: 적 숫자는 이름표보다 위, 아군 숫자는 머리 옆(말풍선 · 체력 바와 안 겹치게), 14px · 1.4초, 같은 대상에 연달아 뜨면 한 줄씩 위로
     for (const n of v.nums) { const tx = n.e ? n.who.cx : n.who.x + 24, ty = (n.e ? n.who.top - 14 - n.t * 18 : SURF - 58 - n.t * 12) - (n.k || 0) * 13 - (n.crit ? 4 : 0); if (tx == null || ty == null || isNaN(tx)) continue;
-      g.globalAlpha = Math.max(0, Math.min(1, (NUM_T - n.t) * 2.5)); g.font = 'bold ' + (n.crit ? 17 : 14) + 'px "MaruBuri",sans-serif'; g.textAlign = 'center'; g.lineJoin = 'round'; g.lineWidth = 4; g.strokeStyle = '#120a06';
-      const txt = n.crit ? n.txt + '!' : n.txt; g.strokeText(txt, tx + n.ox, ty); g.fillStyle = n.heal ? '#9dffb0' : n.crit ? '#ffd95a' : n.e ? '#fff1c2' : '#ff6b5b'; g.fillText(txt, tx + n.ox, ty); } g.globalAlpha = 1;
+      g.globalAlpha = Math.max(0, Math.min(1, (NUM_T - n.t) * 2.5)); g.font = 'bold ' + (n.crit ? 17 : n.big ? 16 : 14) + 'px "MaruBuri",sans-serif'; g.textAlign = 'center'; g.lineJoin = 'round'; g.lineWidth = 4; g.strokeStyle = '#120a06';
+      const txt = n.crit ? n.txt + '!' : n.txt; g.strokeText(txt, tx + n.ox, ty); g.fillStyle = n.col ? n.col : n.heal ? '#9dffb0' : n.crit ? '#ffd95a' : n.e ? '#fff1c2' : '#ff6b5b'; g.fillText(txt, tx + n.ox, ty); } g.globalAlpha = 1;
     // 2026-11-16: 탐색지 바닥 빛 — 비전투 수행 중 살펴보는 자리마다 숨 쉬듯 밝아지는 빛무리
     if (P === 'fight' && !v.combat) { g.save(); g.globalCompositeOperation = 'lighter';
       for (const a of v.actors) { if (a.down || a.x == null) continue; const cx = a.x + 27, cy = SURF - 3, pu = 0.5 + 0.5 * Math.sin(v.t * 3.2 + a.i * 1.7), r = 22 + pu * 10;
