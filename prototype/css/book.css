@@ -837,3 +837,9 @@
 .buff-ico{width:22px;height:22px;object-fit:contain;vertical-align:-5px;margin-left:4px;padding:1px;border-radius:50%;background:#fff3cf;box-shadow:0 0 0 1.5px #d9a64a}
 .ux-face .buff-ico.pt{position:absolute;left:-7px;top:-7px;width:20px;height:20px;margin:0;vertical-align:0}   /* 명부 줄: 초상 왼쪽 위 모서리 (이름 칸이 좁아 이름 옆에 두면 F 배지와 겹침) */
 .ux-portrait .buff-ico.ptd{position:absolute;right:2px;top:2px;width:26px;height:26px;margin:0;vertical-align:0;z-index:2}   /* 명부 상세: 초상 안쪽 오른쪽 위 (사용자 지정 2026-11-19) */
+/* 2026-11-19 승산 칩 (전투 리퀘스트 · 메인 퀘스트): 여유 · 팽팽 · 위험 */
+.rq-pow{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font:400 15px var(--hf);color:var(--ux-wood)}
+.rq-pow b{font-size:16px;padding:1px 10px;border-radius:999px;border:1.5px solid currentColor;line-height:1.4}
+.rq-pow i{font-style:normal;font-size:12px;letter-spacing:1px}
+.rq-pow.ok b,.rq-pow.ok i{color:#3f7a3a}.rq-pow.mid b,.rq-pow.mid i{color:#b07a16}.rq-pow.bad b,.rq-pow.bad i{color:#b5452f}
+p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 글 안에서는 줄 끝에 붙임 */
