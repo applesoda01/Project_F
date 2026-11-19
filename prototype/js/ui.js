@@ -430,9 +430,9 @@
     if (v.need.gold) need += `<span class="rq-chip gold ${nq(s.gold >= v.need.gold)}">${fmt(v.need.gold)}G <small>(금고 ${fmt(s.gold)}G)</small></span>`;
     for (const [m, k] of Object.entries(v.need.mats)) need += rqMat(m, k, s.mats[m] || 0);
     if (d.type === 'install') need += `<span class="rq-chip ${nq(v.goalOk)}">테이블 1세트 놓기 (시설 장 → 설비)</span>`;
-    if (v.nominated) { const pt = d.party[0] === d.party[1] ? d.party[0] + '명' : d.party[0] + '~' + d.party[1] + '명';
+    if (v.nominated) { const PR = Gm.reqPartyRange(s, r.id) || d.party, pt = PR[0] === PR[1] ? PR[0] + '명' : PR[0] + '~' + PR[1] + '명';
       const pp = Gm.reqPartyOf(s, r);
-      need += `<span class="rq-chip ${nq(pp.length >= d.party[0])}">지명 ${pt} · ${d.weeks}주</span>` + (d.req ? `<span class="rq-chip star ${nq(pp.some(a => Gm.reqMeets(s, r, a)))}">★ ${d.req[0] === -1 ? esc(v.giver) + ' 본인' : (d.req[0] === -2 ? '주력 능력치' : Gm.STATS[d.req[0]]) + ' ' + d.req[1] + ' 이상'} 1명</span>` : '') + d.foes.map(f => `<span class="rq-chip enemy">${esc(f.name)}${f.count > 1 ? ' ×' + f.count : ''}${f.boss ? ' (우두머리)' : ''}</span>`).join(''); }
+      need += `<span class="rq-chip ${nq(pp.length >= PR[0])}">지명 ${pt} · ${d.weeks}주</span>` + (d.req ? `<span class="rq-chip star ${nq(pp.some(a => Gm.reqMeets(s, r, a)))}">★ ${d.req[0] === -1 ? esc(v.giver) + ' 본인' : (d.req[0] === -2 ? '주력 능력치' : Gm.STATS[d.req[0]]) + ' ' + d.req[1] + ' 이상'} 1명</span>` : '') + d.foes.map(f => `<span class="rq-chip enemy">${esc(f.name)}${f.count > 1 ? ' ×' + f.count : ''}${f.boss ? ' (우두머리)' : ''}</span>`).join(''); }
     Rr += `<div class="rq-sec"><i>요구</i><div>${need}</div></div><div class="rq-sec"><i>보상</i><div>${rqRewards(v)}</div></div>`;
     // 행동
     if (!v.nominated) {
@@ -441,7 +441,7 @@
     } else {
       const party = Gm.reqPartyOf(s, r), P = Gm.reqPredict(s, r.id), why = r.state === 'open' ? Gm.reqSendWhy(s, r) : null, rows = Gm.reqNomList(s, r.id);
       const pTxt = P == null ? '' : Gm.reqIsCombat(s, r.id) ? powTag(P) : `<span class="rq-p ${P >= 0.7 ? 'ok' : P >= 0.4 ? 'mid' : 'bad'}">예상 성공률 <b>${Math.round(P * 100)}%</b></span>`;   // 전투 = 승산 칩, 비전투 = 확률
-      Rr += `<div class="rq-party"><span class="pl">파티 ${party.length} / ${d.party[1]}</span>${party.map(a => `<span class="pm" style="${faceStyle(a, 34, 178, 17)}" title="${esc(a.name)}"></span>`).join('') || '<em>아래에서 모험가를 눌러 부탁하세요 (부탁할 때마다 섭외비가 나갑니다)</em>'}${pTxt}</div>`;
+      Rr += `<div class="rq-party"><span class="pl">파티 ${party.length} / ${(Gm.reqPartyRange(s, r.id) || d.party)[1]}</span>${party.map(a => `<span class="pm" style="${faceStyle(a, 34, 178, 17)}" title="${esc(a.name)}"></span>`).join('') || '<em>아래에서 모험가를 눌러 부탁하세요 (부탁할 때마다 섭외비가 나갑니다)</em>'}${pTxt}</div>`;
       Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary ${why ? 'soft-off' : ''}" data-rqact="send">보내기 <small>(${Gm.reqWaitOf(s, r).length ? '모두 돌아오면 출발' : '다음 주 출발'})</small></button>` : r.state === 'queued' ? `<button class="ux-btn" data-rqact="unsend">출발 취소</button>${Gm.reqWaitOf(s, r).length ? `<span class="rq-note">예약: ${esc(josa(Gm.reqWaitOf(s, r).map(a => a.name).join(' · '), '이', '가'))} 돌아오는 주에 바로 출발해요. 그동안 파티원은 게시판 의뢰를 받지 않아요.</span>` : ''}` : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}<span class="rq-msg">${esc(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</span></div>`;
       if (r.state !== 'active') {
         Rr += `<div class="rq-nom ${r.state !== 'open' || v.lock ? 'off' : ''}"><div class="nh"><span>모험가</span><span>${d.req && d.req[0] >= 0 ? Gm.STATS[d.req[0]] : rows[0] && rows[0].stat != null ? '주력' : ''}</span><span>애착</span><span>수락</span><span>섭외비</span><span>상태</span></div>`;

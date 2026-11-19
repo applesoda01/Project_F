@@ -516,16 +516,18 @@
   function tutLaunch(s, aid, qid) {   // 정해진 모험가를 정해진 의뢰로 바로 출발시킴 (강제)
     const a = s.advs.find(x => x.id === aid), q = s.board.find(x => x.id === qid); if (!a || !q || a.state !== 'town') return false;
     s.board.splice(s.board.indexOf(q), 1);
-    // 첫 의뢰는 꼭 성공하고 다치지 않게: 결과가 나쁘면 출발을 되돌리고 다시 굴림 (40번 안에 안 되면 결과를 성공으로 고침)
-    const keep = JSON.stringify(a), top = s.log[0], uid0 = s.uidNext, g0 = s.gold, mm = s.month.meal, su = s.seatUsed;
+    launchSure(s, q, [a]); return true;
+  }
+  // 첫 의뢰 · 튜토리얼 리퀘스트는 꼭 성공하고 다치지 않게: 결과가 나쁘면 출발을 되돌리고 다시 굴림 (40번 안에 안 되면 결과를 성공으로 고침)
+  function launchSure(s, q, party) {
+    const keep = party.map(a => JSON.stringify(a)), top = s.log[0], uid0 = s.uidNext, g0 = s.gold, mm = s.month.meal, su = s.seatUsed;
     for (let k = 0; k < 40; k++) {
-      launchParty(s, q, [a], questP(s, [a], q));
+      launchParty(s, q, party, questP(s, party, q));
       const x = s.active[s.active.length - 1], good = x.ok && !x.late && (!x.fight || x.fight.units.every(u => !u.down));
-      if (good) return true;
-      if (k === 39) { x.ok = true; x.late = false; x.fight = null; return true; }   // 그래도 안 되면 성공으로 고치되, 진 전투 기록은 버림 (미니 뷰가 쓰러지는 장면을 재생하지 않게 — 비전투 수행 장면으로)
-      s.active.pop(); Object.assign(a, JSON.parse(keep)); while (s.log.length && s.log[0] !== top) s.log.shift(); s.uidNext = uid0; s.gold = g0; s.month.meal = mm; s.seatUsed = su;
+      if (good) return;
+      if (k === 39) { x.ok = true; x.late = false; x.fight = null; return; }   // 그래도 안 되면 성공으로 고치되, 진 전투 기록은 버림 (미니 뷰가 쓰러지는 장면을 재생하지 않게 — 비전투 수행 장면으로)
+      s.active.pop(); party.forEach((a, i) => Object.assign(a, JSON.parse(keep[i]))); while (s.log.length && s.log[0] !== top) s.log.shift(); s.uidNext = uid0; s.gold = g0; s.month.meal = mm; s.seatUsed = su;
     }
-    return true;
   }
   function tutSpawn(s, o) {   // 튜토리얼 모험가: 창립 멤버처럼 늘 길드에 머물고, 바로 로비에 있음. male: 남자(로비 그림은 id 홀수 = 남자, 이름은 남자 이름 중에서)
     o = o || {}; if (o.male && s.nextId % 2 === 0) s.nextId++;
@@ -1082,7 +1084,8 @@
   const reqGiver = (s, r) => { const d = NQ_BY[r.key], a = r.who != null && s.advs.find(x => x.id === r.who); return d.npc === '{이름}' ? (a ? a.name : '모험가') : d.npc; };
   const reqLog = (s, r, ev, text, extra) => log(s, text, 'req', Object.assign({ rq: { key: r.key, ev, who: r.who != null ? r.who : null, name: reqName(s, r) } }, extra || {}));
   function reqAppear(s) {
-    if (s.tut && !s.tut.base) return null;   // 2026-11-18 튜토리얼: 기본 튜토리얼이 끝날 때까지 리퀘스트는 튜토리얼이 직접 엶 (FT0006)
+    if (s.tut && !s.tut.base) return null;
+    if (s.reqNext2) { delete s.reqNext2; const d2 = NQ_BY['f_req_bat07'], R2 = reqOf(s); if (d2 && !R2.open.some(x => x.key === d2.id) && !R2.done[d2.id]) { const ow = reqOwnerFor(s, d2), r2 = { id: 'r' + (R2.next++), key: d2.id, state: 'open', stage: 1, who: ow ? ow.id : null, party: [], refused: {}, at: s.week, isNew: true, fails: 0 }; R2.open.push(r2); reqLog(s, r2, 'req', `${J(reqGiver(s, r2), '이', '가')} 리퀘스트를 맡겼습니다: 「${reqName(s, r2)}」`); return r2; } }   // 2026-11-18 튜토리얼: 기본 튜토리얼이 끝날 때까지 리퀘스트는 튜토리얼이 직접 엶 (FT0006)
     const R = reqOf(s); if (!NQ.length || R.open.length >= REQ_CFG.maxOpen) return null;
     const cands = NQ.filter(d => reqEligible(s, d) && !((R.cool[d.id] || 0) > s.week) && (() => { const [m, t] = reqProgress(s, d); return m === t; })());
     if (!cands.length || reqR(s) >= REQ_CFG.appear) return null;
@@ -1122,6 +1125,7 @@
     const r = R.open.splice(k, 1)[0]; R.cool[r.key] = s.week + REQ_CFG.refuseCool; reqLog(s, r, 'refuse', `「${reqName(s, r)}」 리퀘스트를 거절했습니다.`); return true;
   }
   function reqComplete(s, r, party) {
+    if (r.tut && r.key === 'f_req_bat01') s.reqNext2 = true;   // 2026-11-19: 튜토리얼 리퀘스트를 마치면 바로 다음 주에 「들개 떼 우두머리」(f_req_bat07 · 2명 필수)를 엶
     const R = reqOf(s), d = NQ_BY[r.key], rw = d.rw, nom = reqNominated(d), got = [];
     if (!nom) {   // 지명형의 금화 · 명성 · 신뢰도는 귀환 처리(게시판과 같은 길)에서 이미 반영
       if (rw.gold) { s.gold += rw.gold; s.month.reqIn = (s.month.reqIn || 0) + rw.gold; (s.month.reqs = s.month.reqs || []).push({ n: reqName(s, r), g: rw.gold }); got.push(rw.gold + 'G'); }
@@ -1160,9 +1164,12 @@
       for (const f of d.foes) { const M = (GD.content.monsters || []).find(m => m.id === f.mon); if (!M) continue;
         for (let k = 0; k < f.count; k++) { const e = { hp: M.hp * (f.boss ? REQ_CFG.bossHp : 1), atk: M.atk * (f.boss ? REQ_CFG.bossAtk : 1), def: M.def || 0, name: f.name, mon: f.mon, boss: !!f.boss }; q.enemies.push(e); q.seen.push({ hp: e.hp, atk: e.atk, def: e.def, name: e.name, boss: e.boss }); } }
     }
+    if (r.tut) tutEase(q);   // 튜토리얼 리퀘스트: 첫 의뢰처럼 1마리 · 체력 50% · 공격 70%
     return q;
   }
   function reqPartyOf(s, r) { return r.party.map(id => s.advs.find(a => a.id === id)).filter(a => a && a.alive); }
+  const reqPR = (r, d) => r.tut ? [1, 1] : d.party;   // 2026-11-19 튜토리얼 리퀘스트(FT0006)는 1명 · 반드시 성공 (두 명 협동은 다음 리퀘스트 「들개 떼 우두머리」에서)
+  function reqPartyRange(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); return r ? reqPR(r, NQ_BY[r.key]) : null; }
   function reqIsCombat(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); return !!(r && isCombat(reqQuest(s, r, true))); }   // 2026-11-19: 전투 리퀘스트는 % 대신 승산 칩
   function reqPredict(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); if (!r) return null; const party = reqSorted(reqPartyOf(s, r)); return party.length ? questP(s, party, reqQuest(s, r, true)) : null; }
   const reqOtherOf = (s, r, aid) => reqOf(s).open.find(o => o !== r && o.party.includes(aid) && (o.state === 'open' || o.state === 'queued' || o.state === 'active')) || null;   // 이 모험가가 들어가 있는 다른 리퀘스트
@@ -1181,7 +1188,7 @@
     // 2026-11-16 예약 지명: 원정 중 · 부상 중인 모험가도 부탁할 수 있음(수락 판정 · 섭외비는 지금). '마을 밖'은 예전처럼 바로 부탁 가능(그 주 길드에 없을 뿐)
     { const o = reqOtherOf(s, r, aid); if (o) return { ok: false, why: `${a.name}: 다른 리퀘스트 「${reqName(s, o)}」에 가기로 했습니다` }; }   // 2026-11-19: 한 모험가가 두 리퀘스트에 들어가지 않게 (섭외비 두 번도 막음)
     if (r.refused[aid] === s.week) return { ok: false, why: '이번 주에는 거절했습니다 (다음 주에 다시 부탁할 수 있어요)' };
-    if (r.party.length >= d.party[1]) return { ok: false, why: '파티가 가득 찼습니다' };
+    if (r.party.length >= reqPR(r, d)[1]) return { ok: false, why: '파티가 가득 찼습니다' };
     if (s.gold < 0) return { ok: false, why: '금고 적자 — 금고가 0G 이상이 되면 다시 부탁할 수 있어요' };   // 결정 7: 마이너스인 동안 지명 막힘
     if (cPastEnd(s, a, d.weeks)) return { ok: false, why: `${a.name}: 계약이 곧 끝나서 이번 일은 어렵겠는데요. (계약을 갱신하면 맡을 수 있어요)`, line: '계약이 곧 끝나서 이번 일은 어렵겠는데요.' };   // 결정 9
     const fee = scoutFee(s, r, a); if (s.gold < fee) return { ok: false, why: `섭외비 ${fee}G가 부족합니다` };
@@ -1197,7 +1204,7 @@
     const d = NQ_BY[r.key], party = reqPartyOf(s, r), lock = reqLock(s, r);
     if (lock) return lock;
     if (mainBlocked(s)) return '침공 대비 중에는 출발할 수 없습니다';
-    if (party.length < d.party[0]) return `${d.party[0]}명 이상 지명해야 합니다`;
+    if (party.length < reqPR(r, d)[0]) return `${reqPR(r, d)[0]}명 이상 지명해야 합니다`;
     if (!party.some(a => reqMeets(s, r, a))) return '조건(★)을 채운 모험가가 1명 있어야 합니다';
     { const late = party.find(a => cPastEnd(s, a, d.weeks)); if (late) return `${late.name}의 계약이 끝나기 전에 돌아올 수 없습니다`; }   // 결정 9
     return null;   // 2026-11-16 예약 지명: 원정 중 · 부상 중인 파티원이 있어도 보낼 수 있음 → 모두 돌아온 주에 출발 (reqLaunch)
@@ -1216,7 +1223,7 @@
       if (wt.length) continue;   // 예약: 원정 · 부상에서 모두 돌아올 때까지 기다림
       delete r.auto;
       const party = reqSorted(reqPartyOf(s, r)), q = reqQuest(s, r, false);
-      r.state = 'active'; r.qid = q.id; launchParty(s, q, party, questP(s, party, q));
+      r.state = 'active'; r.qid = q.id; if (r.tut) launchSure(s, q, party); else launchParty(s, q, party, questP(s, party, q));
     }
   }
   function reqReturn(s, x, ok, party) {
@@ -1430,6 +1437,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, reqIsCombat, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

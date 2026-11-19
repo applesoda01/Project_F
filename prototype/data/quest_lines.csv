@@ -162,6 +162,13 @@ f_req_inst01,expire,1,{이름},default,결국 바닥에서 밥 먹는 게 익숙
 f_req_don01,expire,1,바르톨,default,우물은 마을 사람들이 돌을 날라 겨우 막았소.
 f_req_don02,expire,1,한스,default,나무가 갈라져 버렸어요. 이번 건 없던 일로 하죠.
 f_req_bat01,expire,1,굼바,default,양 두 마리를 잃었어요… 이제 다른 길드에 물어볼게요.
+f_req_bat07,req,1,굼바,default,"또 저예요… 이번엔 덩치 큰 놈이 무리를 몰고 왔어요."
+f_req_bat07,req,2,굼바,default,"지난번처럼 한 분만 오시면 큰일 나요. 꼭 두 분이 같이 와 주세요!"
+f_req_bat07,req,3,리나,smile,"이번엔 혼자선 어려워 보여요. 두 분을 같이 보내 보세요."
+f_req_bat07,ok,1,굼바,default,"두 분이 척척 맞추는 거 봤어요? 들개들이 꼬리를 말고 도망갔어요!"
+f_req_bat07,fail,1,굼바,default,"우두머리가 너무 셌나 봐요… 조금 더 단단히 준비해서 다시 와 주세요."
+f_req_bat07,refuse,1,굼바,default,"알겠어요… 오늘 밤은 양들을 집 안에 들여야겠네요."
+f_req_bat07,expire,1,굼바,default,"결국 양 우리 울타리가 다 부서졌어요… 다른 길드에 물어볼게요."
 f_req_bat02,expire,1,그레타,default,우물은 그냥 덮어 버렸어. 아쉽구먼.
 f_req_srch01,expire,1,그레타,default,영감은 혼자 기어서 돌아왔다네. 길드는 안 오더군.
 f_req_del01,expire,1,페드로,default,기다리다 장날이 지났소. 다른 데서 샀다오.
