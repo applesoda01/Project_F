@@ -1952,9 +1952,10 @@
   // 2026-11-16: 의뢰인 NPC 8명도 같은 방식 (root.NPC_PORTRAITS). Dlg.who = 'lina' 또는 NPC 이름
   const okImg = k => { const a = root.Assets.items; return !!(a[k] && a[k].ok); };
   const npcOf = name => { const P = root.NPC_PORTRAITS && root.NPC_PORTRAITS[name]; return P && okImg(P.key + '_stand') && okImg(P.key + '_blink') ? P : null; };
-  const standOK = () => Dlg.who && Dlg.who !== 'lina' ? !!npcOf(Dlg.who) : okImg('lina_stand') && okImg('lina_blink');
+  const standOK = () => Dlg.who && String(Dlg.who).startsWith('adv:') ? false : Dlg.who && Dlg.who !== 'lina' ? !!npcOf(Dlg.who) : okImg('lina_stand') && okImg('lina_blink');
   function drawStand() {
     const a = root.Assets.items, c = q('#dlgStand'), g = c.getContext('2d');
+    if (Dlg.who && String(Dlg.who).startsWith('adv:')) return;   // 모험가 상반신은 setAdv 가 그림
     if (Dlg.who && Dlg.who !== 'lina') {   // 의뢰인: 표정 1가지(눈 조각 1줄)
       const P = npcOf(Dlg.who); if (!P) return; const [x, y, w, h] = P.eye;
       if (c.width !== P.w || c.height !== P.h) { c.width = P.w; c.height = P.h; }
@@ -1965,6 +1966,16 @@
     const r = Math.max(0, BLINK.rows.indexOf(Dlg.expr));
     g.clearRect(0, 0, c.width, c.height); g.drawImage(a.lina_stand.img, 0, 0);
     g.drawImage(a.lina_blink.img, Dlg.bs * BLINK.w, r * BLINK.h, BLINK.w, BLINK.h, BLINK.x, BLINK.y, BLINK.w, BLINK.h);
+  }
+  // 2026-11-19 모험가 대사 일러스트 (사용자: C 상반신) — assets/chr/bust/{직업}_{f|m}.webp (높이 640, 원본 archive/art_source/illustrations, 배경 지움). 눈 깜빡임 없음
+  const BUST = {}, bustKey = a => ['warrior', 'archer', 'mage', 'cleric', 'rogue'][a.core] + '_' + (a.id % 2 ? 'm' : 'f');   // 성별 = 얼굴 그림(faceStyle)과 같은 규칙
+  const bustImg = a => { const k = bustKey(a); if (!BUST[k]) { const im = new Image(); im.src = 'assets/chr/bust/' + k + '.webp'; BUST[k] = im; } return BUST[k]; };
+  function setAdv(a) {
+    if (!a || a.core == null) return false; const im = bustImg(a);
+    const draw = () => { if (Dlg.who !== 'adv:' + a.id) return; const c = q('#dlgStand'), g = c.getContext('2d'); if (c.width !== im.naturalWidth || c.height !== im.naturalHeight) { c.width = im.naturalWidth; c.height = im.naturalHeight; } g.clearRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0); };
+    Dlg.who = 'adv:' + a.id; Dlg.expr = 'adv'; q('#dlgStand').hidden = false; q('#dlgFace').hidden = true;
+    if (im.complete && im.naturalWidth) draw(); else { q('#dlgStand').getContext('2d').clearRect(0, 0, 9999, 9999); im.onload = draw; }
+    return true;
   }
   function setNpc(name) {   // 의뢰인 초상으로 바꿈 (그림이 없으면 false)
     if (!npcOf(name)) return false;
@@ -1999,7 +2010,7 @@
     if (first) { Dlg.wait = DLG_WAIT; Dlg.t = 0; } else q('#dlg').classList.add('open');
     q('#logBox').classList.add('hide'); stage.ui.classList.add('dlgOn');
     const spk = L.name || '리나'; q('#dlgName').textContent = spk; UI.chat(spk, L.text, spk === '리나' ? 'lina' : null, L.adv || null);   // 2026-11-16: 리나가 아닌 화자(의뢰인 · 모험가)는 이름표만 (NPC 초상은 그림이 들어오면 연결)
-    const npc = spk !== '리나' && setNpc(spk);   // 의뢰인 8명은 초상 + 눈 깜빡임 (2026-11-16)
+    const npc = spk !== '리나' && (setNpc(spk) || setAdv(L.adv));   // 의뢰인 8명은 초상 + 눈 깜빡임 (2026-11-16) · 모험가는 상반신 일러스트 (2026-11-19)
     if (spk === '리나') setFace(L.face); else if (!npc) { Dlg.who = null; q('#dlgStand').hidden = true; q('#dlgFace').hidden = true; }
     q('#dlg').classList.toggle('noface', spk !== '리나' && !npc);
     q('#dlgText').textContent = ''; q('#dlgNext').hidden = true;
