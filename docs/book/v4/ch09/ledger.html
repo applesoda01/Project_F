@@ -1,0 +1,319 @@
+<!DOCTYPE HTML>
+<html data-book-version="v4" lang="ko" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>장부와 관문 1 - Project_F 기획 안내서 v4 — 소재 시장 · 식당 순환 제안판</title>
+
+
+        <!-- Custom HTML head -->
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+
+        <meta name="description" content="이세계 모험가 길드(가칭) — 처음 읽는 사람을 위한 기획 안내서">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/custom.css">
+
+    <link rel="stylesheet" href="../../_book-ui.css">
+</head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html" class="book-toc-change" data-book-change="index.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기">들어가며<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded affix "><a href="../reading.html">이 책을 읽는 법</a></li><li class="chapter-item expanded affix "><a href="../changes.html">변경 비교표: v1 → v2</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded "><a href="../ch01/index.html"><strong aria-hidden="true">1.</strong> 이 게임은</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch01/concept.html"><strong aria-hidden="true">1.1.</strong> 한 장으로 보는 게임</a></li><li class="chapter-item expanded "><a href="../ch01/numbers.html"><strong aria-hidden="true">1.2.</strong> 핵심 수치 다섯 가지</a></li><li class="chapter-item expanded "><a href="../ch01/scope.html" class="book-toc-change" data-book-change="ch01/scope.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">1.3.</strong> 프로토타입 범위와 현재 상태<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch01/references.html"><strong aria-hidden="true">1.4.</strong> 레퍼런스 게임</a></li><li class="chapter-item expanded "><a href="../ch01/platform.html"><strong aria-hidden="true">1.5.</strong> 플랫폼과 로드맵</a></li></ol></li><li class="chapter-item expanded "><a href="../ch02/index.html"><strong aria-hidden="true">2.</strong> 한 판의 흐름</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch02/loop.html"><strong aria-hidden="true">2.1.</strong> 핵심 루프: 한 주에 일어나는 일</a></li><li class="chapter-item expanded "><a href="../ch02/time.html"><strong aria-hidden="true">2.2.</strong> 시간: 주 · 달 · 해</a></li><li class="chapter-item expanded "><a href="../ch02/first-year.html"><strong aria-hidden="true">2.3.</strong> 첫해 진행표</a></li></ol></li><li class="chapter-item expanded "><a href="../ch03/index.html"><strong aria-hidden="true">3.</strong> 모험가</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch03/stats.html"><strong aria-hidden="true">3.1.</strong> 능력치 · 레벨 · 등급</a></li><li class="chapter-item expanded "><a href="../ch03/jobs.html"><strong aria-hidden="true">3.2.</strong> 직업과 전직</a></li><li class="chapter-item expanded "><a href="../ch03/skills.html"><strong aria-hidden="true">3.3.</strong> 스킬과 성장 경로</a></li><li class="chapter-item expanded "><a href="../ch03/personality.html"><strong aria-hidden="true">3.4.</strong> 성향과 애착도</a></li><li class="chapter-item expanded "><a href="../ch03/lifecycle.html"><strong aria-hidden="true">3.5.</strong> 합류 · 계약 · 파티 · 사망과 계승</a></li><li class="chapter-item expanded "><a href="../ch03/talk.html"><strong aria-hidden="true">3.6.</strong> 모험가끼리 대화 · 몸 상태 · 칭호</a></li></ol></li><li class="chapter-item expanded "><a href="../ch04/index.html"><strong aria-hidden="true">4.</strong> 의뢰와 퀘스트</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch04/board.html"><strong aria-hidden="true">4.1.</strong> 의뢰 유입과 게시판</a></li><li class="chapter-item expanded "><a href="../ch04/judge.html"><strong aria-hidden="true">4.2.</strong> 의뢰 유형과 성공 판정</a></li><li class="chapter-item expanded "><a href="../ch04/requests.html" class="book-toc-change" data-book-change="ch04/requests.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">4.3.</strong> 리퀘스트(서브 퀘스트)<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch04/requests-list.html"><strong aria-hidden="true">4.4.</strong> F급 리퀘스트 28개와 의뢰인</a></li><li class="chapter-item expanded "><a href="../ch04/nomination.html"><strong aria-hidden="true">4.5.</strong> 지명 퀘스트</a></li><li class="chapter-item expanded "><a href="../ch04/main.html"><strong aria-hidden="true">4.6.</strong> 메인 퀘스트</a></li></ol></li><li class="chapter-item expanded "><a href="../ch05/index.html"><strong aria-hidden="true">5.</strong> 전투</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch05/rules.html"><strong aria-hidden="true">5.1.</strong> 전투 규칙</a></li><li class="chapter-item expanded "><a href="../ch05/departure.html"><strong aria-hidden="true">5.2.</strong> 출발 판단과 성공률</a></li><li class="chapter-item expanded "><a href="../ch05/invasion.html"><strong aria-hidden="true">5.3.</strong> 침공: 다리를 지켜라</a></li><li class="chapter-item expanded "><a href="../ch05/extra.html"><strong aria-hidden="true">5.4.</strong> 습격 · 마인 · 무술 대회</a></li></ol></li><li class="chapter-item expanded "><a href="../ch06/index.html"><strong aria-hidden="true">6.</strong> 아이템</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch06/gear.html"><strong aria-hidden="true">6.1.</strong> 장비</a></li><li class="chapter-item expanded "><a href="../ch06/potion.html" class="book-toc-change" data-book-change="ch06/potion.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">6.2.</strong> 물약과 소재<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch06/cooking.html" class="book-toc-change" data-book-change="ch06/cooking.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">6.3.</strong> 요리<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol></li><li class="chapter-item expanded "><a href="../ch07/index.html"><strong aria-hidden="true">7.</strong> 길드와 마을</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch07/facilities.html"><strong aria-hidden="true">7.1.</strong> 시설</a></li><li class="chapter-item expanded "><a href="../ch07/housing.html"><strong aria-hidden="true">7.2.</strong> 길드 내부 꾸미기</a></li><li class="chapter-item expanded "><a href="../ch07/town.html"><strong aria-hidden="true">7.3.</strong> 마을과 인구</a></li></ol></li><li class="chapter-item expanded "><a href="../ch08/index.html"><strong aria-hidden="true">8.</strong> 길드 승급</a></li><li class="chapter-item expanded "><a href="../ch09/index.html" class="book-toc-change" data-book-change="ch09/index.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">9.</strong> 경제<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch09/market.html" class="book-toc-change" data-book-change="ch09/market.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">9.1.</strong> V4 소재 시장과 식당 순환<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch09/flow.html" class="book-toc-change" data-book-change="ch09/flow.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">9.2.</strong> 돈의 흐름 한눈에 보기<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch09/income.html" class="book-toc-change" data-book-change="ch09/income.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">9.3.</strong> 길드 수입<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch09/spending.html" class="book-toc-change" data-book-change="ch09/spending.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">9.4.</strong> 길드 지출<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch09/adventurer.html"><strong aria-hidden="true">9.5.</strong> 모험가의 지갑</a></li><li class="chapter-item expanded "><a href="../ch09/measure.html"><strong aria-hidden="true">9.6.</strong> v1 기준 측정: 첫해 100판</a></li><li class="chapter-item expanded "><a href="../ch09/ledger.html" class="active"><strong aria-hidden="true">9.7.</strong> 장부와 관문 1</a></li><li class="chapter-item expanded "><a href="../ch09/issues.html" class="book-toc-change" data-book-change="ch09/issues.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">9.8.</strong> 알려진 문제와 열린 질문<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol></li><li class="chapter-item expanded "><a href="../ch10/index.html"><strong aria-hidden="true">10.</strong> 화면</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch10/flow.html"><strong aria-hidden="true">10.1.</strong> 화면 흐름</a></li><li class="chapter-item expanded "><a href="../ch10/book.html"><strong aria-hidden="true">10.2.</strong> 길드 업무 일지(책 UI)</a></li><li class="chapter-item expanded "><a href="../ch10/miniview.html"><strong aria-hidden="true">10.3.</strong> 원정 미니 뷰</a></li><li class="chapter-item expanded "><a href="../ch10/hud.html"><strong aria-hidden="true">10.4.</strong> HUD · 대화 · 침공 화면</a></li><li class="chapter-item expanded "><a href="../ch10/visual.html"><strong aria-hidden="true">10.5.</strong> 비주얼과 사운드</a></li></ol></li><li class="chapter-item expanded "><a href="../ch11/index.html"><strong aria-hidden="true">11.</strong> 세계관과 이야기</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch11/ending.html"><strong aria-hidden="true">11.1.</strong> 엔딩 · 마왕 · 간부</a></li><li class="chapter-item expanded "><a href="../ch11/characters.html"><strong aria-hidden="true">11.2.</strong> 인물과 이름</a></li></ol></li><li class="chapter-item expanded "><a href="../development/index.html"><strong aria-hidden="true">12.</strong> 개발 순서와 완료 기준</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../development/foundation.html"><strong aria-hidden="true">12.1.</strong> 1. 기준 확정·저장·정산 기반</a></li><li class="chapter-item expanded "><a href="../development/contracts.html"><strong aria-hidden="true">12.2.</strong> 2. 계약·지원·배치</a></li><li class="chapter-item expanded "><a href="../development/operations.html"><strong aria-hidden="true">12.3.</strong> 3. 거래·의뢰 관리·발주</a></li><li class="chapter-item expanded "><a href="../development/validation.html"><strong aria-hidden="true">12.4.</strong> 4. 보조금·통합 검증</a></li><li class="chapter-item expanded "><a href="../development/later.html"><strong aria-hidden="true">12.5.</strong> 5. 후속 사업과 보류 범위</a></li></ol></li><li class="chapter-item expanded "><li class="spacer"></li><li class="chapter-item expanded "><a href="../appendix/glossary.html" class="book-toc-change" data-book-change="appendix/glossary.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">13.</strong> 부록 A. 용어집<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../appendix/values.html"><strong aria-hidden="true">14.</strong> 부록 B. 주요 설정값</a></li><li class="chapter-item expanded "><a href="../appendix/pending.html" class="book-toc-change" data-book-change="appendix/pending.html" aria-haspopup="dialog" title="V3 대비 변경 요약 보기"><strong aria-hidden="true">15.</strong> 부록 C. 결정 대기 목록<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../appendix/sources.html"><strong aria-hidden="true">16.</strong> 부록 D. 원본 문서 지도</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Project_F 기획 안내서 v4 — 소재 시장 · 식당 순환 제안판</h1>
+
+                    <div class="right-buttons">
+<nav class="book-version-menu" aria-label="문서 버전"><select id="book-version-select" aria-label="문서 버전 선택"><option value="../../v1/ch09/ledger.html">V1 원본</option><option value="../../v2/ch09/ledger.html">V2 개선안</option><option value="../../v3/ch09/ledger.html">V3 반영판</option><option value="ledger.html" selected>V4 시장 제안판</option></select><a href="../versions.html">버전 이력</a></nav>
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/applesoda01/Project_F" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+<p class="book-version-status">V4 시장 제안판 · V3를 보존하고 결정 36(시세 경제 도입)과 소재 시장 · 식당 순환 제안을 넣은 판. 초록 목차·본문을 클릭하면 V3 대비 변경 요약을 볼 수 있습니다. 새 규칙은 게임 미반영입니다.</p>
+                        <h1 id="장부와-관문-1"><a class="header" href="#장부와-관문-1">장부와 관문 1</a></h1>
+<blockquote>
+<p>기존 구현·측정 기록은 2026-11-16 기준입니다. V2 신규 설계의 구현·검증 결과가 아니며, 아래 추가·수정 제안과 구분합니다.</p>
+</blockquote>
+<p><strong>장부 화면은 "수입 − 지출(건설비 포함)"을 보여 주고, 밸런스 검증(관문 1)은 "운영 순이익(건설비 제외)"을 씁니다.</strong> 두 숫자가 다르다는 점을 먼저 알아 두셔야 합니다.</p>
+<h2 id="장부-항목"><a class="header" href="#장부-항목">장부 항목</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>구분</th><th>줄</th></tr></thead><tbody>
+<tr><td>수입</td><td>수수료 · 소재 판매 차익 · 식사 판매 · 주점 매출 · 왕국 보조금 · 리퀘스트 보상</td></tr>
+<tr><td>지출</td><td>시설 건설비(리퀘스트 돈 내기 포함) · 지명 섭외비 · 침공 대비 물약 · 기타(의뢰 떼기)</td></tr>
+<tr><td>순이익</td><td>수입 − 지출</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>주점 매출과 왕국 보조금은 월말 결산 때 한꺼번에 들어옵니다.</li>
+<li>운영 순이익 = 순이익 + 시설 건설비. 섭외비와 침공 물약은 운영 순이익에 포함됩니다.</li>
+</ul>
+<h2 id="관문-1"><a class="header" href="#관문-1">관문 1</a></h2>
+<p><strong>관문 1은 "게임 규칙"과 "시뮬레이터"를 100판씩 1년 돌려 경제와 성공률이 기준 안에 있는지, 둘이 서로 맞는지 보는 검증입니다.</strong> 규칙을 바꿀 때마다 다시 돌립니다. GitHub에 올리면 자동으로 돌아갑니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>지표</th><th style="text-align: right">게임</th><th style="text-align: right">시뮬레이터</th><th>기준</th><th>판정</th></tr></thead><tbody>
+<tr><td>첫해 월 운영 순이익</td><td style="text-align: right">573G</td><td style="text-align: right">604G</td><td>300~600G, 차이 10% 미만</td><td>통과</td></tr>
+<tr><td>의뢰 성공률</td><td style="text-align: right">94.9%</td><td style="text-align: right">95.3%</td><td>80~95%, 차이 5%p 미만</td><td>통과</td></tr>
+</tbody></table>
+</div><div class="table-wrapper"><table><thead><tr><th>시점</th><th>게임</th><th>시뮬레이터</th></tr></thead><tbody>
+<tr><td>2026-10 데이터 분리</td><td>436G · 75.9%</td><td>—</td></tr>
+<tr><td>2026-11 전투 도입</td><td>459G · 93.2%</td><td>454G · 92.0%</td></tr>
+<tr><td>2026-11-16 (지금)</td><td>573G · 94.9%</td><td>604G · 95.3%</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>시뮬레이터(<code>sim_engine.js</code>)는 게임 규칙을 단순하게 옮긴 별도 코드입니다. 게임 규칙을 바꾸면 시뮬레이터도 같이 바꾸는 것이 작업 규칙입니다.</li>
+<li>경제 구조를 바꾸시면 관문 1의 기준값(300~600G)도 함께 다시 정해야 합니다.</li>
+</ul>
+<h2 id="v2-추가수정-규칙--제안미반영"><a class="header" href="#v2-추가수정-규칙--제안미반영">V2 추가·수정 규칙 — 제안·미반영</a></h2>
+<p><strong>현금 증감·운영 손익·사용 가능 금액을 각각 보여 줍니다.</strong></p>
+<h2 id="월간-장부--econ-06--ui-01--제안미반영"><a class="header" href="#월간-장부--econ-06--ui-01--제안미반영">월간 장부 — ECON-06 · UI-01 / 제안·미반영</a></h2>
+<p><img src="../assets/ui/ledger.jpg" alt="UI 05 — 기존 책 장부에 현금·손익·예약 자금 분리" /></p>
+<p><a href="../assets/ui/ledger.jpg">큰 이미지 보기</a> · <strong>기획 시안 / 미구현 / 수치 예시</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>숫자</th><th>포함하는 것</th><th>제외·구별</th></tr></thead><tbody>
+<tr><td>현금 증감</td><td>실제 길드 현금 유입·유출, 건설·매입 포함</td><td>외부 소유 예치금</td></tr>
+<tr><td>운영 손익</td><td>수수료·실현 차익·시설·이행 대가 − 보수·실비·직접비</td><td>지원·일회성 수입 별도</td></tr>
+<tr><td>사용 가능 금액</td><td>길드 소유 현금 − 확정 지급 예약</td><td>위탁금·미이행 선수금 사용 불가</td></tr>
+<tr><td>원가 미상 재고</td><td>기존 재고 표식</td><td>가짜 정밀 이익 산출 금지</td></tr>
+</tbody></table>
+</div>
+<p>기존 ‘건설비 포함 화면 순이익’과 ‘건설비 제외 관문 지표’는 새 운영 손익과 다릅니다. 전환기에는 기존 지표도 함께 기록합니다.</p>
+<h2 id="정산-검증--향후-구현-시험-아직-미실행"><a class="header" href="#정산-검증--향후-구현-시험-아직-미실행">정산 검증 — 향후 구현 시험, 아직 미실행</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>시험 묶음</th><th>통과 조건</th></tr></thead><tbody>
+<tr><td>일반·혼성·101G/3명</td><td>총액 보존, 정수 잔액 재현 가능</td></tr>
+<tr><td>출발 후 수수료·계약 변경</td><td>출발 조건 유지</td></tr>
+<tr><td>길드 발주·취소·반복 납품</td><td>지급·인도 1회, 자가 수수료·보조금·무한 성장 없음</td></tr>
+<tr><td>위탁품·매입 재판매</td><td>타인 물품 사용 불가, 원가·매출 중복 없음</td></tr>
+<tr><td>식사·술·지원 물약</td><td>잔액 검사, 부담 합계=가격, 내부 지원으로 이익 생성 없음</td></tr>
+<tr><td>월중 영입·종료·부상·사망</td><td>근무분·기본 보수·유족 정산 일치</td></tr>
+<tr><td>호위·침공·귀환 주 지명</td><td>중복 배치 없음, 기존 귀환 예외 보존</td></tr>
+<tr><td>저장·재정산·상담 재클릭</td><td>거래·급여 중복 없음, 동일 조건 무한 재추첨 없음</td></tr>
+<tr><td>기존 저장·창립·계약 모험가 인원</td><td>소급 급여·강제 고용 없음, 재고·상주 혜택·정원 보존</td></tr>
+<tr><td>계약 모험가 0명</td><td>기존 F→E 진행 가능</td></tr>
+</tbody></table>
+</div>
+<h2 id="비교-실험"><a class="header" href="#비교-실험">비교 실험</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>범위</th><th>비교할 정책</th><th>측정</th></tr></thead><tbody>
+<tr><td>첫 48주</td><td>기존 / 보조금 단독 / 계약 단독 / 결합</td><td>현금 저점·순이익·성공률·승급</td></tr>
+<tr><td>동일 E급 진입 +96주</td><td>계약 모험가 0 / 핵심 1~2 / 최대 계약</td><td>가용성·보수·유휴 비용</td></tr>
+<tr><td>수수료·지원</td><td>높은 수수료·낮은 지원 / 낮은 수수료·높은 지원</td><td>개인 구매력·수주·성장·재정</td></tr>
+</tbody></table>
+</div>
+<p>기준 커밋·초기 설정을 함께 기록합니다. 후반 미구현 효과는 임의로 넣지 않습니다. <a href="measure.html">v1 과거 측정</a>은 비교 기준일 뿐 v2의 통과 결과가 아닙니다.</p>
+<h2 id="v2-통합-점검--8단계-2026-11-18-게임-반영-상태"><a class="header" href="#v2-통합-점검--8단계-2026-11-18-게임-반영-상태">V2 통합 점검 — 8단계 (2026-11-18, 게임 반영 상태)</a></h2>
+<p><strong>첫해 48주(결정 29: 프로토타입 판단 범위) 100판 기준, 관문 1 기준은 그대로 둡니다.</strong> 상세: <code>docs/balance/economy_v2_integration.md</code>.</p>
+<div class="table-wrapper"><table><thead><tr><th>지표</th><th style="text-align: right">게임</th><th style="text-align: right">시뮬레이터</th><th>판정</th></tr></thead><tbody>
+<tr><td>첫해 월 운영 순이익</td><td style="text-align: right">479G</td><td style="text-align: right">507G</td><td>✅ 300~600G, 차이 5.8%</td></tr>
+<tr><td>의뢰 성공률</td><td style="text-align: right">96.0%</td><td style="text-align: right">94.9%</td><td>⚠️ 상한 95%를 조금 넘음 → <strong>결정 30으로 늦장 실패를 켠 뒤 93.0% · 91.7% ✅</strong> (순이익 449G · 447G — 시뮬레이터에만 있던 F급 보스 의뢰를 없애 차이 0.4%)</td></tr>
+<tr><td>금고 최저점 (중앙 · 하위 10%)</td><td style="text-align: right">102G · 96G</td><td style="text-align: right">—</td><td>첫해 적자 달 100판 중 3개</td></tr>
+<tr><td>48주 안 E 승급</td><td style="text-align: right">88판 (중앙 41주)</td><td style="text-align: right">—</td><td>—</td></tr>
+<tr><td>48주 금고 (중앙)</td><td style="text-align: right">2,646G</td><td style="text-align: right">—</td><td>2년차 이후 금 쌓임은 결정 28로 프로토타입 뒤</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>장부 화면에 <strong>길드 발주</strong> 줄을 더했습니다(쓴 달에만 보임). 수입 합계 − 지출 합계 = 순이익.</li>
+<li>화면 8개(의뢰 · 리퀘스트 · 길드 발주 · 명부 · 계약 제안 · 장부 · 소재 판매 · 매입 위탁) × 새 게임 · 30주 진행에서 오류 없음. 옛 저장 불러오기 정상.</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../ch09/measure.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../ch09/issues.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../ch09/measure.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../ch09/issues.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../theme/mermaid-init.js"></script>
+
+
+    </div>
+    <script type="application/json" id="book-change-data" data-book-root="../" data-from="V3" data-to="V4">{"features.html":{"title":"버전별 기능 관리","items":[{"before":"기존 「버전별 기능 관리」 설명","after":"「버전별 기능 관리」 안내를 보완했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"index.html":{"title":"들어가며","items":[{"before":"기존 「들어가며」 설명","after":"「들어가며」 안내를 보완했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"versions.html":{"title":"버전 이력","items":[{"before":"기존 「버전 이력」 설명","after":"「버전 이력」 안내를 보완했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"appendix/glossary.html":{"title":"부록 A. 용어집","items":[{"before":"기존 「부록 A. 용어집」 설명","after":"V4 추가 용어 (2026-11-19, 제안) 설명을 추가·수정했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"appendix/pending.html":{"title":"부록 C. 결정 대기 목록","items":[{"before":"기존 「부록 C. 결정 대기 목록」 설명","after":"V4 결정 대기 — 소재 시장 (결정 36 후속) 설명을 추가·수정했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"ch01/scope.html":{"title":"프로토타입 범위와 현재 상태","items":[{"before":"기존 「프로토타입 범위와 현재 상태」 설명","after":"「프로토타입 범위와 현재 상태」 안내를 보완했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"ch04/requests.html":{"title":"리퀘스트(서브 퀘스트)","items":[{"before":"기존 「리퀘스트(서브 퀘스트)」 설명","after":"V4 변경 — 상시 발주 설명을 추가·수정했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"ch06/cooking.html":{"title":"요리","items":[{"before":"기존 「요리」 설명","after":"V4 변경 — 재료 소모 · 메뉴 가격 설명을 추가·수정했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"ch06/potion.html":{"title":"물약과 소재","items":[{"before":"기존 「물약과 소재」 설명","after":"V4 변경 — 소재 시세 · 위탁 정리 · 개체수 설명을 추가·수정했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"ch09/flow.html":{"title":"돈의 흐름 한눈에 보기","items":[{"before":"기존 「돈의 흐름 한눈에 보기」 설명","after":"V4 변경 — 닫힌 순환 설명을 추가·수정했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"ch09/income.html":{"title":"길드 수입","items":[{"before":"기존 「길드 수입」 설명","after":"V4 변경 — 식당 매출 · 소재 시세 · 수수료 5% 설명을 추가·수정했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"ch09/index.html":{"title":"경제","items":[{"before":"기존 「경제」 설명","after":"V4 안내 — 소재 시장 설명을 추가·수정했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"ch09/issues.html":{"title":"알려진 문제와 열린 질문","items":[{"before":"기존 「알려진 문제와 열린 질문」 설명","after":"V4: 2026-11-19 다시 본 문제와 대응 설명을 추가·수정했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"ch09/market.html":{"title":"소재 시장과 식당 순환 (V4)","items":[{"before":"V3에는 이 문서가 없습니다.","after":"왜 바꾸나 · 목표 순환 · 바뀌는 규칙 7가지 설명을 추가했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]},"ch09/spending.html":{"title":"길드 지출","items":[{"before":"기존 「길드 지출」 설명","after":"V4 변경 — 매주 반복되는 지출 설명을 추가·수정했습니다.","state":"V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영"}]}}</script>
+<dialog id="book-change-dialog" aria-labelledby="book-change-title"><button type="button" class="dialog-close" aria-label="변경 요약 닫기">×</button><h2 id="book-change-title">V3 대비 변경 요약</h2><div id="book-change-body"></div><div class="dialog-actions"><a id="book-change-open" href="ledger.html">문서 열기</a><a href="../changes.html">전체 변경 비교표</a></div></dialog><script src="../../_book-ui.js"></script>
+</body>
+</html>

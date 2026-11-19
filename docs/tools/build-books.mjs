@@ -21,9 +21,9 @@ if (existsSync(output) && readdirSync(output).length) {
 const href = (from, to) => relative(dirname(from), to).split(sep).join('/');
 const escape = value => value.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 const mainContent = html => html.match(/<main>([\s\S]*?)<\/main>/)?.[1] || '';
-const changeIndexes = { v2: {}, v3: {} };
-const pageBlocksBy = { v2: new Map(), v3: new Map() };
-const PREV = { v2: 'V1', v3: 'V2' };   // 2026-11-18: V3는 V2(처음 공유한 개선안) 대비 변경을 파란색으로 표시
+const changeIndexes = { v2: {}, v3: {}, v4: {} };
+const pageBlocksBy = { v2: new Map(), v3: new Map(), v4: new Map() };
+const PREV = { v2: 'V1', v3: 'V2', v4: 'V3' };   // 2026-11-18: V3는 V2(처음 공유한 개선안) 대비 변경을 파란색으로 표시 · 2026-11-19: V4는 V3 대비 변경을 초록색으로 표시
 
 function collectChanges(v1, v2, version = 'v2') {
   const changeIndex = changeIndexes[version], pageBlocks = pageBlocksBy[version];
@@ -45,7 +45,7 @@ function collectChanges(v1, v2, version = 'v2') {
     changeIndex[page] = { title, items: items.length ? items : [{
       before: before ? `기존 「${plainText(before.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/)?.[1] || title)}」 설명` : `${PREV[version]}에는 이 문서가 없습니다.`,
       after: parts[0]?.removed ? `기존 설명 삭제: ${parts[0].removed.join(' · ').slice(0, 180)}` : headings.length ? `${headings.join(' · ')} 설명을 ${before ? '추가·수정' : '추가'}했습니다.` : `「${title}」 ${before ? '안내를 보완' : '문서를 새로 추가'}했습니다.`,
-      state: version === 'v3' ? 'Claude가 V2 이후 수정 · 기록 · 반영한 내용 (결정 · 측정 · 게임 반영 기록은 본문 참조)' : page.startsWith('proposal/') ? '첨부 개선안 수록 / 새 게임 규칙은 제안·미반영' : '문서 변경 / 게임 구현 완료를 뜻하지 않음',
+      state: version === 'v4' ? 'V4 소재 시장 · 식당 순환 제안 (결정 36: 시세 경제 도입). 기획: 방향 결정 · 규칙 제안 / 게임: 미반영' : version === 'v3' ? 'Claude가 V2 이후 수정 · 기록 · 반영한 내용 (결정 · 측정 · 게임 반영 기록은 본문 참조)' : page.startsWith('proposal/') ? '첨부 개선안 수록 / 새 게임 규칙은 제안·미반영' : '문서 변경 / 게임 구현 완료를 뜻하지 않음',
     }] };
   }
 }
@@ -57,7 +57,7 @@ function decorate(dir, version) {
     const file = join(entry.parentPath, entry.name);
     const page = relative(dir, file).split(sep).join('/');
     // The root is a compatibility copy of v1; version folders are decorated separately.
-    if (dir === output && /^(v1|v2|v3)[\\/]/.test(page)) continue;
+    if (dir === output && /^(v1|v2|v3|v4)[\\/]/.test(page)) continue;
     let html = readFileSync(file, 'utf8');
     // Preserve the attached standalone HTML byte for byte, including its own layout.
     if (!html.includes('<main>') || page === 'proposal/original.html') continue;
@@ -69,19 +69,20 @@ function decorate(dir, version) {
       const fixed = target.replace(/README\.html$/, 'index.html');
       return existsSync(resolve(dirname(file), fixed)) ? `href="${fixed}${suffix}"` : original;
     });
-    const changeIndex = changeIndexes[version] || {}, pageBlocks = pageBlocksBy[version] || new Map(), marked = version === 'v2' || version === 'v3';
-    const options = ['v1', 'v2', 'v3'].map(targetVersion => {
+    const changeIndex = changeIndexes[version] || {}, pageBlocks = pageBlocksBy[version] || new Map(), marked = version === 'v2' || version === 'v3' || version === 'v4';
+    const options = ['v1', 'v2', 'v3', 'v4'].map(targetVersion => {
       let target = join(output, targetVersion, page);
       const missing = !existsSync(target);
       if (missing) target = join(output, targetVersion, 'index.html');
-      const label = targetVersion === 'v1' ? 'V1 원본' : targetVersion === 'v2' ? 'V2 개선안' : 'V3 반영판';
+      const label = targetVersion === 'v1' ? 'V1 원본' : targetVersion === 'v2' ? 'V2 개선안' : targetVersion === 'v3' ? 'V3 반영판' : 'V4 시장 제안판';
       const current = targetVersion === version ? ' selected' : '';
       return `<option value="${escape(href(file, target))}"${current}>${label}${missing ? ' (첫 페이지)' : ''}</option>`;
     });
-    const changes = href(file, join(output, version === 'v3' ? 'v3/changes.html' : 'v2/changes.html'));
-    const history = href(file, join(output, version === 'v3' ? 'v3/versions.html' : 'v2/versions.html'));
+    const changes = href(file, join(output, version === 'v4' || version === 'v3' ? version + '/changes.html' : 'v2/changes.html'));
+    const history = href(file, join(output, version === 'v4' || version === 'v3' ? version + '/versions.html' : 'v2/versions.html'));
     const status = version === 'v1'
       ? 'v1 원본 보존 · 2026-11-16 기준 문서. 이 판의 본문은 수정하지 않았습니다.'
+      : version === 'v4' ? 'V4 시장 제안판 · V3를 보존하고 결정 36(시세 경제 도입)과 소재 시장 · 식당 순환 제안을 넣은 판. 초록 목차·본문을 클릭하면 V3 대비 변경 요약을 볼 수 있습니다. 새 규칙은 게임 미반영입니다.'
       : version === 'v3' ? 'V3 반영판 · V2(처음 공유한 개선안) 이후 Claude가 수정 · 기록 · 반영한 판. 파란 목차·본문을 클릭하면 V2 대비 변경 요약을 볼 수 있습니다.'
       : 'V2 개정 제안판 · 신규 게임 규칙 미반영. 붉은 목차·본문을 클릭하면 V1 대비 변경 요약을 볼 수 있습니다.';
     const nav = `<nav class="book-version-menu" aria-label="문서 버전"><select id="book-version-select" aria-label="문서 버전 선택">${options.join('')}</select><a href="${escape(history)}">버전 이력</a></nav>`;
@@ -110,7 +111,7 @@ function decorate(dir, version) {
     const css = href(file, join(output, '_book-ui.css'));
     const js = href(file, join(output, '_book-ui.js'));
     html = html.replace('</head>', `<link rel="stylesheet" href="${escape(css)}">\n</head>`)
-      .replace('<html', version === 'v3' ? '<html data-book-version="v3"' : '<html')
+      .replace('<html', version === 'v3' || version === 'v4' ? `<html data-book-version="${version}"` : '<html')
       .replace('<main>', `<main>\n<p class="book-version-status">${status}</p>`);
     let extra = '';
     if (marked) {
@@ -126,7 +127,7 @@ function decorate(dir, version) {
 
 const work = mkdtempSync(join(tmpdir(), 'project-f-mdbook-'));
 try {
-  for (const [version, source] of [['v1', 'docs/book'], ['v2', 'docs/book-v2'], ['v3', 'docs/book-v3']]) {
+  for (const [version, source] of [['v1', 'docs/book'], ['v2', 'docs/book-v2'], ['v3', 'docs/book-v3'], ['v4', 'docs/book-v4']]) {
     const result = spawnSync(process.env.MDBOOK || 'mdbook', ['build', join(repo, source), '-d', join(work, version)], { stdio: 'inherit' });
     if (result.error) throw result.error;
     if (result.status !== 0) throw new Error(`mdBook ${version} build failed (${result.status})`);
@@ -136,14 +137,17 @@ try {
   cpSync(join(work, 'v1'), join(output, 'v1'), { recursive: true });
   cpSync(join(work, 'v2'), join(output, 'v2'), { recursive: true });
   cpSync(join(work, 'v3'), join(output, 'v3'), { recursive: true });
+  cpSync(join(work, 'v4'), join(output, 'v4'), { recursive: true });
   collectChanges(join(work, 'v1'), join(work, 'v2'), 'v2');
   collectChanges(join(work, 'v2'), join(work, 'v3'), 'v3');
+  collectChanges(join(work, 'v3'), join(work, 'v4'), 'v4');
   cpSync(join(repo, 'docs/tools/book-ui.css'), join(output, '_book-ui.css'));
   cpSync(join(repo, 'docs/tools/book-ui.js'), join(output, '_book-ui.js'));
   decorate(output, 'v1');
   decorate(join(output, 'v1'), 'v1');
   decorate(join(output, 'v2'), 'v2');
   decorate(join(output, 'v3'), 'v3');
+  decorate(join(output, 'v4'), 'v4');
   console.log(`Books built: ${output}`);
 } finally {
   // Only the exact temporary directory created above is removed.

@@ -61,6 +61,14 @@ test('real books preserve v1 and provide portable version links, including new c
   assert.match(v3, /data-from="V2" data-to="V3"/);
   assert.match(v3, /<section class="book-change/);
   assert.match(readFileSync(join(output, 'v2/ch03/lifecycle.html'), 'utf8'), /<option value="\.\.\/\.\.\/v3\/ch03\/lifecycle.html">V3 반영판/);
+  // 2026-11-19 V4: V3 대비 변경(소재 시장 · 식당 순환 제안)을 초록색으로 표시하는 판
+  const v4 = readFileSync(join(output, 'v4/ch06/cooking.html'), 'utf8');
+  assert.match(v4, /<html[^>]*data-book-version="v4"/);
+  assert.match(v4, /<option[^>]+selected>V4 시장 제안판/);
+  assert.match(v4, /data-from="V3" data-to="V4"/);
+  assert.match(v4, /<section class="book-change/);
+  assert.ok(existsSync(join(output, 'v4/ch09/market.html')));
+  assert.match(readFileSync(join(output, 'v3/ch06/cooking.html'), 'utf8'), /<option value="\.\.\/\.\.\/v4\/ch06\/cooking.html">V4 시장 제안판/);
   for (const removed of ['proposal', 'ch03/contracts.html', 'ch04/commission.html', 'ch06/ownership.html']) {
     assert.equal(existsSync(join(output, 'v2', removed)), false);
   }
