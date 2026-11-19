@@ -69,7 +69,8 @@
         upMargin: 5, upSell: 3,                    // 주점 업그레이드 마진 +G, 판매 창구 업그레이드 소재 +G
         drinkMargin: [2, 3, 4, 5, 6, 7, 8],        // 술 1잔 길드 마진 (2026-11-12, F·E 확정, D 이상 가안). 확률은 mealBuyRate
         mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02, mealMode: 1,
-        mealCook: 1, mealPrep: 4, mealKeep: 2, mealPK: 1.5, mealPMin: 0.1, mealPMax: 1.6, shopRate: 0   // 2026-11-19 V4 1단계 (결정 37 · 38 · 39): 식당 재료 소모 · 메뉴 가격 · 잡화 양념 (balance.csv와 같게)   // mealMode 1 = 요리 버프(능력치 +n, 발견 보너스 없음, 2026-11-19) · 0 = 예전 C안
+        mealCook: 1, mealPrep: 4, mealKeep: 2, mealPK: 1.5, mealPMin: 0.1, mealPMax: 1.6, shopRate: 1.5,
+        mktOn: 1, mktTarget: 20, mktTargetSpice: 15, mktK: 0.6, mktMin: 0.5, mktMax: 2, mktUse: 0.1, mktPop: 100, buyRateOpt: [0.5, 0.7, 0.9], storeCap: 30, lowBuyK: 0.25   // 2026-11-19 V4 2단계 (결정 40 · 43)   // 2026-11-19 V4 1단계 (결정 37 · 38 · 39): 식당 재료 소모 · 메뉴 가격 · 잡화 양념 (balance.csv와 같게)   // mealMode 1 = 요리 버프(능력치 +n, 발견 보너스 없음, 2026-11-19) · 0 = 예전 C안
       },
       gear: {
         needSmith: 1,   // 2026-11-19: 대장간이 생긴 뒤부터 장비를 삼 (0 = 예전처럼 처음부터)
@@ -390,7 +391,15 @@
     // 2026-11-17 경제 개편 V2 결정 12: 게임 dropMats 와 같은 자동 매입 70% · 위탁 10% · 월말 자동 판매(음식 아닌 소재 10개 남김)
     const SIM_MAT = {}; { const G = gameData(); if (G && G.content) for (const m of G.content.materials) SIM_MAT[m.id] = m; }
     const SELL_P = [6, 9, 12, 30, 36, 48, 90], GRL = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
-    const matBase = id => { const m = SIM_MAT[id]; return m ? (m.price || SELL_P[Math.max(0, GRL.indexOf(m.grade))]) : 0; };
+    const matBase0 = id => { const m = SIM_MAT[id]; return m ? (m.price || SELL_P[Math.max(0, GRL.indexOf(m.grade))]) : 0; };
+    // 2026-11-19 V4 2단계: 소재 시세 (게임 mktWeekly · matPrice 와 같음). 시뮬레이터는 소재 처리를 기본(매입 70%)으로만 씀
+    const SPICE_N = ['소금', '향신료', '신선한 물', '밀가루'];
+    const mT = id => SIM_MAT[id] && SPICE_N.includes(SIM_MAT[id].name) ? (E.mktTargetSpice || 15) : (E.mktTarget || 20);
+    const mM = id => { const K = s.mkt = s.mkt || {}; if (K[id] == null) K[id] = mT(id); return K[id]; };
+    const mMult = id => { if (!E.mktOn) return 1; const T = mT(id); return Math.max(E.mktMin || 0.5, Math.min(E.mktMax || 2, 1 + (E.mktK != null ? E.mktK : 0.6) * (T - mM(id)) / T)); };
+    const matBase = id => Math.max(1, Math.round(matBase0(id) * mMult(id)));   // 시뮬레이터 안의 모든 소재 값 = 시세
+    const mAdd = (id, n) => { if (E.mktOn && SIM_MAT[id]) { mM(id); s.mkt[id] += n; } };
+    function mktWeekly() { if (!E.mktOn) return; const use = E.mktUse != null ? E.mktUse : 0.1, pd = E.mktPop || 100, p0 = T.startPop || 150; for (const id in SIM_MAT) { const t = mT(id), M = mM(id); s.mkt[id] = Math.max(0, M + t * use + p0 / pd - M * use - (s.pop || p0) / pd); } }
     // 2026-11-19 V4 1단계 (게임 game_core.js 와 같은 규칙): 상시 발주 · 식당 재료 소모 · 잡화 양념
     const SPICE = new Set(Object.keys(SIM_MAT).filter(id => ['소금', '향신료', '신선한 물', '밀가루'].includes(SIM_MAT[id].name)));
     const oMult = o => o.mult, oPrice = o => Math.floor(matBase(o.m) * oMult(o) + 1e-9);
@@ -475,7 +484,7 @@
       { const L = cfg.qlv; if (L && L.on && q.T && s.qlv[q.T.id]) { const V = s.qlv[q.T.id]; if (q.fz && V.fresh > 0) V.fresh--; if (ok && V.lv < L.max && ++V.wins >= L.need) { V.lv++; V.wins = 0; V.fresh = L.fresh; } } }   // 의뢰 레벨 (게임 qlvAfter와 같음)
       if (ok) {
         s.st.qDone++; s.subHalf = (s.subHalf || 0) + (q.T ? q.T.reward * (q.lvm || 1) : Q.reward[q.g]); s.popAdd += T.perSuccess[q.g] || 0;   // 성과 보조금 실적: 기본 보상만 (게임과 같음 — ×2 · 보스 배수 전, 2026-11-18 보스 ×2 집계를 빼서 게임에 맞춤)   // 의뢰 성공 → 인구 (2026-11-13)
-        if (q.T) { let paid = 0; for (const r of drawList(q)) if (R() * 100 < r.p) { { const o = (s.orders || []).find(x => x.m === r.m && oLive(x)); if (o) { const op = oPrice(o); s.gold -= op; s.op -= op; s.st.orderPaid = (s.st.orderPaid || 0) + op; s.mats[r.m] = (s.mats[r.m] || 0) + 1; splitPay(party, op); continue; } } const bp = Math.floor(matBase(r.m) * (E.matBuyRate != null ? E.matBuyRate : 0.7) + 1e-9); if (s.gold >= bp) { s.mats[r.m] = (s.mats[r.m] || 0) + 1; s.gold -= bp; s.op -= bp; s.st.matBuyPaid = (s.st.matBuyPaid || 0) + bp; paid += bp; } else (s.consign = s.consign || []).push({ m: r.m, ps: party.slice() }); } splitPay(party, paid); }   // 소재 획득 → 자동 매입 (게임 dropMats와 같음)
+        if (q.T) { let paid = 0; for (const r of drawList(q)) if (R() * 100 < r.p) { mAdd(r.m, 1); { const o = (s.orders || []).find(x => x.m === r.m && oLive(x)); if (o) { const op = oPrice(o); s.gold -= op; s.op -= op; s.st.orderPaid = (s.st.orderPaid || 0) + op; s.mats[r.m] = (s.mats[r.m] || 0) + 1; splitPay(party, op); continue; } } const bp = Math.floor(matBase(r.m) * (E.matBuyRate != null ? E.matBuyRate : 0.7) + 1e-9); if ((s.mats[r.m] || 0) < (E.storeCap || 30) && s.gold >= bp) { s.mats[r.m] = (s.mats[r.m] || 0) + 1; s.gold -= bp; s.op -= bp; s.st.matBuyPaid = (s.st.matBuyPaid || 0) + bp; paid += bp; } else (s.consign = s.consign || []).push({ m: r.m, ps: party.slice() }); } splitPay(party, paid); }   // 소재 획득 → 자동 매입 (게임 dropMats와 같음)
         if (q.T && s.deco.has('locker')) { const b = baseMat(q.T); if (b) s.mats[b] = (s.mats[b] || 0) + cfg.deco.mat; }   // 사물함: 기본 소재 +1
         for (const d of DISH) if (!s.dishes[d.name] && d.g <= s.grade && d.mats.every(m => s.mats[m] > 0)) { for (const m of d.mats) s.mats[m]--; s.dishes[d.name] = s.week; s.meals[d.g]++; s.st.mealsUnlocked.push(s.week); }
         // 2026-11-17 경제 개편 V2 결정 8: 게임 econSplit 과 같은 정수 배분 (나머지는 대장 먼저 1G씩, 길드 몫 버림)
@@ -655,7 +664,7 @@
       if (E.subsidyMode === 1) { if (Math.floor(s.week / WPM + 1) % (E.subsidyEvery || 6) === 0) { const pay = Math.floor((s.subHalf || 0) * (E.subsidyRate != null ? E.subsidyRate : 0.5) + 1e-9); s.gold += pay; s.op += pay; if (s.week < WPY) s.st.subPaid = (s.st.subPaid || 0) + pay; s.subHalf = 0; } }   // V2 결정 13: 반기 지급 (게임과 같음)
       else { s.gold += E.subsidy[s.grade]; s.op += E.subsidy[s.grade]; }
       { const cf = E.consignFee != null ? E.consignFee : 0.1; for (const e of s.consign || []) { const sale = matBase(e.m), fee = Math.floor(sale * cf + 1e-9); s.gold += fee; s.op += fee; splitPay(e.ps, sale - fee); } s.consign = []; }   // 위탁품 판매 (결정 12)
-      for (const id in s.mats) { const m = SIM_MAT[id]; if (m && m.line !== 'food' && s.mats[id] > 10) { const k = s.mats[id] - 10, g = k * (matBase(id) + (s.up && s.up['판매창구'] ? (E.upSell || 3) : 0)); s.mats[id] = 10; s.gold += g; s.op += g; if (s.week < WPY) s.st.sellInc = (s.st.sellInc || 0) + g; } }   // 자동 판매 (게임 autoSell과 같음)
+      for (const id in s.mats) { const m = SIM_MAT[id]; if (m && m.line !== 'food' && s.mats[id] > 10) { const k = s.mats[id] - 10; let g = 0; for (let i = 0; i < k; i++) { g += matBase(id) + (s.up && s.up['판매창구'] ? (E.upSell || 3) : 0); mAdd(id, 1); } s.mats[id] = 10; s.gold += g; s.op += g; if (s.week < WPY) s.st.sellInc = (s.st.sellInc || 0) + g; } }   // 자동 판매 (게임 autoSell과 같음)
       // 주점 매출은 2026-11-12부터 매주 술 1잔 단위 (adventurersChoose 끝)
       // 유지비
       let up = 0; for (const [f, g] of FAC) if (has(f)) up += E.buildCost[g] * E.upkeepRate;
@@ -864,6 +873,7 @@
       expireQuests();
       generateQuests();   // 2026-11-12: 매주 게시 (예전에는 매달 초에만 = 월 유입의 1/4만 들어왔음)
       s.seatUsed = 0;   // 이번 주 식사한 좌석 수
+      mktWeekly();       // 2026-11-19 V4 2단계: 소재 시세
       kitchenWeekly();   // 2026-11-19 V4 1단계: 식당이 이번 주 팔 그릇을 만듦 (게임 stepWeekTail 과 같은 자리: 리퀘스트 출발 전)
       mainStep();         // 메인 퀘스트(침공): 수주 · 등장 · 침공 판정 (게임 autoMain → mainWeekly 순서와 같음)
       reqStep();          // 리퀘스트: 자동 처리 → 지명 파티 출발(게시판보다 먼저) → 등장 판정

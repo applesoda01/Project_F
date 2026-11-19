@@ -511,7 +511,8 @@
   // 소재 판매 창구 (docs/balance/economy_v1.md 6절, 시설 팝업 '판매하기'로 열기): 보관 소재를 직접 팖. 음식이 아닌 소재 먼저, 음식 소재는 "요리 재료"
   const SELL_P = [6, 9, 12, 30, 36, 48, 90];
   let sellSel = null;
-  const sellPrice = m => Gm.matSellPrice(s, m.id);   // 판매 창구 업그레이드 +3G (2026-11-12) · 2026-11-17 규칙은 game_core.matSellPrice
+  const sellPrice = m => Gm.matSellPrice(s, m.id);   // 판매 창구 업그레이드 +3G (2026-11-12) · 2026-11-17 규칙은 game_core.matSellPrice · 2026-11-19 시세
+  const trendTag = id => { const t = Gm.mktTrend(s, id), x = Gm.mktMult(s, id); return `<span class="mk-tr ${t > 0 ? 'up' : t < 0 ? 'dn' : ''}" title="시세 · 기준가의 ${Math.round(x * 100)}% (4주 전과 비교)">${t > 0 ? '▲ ' : t < 0 ? '▼ ' : ''}기준 ${Math.round(x * 100)}%</span>`; };   // V4 2단계
   function sellDo(ids, all) { const { n, g } = Gm.sellMats(s, ids.map(id => [id, all ? (s.mats[id] || 0) : 1]));
     if (!n) return;   // 장부: '소재 판매' 줄 (game_core.sellMats)
     Gm.log(s, `소재 ${n}개를 팔아 ${g}G를 받았습니다.`, 'guild'); UI.hud && UI.hud(); }
@@ -521,10 +522,10 @@
     const nf = have.filter(m => m.line !== 'food'), fd = have.filter(m => m.line === 'food');
     if (sellSel && !(mats[sellSel] > 0)) sellSel = null; if (!sellSel && have.length) sellSel = (nf[0] || fd[0]).id;
     const cell = m => `<button class="kmat ${sellSel === m.id ? 'sel' : ''}" data-ssel="${m.id}" data-mt="${m.id}"><span class="ux-slot" data-g="${GR.indexOf(m.grade)}">${matImg(m)}${cntBadge(mats[m.id])}</span><em>${esc(m.name)}</em></button>`;
-    const sum = ms => ms.reduce((t, m) => t + mats[m.id] * sellPrice(m), 0);
+    const sum = ms => ms.reduce((t, m) => t + Gm.sellPreview(s, m.id, mats[m.id]), 0);   // 2026-11-19: 한 개 팔 때마다 시세가 내려감
     const m = sellSel && MATS[sellSel];
     const detail = m ? `<div class="sl-d"><div class="sl-top"><span class="ux-slot" data-g="${GR.indexOf(m.grade)}" style="width:96px;height:96px">${matImg(m)}</span><div><div class="sl-nm">${badge(GR.indexOf(m.grade))}<b>${esc(m.name)}</b></div>${m.line === 'food' ? '<span class="ux-tag sl-food">요리 재료</span>' : ''}<div class="ux-muted sl-ds">${esc(m.desc || '')}</div></div></div>
-      <div class="sl-kv"><span>보유</span><b>${mats[m.id]}개</b><span>1개 가격</span><b>${sellPrice(m)} G</b><span>전부 팔면</span><b>${mats[m.id] * sellPrice(m)} G</b></div>
+      <div class="sl-kv"><span>보유</span><b>${mats[m.id]}개</b><span>1개 가격</span><b>${sellPrice(m)} G ${trendTag(m.id)}</b><span>전부 팔면</span><b>${Gm.sellPreview(s, m.id, mats[m.id])} G</b><span>팔면</span><b class="sl-hint">많이 팔수록 마을에 흔해져 값이 내려갑니다</b></div>
       <div class="sl-btns"><button class="ux-btn" data-sone="${m.id}">1개 팔기</button><button class="ux-btn primary" data-sall="${m.id}">전부 팔기</button></div></div>` : '<div class="ux-muted">팔 소재가 없습니다.</div>';
     return `<div class="sell"><div class="kpan sl-left"><div class="ux-h">음식이 아닌 소재 <small>${nf.length}종 · ${sum(nf)} G</small></div><div class="kpantry">${nf.map(cell).join('') || '<span class="ux-muted">없음</span>'}</div>
       <div class="ux-h" style="margin-top:16px">음식 소재 <small>요리 재료 · 팔면 요리를 못 만들 수 있음</small></div><div class="kpantry">${fd.map(cell).join('') || '<span class="ux-muted">없음</span>'}</div></div>
@@ -746,18 +747,25 @@
     const who = ids => ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean), face = a => `<span class="tr-f" style="${faceStyle(a, 34, 180, 17)}"></span>`;
     const cons = s.consign || [], logs = (s.buyLog || []).slice(0, 7), cn = cons.reduce((t, c) => t + c.n, 0), left = (Gm.WPM - s.week % Gm.WPM) % Gm.WPM || Gm.WPM;
     const feeOf = c => Math.floor(Gm.matSellPrice(s, c.m) * c.n * cf + 1e-9);
-    let L = `<div class="tr"><div class="sub">모험가가 주워 온 소재는 모험가 것입니다 · 귀환 때 길드가 판매가의 <b>${br}%</b>로 삽니다</div>
-      <div class="tr-sum"><div>이번 달 매입<b class="m">${s.month.matBuyN || 0}개 · ${fmt(-(s.month.matBuy || 0))}G</b>돈은 주워 온 모험가에게</div><div>위탁 보관 중<b>${cn}개</b>${cn ? `월말에 팔리면 수수료 +${fmt(cons.reduce((t, c) => t + feeOf(c), 0))}G` : '금고가 모자랄 때만 생깁니다'}</div></div>
+    // 2026-11-19 V4 2단계 (결정 43): 소재마다 매입(시세 × 50 · 70 · 90%) / 위탁 / 안 받음
+    const RO = E.buyRateOpt || [0.5, 0.7, 0.9], cap = E.storeCap || 30, known = Object.keys(s.knownMats || {}).filter(id => MATS[id] && GR.indexOf(MATS[id].grade) <= s.grade).sort((a, b) => GR.indexOf(MATS[a].grade) - GR.indexOf(MATS[b].grade));
+    let P = '<div class="tr"><div class="ux-h">소재 처리 <small>귀환 때 소재마다 · 시세는 마을 시장 재고에 따라 움직입니다</small></div><div class="mp-list">';
+    for (const id of known) { const m = MATS[id], p = Gm.matPol(s, id), r = Gm.polRate(s, id);
+      P += `<div class="mp-row"><span class="ic sm">${matImg(m)}</span><span class="mp-n"><b>${esc(m.name)}</b><small>시세 ${Gm.matPrice(s, id)}G ${trendTag(id)} · 창고 ${(s.mats || {})[id] || 0}/${cap}</small></span><span class="mp-seg">${[['buy', '매입'], ['consign', '위탁'], ['none', '안 받음']].map(([k, t]) => `<button class="${p.mode === k ? 'on' : ''}" data-mpol="${id}:${k}">${t}</button>`).join('')}</span><span class="mp-seg r">${p.mode === 'buy' ? RO.map(x => `<button class="${Math.abs(x - r) < 1e-9 ? 'on' : ''}" data-mrate="${id}:${x}" title="매입가 ${Math.floor(Gm.matPrice(s, id) * x + 1e-9)}G">${Math.round(x * 100)}%</button>`).join('') : '<small>' + (p.mode === 'consign' ? `팔리면 수수료 ${Math.round(cf * 100)}%` : '모험가가 직접 팖 · 길드 몫 없음') + '</small>'}</span></div>`; }
+    if (!known.length) P += '<div class="tr-none">아직 아는 소재가 없습니다.</div>';
+    P += `</div><div class="tr-note"><b>매입</b> = 길드 창고로(요리 · 납품 · 발주) · 매입가를 낮추면 돈이 필요한 모험가가 그 의뢰를 덜 맡습니다(50%면 25% 거름). <b>위탁</b> = 길드가 월말에 시세로 대신 팔고 수수료. <b>안 받음</b> = 모험가가 직접 팔아 길드 몫이 없습니다. 창고가 ${cap}개 차면 위탁으로 돌립니다.</div></div>`;
+    let L = P + `<div class="tr"><div class="sub">모험가가 주워 온 소재는 모험가 것입니다 · 매입은 소재마다 정한 비율(기본 ${br}%)로 삽니다</div>
+      <div class="tr-sum"><div>이번 달 매입<b class="m">${s.month.matBuyN || 0}개 · ${fmt(-(s.month.matBuy || 0))}G</b>돈은 주워 온 모험가에게</div><div>위탁 보관 중<b>${cn}개</b>${cn ? `월말에 팔리면 수수료 +${fmt(cons.reduce((t, c) => t + feeOf(c), 0))}G` : '위탁을 고른 소재 · 창고가 찼거나 금고가 모자랄 때 생깁니다'}</div></div>
       <div class="ux-h">매입 기록 <small>최근 순</small></div>`;
     if (!logs.length) L += '<div class="tr-none">아직 매입한 소재가 없습니다.</div>';
     for (const b of logs) { const m = MATS[b.m], ps = who(b.ids); if (!m) continue;
       L += `<div class="tr-row"><span class="ic">${matImg(m)}</span><span class="fs">${ps.slice(0, 2).map(face).join('')}</span><span><b>${esc(m.name)}</b> ×${b.n}<br><small>${ps.length ? esc(ps[0].name) + (ps.length > 1 ? ' 파티' : '') + '가 주워 옴' : '떠난 모험가'}</small></span><span class="g">${fmt(b.g)}G</span><span class="wk">${b.w === s.week ? '이번 주' : (s.week - b.w) + '주 전'}</span></div>`; }
     L += `<div class="tr-note">산 소재는 길드 창고로 들어가 요리 · 리퀘스트 납품에 쓰고, <b>소재 판매</b> 책갈피에서 판매가 그대로 팔 수 있습니다.</div></div>`;
-    let R = `<div class="tr"><h3>위탁 보관함</h3><div class="sub">금고가 모자라 사지 못한 소재 · 모험가 것으로 맡아 둡니다</div>`;
+    let R = `<div class="tr"><h3>위탁 보관함</h3><div class="sub">위탁을 고른 소재 · 창고가 찼거나 금고가 모자라 사지 못한 소재 · 모험가 것으로 맡아 둡니다</div>`;
     if (!cons.length) R += '<div class="tr-none">맡아 둔 소재가 없습니다.<br><small>귀환 때 금고가 매입가보다 적으면 여기에 쌓입니다.</small></div>';
     cons.forEach((c, i) => { const m = MATS[c.m], ps = who(c.ids); if (!m) return; const sale = Gm.matSellPrice(s, c.m) * c.n, fee = feeOf(c), cost = Gm.matBuyPrice(s, c.m) * c.n;
       R += `<div class="tr-row c"><span class="ic">${matImg(m)}</span><span class="fs">${ps.slice(0, 2).map(face).join('')}</span><span><b>${esc(m.name)}</b> ×${c.n}<br><small>${ps.map(a => esc(a.name)).join(' · ') || '떠난 모험가'} 것 · 월말(${left}주 뒤) 판매 시 모험가 ${fmt(sale - fee)}G · 길드 ${fmt(fee)}G</small></span><button class="ux-btn sm" data-cbuy="${i}" ${s.gold < cost ? 'disabled title="금고가 모자랍니다"' : ''}>${fmt(cost)}G에 사들이기</button></div>`; });
-    R += `<div class="tr-warn">위탁 소재는 길드 것이 아니라서 요리 · 리퀘스트 납품에 쓸 수 없습니다. 사들이면 창고로 들어옵니다.</div><div class="tr-note">위탁 수수료는 판매가의 <b>${Math.round(cf * 100)}%</b>입니다. 금고가 넉넉하면 다음 귀환부터는 다시 자동으로 매입합니다.</div></div>`;
+    R += `<div class="tr-warn">위탁 소재는 길드 것이 아니라서 요리 · 리퀘스트 납품에 쓸 수 없습니다. 사들이면 창고로 들어옵니다.</div><div class="tr-note">위탁 수수료는 시세의 <b>${Math.round(cf * 100)}%</b>입니다. 매입으로 둔 소재는 금고가 넉넉하면 다음 귀환부터 다시 자동으로 매입합니다.</div></div>`;
     return `<div class="bk2 bk-tr"><section class="bk-l">${L}</section><section class="bk-r">${R}</section></div>`;
   }
   function qFeeHtml(q) {   // 2026-11-17 V2 E5-4: 이 의뢰 수수료 + 실수령 미리 보기 (책 오른쪽 쪽)
@@ -1828,6 +1836,7 @@
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
+      { const mp = e.target.closest('[data-mpol], [data-mrate]'); if (mp && popup === 'trade') { const [id, v] = (mp.dataset.mpol || mp.dataset.mrate).split(':'), p = Gm.matPol(s, id), r = mp.dataset.mpol ? Gm.setMatPol(s, id, v, null) : Gm.setMatPol(s, id, 'buy', +v); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }   // 2026-11-19 결정 43
       { const cb = e.target.closest('[data-cbuy]'); if (cb && popup === 'trade') { if (cb.disabled) return; const r = Gm.consignBuy(s, +cb.dataset.cbuy); toast(r.ok ? `위탁 소재 ${r.n}개를 ${fmt(r.cost)}G에 사들였습니다.` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); renderPopup(); return; } }
       if (popup === 'order' && orderClick(e)) return;
       if (popup === 'meals') { const kb = e.target.closest('[data-kpr], [data-kpp]'); if (kb) { if (kb.disabled) return; const [n, v] = (kb.dataset.kpr || kb.dataset.kpp).split(':'), d = Gm.DISH.find(x => x.name === n); if (d) { const mu = Gm.menuOf(s, d), r = kb.dataset.kpr ? Gm.setMenu(s, n, v === 'base' ? Gm.dishBase(s, d) : Math.max(1, Math.min(Gm.dishBase(s, d) * 3, mu.price + +v)), null) : Gm.setMenu(s, n, null, mu.prep + +v); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); } return; } }   // 2026-11-19 결정 37 · 39: 메뉴 가격 · 준비량
