@@ -52,7 +52,7 @@
         leaveAfterYears: 2, leaveAttach: 20,
         heirDelayWeeks: 24,
         departTh: [0.70, 0.55, 0.35], seekTh: [0.30, 0.50, 0.70],   // 출발 기준(신중|보통|무모), 동료 찾는 기준(독불장군|보통|사교적)
-        relParty: 30   // 2026-11-19: 게임에서 동료를 고를 때 친밀도 흔들림 폭 [임시] (시뮬레이터는 친밀도가 없어 쓰지 않음, balance.csv와 같게)
+        relParty: 30   // 2026-11-19: 동료를 고를 때 친밀도 흔들림 폭 [임시] (2026-11-20부터 시뮬레이터도 씀, balance.csv와 같게)
       },
       econ: {
         startGold: 3000, feeBase: 0.10, feePerInfo: 0.02,
@@ -231,6 +231,17 @@
     const rivalHere = a => s.advs.some(b => b !== a && b.alive && b.grade === a.grade);
     const qkMul = a => CB && CB.QK ? CB.QK.xpMul(QC, a, rivalHere(a)) : 1;
     const qkN = k => { s.st.quirk = s.st.quirk || {}; s.st.quirk[k] = (s.st.quirk[k] || 0) + 1; };
+    // ---------- 친밀도 (2026-11-20 사용자 요청: 시뮬레이터에도 친밀도) — 게임 game_core.js MEM · relBase · relStep · relTier와 같은 식 ----------
+    //   처음 40 (성향 궁합: 무모 · 신중 −15 · 둘 다 사교적 +10 · 독불장군 −10) · 같은 파티 성공 +8(궁합 ±) · 실패 −3 · 단짝 60 이상 · 서먹 30 미만 [임시]
+    //   쓰는 곳: 동료 고르기(adv.relParty) · 버릇(다혈질 다툼 · 친밀도 +1 더, 이기적 단짝 예외 · 혼자 후퇴 −5, 허세꾼 신입 애착)
+    const REL = { start: 40, win: 8, fail: -3, good: 60, bad: 30 };
+    const relKey = (a, b) => a.id < b.id ? a.id + '-' + b.id : b.id + '-' + a.id;
+    const relBase = (a, b) => { let v = REL.start; if (Math.abs(a.risk - b.risk) === 2) v -= 15; if (a.social === 2 && b.social === 2) v += 10; if (a.social === 0 || b.social === 0) v -= 10; return v; };
+    const relOf = (a, b) => { const v = s.rel[relKey(a, b)]; return v == null ? relBase(a, b) : v; };
+    const relAdd = (a, b, d) => { if (a === b) return; const k = relKey(a, b), v = Math.max(0, Math.min(100, relOf(a, b) + d)); s.rel[k] = v; if (d > 0 && v >= REL.good && s.palMet[k] == null) { s.palMet[k] = s.week; (s.st.palWeeks = s.st.palWeeks || []).push(s.week); } };
+    const relStep = (a, b) => { let d = REL.win; if (Math.abs(a.risk - b.risk) === 2) d -= 2; if (a.social === 2 && b.social === 2) d += 1; if (a.social === 0 || b.social === 0) d -= 1; return Math.max(2, Math.min(REL.win + 2, d)); };
+    const relTier = v => v >= REL.good ? 'good' : v < REL.bad ? 'bad' : '';
+    s.rel = s.rel || {}; s.palMet = s.palMet || {};
 
     function finalStat(a, i) {
       let v = Math.min(G.statCap, a.stats[i]);
@@ -416,6 +427,7 @@
     }
     function runQuest(party, q) {
       let mealB = 0, sm = null;
+      if (QC && party.some(m => m.quirk === 'bluff')) for (const b of party) if (b.quirk === 'bluff') for (const m of party) if (m !== b && s.rel[relKey(b, m)] == null && m.joined >= s.week - 8) m.attach = Math.min(100, m.attach + QC.bluffNew);   // 허세꾼: 처음 같은 파티가 된 신입 애착 + (게임과 같음)
       let dish = null, bs = -1; for (const d of DISH) { if (!s.dishes[d.name] || d.g > q.g) continue; const sc = d.stats.filter(k => q.req.includes(k)).length * 1000 + d.g * 10 + d.pct * 100; if (sc > bs) { bs = sc; dish = d; } }   // 게임 dishFor와 같음
       const ate = new Set();   // 2026-11-20: 대식가 배고픔 판정에 쓰려고 밖으로 꺼냄
       if (dish) {
@@ -430,15 +442,15 @@
         // 메뉴가 2개 열려 있으면 의뢰 유형에 맞는 요리를 고를 확률이 높음
         mealB = E.mealMode ? 0 : (eaters / party.length) * E.mealPerDish * Object.keys(s.dishes).length * (1 + 0.5 * (effN('주점') >= 3 ? 1 : 0));   // 2026-11-05: 발견한 요리 하나당 +2% (등급 무관)
       }
-      let ok, fightRes = null;
+      let ok, fightRes = null; const qkEv = [];
       if (q.combat) {
         const C = CB.C, price = C.potionPrice[Math.min(q.g, s.grade)];
         for (const a of party) { const want = C.potionCarry[a.spend] - (R() < 0.5 ? 1 : 0); while (a.pots < want && a.wallet >= price) { a.wallet -= price; a.pots++; s.st.potionGold += price; } }
         const U = party.map(a => unitOf(a, mealB, sm));
-        const pr = CB.QK && QC && party.some(a => a.quirk) ? CB.QK.prep(U, { Qc: QC, week: s.week, R, p: party.some(a => a.quirk === 'coward') ? questP(party, q) : 1, risk: party[0].risk, ate: a => ate.has(a), dish: !!dish }) : { ev: [], risk: party[0].risk };   // 게임 launchParty와 같음 (친밀도 없음 → 다툼 · 단짝 예외 없음)
-        for (const e of pr.ev) qkN(e.k);
+        const pr = CB.QK && QC && party.some(a => a.quirk) ? CB.QK.prep(U, { Qc: QC, week: s.week, R, p: party.some(a => a.quirk === 'coward') ? questP(party, q) : 1, risk: party[0].risk, ate: a => ate.has(a), dish: !!dish, bad: (a, b) => relTier(relOf(a, b)) === 'bad', pal: (a, b) => relTier(relOf(a, b)) === 'good' }) : { ev: [], risk: party[0].risk };   // 게임 launchParty와 같음
+        for (const e of pr.ev) { qkN(e.k); if (e.k === 'quarrel') qkEv.push(e); }
         fightRes = CB.fight(U, q.enemies, q.g, R, pr.risk);
-        for (const u of fightRes.units) { if (u.fled) qkN(u.fled === 'selfish' ? 'selfFlee' : 'cowardFlee'); if (u.covered) qkN('cover'); }
+        for (const u of fightRes.units) { if (u.fled) qkN(u.fled === 'selfish' ? 'selfFlee' : 'cowardFlee'); if (u.fled === 'selfish') qkEv.push({ k: 'selfFlee', a: u.a }); if (u.covered) qkN('cover'); }
         ok = fightRes.win; s.st.combatQ++; if (ok) s.st.combatWin++;
         if (q.g <= 1) { const k = q.g * 2 + (party.every(m => Math.min(...eqOf(m)) >= q.g) ? 1 : 0); s.st.gearFx[k][1]++; if (ok) s.st.gearFx[k][0]++; }   // F·E급: 그 등급 장비를 다 갖춘 파티인지
       } else {
@@ -491,6 +503,9 @@
           if (R() < d) { kill(a, false); s.st.questDeaths++; }
         }
       }
+      // 친밀도 (게임 memQuest · qkReturn과 같음): 같은 파티 성공 +relStep(다혈질 +1 더) / 실패 −3, 다툼 · 혼자 후퇴는 −
+      for (let i = 0; i < party.length; i++) for (let j = i + 1; j < party.length; j++) { const a = party[i], b = party[j]; relAdd(a, b, ok ? relStep(a, b) + ((a.quirk === 'hot' || b.quirk === 'hot') && QC ? QC.hotRel : 0) : REL.fail); }
+      for (const e of qkEv) { if (e.k === 'quarrel') { const a = party.find(m => m.id === e.id), b = party.find(m => m.id === e.with); if (a && b) relAdd(a, b, -QC.hotFightRel); } else if (e.k === 'selfFlee') for (const b of party) if (b !== e.a) relAdd(e.a, b, -QC.selfishRel); }
       return ok;
     }
 
@@ -515,7 +530,10 @@
           let party = [a];
           let pp = perceived(a, questP(party, q));
           if (pp < A.seekTh[a.social]) {
-            const mates = idle.filter(b => b !== a && b.busy === 0 && b.alive && Math.abs(b.grade - q.g) <= 1).slice(0, 4);
+            let mates = idle.filter(b => b !== a && b.busy === 0 && b.alive && Math.abs(b.grade - q.g) <= 1);
+            const RP = A.relParty || 0;   // 2026-11-20 친밀도: 동료를 고를 때 친밀도 + 흔들림(±relParty/2) 큰 순서 (게임과 같음)
+            if (RP > 0 && mates.length > 1) mates = mates.map(b => ({ b, k: relOf(a, b) + (R() - 0.5) * RP })).sort((x, y) => y.k - x.k).map(x => x.b);
+            mates = mates.slice(0, 4);
             for (const m of mates) { party.push(m); if (perceived(a, questP(party, q)) >= th) break; }
             pp = perceived(a, questP(party, q));
           }
