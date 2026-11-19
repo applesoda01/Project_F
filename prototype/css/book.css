@@ -853,3 +853,13 @@
 
 /* 2026-11-19 결정 47: 남은 그릇 처리 */
 .kmr .kleft button.on{border-color:#1f5f5a;background:#2f7f7a;color:#fff}.kmr .ksale{color:#b42332;font-weight:700}
+
+/* 2026-11-19 시세 그래프: 선 하나 + 기준가 점선, 글자는 잉크색 */
+.sl-chart{margin:10px 0 6px}.sl-ch{font-size:15px;font-weight:700;color:#5a3a22}.sl-ch small{font-weight:400;color:#7a5f45;font-size:12px}
+.pc{display:block;max-width:420px}.pc-none{font-size:13px;color:#7a5f45;padding:8px 0}
+.pc-line{fill:none;stroke:#00897b;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.pc-end{fill:#00897b;stroke:#fffaf0;stroke-width:2}.pc-dot{fill:#00897b;opacity:0;pointer-events:none}
+.pc-hit{fill:transparent;cursor:crosshair}.pc-hit:hover+.pc-dot{opacity:1}
+.pc-base{stroke:#9a8670;stroke-width:1;stroke-dasharray:4 3}.pc-ax{stroke:#d8c6a4;stroke-width:1}
+.pc-t{font-size:11px;fill:#7a5f45}.pc-v{font-size:12px;font-weight:700;fill:#3b2a1a}
+.pc-spark{vertical-align:middle;margin:0 2px}.pc-spark path{fill:none;stroke:#00897b;stroke-width:1.5}

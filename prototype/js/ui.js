@@ -516,6 +516,28 @@
   function sellDo(ids, all) { const { n, g } = Gm.sellMats(s, ids.map(id => [id, all ? (s.mats[id] || 0) : 1]));
     if (!n) return;   // 장부: '소재 판매' 줄 (game_core.sellMats)
     Gm.log(s, `소재 ${n}개를 팔아 ${g}G를 받았습니다.`, 'guild'); UI.hud && UI.hud(); }
+  // 2026-11-19 시세 그래프 (V4 2단계): 한 소재의 최근 시세(G) 선 하나 + 기준가 점선. 주마다 마우스를 올리면 값. 색은 선 #00897b (검사 통과: 채도 · 대비), 글자는 잉크색
+  function priceChart(id, W, H) {
+    const L = Gm.mktLogOf(s, id), base = Gm.matBase(id), wk = w => { const d = s.week - w; return d <= 1 ? '이번 주' : (d - 1) + '주 전'; };
+    if (L.length < 2) return '<div class="pc-none">시세 기록이 2주 이상 쌓이면 그래프가 보입니다.</div>';
+    const ps = L.map(x => x[1]), lo = Math.min(base, ...ps), hi = Math.max(base, ...ps), y0 = Math.max(0, Math.floor(lo - Math.max(0.5, (hi - lo) * 0.15))), y1 = Math.ceil(hi + Math.max(0.5, (hi - lo) * 0.15));
+    const ml = 34, mr = 46, mt = 10, mb = 22, iw = W - ml - mr, ih = H - mt - mb;
+    const X = i => ml + (L.length === 1 ? iw : iw * i / (L.length - 1)), Y = v => mt + ih * (1 - (v - y0) / (y1 - y0 || 1));
+    const line = L.map((x, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(x[1]).toFixed(1)}`).join(''), last = L[L.length - 1], lx = X(L.length - 1), ly = Y(last[1]);
+    const step = iw / Math.max(1, L.length - 1);
+    const hits = L.map((x, i) => `<rect class="pc-hit" x="${(X(i) - step / 2).toFixed(1)}" y="${mt}" width="${step.toFixed(1)}" height="${ih}"><title>${wk(x[0])} · ${Math.round(x[1])}G (기준의 ${Math.round(x[1] / base * 100)}%)</title></rect><circle class="pc-dot" cx="${X(i).toFixed(1)}" cy="${Y(x[1]).toFixed(1)}" r="4"></circle>`).join('');
+    return `<svg class="pc" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc((MATS[id] || {}).name || id)} 시세 기록: ${L.length}주, 지금 ${Math.round(last[1])}G, 기준 ${base}G">`
+      + `<line class="pc-ax" x1="${ml}" y1="${mt + ih}" x2="${ml + iw}" y2="${mt + ih}"/>`
+      + `<line class="pc-base" x1="${ml}" y1="${Y(base).toFixed(1)}" x2="${ml + iw}" y2="${Y(base).toFixed(1)}"/><text class="pc-t" x="${ml + iw + 4}" y="${(Y(base) + 4).toFixed(1)}">기준 ${base}G</text>`
+      + `<text class="pc-t" x="${ml - 4}" y="${mt + 4}" text-anchor="end">${y1}G</text><text class="pc-t" x="${ml - 4}" y="${mt + ih}" text-anchor="end">${y0}G</text>`
+      + `<text class="pc-t" x="${ml}" y="${H - 4}">${wk(L[0][0])}</text><text class="pc-t" x="${ml + iw}" y="${H - 4}" text-anchor="end">이번 주</text>`
+      + `<path class="pc-line" d="${line}"/><circle class="pc-end" cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4"/><text class="pc-v" x="${(lx + 7).toFixed(1)}" y="${(ly - 6).toFixed(1)}">${Math.round(last[1])}G</text>${hits}</svg>`;
+  }
+  function priceSpark(id) {   // 매입 · 위탁 줄에 붙는 작은 선 (최근 12주)
+    const L = Gm.mktLogOf(s, id).slice(-12); if (L.length < 2) return '';
+    const ps = L.map(x => x[1]), lo = Math.min(...ps), hi = Math.max(...ps), W = 56, H = 18, X = i => 1 + (W - 2) * i / (L.length - 1), Y = v => H - 2 - (H - 4) * (hi === lo ? 0.5 : (v - lo) / (hi - lo));
+    return `<svg class="pc-spark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true"><path d="${L.map((x, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(x[1]).toFixed(1)}`).join('')}"/></svg>`;
+  }
   function sellHtml() {
     const mats = s.mats || {}, known = s.knownMats || {};
     const have = Object.values(MATS).filter(m => known[m.id] && (mats[m.id] || 0) > 0).sort((a, b) => GR.indexOf(a.grade) - GR.indexOf(b.grade));
@@ -526,6 +548,7 @@
     const m = sellSel && MATS[sellSel];
     const detail = m ? `<div class="sl-d"><div class="sl-top"><span class="ux-slot" data-g="${GR.indexOf(m.grade)}" style="width:96px;height:96px">${matImg(m)}</span><div><div class="sl-nm">${badge(GR.indexOf(m.grade))}<b>${esc(m.name)}</b></div>${m.line === 'food' ? '<span class="ux-tag sl-food">요리 재료</span>' : ''}<div class="ux-muted sl-ds">${esc(m.desc || '')}</div></div></div>
       <div class="sl-kv"><span>보유</span><b>${mats[m.id]}개</b><span>1개 가격</span><b>${sellPrice(m)} G ${trendTag(m.id)}</b><span>전부 팔면</span><b>${Gm.sellPreview(s, m.id, mats[m.id])} G</b><span>팔면</span><b class="sl-hint">많이 팔수록 마을에 흔해져 값이 내려갑니다</b></div>
+      <div class="sl-chart"><div class="sl-ch">시세 기록 <small>최근 ${Gm.mktLogOf(s, m.id).length}주 · 마우스를 올리면 그 주 값</small></div>${priceChart(m.id, 420, 140)}</div>
       <div class="sl-btns"><button class="ux-btn" data-sone="${m.id}">1개 팔기</button><button class="ux-btn primary" data-sall="${m.id}">전부 팔기</button></div></div>` : '<div class="ux-muted">팔 소재가 없습니다.</div>';
     return `<div class="sell"><div class="kpan sl-left"><div class="ux-h">음식이 아닌 소재 <small>${nf.length}종 · ${sum(nf)} G</small></div><div class="kpantry">${nf.map(cell).join('') || '<span class="ux-muted">없음</span>'}</div>
       <div class="ux-h" style="margin-top:16px">음식 소재 <small>요리 재료 · 팔면 요리를 못 만들 수 있음</small></div><div class="kpantry">${fd.map(cell).join('') || '<span class="ux-muted">없음</span>'}</div></div>
@@ -751,7 +774,7 @@
     const RO = E.buyRateOpt || [0.5, 0.7, 0.9], cap = E.storeCap || 30, known = Object.keys(s.knownMats || {}).filter(id => MATS[id] && GR.indexOf(MATS[id].grade) <= s.grade).sort((a, b) => GR.indexOf(MATS[a].grade) - GR.indexOf(MATS[b].grade));
     let P = '<div class="tr"><div class="ux-h">소재 처리 <small>귀환 때 소재마다 · 시세는 마을 시장 재고에 따라 움직입니다</small></div><div class="mp-list">';
     for (const id of known) { const m = MATS[id], p = Gm.matPol(s, id), r = Gm.polRate(s, id);
-      P += `<div class="mp-row"><span class="ic sm">${matImg(m)}</span><span class="mp-n"><b>${esc(m.name)}</b><small>시세 ${Gm.matPrice(s, id)}G ${trendTag(id)} · 창고 ${(s.mats || {})[id] || 0}/${cap}</small></span><span class="mp-seg">${[['buy', '매입'], ['consign', '위탁'], ['none', '안 받음']].map(([k, t]) => `<button class="${p.mode === k ? 'on' : ''}" data-mpol="${id}:${k}">${t}</button>`).join('')}</span><span class="mp-seg r">${p.mode === 'buy' ? RO.map(x => `<button class="${Math.abs(x - r) < 1e-9 ? 'on' : ''}" data-mrate="${id}:${x}" title="매입가 ${Math.floor(Gm.matPrice(s, id) * x + 1e-9)}G">${Math.round(x * 100)}%</button>`).join('') : '<small>' + (p.mode === 'consign' ? `팔리면 수수료 ${Math.round(cf * 100)}%` : '모험가가 직접 팖 · 길드 몫 없음') + '</small>'}</span></div>`; }
+      P += `<div class="mp-row"><span class="ic sm">${matImg(m)}</span><span class="mp-n"><b>${esc(m.name)}</b><small>시세 ${Gm.matPrice(s, id)}G ${trendTag(id)} ${priceSpark(id)} · 창고 ${(s.mats || {})[id] || 0}/${cap}</small></span><span class="mp-seg">${[['buy', '매입'], ['consign', '위탁'], ['none', '안 받음']].map(([k, t]) => `<button class="${p.mode === k ? 'on' : ''}" data-mpol="${id}:${k}">${t}</button>`).join('')}</span><span class="mp-seg r">${p.mode === 'buy' ? RO.map(x => `<button class="${Math.abs(x - r) < 1e-9 ? 'on' : ''}" data-mrate="${id}:${x}" title="매입가 ${Math.floor(Gm.matPrice(s, id) * x + 1e-9)}G">${Math.round(x * 100)}%</button>`).join('') : '<small>' + (p.mode === 'consign' ? `팔리면 수수료 ${Math.round(cf * 100)}%` : '모험가가 직접 팖 · 길드 몫 없음') + '</small>'}</span></div>`; }
     if (!known.length) P += '<div class="tr-none">아직 아는 소재가 없습니다.</div>';
     P += `</div><div class="tr-note"><b>매입</b> = 길드 창고로(요리 · 납품 · 발주) · 매입가를 낮추면 돈이 필요한 모험가가 그 의뢰를 덜 맡습니다(50%면 25% 거름). <b>위탁</b> = 길드가 월말에 시세로 대신 팔고 수수료. <b>안 받음</b> = 모험가가 직접 팔아 길드 몫이 없습니다. 창고가 ${cap}개 차면 위탁으로 돌립니다.</div></div>`;
     let L = P + `<div class="tr"><div class="sub">모험가가 주워 온 소재는 모험가 것입니다 · 매입은 소재마다 정한 비율(기본 ${br}%)로 삽니다</div>
