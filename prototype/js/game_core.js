@@ -229,6 +229,7 @@
     let C = FT ? [FT] : TPL[type + '_' + g];
     if (!FT) { const B = s.cfg.econ.orderBias || 0, O = s.orders;   // 2026-11-18 결정 26: 발주 중에는 새 의뢰의 orderBias [임시] 비율이 그 소재를 얻는 의뢰로 바뀜 (발주가 없으면 난수를 쓰지 않아 예전과 같은 결과)
       if (B > 0 && O && O.length && s.R() < B) { const W = []; for (const k in TPL) if (k.endsWith('_' + g)) for (const t of TPL[k]) if ((t.rewards || []).some(r => O.some(o => o.m === r.m && o.got < o.n))) W.push(t); if (W.length) C = [W[Math.floor(s.R() * W.length)]]; } }
+    if (!FT && C) { const F2 = C.filter(t => !s.board.some(b => b.tid === t.id)); if (!F2.length) return null; C = F2; }   // 2026-11-19 결정: 게시판에 이미 붙은 의뢰와 같은 의뢰는 새로 붙이지 않음 (튜토리얼 「오늘 저녁 삼겹살」 두 장 버그)
     const T = !C ? null : C.length > 1 ? C[Math.floor(s.R() * C.length)] : C[0];   // 후보 1개면 난수를 쓰지 않아 예전과 같은 결과
     const QL = QLV(s), LV = QL && T && T.board ? qlvOf(s, T.id) : null, lv = LV ? LV.lv : 1;   // 의뢰 레벨 (결정 35)
     const DF = ((Q.diff || [])[g] || 1) * (QL ? 1 + QL.foe * (lv - 1) : 1);   // 난이도 배수 (2026-11-16): 판정 기준치와 적 체력 · 공격력에 곱함 · 의뢰 레벨 배수
@@ -444,7 +445,7 @@
     for (let i = 0; i < n; i++) {
       let r = s.R() * tot, g = 0; for (; g <= s.grade; g++) { r -= s.filter[g]; if (r <= 0) break; } g = Math.min(g, s.grade);
       const count = s.board.filter(q => q.g === g).length;
-      if (s.board.length < cap && count < Math.max(1, quota[g])) { const q = makeQuest(s, g); markX2(s, q); s.board.push(q); }
+      if (s.board.length < cap && count < Math.max(1, quota[g])) { const q = makeQuest(s, g); if (q) { markX2(s, q); s.board.push(q); } }
     }
   }
   // ×2 의뢰 (2026-11-12, guild_interior.md 2-2·10-2): 게시될 때 quest.x2Rate 확률로 골드만 2배. 트로피 장식장이 있으면 달마다 처음 게시되는 의뢰부터 deco.x2PerMonth건 보장
@@ -509,7 +510,7 @@
   // ---------- 길드 발주 (경제 개편 V2 6단계 · 결정 24 · 25): 선지급 모으기 ----------
   const orderPrice = (s, m) => Math.floor(matBase(m) * (s.cfg.econ.orderMult != null ? s.cfg.econ.orderMult : 1.5) + 1e-9);   // 1개 값 = 판매가 × 1.5 [임시]
   // ---------- 튜토리얼 도우미 (2026-11-18, docs/design/튜토리얼.md) ----------
-  function tutPost(s, tid) { const q = makeQuest(s, 0, tid); tutEase(q); s.board.push(q); return q; }   // 정해진 의뢰를 게시판에 올림
+  function tutPost(s, tid) { for (let i = s.board.length - 1; i >= 0; i--) if (s.board[i].tid === tid) s.board.splice(i, 1); const q = makeQuest(s, 0, tid); tutEase(q); s.board.push(q); return q; }   // 같은 의뢰가 먼저 붙어 있으면 내리고 튜토리얼 의뢰로 바꿔 붙임 (2026-11-19)   // 정해진 의뢰를 게시판에 올림
   // 2026-11-19 첫 의뢰 쉽게: 원래 멧돼지 2마리면 Lv1 전사 혼자 300판 중 300판 짐 → 1마리 · 체력 50% · 공격 70% [임시] (300판: 첫 판에 무사히 이김 275판, 다시 굴려도 못 이긴 판 0)
   function tutEase(q) { if (!q || !q.enemies || !q.enemies.length) return; q.enemies = [Object.assign({}, q.enemies[0], { hp: q.enemies[0].hp * 0.5, atk: q.enemies[0].atk * 0.7 })]; if (q.seen) q.seen = q.seen.slice(0, 1); }
   function tutLaunch(s, aid, qid) {   // 정해진 모험가를 정해진 의뢰로 바로 출발시킴 (강제)

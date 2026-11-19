@@ -241,7 +241,8 @@
       const n = Q.reqCount[g];
       const req = [type];
       while (req.length < n) { const k = ri(5); if (!req.includes(k)) req.push(k); }
-      const C = boss ? null : TPL[type + '_' + g], T = !C ? null : C.length > 1 ? C[Math.floor(R() * C.length)] : C[0];   // 칸 후보 중 하나 (1개면 난수 안 씀)
+      let C = boss ? null : TPL[type + '_' + g]; if (C) { const F2 = C.filter(x => !s.board.some(b => b.T === x)); if (!F2.length) return null; C = F2; }   // 게시판에 같은 의뢰가 있으면 안 붙임 (게임과 같음, 2026-11-19)
+      const T = !C ? null : C.length > 1 ? C[Math.floor(R() * C.length)] : C[0];   // 칸 후보 중 하나 (1개면 난수 안 씀)
       const req2 = T && T.stats && T.stats.length ? T.stats.slice() : req;
       const QL = cfg.qlv && cfg.qlv.on ? cfg.qlv : null, LV = QL && T && T.board ? (s.qlv[T.id] || (s.qlv[T.id] = { lv: 1, wins: 0, fresh: 0 })) : null, lv = LV ? LV.lv : 1, fz = !!(LV && LV.fresh > 0);   // 의뢰 레벨 (게임과 같음, 결정 35)
       const DF = ((Q.diff || [])[g] || 1) * (QL ? 1 + QL.foe * (lv - 1) : 1);   // 난이도 배수 (게임 makeQuest와 같음)
@@ -372,7 +373,7 @@
         let g = s.grade;
         const r = R();
         if (r > bot.filterFocus) g = ri(s.grade + 1);
-        if (s.board.length < cap) { const q = makeQuest(g, false); markX2(q); s.board.push(q); }
+        if (s.board.length < cap) { const q = makeQuest(g, false); if (q) { markX2(q); s.board.push(q); } }
       }
     }
     // ×2 의뢰 (2026-11-12): 게시될 때 x2Rate 확률, 트로피 장식장이 있으면 달마다 처음 게시되는 의뢰부터 x2PerMonth건 보장 (게임 markX2와 같음)
