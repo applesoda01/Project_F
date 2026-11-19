@@ -118,7 +118,7 @@
   // 모험가가 의뢰를 고르는 순서 (결정 11): 돈이 필요한 모험가는 주당 실수령(혼자 간다고 볼 때) 높은 순, 아니면 지금처럼 등급 높은 순 + 같은 등급이면 요율 낮은 순
   function needsMoney(s, a) { const GE = s.cfg.gear; if (a.spend === 2) return true; const n = eqNext(s, a); if (!n) return false; return a.wallet < n.price * (1 + GE.reserveMult[a.spend] * 0.5); }   // 2026-11-18: 다음 장비 1칸 값 기준
   // 2026-11-18 결정 25: 발주 소재가 나오는 의뢰는 '주우면 받는 발주 값 × 나올 확률'만큼 실수령을 더 크게 봄
-  const orderBonus = (s, q) => { const O = s.orders, T = QBYID[q.tid]; if (!O || !O.length || !T) return 0; let b = 0; for (const r of T.rewards || []) { const o = O.find(x => x.m === r.m && orderLive(s, x)); if (o) b += orderPriceOf(s, o) * r.p / 100; } return b; };
+  const orderBonus = (s, q) => { const O = s.orders, T = QBYID[q.tid]; if (!O || !O.length || !T) return 0; let b = 0; for (const r of T.rewards || []) { const o = r.p >= 30 && O.find(x => x.m === r.m && orderLive(s, x)); if (o) b += orderPriceOf(s, o) * r.p / 100;   /* 양념(희귀) 발주는 모든 F급 의뢰에 붙으므로 의뢰 고르기에는 넣지 않음 */ } return b; };
   const questEff = (s, q) => (Math.floor(q.reward * (q.x2 ? 2 : 1) * (1 - questFee(s, q)) + 1e-9) + orderBonus(s, q)) / (q.weeks || s.cfg.quest.weeks[q.g]);
   const ordHit = (s, q) => (s.cfg.econ.orderFirst || !s.cfg.econ.orderMode) && orderBonus(s, q) > 0 ? 1 : 0;   /* 2026-11-19 상시 발주는 늘 켜져 있어 '가장 먼저 맡음'을 끄고 발주 값(실수령)으로만 끌림 [임시] */   /* 2026-11-18 결정 26: 발주한 소재가 나오는 의뢰를 가장 먼저 맡음 */
   const cheapHit = (s, q) => questFee(s, q) < feeBase0(s) - 1e-9 ? 1 : 0;   /* 2026-11-19 결정 42: 기본보다 싼 수수료(5%) 의뢰는 모든 모험가가 먼저 맡음 → 빨리 처리 */
@@ -234,8 +234,8 @@
     const Q = s.cfg.quest; const type = FT ? FT.type : ri(s, 5); const n = Q.reqCount[g]; const req = [type];
     while (req.length < n) { const k = ri(s, 5); if (!req.includes(k)) req.push(k); }
     let C = FT ? [FT] : TPL[type + '_' + g];
-    if (!FT) { const O = liveOrders(s), B = O.length ? Math.max(...O.map(o => orderBiasOf(s, o))) : 0;   // 2026-11-19 결정 41: 켜진 상시 발주 중 가장 센 쏠림   // 2026-11-18 결정 26: 발주 중에는 새 의뢰의 orderBias [임시] 비율이 그 소재를 얻는 의뢰로 바뀜 (발주가 없으면 난수를 쓰지 않아 예전과 같은 결과)
-      if (B > 0 && O && O.length && s.R() < B) { const W = []; for (const k in TPL) if (k.endsWith('_' + g)) for (const t of TPL[k]) if ((t.rewards || []).some(r => O.some(o => o.m === r.m))) W.push(t); if (W.length) C = [W[Math.floor(s.R() * W.length)]]; } }
+    if (!FT) { const O = liveOrders(s).filter(o => !SPICE.has(o.m)), B = O.length ? Math.max(...O.map(o => orderBiasOf(s, o))) : 0, DUP = s.cfg.econ.orderDup || 2;   // 2026-11-19 결정 41: 켜진 상시 발주 중 가장 센 쏠림 · 양념 발주는 게시판 쏠림 없음(모든 F급 의뢰에서 나옴) · 같은 의뢰는 DUP장까지만   // 2026-11-18 결정 26: 발주 중에는 새 의뢰의 orderBias [임시] 비율이 그 소재를 얻는 의뢰로 바뀜 (발주가 없으면 난수를 쓰지 않아 예전과 같은 결과)
+      if (B > 0 && O && O.length && s.R() < B) { const W = []; for (const k in TPL) if (k.endsWith('_' + g)) for (const t of TPL[k]) if ((t.rewards || []).some(r => r.p >= 30 && O.some(o => o.m === r.m)) && s.board.filter(x => x.tid === t.id).length < DUP) W.push(t); if (W.length) C = [W[Math.floor(s.R() * W.length)]]; } }
     const T = !C ? null : C.length > 1 ? C[Math.floor(s.R() * C.length)] : C[0];   // 후보 1개면 난수를 쓰지 않아 예전과 같은 결과
     const QL = QLV(s), LV = QL && T && T.board ? qlvOf(s, T.id) : null, lv = LV ? LV.lv : 1;   // 의뢰 레벨 (결정 35)
     const DF = ((Q.diff || [])[g] || 1) * (QL ? 1 + QL.foe * (lv - 1) : 1);   // 난이도 배수 (2026-11-16): 판정 기준치와 적 체력 · 공격력에 곱함 · 의뢰 레벨 배수
@@ -487,7 +487,7 @@
     const main = RW.filter(r => r.p >= 30), rare = RW.filter(r => r.p < 30), P = E.drawPts || [2, 3];
     let k = q.enemies && q.enemies.length ? q.enemies.length : P[0] + Math.floor(s.R() * (P[1] - P[0] + 1));
     if ((q.lv || 1) > 1 && QLV(s)) { const kk = k * (1 + QLV(s).pay * (q.lv - 1)); k = Math.floor(kk) + (s.R() < kk - Math.floor(kk) ? 1 : 0); }   // 의뢰 레벨: 소재 개수 +pay
-    const tot = main.reduce((a, r) => a + r.p, 0), om = main.find(r => liveOrders(s).some(o => o.m === r.m)), oo = om && (s.orders || []).find(o => o.m === om.m), ob = oo ? (s.cfg.econ.orderMode ? orderBiasOf(s, oo) : 1) : 0, out = [];
+    const tot = main.reduce((a, r) => a + r.p, 0), om = main.concat(rare.filter(r => SPICE.has(r.m))).find(r => liveOrders(s).some(o => o.m === r.m)), oo = om && (s.orders || []).find(o => o.m === om.m), ob = oo ? (s.cfg.econ.orderMode ? orderBiasOf(s, oo) : 1) : 0, out = [];
     for (let i = 0; i < k && main.length; i++) {
       if (om && (ob >= 1 || s.R() < ob)) { out.push({ m: om.m, p: 100 }); continue; }   // 2026-11-19 상시 발주: 뽑기마다 쏠림 비율(30 · 50 · 70%)만큼만 발주 소재 — 늘 켜져 있어 다른 소재(고철 등)가 끊기지 않게 [임시] (예전 결정 27은 전부)
       let x = s.R() * tot, pick = main[main.length - 1]; for (const r of main) { x -= r.p; if (x <= 0) { pick = r; break; } } out.push({ m: pick.m, p: 100 });
@@ -569,7 +569,7 @@
     log(s, `${J(a.name, '이', '가')} 마스터에게 ${GR[g]}급 ${EQ_NAME[k]}를 선물받았습니다. (${price}G · 애착 +${att})`, 'grow', { who: [a.name] });
     return { ok: true, g, price, att };
   }
-  function orderSources(s, m) { const out = []; for (const k in TPL) { const g = +k.split('_')[1]; if (g > s.grade) continue; for (const t of TPL[k]) if ((t.rewards || []).some(r => r.m === m && r.p >= 30)) out.push(t); } return out; }   // 발주 소재가 주 소재로 나오는 게시판 의뢰 (결정 26 · 27)
+  function orderSources(s, m) { const sp = SPICE.has(m), out = []; for (const k in TPL) { const g = +k.split('_')[1]; if (g > s.grade) continue; for (const t of TPL[k]) if ((t.rewards || []).some(r => r.m === m && (r.p >= 30 || (sp && r.p > 0)))) out.push(t); } return out; }   // 2026-11-19 결정 46: 양념은 희귀(15%)로 나와도 상시 발주 가능   // 발주 소재가 주 소재로 나오는 게시판 의뢰 (결정 26 · 27)
   function orderWhy(s, m, target, mult, editId) {   // 2026-11-19 결정 41: 상시 발주 (목표 재고 1~30, 1개 값 배수는 선택지 중 하나)
     const E = s.cfg.econ, max = E.orderMax != null ? E.orderMax : 3;
     if (!MAT[m]) return '없는 소재입니다';
@@ -603,7 +603,7 @@
     const E = s.cfg.econ, max = E.orderMax != null ? E.orderMax : 3, t = E.orderTarget || 6;
     { const A = s.soldAvg = s.soldAvg || {}, W = s.soldW || {}; for (const d of DISH) if (s.dishes[d.name]) { A[d.name] = (A[d.name] || 0) * 0.7 + (W[d.name] || 0) * 0.3; menuOf(s, d).prep = Math.max(1, Math.min(10, Math.ceil(A[d.name]) + 1)); } s.soldW = {}; }   // 자동 플레이: 준비량 = 최근 판매(지수 평균) + 1그릇
     for (const d of DISH) { if (!s.dishes[d.name] || d.g > s.grade) continue;
-      for (const m of d.mats) { if (SPICE.has(m) || (s.orders || []).some(o => o.m === m)) continue; if ((s.orders || []).length >= max) return; orderPlace(s, m, t); } }
+      for (const m of d.mats) { if ((SPICE.has(m) && E.shopRate) || (s.orders || []).some(o => o.m === m)) continue; if ((s.orders || []).length >= max) return; orderPlace(s, m, t); } }
   }
   function consignBuy(s, i) {   // 2026-11-18 E4-4: 위탁 보관 중인 소재를 지금 매입가(판매가 × 70% [임시])로 사들여 창고로
     const e = (s.consign || [])[i]; if (!e) return { ok: false, why: '위탁품이 없습니다' };
@@ -680,8 +680,8 @@
       const waste = L0.filter(b => b.n > 0 && s.week - b.w > 1).reduce((a, b) => a + b.n, 0); if (waste) s.month.waste = (s.month.waste || 0) + waste;
       const mu = menuOf(s, d); let have = L.reduce((a, b) => a + b.n, 0);
       while (have < mu.prep) {
-        const need = d.mats.filter(m => !(s.mats[m] > 0));
-        if (need.some(m => !SPICE.has(m))) { s.month.soldOut = (s.month.soldOut || 0) + 1; break; }   // 주재료가 없으면 품절
+        const keep = s.cfg.econ.mealKeep || 0, need = d.mats.filter(m => !(s.mats[m] > keep));   // mealKeep: 식당이 남겨 두는 재료 수 (납품 리퀘스트용) [임시]
+        if (need.some(m => !SPICE.has(m)) || (need.length && !s.cfg.econ.shopRate)) { s.month.soldOut = (s.month.soldOut || 0) + 1; break; }   // 재료가 없으면 품절 (결정 46: shopRate 0 = 잡화 상인 없음, 양념도 상시 발주로)
         const cost = need.reduce((a, m) => a + shopPrice(s, m), 0); if (cost > s.gold) break;
         for (const m of need) { const c = shopPrice(s, m); s.gold -= c; s.month.shop = (s.month.shop || 0) - c; s.mats[m] = (s.mats[m] || 0) + 1; }
         for (const m of d.mats) s.mats[m]--;

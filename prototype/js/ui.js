@@ -724,7 +724,7 @@
       R += `<div class="od-tot">1개 값 <b>${fmt(p)}G</b> <small>(판매가 ${fmt(Gm.matSellPrice(s, odSel))}G × ${odM})</small> · 게시판 쏠림 <b>${Math.round(((E.orderBiasOpt || [])[bi] != null ? E.orderBiasOpt[bi] : (E.orderBias || 0)) * 100)}%</b><br><small>미리 내는 돈 없음 · 들어올 때마다 금고에서 지급 · 금고 ${fmt(Math.floor(s.gold))}G</small></div>`;
       R += `<div class="od-go"><button class="od-btn go" data-oplace="1" ${why ? 'disabled' : ''}>상시 발주 걸기</button>${why ? `<small class="od-why">${esc(why)}</small>` : ''}</div>`;
     }
-    R += '<div class="od-note">식당이 요리를 만들 때 재료를 쓰므로, 메뉴에 올린 요리의 재료를 걸어 두면 의뢰가 끊이지 않고 올라옵니다. 양념(소금 · 향신료 · 신선한 물 · 밀가루)은 모자라면 잡화 상인에게서 삽니다.</div>';
+    R += `<div class="od-note">식당이 요리를 만들 때 재료를 쓰므로, 메뉴에 올린 요리의 재료를 걸어 두면 의뢰가 끊이지 않고 올라옵니다.${s.cfg.econ.shopRate ? ' 양념(소금 · 향신료 · 신선한 물 · 밀가루)은 모자라면 잡화 상인에게서 삽니다.' : ' 양념(소금 · 향신료 · 신선한 물 · 밀가루)은 의뢰에서 드물게 나오지만, 발주를 걸면 뽑기마다 쏠림 비율만큼 양념이 나옵니다.'}</div>`;
     return `<div class="bk2 bk-od"><section class="bk-l">${L}</section><section class="bk-r">${R}</section></div>`;
   }
   function orderClick(e) {
@@ -1589,12 +1589,12 @@
     function dishFront(d) { return `<div class="kdish" data-dt="${esc(d.name)}"><span class="pic"><img src="assets/${d.icon}" alt=""></span><div><b>${d.name}</b><div class="rc">${d.mats.map(m => `<span class="ux-slot" data-mt="${m}" data-g="${GR.indexOf((MATS[m] || {}).grade)}">${matImg(MATS[m] || {})}</span>`).join('<span class="plus">+</span>')}<span class="kfx">${esc(d.effect)}</span></div>${s.cfg.econ.mealCook && s.dishes[d.name] ? kMenuRow(d) : ''}</div></div>`; }
     // 2026-11-19 V4 1단계 (결정 37 · 39): 재고 그릇 · 1그릇 원가 · 가격(1G 단위) · 마진 · 한 주 준비량
     function kMenuRow(d) { const mu = Gm.menuOf(s, d), b = Gm.dishBase(s, d), cost = Gm.dishCost(s, d), st = Gm.stockOf(s, d), k = Gm.priceK(s, d, mu.price), mg = mu.price - cost;
-      const spice = d.mats.filter(m => Gm.SPICE.has(m) && !((s.mats || {})[m] > 0)), lack = d.mats.filter(m => !Gm.SPICE.has(m) && !((s.mats || {})[m] > 0));
-      return `<div class="kmr"><span class="kst${st ? '' : ' out'}">${st ? `재고 <b>${st}</b>그릇` : '품절'}</span><span>재료 1세트 = <b>${d.serv}</b>그릇 · 1그릇 원가 <b>${(Math.round(cost * 10) / 10)}G</b></span>${lack.length ? `<span class="kwarn">재료 없음: ${lack.map(m => esc((MATS[m] || {}).name || m)).join(' · ')}</span>` : spice.length ? `<span class="kshop">양념은 잡화 상인에게서 ${spice.map(m => `${esc((MATS[m] || {}).name || m)} ${Gm.shopPrice(s, m)}G`).join(' · ')}</span>` : ''}</div>`
+      const shop = !!s.cfg.econ.shopRate, kp = s.cfg.econ.mealKeep || 0, spice = shop ? d.mats.filter(m => Gm.SPICE.has(m) && !((s.mats || {})[m] > kp)) : [], lack = d.mats.filter(m => (!shop || !Gm.SPICE.has(m)) && !((s.mats || {})[m] > kp));   // 결정 46: 잡화 상인이 없으면 양념도 '재료 없음' (상시 발주로)
+      return `<div class="kmr"><span class="kst${st ? '' : ' out'}">${st ? `재고 <b>${st}</b>그릇` : '품절'}</span><span>재료 1세트 = <b>${d.serv}</b>그릇 · 1그릇 원가 <b>${(Math.round(cost * 10) / 10)}G</b></span>${lack.length ? `<span class="kwarn">재료 없음: ${lack.map(m => esc((MATS[m] || {}).name || m)).join(' · ')} <small>(길드 발주로 모으기)</small></span>` : spice.length ? `<span class="kshop">양념은 잡화 상인에게서 ${spice.map(m => `${esc((MATS[m] || {}).name || m)} ${Gm.shopPrice(s, m)}G`).join(' · ')}</span>` : ''}</div>`
         + `<div class="kmr"><span class="kpr">가격 <button data-kpr="${esc(d.name)}:-5">−5</button><button data-kpr="${esc(d.name)}:-1">−1</button><b>${mu.price}G</b><button data-kpr="${esc(d.name)}:1">+1</button><button data-kpr="${esc(d.name)}:5">+5</button>${mu.price !== b ? `<button class="rs" data-kpr="${esc(d.name)}:base" title="기준가로">기준 ${b}G</button>` : ''}</span><span>마진 <b class="${mg < 0 ? 'ux-minus' : 'ux-plus'}">${Math.round(mg * 10) / 10}G</b> · 손님 ×${(Math.round(k * 100) / 100)}</span><span class="kpp">한 주 준비 <button data-kpp="${esc(d.name)}:-1" ${mu.prep <= 0 ? 'disabled' : ''}>−</button><b>${mu.prep}</b><button data-kpp="${esc(d.name)}:1" ${mu.prep >= 10 ? 'disabled' : ''}>+</button>그릇</span></div>`; }
     return `<div class="kitchen"><div class="kpan"><div class="ux-h">소재 보관함 <small>음식 소재</small></div><div class="kpantry">${pantry}</div></div>
       <div class="kpan"><div class="ux-h">조리대</div><div class="kslots">${slots}</div>${pot}<button class="ux-btn kcook" data-kcook="1" ${kSel.length && !kAnim ? '' : 'disabled'}>만들어 보기</button>${msg}</div>
-      <div class="kpan wide"><div class="ux-h">메뉴판${s.cfg.econ.mealCook ? ' <small>팔 때마다 재료를 씁니다 · 매주 준비량만큼 만들고 남은 그릇은 다음 주까지 팝니다</small>' : ''}</div><div class="kmenuwrap">${menu}</div></div></div>`;
+      <div class="kpan wide"><div class="ux-h">메뉴판${s.cfg.econ.mealCook ? ` <small>팔 때마다 재료를 씁니다 · 매주 준비량만큼 만들고 남은 그릇은 다음 주까지 팝니다${s.cfg.econ.mealKeep ? ` · 납품용으로 재료를 ${s.cfg.econ.mealKeep}개씩 남겨 둡니다` : ''}</small>` : ''}</div><div class="kmenuwrap">${menu}</div></div></div>`;
   }
   // 길드 기록: 월 단위 카드(머리 = 그 달 결산) · 종류 아이콘 · 필터. 'sys'(버튼 반응)·'debug'는 기록에서 숨김
   const LK = {   // 종류 → [아이콘 글자, 이름, 필터 묶음]

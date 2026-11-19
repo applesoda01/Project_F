@@ -45,7 +45,7 @@
 "econ.mealBuyRate": 3,
 "econ.mealBonus": 7,
 "econ.mealUnlockChance": 0,
-"econ.mealPerDish": 0, "econ.mealMode": 0, "econ.mealCook": 0, "econ.mealPrep": 0, "econ.mealPK": 0, "econ.mealPMin": 0, "econ.mealPMax": 0, "econ.shopRate": 0, "econ.orderMode": 0, "econ.orderMultOpt": 3, "econ.orderBiasOpt": 3, "econ.orderTarget": 0, "econ.orderFirst": 0,
+"econ.mealPerDish": 0, "econ.mealMode": 0, "econ.mealCook": 0, "econ.mealPrep": 0, "econ.mealKeep": 0, "econ.mealPK": 0, "econ.mealPMin": 0, "econ.mealPMax": 0, "econ.shopRate": 0, "econ.orderMode": 0, "econ.orderMultOpt": 3, "econ.orderBiasOpt": 3, "econ.orderTarget": 0, "econ.orderFirst": 0, "econ.orderDup": 0,
 "gear.weaponPrice": 7,
 "gear.setMult": 0,
 "gear.weaponStat": 7,
