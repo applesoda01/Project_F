@@ -652,7 +652,7 @@
       const sk = d.n ? `<span class="skulls" title="위험도">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}</span>` : '';
       const foe = d.n ? (intel ? (fb === 'up' ? '<i class="foe up" title="강한 무리">▲</i>' : fb === 'down' ? '<i class="foe down" title="약한 무리">▼</i>' : '') : '<i class="foe unk" title="정보실이 있으면 알 수 있음">?</i>') : '';
       cards += `<div class="qcard age${ageOf(q)}${q.x2 ? ' x2' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q)}${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}</div>
-        <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><button class="ux-btn danger sm" data-wd="${q.id}">취소</button></div>
+        <div class="r2">${sk}${foe}${q.party ? `<em class="qparty" title="파티 의뢰 — 적이 많아 ${q.party}명 이상이 함께 가야 이길 만해요">파티 ${q.party}+</em>` : ''}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><button class="ux-btn danger sm" data-wd="${q.id}">취소</button></div>
         <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
     }
     if (!s.board.length) cards = '<div class="ux-empty qb-none">게시된 의뢰가 없습니다. 의뢰는 매주 들어옵니다.</div>';
@@ -694,7 +694,7 @@
       const foe = d.n ? (intel ? (fb === 'up' ? '<i class="foe up" title="강한 무리">▲</i>' : fb === 'down' ? '<i class="foe down" title="약한 무리">▼</i>' : '') : '<i class="foe unk" title="정보실이 있으면 알 수 있음">?</i>') : '';
       const om = T && (s.orders || []).length ? (T.rewards || []).find(r => r.p >= 30 && s.orders.some(o => o.m === r.m && o.got < o.n)) : null;   // 2026-11-18 V2 6단계: 발주 소재가 나오는 의뢰
       L += `<div class="qcard bk age${ageOf(q)}${q.x2 ? ' x2' : ''}${q.id === qSel ? ' sel' : ''}${om ? ' od-hit' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q)}${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}${(() => { const f = Math.round(Gm.questFee(s, q) * 100); return `<span class="mk5-chip ${f >= 20 ? 'hi' : f >= 15 ? 'mid' : ''}" title="길드가 떼는 수수료${q.fee != null ? ' (이 의뢰만 따로 정함)' : ''}">수수료 ${f}%</span>`; })()}${om ? `<span class="od-chip" title="발주 · ${esc((MATS[om.m] || { name: '' }).name)}">발주</span>` : ''}</div>
-        <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><span class="dlw${Gm.expireWeeks(s) - (s.week - q.posted) <= 1 ? ' low' : ''}">${Gm.expireWeeks(s) - (s.week - q.posted)}주</span></div>
+        <div class="r2">${sk}${foe}${q.party ? `<em class="qparty" title="파티 의뢰 — 적이 많아 ${q.party}명 이상이 함께 가야 이길 만해요">파티 ${q.party}+</em>` : ''}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><span class="dlw${Gm.expireWeeks(s) - (s.week - q.posted) <= 1 ? ' low' : ''}">${Gm.expireWeeks(s) - (s.week - q.posted)}주</span></div>
         <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
     }
     for (let k = s.board.length; k < Math.min(cap, 14); k++) L += '<div class="bkq-slot"></div>';   // 빈 칸 = 점선 자리 (한 쪽에 보이는 14칸까지)

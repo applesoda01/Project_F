@@ -706,3 +706,6 @@ span.kslot{cursor:default}
 #rqdLay .rqd-prog{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:4px;font-size:15px;color:#5a6a48}#rqdLay .rqd-prog b{color:#2f4a26}
 #rqdLay .rqd-prog i{display:block;width:260px;height:8px;border-radius:4px;background:rgba(60,90,50,.15);overflow:hidden}#rqdLay .rqd-prog u{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#d9a441,#e9c062)}
 #rqdLay .gup-bar{position:absolute;left:40px;right:40px;bottom:14px;height:4px;border-radius:2px;background:rgba(63,122,58,.55);transform-origin:left center;animation:gupBar linear forwards}
+/* 2026-11-19 파티 의뢰 꼬리표 (게시판 카드 둘째 줄, 사용자 확정) */
+.qparty{font-style:normal;font:700 12px/1 var(--hf);color:#2f4f7a;background:#e4edf8;border:1.5px solid #6f8fbf;border-radius:999px;padding:2px 6px 1px;margin:0 4px;white-space:nowrap;flex:none}
+.qcard .r2 .dlw{white-space:nowrap}
