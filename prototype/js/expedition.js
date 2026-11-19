@@ -241,7 +241,8 @@
       if (x.t === 'hurt') { if (fx) { const live = v.enemies.filter(m => m.hp > 0 && m.sd); if (live.length) { const m = live[Math.floor(Math.random() * live.length)]; m.act = 'attack'; m.mt = 0; } } a.hp = x.hp; if (fx && a.hp > 0) vTalk(v, 'battle_hit', other(v, a), a); if (fx) { a.flash = 0.3; if (x.d != null) v.nums.push({ who: a, txt: String(x.d), t: 0, k: numK(v, a), ox: Math.random() * 6 - 3 }); } }
       else if (x.t === 'miss') { if (fx) a.dodge = 0.3; }
       else if (x.t === 'heal' || x.t === 'potion') { if (x.hp != null) a.hp = x.hp; if (fx && x.t === 'heal' && x.by) { const by = A(x.by); if (by && !by.down) { by.atk = ATK_T; by.t = 0.15; skPop(v, by, 'heal'); } } if (fx && x.t === 'heal' && x.by && x.by !== x.to) vTalk(v, 'battle_heal', A(x.by), a); if (fx) { a.glow = 0.5; if (x.d != null && x.d > 0) v.nums.push({ who: a, txt: '+' + x.d, heal: true, t: 0, k: numK(v, a), ox: Math.random() * 6 - 3 }); for (let k = 0; k < 5; k++) v.sparks.push({ x: a.x + (Math.random() * 20 - 10), y: SURF - 40 - Math.random() * 20, vy: -20 - Math.random() * 20, life: 0.6, c: '#9dffb0' }); } }
-      else if (x.t === 'down') { a.hp = 0; a.down = true; a.anim = 'fall'; a.t = 0; } }
+      else if (x.t === 'down') { a.hp = 0; a.down = true; a.anim = 'fall'; a.t = 0; }
+      else if (x.t === 'flee') { a.down = true; a.anim = 'fall'; a.t = 0; if (fx) v.nums.push({ who: a, txt: x.why === 'selfish' ? '후퇴!' : '도망!', t: 0, k: numK(v, a), ox: 0 }); } }   // 2026-11-20 버릇(겁쟁이 · 이기적) 혼자 물러남 — [임시 표현] 쓰러짐 모션 + 글자, 아침 확인 대기
   }
   function drawScene(dt) {
     const v = view, e = entries().find(o => o.id === v.id); if (!e) { close(); return; }

@@ -64,6 +64,16 @@
   }
   function log(s, text, kind, extra) { s.log.unshift(Object.assign({ week: s.week, text, kind: kind || 'info' }, extra || {})); if (s.log.length > 600) s.log.pop(); }   // 기록 600개 = 약 2년치 (길드 기록 팝업)
   const effN = (s, f) => s.eff[f] || 0;
+  // ---------- 버릇 (2026-11-20 야간 작업 · 규칙은 combat.js QK, 수치 balance.csv quirk, 글 data/quirks.csv) ----------
+  const QKr = () => (CB && CB.QK) || null;
+  const qkName = k => { const d = QKr() && QKr().byKey(k); return d ? d.name : k; };
+  const qkRisk = (s, a, p) => QKr() ? QKr().risk(s.cfg.quirk, a, s.week, p) : 0;
+  const rivalHere = (s, a) => s.advs.some(b => b !== a && b.alive && b.grade === a.grade);
+  function qkLog(s, a, ev, text, extra) {   // 버릇이 터진 일: 기록 한 줄 + s.quirkLog(측정 · 대사용, 최근 200개)
+    (s.quirkLog = s.quirkLog || []).unshift(Object.assign({ w: s.week, id: a.id, k: a.quirk, ev }, extra || {})); if (s.quirkLog.length > 200) s.quirkLog.length = 200;
+    s.quirkN = s.quirkN || {}; s.quirkN[ev] = (s.quirkN[ev] || 0) + 1;
+    if (text) log(s, text, 'quirk', { who: [a.name], qk: a.quirk, qev: ev });
+  }
   const popStage = s => { let k = 0; for (const t of s.cfg.town.stages) if (s.pop >= t) k++; return k; };
   // ---------- 마을 민가 · 인구 (2026-11-13 docs/design/town_houses_v1.md) ----------
   // 집 수는 인구가 정함: 인구가 지금 집들의 수용 합을 넘으면 해금된 민가 자리에 1레벨(초가) 집이 생김.
@@ -149,8 +159,9 @@
       state: 'away', until: 0, joined: s.week, alive: true, done: 0,
       cls1: CLASS1[core], line: [core], fin: false, promoCool: 0, skills: [{ line: core, form: CLASS1[core] }], career: [{ week: s.week, text: '길드에 처음 옴' }]
     };
+    if (!o.home && QKr()) a.quirk = QKr().roll(s.R, a, s.cfg.quirk);   // 2026-11-20 버릇: 새로 오는 모험가의 30% [임시] (창립 · 튜토리얼 모험가는 없음). 영입할 때 공개 (사용자 결정)
     s.advs.push(a);
-    if (!o.quiet) log(s, `${a.cls} ${J(a.name, '이', '가')} 길드를 처음 찾아왔습니다.`, 'arrive', { who: [a.name] });
+    if (!o.quiet) log(s, `${a.cls} ${J(a.name, '이', '가')} 길드를 처음 찾아왔습니다.${a.quirk ? ` (버릇: ${qkName(a.quirk)})` : ''}`, 'arrive', { who: [a.name] });
     return a;
   }
 
@@ -215,7 +226,7 @@
       }
     }
     if (lv0 != null && s.qlv && s.qlv[q.tid] && s.qlv[q.tid].lv > lv0) for (const a of party) remember(s, a, 'qlv', { q: qname, lv: s.qlv[q.tid].lv, mon });
-    for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) { const a = party[i], b = party[j]; if (a && b) relAdd(s, a.id, b.id, ok ? relStep(a, b) : MEM.relFail); }
+    for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) { const a = party[i], b = party[j]; if (a && b) relAdd(s, a.id, b.id, ok ? relStep(a, b) + ((a.quirk === 'hot' || b.quirk === 'hot') && s.cfg.quirk ? s.cfg.quirk.hotRel : 0) : MEM.relFail); }   // 2026-11-20 다혈질: 친밀도가 오를 때 + 더
   }
 
   // 의뢰 레벨 (2026-11-18 결정 35 D안): 같은 게시판 의뢰를 qlv.need번 성공하면 Lv+1 (상한 qlv.max). 레벨당 적 · 판정 +foe, 보상 금화 · 소재 +pay.
@@ -268,7 +279,7 @@
   function successP(s, party, q, sm) {   // sm(a, k): 요리 능력치 배율 (없으면 1)
     const Q = s.cfg.quest; let F = 0, bottleneck = false;
     for (const k of q.req) {
-      const vals = party.map(a => finalStat(s, a, k) * (sm ? sm(a, k) : 1) * (k === a.core ? 1 + [0.03, 0.06, 0.10][a.stage - 1] : 1)).sort((x, y) => y - x);
+      const vals = party.map(a => (finalStat(s, a, k) + (a.quirk === 'coward' && (q.type === 2 || q.type === 4) ? s.cfg.quirk.cowardStat : 0)) * (sm ? sm(a, k) : 1) * (k === a.core ? 1 + [0.03, 0.06, 0.10][a.stage - 1] : 1)).sort((x, y) => y - x);   // 2026-11-20 겁쟁이: 조사 · 탐사 판정 +
       const P0 = vals[0] + Q.partyAssist * vals.slice(1).reduce((x, y) => x + y, 0);
       const fill = Math.min(P0 / q.r, 1.5); if (fill < 0.5) bottleneck = true; F += fill;
     }
@@ -507,8 +518,9 @@
   function dropMats(s, q, party) {
     const T = QBYID[q.tid]; if (!T) return;
     const ids = (party || []).map(a => a.id); let paid = 0;
+    const om = s.cfg.quirk && (party || []).some(a => a.quirk === 'omen') && !QKr().rainy(s.seed, s.week) ? s.cfg.quirk.omenRare : 0;   // 2026-11-20 미신가: 맑은 달 희귀 소재(30% 미만) +%p
     for (const r of drawList(s, q, T)) {
-      if (s.R() * 100 >= r.p) continue;
+      if (s.R() * 100 >= r.p + (om && r.p < 30 ? om : 0)) continue;
       { const o = (s.orders || []).find(x => x.m === r.m && x.got < x.n);   // 결정 25: 발주 중인 소재 → 걸어 둔 돈에서 1개 값을 파티에게, 창고로 (금고는 발주 때 이미 냄)
         if (o && ids.length) { o.got++; s.mats[r.m] = (s.mats[r.m] || 0) + 1; payParty(s, ids, o.price); buyNote(s, r.m, ids, o.price, 1, true); if (!s.knownMats[r.m]) s.knownMats[r.m] = true;
           if (o.got >= o.n) { const m = MAT[r.m]; log(s, `발주한 ${m ? m.name : '소재'} ${o.n}개가 다 모였습니다.`, 'grow'); s.orders = s.orders.filter(x => x !== o); }
@@ -722,15 +734,18 @@
     for (const a of s.advs) { if (!a.alive || a.state === 'quest') continue; if (a.state === 'injured' && s.week < a.until) continue; a.state = present(s, a) || reqReserved(s, a) ? 'town' : 'away'; if (a.state === 'town') a.lastSeen = s.week; }   // lastSeen: 마지막으로 길드에 온 주
     if (mainBlocked(s)) return;   // 침공 1주 전: 의뢰 출발 금지 (2026-11-16)
     const idle = s.advs.filter(a => a.state === 'town' && !reqReserved(s, a));   // 지명 예약자는 게시판 의뢰를 받지 않음
+    const QC = s.cfg.quirk;
     for (const a of idle) {
       if (a.state !== 'town') continue;
+      if (a.quirk && QC && qkSkip(s, a)) continue;   // 2026-11-20 버릇: 술꾼 늦잠 · 미신가 비 → 이번 주 게시판 의뢰를 맡지 않음
       const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
-      const hi = Math.min(s.grade, a.grade + range[1]), lo = Math.min(hi, Math.max(0, a.grade + range[0]));   // 2026-11-12: 길드보다 1등급 높은 모험가도 길드 최고 등급 의뢰는 고름
-      const th = s.cfg.adv.departTh[a.risk];
+      let hi = Math.min(s.grade, a.grade + range[1]), lo = Math.min(hi, Math.max(0, a.grade + range[0]));   // 2026-11-12: 길드보다 1등급 높은 모험가도 길드 최고 등급 의뢰는 고름
+      let th = s.cfg.adv.departTh[a.risk], sneak = false;
+      if (a.quirk === 'bluff' && QC && s.R() < qkRisk(s, a, QC.bluffSneak)) { sneak = true; hi = Math.min(s.grade, hi + 1); th -= QC.bluffTh; }   // 허세꾼: 가끔 높은 등급 · 낮은 기준으로 몰래 고름
       const cands = s.board.filter(q => q.g >= lo && q.g <= hi && !cPastEnd(s, a, q.weeks || s.cfg.quest.weeks[q.g])).sort(pickOrder(s, a));   // 결정 9: 계약 끝을 넘는 의뢰는 고르지 않음
       const needy = needsMoney(s, a), base0 = (s.cfg.econ.feeOpt || [0.1])[0], K = s.cfg.econ.restK || 0;
       for (const q of cands) {
-        if (needy && K > 0) { const f = questFee(s, q); if (f > base0 + 1e-9 && s.R() < Math.min(1, (f - base0) / base0 * K)) continue; }   // 2026-11-17 결정 22: 돈이 필요한 모험가는 수수료가 기본보다 높으면 확률로 거름(15% → 25%, 20% → 50%), 다 거르면 이번 주는 쉼
+        if (needy && K > 0 && a.quirk !== 'selfish') { const f = questFee(s, q); if (f > base0 + 1e-9 && s.R() < Math.min(1, (f - base0) / base0 * K)) continue; }   // 2026-11-17 결정 22: 돈이 필요한 모험가는 수수료가 기본보다 높으면 확률로 거름(15% → 25%, 20% → 50%), 다 거르면 이번 주는 쉼
         let party = [a];
         let pp = perceived(s, a, questP(s, party, q));
         if (pp < s.cfg.adv.seekTh[a.social]) {
@@ -744,14 +759,24 @@
           pp = perceived(s, a, questP(s, party, q));
         }
         if (pp < th) continue;
+        { const cw = QC && pp < 0.7 ? party.find(m => m.quirk === 'coward' && s.R() < qkRisk(s, m, QC.cowardQuit)) : null;   // 겁쟁이: 「팽팽」 · 「위험」 의뢰는 출발 직전에 빠짐 → 이번 주 출발 안 함
+          if (cw) { qkLog(s, cw, 'cowardQuit', `${J(cw.name, '이', '가')} 「${q.name || qn(q)}」 출발 직전에 빠졌습니다. (겁쟁이 · 이번 주는 출발하지 않음)`); break; } }
         s.board.splice(s.board.indexOf(q), 1);
         launchParty(s, q, party, pp);
+        if (sneak) qkLog(s, a, 'sneak', `${J(a.name, '이', '가')} 몰래 ${qn(q)} 의뢰를 골라 떠났습니다. (허세꾼)`);
         break;
       }
     }
     // 술 (2026-11-12): 이번 주 마을에 남은 모험가가 씀씀이 성향별 확률(식사와 같은 econ.mealBuyRate)로 1잔. 길드 마진 econ.drinkMargin[길드 등급]
     const DM = E.drinkMargin || [2, 3, 4, 5, 6, 7, 8]; s.drinks = [];
-    for (const a of s.advs) if (a.alive && a.state === 'town' && s.R() < E.mealBuyRate[a.spend]) { const m = (DM[s.grade] || DM[0]) + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += m; s.month.tavern += m; s.month.drinks = (s.month.drinks || 0) + 1; s.drinks.push(a.id); }
+    for (const a of s.advs) if (a.alive && a.state === 'town' && s.R() < Math.min(1, E.mealBuyRate[a.spend] * (a.quirk === 'drunk' && QC ? QC.drunkDrink : 1))) { const m = (DM[s.grade] || DM[0]) + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += m; s.month.tavern += m; s.month.drinks = (s.month.drinks || 0) + 1; s.drinks.push(a.id); }
+    if (QC) for (const id of s.drinks) { const a = s.advs.find(x => x.id === id); if (!a || a.quirk !== 'drunk' || a.qkMo === Math.floor(s.week / WPM)) continue; const b = s.advs.find(x => x.id !== id && s.drinks.includes(x.id)); if (!b) continue; a.qkMo = Math.floor(s.week / WPM); b.attach = Math.min(100, b.attach + QC.drunkAttach); }   // 2026-11-20 술꾼: 함께 마신 동료 애착 + (한 달 1번)
+  }
+  function qkSkip(s, a) {   // 이번 주 게시판 의뢰를 맡지 않는 버릇 (리스크 · 보호 구간 뒤)
+    const QC = s.cfg.quirk;
+    if (a.quirk === 'drunk' && (s.drinks || []).includes(a.id) && s.R() < qkRisk(s, a, QC.drunkSleep)) { qkLog(s, a, 'oversleep', `${J(a.name, '이', '가')} 지난밤 주점에서 늦게까지 마셔 늦잠을 잤습니다. (술꾼 · 이번 주는 쉼)`); return true; }
+    if (a.quirk === 'omen' && QKr().rainy(s.seed, s.week) && s.R() < qkRisk(s, a, QC.omenRain)) { qkLog(s, a, 'omenWait', `${J(a.name, '이', '가')} 비가 그칠 때까지 출발을 미뤘습니다. (미신가)`); return true; }
+    return false;
   }
   function launchParty(s, q, party, pp) {   // 2026-11-16: 게시판 출발과 지명(리퀘스트) 출발이 같은 처리를 씀
     const Q = s.cfg.quest, E = s.cfg.econ;
@@ -763,30 +788,41 @@
         if (dish) for (const m of party) {
           if (s.seatUsed >= seatsOf(s)) break;   // 2026-11-12: 앉을 자리(테이블 세트 × 2)만큼만 이번 주에 식사 (guild_interior.md 10-3)
           const price = Q.reward[dish.g] * E.mealPriceRate;
-          if (m.wallet >= price && s.R() < E.mealBuyRate[m.spend]) { s.seatUsed++; m.wallet -= price; const inc = price * E.mealMargin + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += inc; s.month.meal += inc; eaters++; ate.add(m.id); const md = s.month.dishes = s.month.dishes || {}; md[dish.name] = (md[dish.name] || 0) + 1; }
+          if (m.wallet >= price && s.R() < Math.min(1, E.mealBuyRate[m.spend] * (m.quirk === 'glutton' ? s.cfg.quirk.glutMeal : 1))) { s.seatUsed++; m.wallet -= price; const inc = price * E.mealMargin + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += inc; s.month.meal += inc; eaters++; ate.add(m.id); const md = s.month.dishes = s.month.dishes || {}; md[dish.name] = (md[dish.name] || 0) + 1; }
         }
         // 식사 효과 (C안): ① 발견한 요리 하나당 +2% (비전투 성공 확률·전투 공격력, 먹은 비율만큼) ② 먹은 요리의 능력치 +n% (먹은 사람만)
         // 2026-11-19 사용자 결정 (econ.mealMode 1): 요리 = 이번 의뢰 동안의 버프 — 먹은 사람의 요리 능력치 +val(고정값), 발견 수 보너스 없음. 의뢰가 끝나면 사라짐. 0 = 예전 C안
         const mealB = dish && !E.mealMode ? (eaters / party.length) * E.mealPerDish * Object.keys(s.dishes).length : 0;
-        const sm = dish && dish.stats.length ? (a, k) => ate.has(a.id) && dish.stats.includes(+k) ? (E.mealMode ? 1 + dish.val / Math.max(1, finalStat(s, a, +k)) : 1 + dish.pct) : 1 : null;
+        const gb = a => a.quirk === 'glutton' ? s.cfg.quirk.glutBuff : 1;   // 2026-11-20 대식가: 요리 버프 × glutBuff
+        let sm = dish && dish.stats.length ? (a, k) => ate.has(a.id) && dish.stats.includes(+k) ? (E.mealMode ? 1 + dish.val * gb(a) / Math.max(1, finalStat(s, a, +k)) : 1 + dish.pct * gb(a)) : 1 : null;
+        const QC = s.cfg.quirk, qkEv = [];   // 2026-11-20 버릇: 이번 원정에서 터진 일 (귀환 때 친밀도 · 기록)
+        if (QC && party.some(m => m.quirk === 'bluff')) { s.rel = s.rel || {}; for (const b of party) if (b.quirk === 'bluff') for (const m of party) if (m !== b && s.rel[relKey(b.id, m.id)] == null && m.joined >= s.week - 8) m.attach = Math.min(100, m.attach + QC.bluffNew); }   // 허세꾼: 처음 같은 파티가 된 신입(온 지 8주 안) 애착 +
         const weeks = q.weeks || Q.weeks[q.g];              // 편집기에서 기간을 바꾼 의뢰는 그 값
         let p, fight = null;
         if (isCombat(q)) {
           // 전투 의뢰: 출발할 때 물약을 사고 전투를 미리 계산해 둠 (귀환할 때 결과 반영, 미니 뷰가 기록을 재생)
           const C = CB.C, price = C.potionPrice[Math.min(q.g, s.grade)];
           for (const m of party) { const want = C.potionCarry[m.spend] - (s.R() < 0.5 ? 1 : 0), p0 = m.pots; while (m.pots < want && m.wallet >= price) { m.wallet -= price; m.pots++; } if (m.pots > p0 && (s.townUnlock || {}).potion) { (s.potLog = s.potLog || []).unshift({ w: s.week, id: m.id, n: m.pots - p0, price }); if (s.potLog.length > 30) s.potLog.length = 30; } }   // 2026-11-19 물약 상점 손님 기록 (상점이 생긴 뒤)
-          const r = CB.fight(party.map(m => unitOf(s, m, mealB, sm)), q.enemies, q.g, s.R, party[0].risk, true);
+          const U = party.map(m => unitOf(s, m, mealB, sm));
+          const pr = QKr() ? QKr().prep(U, { Qc: QC, week: s.week, R: s.R, p: pp, risk: party[0].risk, ate: a => ate.has(a.id), dish: !!dish, bad: (a, b) => relTier(relOf(s, a.id, b.id)) === 'bad', pal: (a, b) => relTier(relOf(s, a.id, b.id)) === 'good' }) : { ev: [], risk: party[0].risk };
+          qkEv.push(...pr.ev);
+          const r = CB.fight(U, q.enemies, q.g, s.R, pr.risk, true);
           fight = { win: r.win, result: r.result, rounds: r.rounds, log: r.log.map(e => e.hp != null ? Object.assign({}, e, { hp: Math.round(e.hp) }) : e),
-            units: r.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), maxMp: Math.round(u.maxMp || 0), hp: Math.round(u.hp), down: u.down, pots: u.pots, used: u.used })),
+            units: r.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), maxMp: Math.round(u.maxMp || 0), hp: Math.round(u.hp), down: u.down, pots: u.pots, used: u.used, fled: u.fled || null, cov: u.covered || 0 })),
             enemies: q.enemies.map(e => ({ name: e.name, mon: e.mon, boss: e.boss, maxHp: Math.round(e.hp), atk: Math.round(e.atk) })) };
           p = r.win ? 1 : 0;
-        } else p = Math.min(0.97, successP(s, party, q, sm) * (1 + mealB));
+        } else {
+          if (QC && dish) for (const m of party) if (m.quirk === 'glutton' && !ate.has(m.id) && s.R() < qkRisk(s, m, QC.glutHunger)) { qkEv.push({ k: 'hunger', id: m.id }); const s0 = sm, hid = m.id; sm = (a, k) => (s0 ? s0(a, k) : 1) * (a.id === hid ? QC.glutHungerMul : 1); }   // 대식가 배고픔 (비전투: 판정 능력치 ×)
+          p = Math.min(0.97, successP(s, party, q, sm) * (1 + mealB));
+        }
         // 비전투 의뢰도 결과를 출발할 때 정해 둠 (미니 뷰가 귀환 전에 결과 장면을 보여 줌). rate = 출발 때 예상 성공률(위험도 표시용)
         let ok = fight ? fight.win : s.R() < p, late = false; const rate = Math.round(pp * 100);
         { const L = s.cfg.late; if (L && L.on && !q.rq) { const pr = m => L.base + [0, 0.01, 0.04][m.spend] + [-0.01, 0, 0.03][m.social] + [-0.01, 0, 0.02][m.risk]; if (party.some(m => s.R() < Math.max(0, pr(m)))) { if (ok && L.soft) late = true; ok = false; } } }   /* 2026-11-18 결정 19 · 30: 늦장 = 기한을 넘겨 실패 (파티원마다 기본 late.base [임시] + 성향: 낭비 +4% · 사교적 +3% · 무모 +2% …), 늦장 실패는 명성 · 신뢰가 깎이지 않음. 리퀘스트 원정은 제외 */
         for (const m of party) { m.state = 'quest'; m.until = s.week + weeks; }
         party.forEach((m, i) => { const c = m.contract; if (!c || s.week < c.start || s.week > c.end) return; const used = Math.max(0, Math.floor(w0[i] - m.wallet)), back = Math.min(used, Math.max(0, c.sup - (c.supMonth || 0))); if (back > 0) { m.wallet += back; s.gold -= back; c.supMonth = (c.supMonth || 0) + back; ctLog(c, 'sup', back); s.month.csup = (s.month.csup || 0) - back; } });   // 금고 마이너스 허용(결정 7)
-        s.active.push({ late, uid: s.uidNext++, rates: party.map(m => rateOf(s, m, q)), q, party: party.map(m => m.id), p, ok, rate, start: s.week, weeks, back: s.week + weeks, ate: eaters, dish: dish && eaters ? dish.name : null, ateIds: [...ate], fight });
+        if (fight) for (const u of fight.units) if (u.fled) qkEv.push({ k: u.fled === 'selfish' ? 'selfFlee' : 'cowardFlee', id: u.id });
+        if (fight) for (const u of fight.units) if (u.cov) qkEv.push({ k: 'cover', id: u.id, n: u.cov });
+        s.active.push({ late, uid: s.uidNext++, rates: party.map(m => rateOf(s, m, q)), q, party: party.map(m => m.id), p, ok, rate, start: s.week, weeks, back: s.week + weeks, ate: eaters, dish: dish && eaters ? dish.name : null, ateIds: [...ate], fight, qk: qkEv.length ? qkEv : undefined });
         log(s, `${J(names(party), '이', '가')} ${qn(q)} ${q.rq ? '리퀘스트' : '의뢰'}를 맡아 떠났습니다.${eaters ? ` (출발 전 ${dish.name} ${eaters}명)` : ''}`, 'depart', { who: party.map(x => x.name) });
       }
     }
@@ -796,6 +832,18 @@
   function mealBuffOf(s, a) {
     const x = s.active.find(e => e.dish && e.party.includes(a.id) && (e.ateIds ? e.ateIds.includes(a.id) : true)); if (!x) return null;
     const d = DISH.find(z => z.name === x.dish); return d ? { name: d.name, icon: d.icon, effect: d.effect } : { name: x.dish, icon: '', effect: '' };
+  }
+  function qkReturn(s, x, party, ok) {
+    const QC = s.cfg.quirk || {}, by = id => party.find(m => m && m.id === id), qname = x.q.name || qn(x.q);
+    for (const e of x.qk) {
+      const a = by(e.id); if (!a) continue;
+      if (e.k === 'quarrel') { const b = by(e.with); if (b) relAdd(s, a.id, b.id, -QC.hotFightRel); qkLog(s, a, 'quarrel', `${J(a.name, '이', '가')} ${b ? J(b.name, '과', '와') : '동료와'} 「${qname}」에서 다퉜습니다. (다혈질 · 둘 다 공격 −${QC.hotFightAtk}, 친밀도 −${QC.hotFightRel})`, { with: e.with }); }
+      else if (e.k === 'selfFlee') { for (const b of party) if (b && b !== a) relAdd(s, a.id, b.id, -QC.selfishRel); qkLog(s, a, 'selfFlee', `${J(a.name, '이', '가')} 「${qname}」에서 동료를 두고 혼자 물러났습니다. (이기적 · 동료 친밀도 −${QC.selfishRel})`); }
+      else if (e.k === 'cowardFlee') qkLog(s, a, 'cowardFlee', `${J(a.name, '이', '가')} 「${qname}」에서 겁을 먹고 먼저 물러났습니다. (겁쟁이 · 부상 없음)`);
+      else if (e.k === 'hunger') qkLog(s, a, 'hunger', `${J(a.name, '이', '가')} 배가 고파 「${qname}」에서 힘을 못 썼습니다. (대식가 · 요리를 먹지 않고 출발)`);
+      else if (e.k === 'rush') qkLog(s, a, 'rush', `${J(a.name, '이', '가')} 라이벌에게 지지 않으려고 「${qname}」에서 무리했습니다. (경쟁심 · 후퇴선 ↓)`);
+      else if (e.k === 'cover') qkLog(s, a, 'cover', `${J(a.name, '이', '가')} 「${qname}」에서 위기에 빠진 동료를 감쌌습니다. (헌신)`, { n: e.n });
+    }
   }
   function returns(s) {
     const Q = s.cfg.quest, G = s.cfg.growth, A = s.cfg.adv, E = s.cfg.econ;
@@ -820,7 +868,7 @@
         party.forEach((a, i) => { a.wallet += sp.net[i]; (a.earn = a.earn || []).push({ w: s.week, b: sp.base[i] }); a.earn = a.earn.filter(e => e.w > s.week - (s.cfg.contract ? s.cfg.contract.look : 8)); });   // earn: 최근 기준액 기록 (계약 수락 판단, 결정 5)
         for (const a of party) {
           a.done++;
-          gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) + (hasDeco(s, 'map') ? DV.xp : 0));
+          gainXp(s, a, (G.xpBase * Math.pow(G.xpGradeMult, q.g) + (hasDeco(s, 'map') ? DV.xp : 0)) * (QKr() ? QKr().xpMul(s.cfg.quirk, a, rivalHere(s, a)) : 1));   // 2026-11-20 버릇: 이기적 · 경쟁심 경험치 +
           a.stats[q.type] = Math.min(G.statCap, a.stats[q.type] + Q.subGrowth);
           a.attach = Math.min(100, a.attach + A.attachSuccess + (hasDeco(s, 'plant') ? DV.attach : 0));
           if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
@@ -834,7 +882,7 @@
         log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 성공했습니다.${q.x2 ? ' (×2 보상)' : ''} 길드 수입 ${Math.round(fee + resale)}G.`, 'success', { who: party.map(x => x.name) });
       } else {
         s.stats.fail++; if (x.late) s.stats.late = (s.stats.late || 0) + 1; else { s.trust = Math.max(0, s.trust - (q.trustF != null ? q.trustF : s.cfg.quest.trustFail)); s.fame = Math.max(0, (s.fame || 0) - (q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g])); }   // 늦장 실패: 명성 · 신뢰 그대로 (결정 30)
-        for (const a of party) { gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate); if (a.contract && x.start >= a.contract.start && x.start <= a.contract.end) ctLog(a.contract, 'fail'); }
+        for (const a of party) { gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate * (QKr() ? QKr().xpMul(s.cfg.quirk, a, rivalHere(s, a)) : 1)); if (a.contract && x.start >= a.contract.start && x.start <= a.contract.end) ctLog(a.contract, 'fail'); }
         log(s, x.late ? `${J(names(party), '이', '가')} 늦장을 부리다 ${qn(q)} 의뢰의 기한을 넘겼습니다. (명성 · 신뢰는 그대로)` : `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 실패했습니다.`, 'fail', { who: party.map(x => x.name) });
       }
       for (const a of party) { a.state = 'town'; a.until = 0; }
@@ -842,15 +890,16 @@
       if (F) for (const u of F.units) {   // 전투의 대가: 물약 소모, 쓰러진 사람은 사망 판정 → 살면 부상
         const a = party.find(m => m && m.id === u.id); if (!a) continue;
         a.pots = u.pots; s.stats.potions += u.used;
-        if (!u.down) continue;
+        if (!u.down || u.fled) continue;   // 2026-11-20 버릇: 혼자 물러난 사람(겁쟁이 · 이기적)은 부상 없음
         s.stats.injuries++;
         const d = (q.death != null ? q.death : Q.deathBase[q.g]) * CB.C.deathRisk[a.risk] * (1 - 0.15 * Math.min(1, effN(s, '의무실')));
         if (s.R() < d) { a.alive = false; a.dead = true; a.state = 'dead'; s.stats.deaths++; log(s, `${J(a.name, '이', '가')} ${qn(q)} 의뢰에서 쓰러져 돌아오지 못했습니다.`, 'death', { who: [a.name] }); continue; }
-        const wk = Math.max(1, CB.C.injuryWeeks[q.g] - (s.built['의무실'] ? CB.C.injuryClinic : 0) - (hasDeco(s, 'fireplace') ? s.cfg.deco.injury : 0));   // 벽난로 −1주
+        const wk = Math.max(1, CB.C.injuryWeeks[q.g] - (s.built['의무실'] ? CB.C.injuryClinic : 0) - (hasDeco(s, 'fireplace') ? s.cfg.deco.injury : 0) + (CB.QK ? CB.QK.injAdj(s.cfg.quirk, a, u.cov ? { covered: u.cov } : null, x.start) : 0));   // 벽난로 −1주 · 2026-11-20 술꾼 −1주 / 헌신(감싸다 쓰러짐) +1주
         a.state = 'injured'; a.until = s.week + wk; a.injuredAt = s.week; a.injuredFrom = q.name || `${GR[q.g]}급 ${QTYPE[q.type]} 의뢰`;   // 모험가 팝업 오버 창용
         log(s, `${J(a.name, '이', '가')} 전투에서 쓰러져 부상을 입었습니다. ${wk}주 동안 쉽니다.`, 'injury', { who: [a.name] });
       }
       memQuest(s, x, ok, party, lv0);   // 2026-11-18 모험가 기억 (대사용, 규칙 영향 없음)
+      if (x.qk) qkReturn(s, x, party, ok);   // 2026-11-20 버릇: 터진 일 → 친밀도 · 기록 · 말풍선
     }
   }
 
@@ -1174,7 +1223,7 @@
   }
   // ----- 지명 -----
   const scoutFee = (s, r, a) => a.id === r.who || cActive(s, a) ? 0 : ((s.cfg.econ.scoutFee || [])[a.grade] || 0);   // 계약 모험가는 섭외비 0 (결정 1)   // 지명 섭외비: 모험가 등급별, 부탁할 때마다 (거절당해도 나감). 의뢰한 본인은 없음
-  function reqChance(s, r, a) { const d = NQ_BY[r.key]; if (a.id === r.who) return 1; if (cActive(s, a) && cCallsLeft(s, a) > 0) return 1; /* 계약 모험가: 4주에 2번까지 거절 없음 (결정 1 · 6) */ return Math.min(1, REQ_CFG.base[attachTier(a)] * REQ_CFG.riskMul[a.risk][d.risk]); }
+  function reqChance(s, r, a) { const d = NQ_BY[r.key]; if (a.id === r.who) return 1; if (cActive(s, a) && cCallsLeft(s, a) > 0) return 1; /* 계약 모험가: 4주에 2번까지 거절 없음 (결정 1 · 6) */ return Math.min(1, REQ_CFG.base[attachTier(a)] * REQ_CFG.riskMul[a.risk][d.risk] + (s.cfg.quirk && (a.quirk === 'bluff' || a.quirk === 'devoted') ? (a.quirk === 'bluff' ? s.cfg.quirk.bluffNom : s.cfg.quirk.devotedNom) : 0)); }   // 2026-11-20 허세꾼 · 헌신: 지명 수락 +
   const reqStatI = (s, r, a) => { const d = NQ_BY[r.key]; if (!d.req) return null; if (d.req[0] >= 0) return d.req[0]; if (d.req[0] === -2) return a ? a.core : 0; const ow = s.advs.find(x => x.id === r.who); return ow ? ow.core : 0; };   // req[0]: 0~4 능력치 · -1 의뢰한 본인 · -2 주력 능력치(직업 무관)
   function reqMeets(s, r, a) { const d = NQ_BY[r.key]; if (!d.req) return true; if (d.req[0] === -1) return a.id === r.who; return Math.round(finalStat(s, a, d.req[0] === -2 ? a.core : d.req[0])) >= d.req[1]; }
   const reqSorted = party => party.slice().sort((x, y) => REQ_CFG.rowOrder.indexOf(x.core) - REQ_CFG.rowOrder.indexOf(y.core));   // 대열: 항상 자동(직업 순 — 전사 · 도적 · 궁수 · 성직자 · 마법사)
@@ -1248,6 +1297,13 @@
       if (wt.length) continue;   // 예약: 원정 · 부상에서 모두 돌아올 때까지 기다림
       delete r.auto;
       const party = reqSorted(reqPartyOf(s, r)), q = reqQuest(s, r, false);
+      if (!r.tut && s.cfg.quirk && party.some(a => a.quirk === 'coward' || a.quirk === 'omen')) {   // 2026-11-20 버릇: 겁쟁이(「팽팽」 · 「위험」) · 미신가(비 오는 달)는 출발 직전에 가끔 미룸 → 한 주 뒤 다시 (예약 그대로)
+        const QC = s.cfg.quirk, pp = questP(s, party, q);
+        const cw = pp < 0.7 ? party.find(a => a.quirk === 'coward' && s.R() < qkRisk(s, a, QC.cowardQuit)) : null;
+        const om = !cw && QKr().rainy(s.seed, s.week) ? party.find(a => a.quirk === 'omen' && s.R() < qkRisk(s, a, QC.omenRain)) : null;
+        if (cw) { qkLog(s, cw, 'cowardQuit', `${J(cw.name, '이', '가')} 「${reqName(s, r)}」 출발 직전에 빠졌습니다. (겁쟁이 · 한 주 뒤 다시 출발)`); continue; }
+        if (om) { qkLog(s, om, 'omenWait', `${J(om.name, '이', '가')} 비가 그칠 때까지 「${reqName(s, r)}」 출발을 미뤘습니다. (미신가 · 한 주 뒤 다시 출발)`); continue; }
+      }
       r.state = 'active'; r.qid = q.id; if (r.tut) launchSure(s, q, party); else launchParty(s, q, party, questP(s, party, q));
     }
   }

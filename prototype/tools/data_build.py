@@ -94,6 +94,20 @@ for ln, r in read('meals.csv', ['등급', '요리', '재료', '효과']):
     if r['등급'] not in GRADES: err('meals.csv', ln, f"등급 '{r['등급']}' 은 F E D C B A S 중 하나여야 합니다")
     if not r['요리']: err('meals.csv', ln, '요리 이름이 비었습니다')
     meals.append({'grade': r['등급'], 'name': r['요리'], 'ingredient': r['재료'], 'effect': r['효과']})
+# 버릇 (2026-11-20 야간 · docs/design/proposal_quirks_v1.md): 글 · 아이콘 · 막는 성향. 수치는 balance.csv quirk 구분
+QUIRK_KEYS = ['hot', 'drunk', 'coward', 'bluff', 'devoted', 'selfish', 'glutton', 'omen', 'rival']   # 규칙 코드(combat.js QK)가 아는 키
+quirks = []
+if os.path.exists(os.path.join(DATA, 'quirks.csv')):
+    for ln, r in read('quirks.csv', ['키', '이름', '장점', '리스크', '피하는 방법', '막는 성향', '아이콘']):
+        if r['키'] not in QUIRK_KEYS: err('quirks.csv', ln, f"키 '{r['키']}' 를 모릅니다 (새 버릇은 프로그래머가 규칙과 함께 추가합니다: {' '.join(QUIRK_KEYS)})"); continue
+        if not r['이름']: err('quirks.csv', ln, '이름이 비었습니다')
+        blk = None
+        if r['막는 성향']:
+            m = re.match(r'^(risk|spend|social):([012])$', r['막는 성향'].strip())
+            if not m: err('quirks.csv', ln, "막는 성향은 비움 또는 risk:0~2 · spend:0~2 · social:0~2 여야 합니다"); continue
+            blk = [m.group(1), int(m.group(2))]
+        quirks.append({'key': r['키'], 'name': r['이름'], 'good': r['장점'], 'bad': r['리스크'], 'avoid': r['피하는 방법'], 'block': blk, 'icon': r['아이콘']})
+    if len({q['key'] for q in quirks}) != len(quirks): err('quirks.csv', '-', '같은 키가 두 번 나옵니다')
 skills = []
 for ln, r in read('skills.csv', ['계열', '단계', '직업', '스킬', '종류', '효과']):
     if r['계열'] not in STATS: err('skills.csv', ln, f"계열 '{r['계열']}' 은 {' '.join(STATS)} 중 하나여야 합니다")
@@ -469,7 +483,7 @@ if errors:
     print(f'오류 {len(errors)}건 — 파일을 만들지 않았습니다.')
     for e in errors: print('  -', e)
     sys.exit(1)
-data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial, 'talkMem': talk_mem, 'talkJoke': talk_joke}
+data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial, 'talkMem': talk_mem, 'talkJoke': talk_joke, 'quirks': quirks}
 if content is not None: data['content'] = content       # 편집기 데이터가 없으면 넣지 않음 (게임은 balance 값만 씀)
 # 로비 배치 칸 (2026-11-12, tools/lobby_grid_editor.html 로 칠한 값). 없으면 게임은 모든 바닥 칸을 놓기 가능으로 봄
 _lg = os.path.join(DATA, 'lobby_grid.json')
