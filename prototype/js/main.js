@@ -37,7 +37,8 @@
     if (s.grade > g0) UI.gradeUp(s.grade);
     if (s.week % Gm.WPM === 0) save(true);
   }
-  function setSpeed(v) { speed = v; UI.setSpeed(v); }
+  let lastSp = 1;   // 스페이스로 다시 재생할 때 돌아갈 배속
+  function setSpeed(v) { speed = v; if (v > 0) lastSp = v; UI.setSpeed(v); }
   function save(quiet) { try { localStorage.setItem(SAVE_KEY_NOW(), Gm.serialize(s)); localStorage.setItem(stampKey(slot), String(Date.now())); } catch (e) { if (!quiet) UI.toast('이 환경에서는 저장할 수 없습니다.', 'warn'); } }
   function swap(ns, msg) { s = ns; UI.setState(s); Lobby.Board.reset(); Director.reset(s); Expedition.reset(); UI.hud(); UI.close(); UI.logClear(); if (msg) UI.say(msg); }
   function load() {
@@ -94,7 +95,13 @@
   q('#dTemp').onclick = () => { location.search = Assets.forceTemp ? '' : '?temp=1'; };
   q('#dTemp').textContent = Assets.forceTemp ? '실제 리소스 보기' : '임시 그래픽 보기';
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && !/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName) && !document.querySelector('#dlg.open, #placeLay.on, #popBack.open')) { e.preventDefault(); setSpeed(speed ? 0 : 1); }
+    // 2026-11-19 사용자: 스페이스 = 대사 넘기기(대사 중, ui.js) · 일시정지/재생(쓰던 배속으로) / 1 · 2 · 3 = 1 · 2 · 4배속. 글 입력 칸에서는 안 먹음
+    const tag = document.activeElement ? document.activeElement.tagName : '';
+    if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.ctrlKey || e.metaKey || e.altKey) return;
+    const block = document.querySelector('#placeLay.on, #popBack.open, #slotPick.on'), talk = UI.dlgBusy && UI.dlgBusy();
+    if (e.code === 'Space') { e.preventDefault(); if (e.repeat || talk || block) return; setSpeed(speed ? 0 : lastSp); return; }   // 눌린 단추가 스페이스로 다시 눌리지 않게 막음
+    const k = { Digit1: 1, Digit2: 2, Digit3: 4, Numpad1: 1, Numpad2: 2, Numpad3: 4 }[e.code];
+    if (k && !block) { e.preventDefault(); setSpeed(k); }
   });
 
   // ---------- 시작 화면: 저장 슬롯 고르기 (2026.11) ----------

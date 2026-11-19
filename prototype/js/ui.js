@@ -44,7 +44,7 @@
     q('#dlg').onclick = UI.advance;
     root.addEventListener('keydown', e => {
       if (e.key === 'Escape') { if (popup) UI.closeFx(); }
-      if ((e.key === ' ' || e.key === 'Enter') && Dlg.open && !popup) { e.preventDefault(); UI.advance(); }
+      if ((e.key === ' ' || e.key === 'Enter') && Dlg.open && !popup) { e.preventDefault(); if (!e.repeat) UI.advance(); }   // 꾹 누르고 있어도 한 줄씩
     });
     UI.autoReport = root.Snd ? !!root.Snd.opt.report : true;
     pmEls();   // 로비 롤오버·물건 메뉴·배치 모드 요소를 처음부터 붙임 (2026-11-12)
