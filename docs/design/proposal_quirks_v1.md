@@ -1,6 +1,6 @@
 # 제안서: 모험가 버릇 (v1)
 
-작성: Claude · 2026-11-19 18:10 · 상태: **제안 (결정 대기)**
+작성: Claude · 2026-11-19 17:57 · 상태: **제안 (결정 대기)**
 관련: todo 3절 "긴장감 아이디어 묶음"(11-12 결정: 문제 모험가는 **버릇 축**으로, 일부 모험가만, **장점도 함께**) · [proposal_master_mediation_v1.md](proposal_master_mediation_v1.md)(다툼 → 중재) · [character_talk_v1.md](character_talk_v1.md) 5장(친밀도) · 보완 레포트 2026-11-19 2절
 측정: [proposal_quirks_measure.js](proposal_quirks_measure.js) → [proposal_quirks_result.json](proposal_quirks_result.json)
 
