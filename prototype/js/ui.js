@@ -340,7 +340,7 @@
   let rqSel = null, rqMsg = '';
   const RQ_TYPE = { hunt: '전투', search: '탐색', deliver: '납품', donate: '돈 내기', install: '설치 요청', town: '마을 건물' }, RQ_GIVER = { adventurer: '모험가', resident: '마을 사람', outsider: '외지인' };
   const RQ_STATE = { queued: '다음 주 출발', active: '원정 중' };   // queued인데 예약자가 아직 밖이면 '모이면 출발' (stTxt)
-  const rqMat = (id, n, have) => { const m = MATS[id] || { name: id }; return `<span class="rq-chip ${have != null && have < n ? 'lack' : ''}">${m.icon ? `<img src="assets/${m.icon}" alt="">` : ''}${esc(m.name)} ${have != null ? `<b>${Math.min(have, 999)}</b>/` : '×'}${n}</span>`; };
+  const rqMat = (id, n, have) => { const m = MATS[id] || { name: id }; return `<span class="rq-chip ${have != null ? (have < n ? 'need no' : 'need ok') : ''}">${m.icon ? `<img src="assets/${m.icon}" alt="">` : ''}${esc(m.name)} ${have != null ? `<b>${Math.min(have, 999)}</b>/` : '×'}${n}</span>`; };
   function rqRewards(v) {
     const d = v.d, rw = d.rw, o = [];
     if (rw.gold) o.push(`<span class="rq-chip gold">${v.nominated ? '보수 ' : ''}${fmt(rw.gold)}G</span>`);
@@ -425,21 +425,24 @@
     if (v.lock) Rr += `<div class="rq-lock">${esc(v.lock)}${/집무실/.test(v.lock) ? ` <button class="ux-btn sm" data-rqact="office" ${s.gold < Gm.facCost(s, '집무실') ? 'disabled' : ''}>집무실 짓기 <b>${fmt(Gm.facCost(s, '집무실'))}G</b></button>` : ''}</div>`;
     // 요구
     let need = '';
-    if (v.need.gold) need += `<span class="rq-chip gold ${s.gold < v.need.gold ? 'lack' : ''}">${fmt(v.need.gold)}G <small>(금고 ${fmt(s.gold)}G)</small></span>`;
+    // 2026-11-19 사용자: 요구 칩은 처음부터 붉은 글씨(need) → 채우면 파란 글씨(ok) · 못 채운 채 보내기 · 내기를 누르면 못 채운 칩이 좌우로 흔들림
+    const nq = ok => `need ${ok ? 'ok' : 'no'}`;
+    if (v.need.gold) need += `<span class="rq-chip gold ${nq(s.gold >= v.need.gold)}">${fmt(v.need.gold)}G <small>(금고 ${fmt(s.gold)}G)</small></span>`;
     for (const [m, k] of Object.entries(v.need.mats)) need += rqMat(m, k, s.mats[m] || 0);
-    if (d.type === 'install') need += `<span class="rq-chip ${v.goalOk ? '' : 'lack'}">테이블 1세트 놓기 (시설 장 → 설비)</span>`;
+    if (d.type === 'install') need += `<span class="rq-chip ${nq(v.goalOk)}">테이블 1세트 놓기 (시설 장 → 설비)</span>`;
     if (v.nominated) { const pt = d.party[0] === d.party[1] ? d.party[0] + '명' : d.party[0] + '~' + d.party[1] + '명';
-      need += `<span class="rq-chip">지명 ${pt} · ${d.weeks}주</span>` + (d.req ? `<span class="rq-chip star">★ ${d.req[0] === -1 ? esc(v.giver) + ' 본인' : (d.req[0] === -2 ? '주력 능력치' : Gm.STATS[d.req[0]]) + ' ' + d.req[1] + ' 이상'} 1명</span>` : '') + d.foes.map(f => `<span class="rq-chip enemy">${esc(f.name)}${f.count > 1 ? ' ×' + f.count : ''}${f.boss ? ' (우두머리)' : ''}</span>`).join(''); }
+      const pp = Gm.reqPartyOf(s, r);
+      need += `<span class="rq-chip ${nq(pp.length >= d.party[0])}">지명 ${pt} · ${d.weeks}주</span>` + (d.req ? `<span class="rq-chip star ${nq(pp.some(a => Gm.reqMeets(s, r, a)))}">★ ${d.req[0] === -1 ? esc(v.giver) + ' 본인' : (d.req[0] === -2 ? '주력 능력치' : Gm.STATS[d.req[0]]) + ' ' + d.req[1] + ' 이상'} 1명</span>` : '') + d.foes.map(f => `<span class="rq-chip enemy">${esc(f.name)}${f.count > 1 ? ' ×' + f.count : ''}${f.boss ? ' (우두머리)' : ''}</span>`).join(''); }
     Rr += `<div class="rq-sec"><i>요구</i><div>${need}</div></div><div class="rq-sec"><i>보상</i><div>${rqRewards(v)}</div></div>`;
     // 행동
     if (!v.nominated) {
       const lab = d.type === 'install' ? '' : v.need.gold ? `돈 내기 <b>${fmt(v.need.gold)}G</b>` : '납품하기';
-      Rr += `<div class="rq-act">${lab ? `<button class="ux-btn primary" data-rqact="give" ${v.lock || !v.canPay ? 'disabled' : ''}>${lab}</button>` : '<span class="rq-note">설비를 놓으면 바로 완료됩니다.</span>'}<span class="rq-msg">${esc(rqMsg)}</span></div>`;
+      Rr += `<div class="rq-act">${lab ? `<button class="ux-btn primary ${v.lock || !v.canPay ? 'soft-off' : ''}" data-rqact="give" ${v.lock ? 'disabled' : ''}>${lab}</button>` : '<span class="rq-note">설비를 놓으면 바로 완료됩니다.</span>'}<span class="rq-msg">${esc(rqMsg)}</span></div>`;
     } else {
       const party = Gm.reqPartyOf(s, r), P = Gm.reqPredict(s, r.id), why = r.state === 'open' ? Gm.reqSendWhy(s, r) : null, rows = Gm.reqNomList(s, r.id);
       const pTxt = P == null ? '' : `<span class="rq-p ${P >= 0.7 ? 'ok' : P >= 0.4 ? 'mid' : 'bad'}">예상 성공률 <b>${Math.round(P * 100)}%</b></span>`;
       Rr += `<div class="rq-party"><span class="pl">파티 ${party.length} / ${d.party[1]}</span>${party.map(a => `<span class="pm" style="${faceStyle(a, 34, 178, 17)}" title="${esc(a.name)}"></span>`).join('') || '<em>아래에서 모험가를 눌러 부탁하세요 (부탁할 때마다 섭외비가 나갑니다)</em>'}${pTxt}</div>`;
-      Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary" data-rqact="send" ${why ? 'disabled' : ''}>보내기 <small>(${Gm.reqWaitOf(s, r).length ? '모두 돌아오면 출발' : '다음 주 출발'})</small></button>` : r.state === 'queued' ? `<button class="ux-btn" data-rqact="unsend">출발 취소</button>${Gm.reqWaitOf(s, r).length ? `<span class="rq-note">예약: ${esc(josa(Gm.reqWaitOf(s, r).map(a => a.name).join(' · '), '이', '가'))} 돌아오는 주에 바로 출발해요. 그동안 파티원은 게시판 의뢰를 받지 않아요.</span>` : ''}` : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}<span class="rq-msg">${esc(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</span></div>`;
+      Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary ${why ? 'soft-off' : ''}" data-rqact="send">보내기 <small>(${Gm.reqWaitOf(s, r).length ? '모두 돌아오면 출발' : '다음 주 출발'})</small></button>` : r.state === 'queued' ? `<button class="ux-btn" data-rqact="unsend">출발 취소</button>${Gm.reqWaitOf(s, r).length ? `<span class="rq-note">예약: ${esc(josa(Gm.reqWaitOf(s, r).map(a => a.name).join(' · '), '이', '가'))} 돌아오는 주에 바로 출발해요. 그동안 파티원은 게시판 의뢰를 받지 않아요.</span>` : ''}` : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}<span class="rq-msg">${esc(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</span></div>`;
       if (r.state !== 'active') {
         Rr += `<div class="rq-nom ${r.state !== 'open' || v.lock ? 'off' : ''}"><div class="nh"><span>모험가</span><span>${d.req && d.req[0] >= 0 ? Gm.STATS[d.req[0]] : rows[0] && rows[0].stat != null ? '주력' : ''}</span><span>애착</span><span>수락</span><span>섭외비</span><span>상태</span></div>`;
         for (const x of rows) { const a = s.advs.find(z => z.id === x.id);
@@ -450,10 +453,18 @@
     }
     return `<div class="bk2 bk-rq"><section class="bk-l">${L}</section><section class="bk-r">${Rr}</section></div>`;
   }
+  function rqShake(why) {   // 못 채운 요구 칩이 좌우로 흔들림 + 이유 (2026-11-19)
+    const box = document.querySelector('.bk-rq .bk-r'); if (!box) return;
+    const m = box.querySelector('.rq-msg'); if (m) { m.textContent = why; m.classList.remove('warn'); void m.offsetWidth; m.classList.add('warn'); }
+    box.querySelectorAll('.rq-chip.need.no').forEach(c => { c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); });
+    if (root.Audio && root.Audio.sfx) try { root.Audio.sfx('warn'); } catch (e) {}
+  }
   function rqAct(act) {
     if (act === 'main') { Gm.mainAccept(s); hooks.changed && hooks.changed(); renderPopup(); return; }
     const v = Gm.reqView(s).find(x => x.r.id === rqSel); if (!v) return;
     const top = s.log[0]; rqMsg = '';
+    if (act === 'give' && !v.canPay) { rqShake('아직 준비가 부족합니다.'); return; }
+    if (act === 'send' && v.r.state === 'open' && Gm.reqSendWhy(s, v.r)) { rqShake(Gm.reqSendWhy(s, v.r)); return; }
     if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; else rqStamp('수락', `「${v.name}」`); }   // 2026-11-17 사용자: 도장은 밤 원본(초록 '수락' + 「이름」)으로
     else if (act === 'refuse') Gm.reqRefuse(s, v.r.id);
     else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = Gm.reqWaitOf(s, v.r).length ? '' : '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; rqStamp('수락', `「${v.name}」 · ${Gm.reqWaitOf(s, v.r).length ? '모이면 출발' : '다음 주 출발'}`); } }
