@@ -1,6 +1,7 @@
 // 대장간 창 (2026-11-18, 시안 smith2 사용자 확인) — 마을 지도에서 대장간(해금 뒤)을 누르면 열림
 // 진열대: 길드 등급까지 무기 · 방어구 · 장신구를 1개씩 따로 판매 (모험가가 매달 소지금으로 1칸씩 삼) + 최근 손님
-// 선물: 길드 금으로 모험가에게 장비 1칸씩 (GuildGame.smithGift) · 강화: 잠김 (2단계)
+// 만들기 (2026-11-19 사용자 A안 · 시안 smith_craft_v3): 창고 소재 + 공임 → 길드 장비 창고 (GuildGame.smithCraft)
+// 선물: 장비 창고에서 모험가 칸에 맞는 장비를 줌 (GuildGame.smithGift) — 금화로 사서 주기는 없앰 · 강화: 잠김 (2단계)
 (function (root) {
   'use strict';
   const Smithy = {};
@@ -15,7 +16,9 @@
   const slotType = (core, k) => { const C = CB(); if (!C) return null; return k === 0 ? C.WEAPON[core] : k === 1 ? C.ARMOR[core] : C.ACC[(core + 2) % 5]; };
   const LINES = {
     shop: ['쇠는 거짓말을 안 하지.<br>뭘 보러 왔나, 길드 양반?', '오늘도 불은 잘 붙었어.<br>천천히 둘러보게.'],
-    gift: ['마스터가 직접 골라 준다면<br>녀석들도 기운이 나겠지.'],
+    craft: ['소재만 가져오게.<br>내가 두드려서 쓸 만하게 만들어 주지.', '창고에 굴러다니는 뼛조각도<br>내 손을 거치면 물건이 돼.'],
+    made: ['다 됐네. 창고에 넣어 두지.', '좋은 쇠맛이 나는군. 하나 더?'],
+    gift: ['마스터가 직접 준다면<br>녀석들도 기운이 나겠지.'],
     gave: ['좋은 물건이야. 잘 쓰라고 전해 주게.', '이건 내가 직접 두드린 거라네.', '손에 맞을 거야. 장담하지.'],
     react: [['…고마워요. 아껴 쓸게요.', '이걸 저한테요? 감사합니다.'], ['우와, 마스터! 고마워요!', '이거 진짜 제 거예요?'], ['와아! 다들 이것 좀 봐요! 마스터가 줬어요!', '최고예요, 마스터!']]
   };
@@ -68,6 +71,33 @@
 .gfSlot button{font:700 15px inherit;font-family:inherit;padding:4px 10px;border-radius:8px;border:2px solid #7a4a12;background:linear-gradient(#f3c66b,#d99a32);color:#4a2a08;white-space:nowrap;cursor:pointer}
 .gfSlot button:disabled{background:#d9cbb2;border-color:#b9a385;color:#9a8670;cursor:default}
 .gfSlot small{font-size:13px;color:#8a7258;white-space:nowrap}
+.cxBar{display:flex;align-items:center;gap:12px;margin:2px 0 10px}
+.seg{display:flex;background:#eadbbd;border-radius:22px;padding:3px}.seg span{padding:5px 18px;border-radius:18px;font-weight:700;font-size:18px;color:#7a5f45;cursor:pointer}.seg span.on{background:#fffaf0;color:#4a2d18;box-shadow:0 1px 2px rgba(0,0,0,.15)}.seg.sm span{padding:5px 12px;font-size:16px}.seg span.lock{opacity:.4;pointer-events:none}
+.cxBar .smGold{margin-left:auto}
+.cxWrap{flex:1;min-height:0;display:flex;gap:14px}
+.cxGrid{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-content:start}
+.cxIt{position:relative;background:#fffaf0;border:2px solid #e3cfa8;border-radius:14px;padding:10px 6px 8px;text-align:center;cursor:pointer}
+.cxIt img{width:64px;height:64px;display:block;margin:0 auto 4px}.cxIt b{display:block;font:700 18px MaruBuri,serif;color:#4a2d18}.cxIt i{font-style:normal;font-size:14px;color:#9a8670}
+.cxIt.no img{filter:grayscale(.7);opacity:.6}.cxIt.no b{color:#9a8670}
+.cxIt.sel{border-color:#c8862f;box-shadow:0 0 0 3px #f3d79a}
+.cxIt em{position:absolute;right:8px;top:6px;font-style:normal;font-size:14px;font-weight:700;color:#fff;background:#4f8a5b;border-radius:10px;padding:0 7px}
+.cxDet{flex:0 0 300px;background:#fffaf0;border:2px solid #e3cfa8;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.cxHd{display:flex;gap:14px;align-items:center}.cxIc{position:relative;flex:none}.cxIc img{width:80px;height:80px;background:#f6ecd6;border-radius:14px;padding:4px;display:block}.cxIc .gbx{position:absolute;right:-8px;bottom:-6px;width:30px;height:30px;font-size:18px;border-radius:8px;border:2px solid #fffaf0}.cxHd b{display:block;font:700 24px MaruBuri,serif;color:#4a2d18}.cxHd small{font-size:15px;color:#8a7258}
+.cxRc{display:flex;flex-direction:column;gap:6px;border-top:1px dashed #dcc59c;padding-top:10px}
+.cxM{display:flex;align-items:center;gap:8px;font-size:17px}.cxM img{width:32px;height:32px}.cxM span{flex:1}.cxM b{font-size:18px;color:#4a2d18}.cxM b i{font-style:normal;color:#9a8670;font-weight:400}
+.cxM.no b{color:#c0392b}.cxM.fee{border-top:1px dashed #dcc59c;padding-top:6px;color:#7a5f45}
+.cxGo{margin-top:auto;font:700 22px MaruBuri,serif;padding:10px;border-radius:12px;border:2px solid #7a4a12;background:linear-gradient(#f3c66b,#d99a32);color:#4a2a08;cursor:pointer}.cxGo:disabled{background:#e2d6bf;border-color:#c9b896;color:#a8977e;cursor:default}
+.cxWhy{font-size:14px;color:#9a8670;text-align:center;min-height:20px}
+.gxT{font-size:18px;color:#5a3a22}.gxT b{font-size:22px;color:#7a4a12}.gxT.sub{font-size:15px;color:#9a8670;margin-left:auto}
+.gxList{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-right:6px}
+.gxRow{display:flex;align-items:center;gap:12px;background:#fffaf0;border:2px solid #e8d7b4;border-radius:14px;padding:8px 12px}
+.gxN{flex:0 0 110px}.gxN b{display:block;font-size:20px}.gxN i{font-style:normal;font-size:14px;color:#9a8670}
+.gxS{flex:1;min-width:0;display:flex;align-items:center;gap:8px;border-radius:12px;padding:6px 8px;background:#f8f0de}
+.gxS .ic{position:relative;flex:none;width:44px;height:44px}.gxS .ic img{width:44px;height:44px}.gxS .ic .gbx{position:absolute;right:-5px;bottom:-4px;width:20px;height:20px;font-size:13px;border-radius:6px}
+.gxS .ic.none{display:flex;align-items:center;justify-content:center;border-radius:10px;background:#efe4cf;color:#c4b08e;font-weight:700}
+.gxS .tx{min-width:0;flex:1}.gxS small{display:block;font-size:13px;color:#a8977e}.gxS b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#4a2d18}.gxS b.cur{color:#9a8670;font-weight:400}
+.gxS.up{background:#fff5d8;box-shadow:inset 0 0 0 2px #e6b34a,0 0 10px rgba(230,179,74,.45);cursor:pointer}.gxS.up small{color:#c8862f}.gxS.up b{color:#8a5a12}
+.gxGo{flex:none;font-weight:700;font-size:15px;color:#fff;background:#c8862f;border-radius:10px;padding:3px 10px}
 .smHint{font-size:16px;color:#8a7258;margin:6px 0 4px}
 `;
   function ensure() {
@@ -103,38 +133,68 @@
       else h += `<div class="smL">${face(a)}<b>${esc(a.name)}</b> "${x.have >= x.need * 0.85 ? '조금만 더 모으면 살 수 있겠어.' : '아직은 무리야…'}" <em>구경만 함 · ${GR[x.g]}급 ${nm} ${x.have}/${x.need}G · ${when}</em></div>`; }
     return h + '</div>';
   }
+  // 2026-11-19 만들기 · 선물 (깔끔한 판): 왼쪽 목록 · 오른쪽 자세히
+  const MATS = () => ((root.GAME_DATA || {}).content || {}).materials || [], mat = id => MATS().find(m => m.id === id) || { name: id };
+  const KN = ['무기', '방어구', '장신구'], KT = [[0, 1, 2, 3, 4].map(c => [c]), [['heavy', [0]], ['light', [1, 4]], ['robe', [2, 3]]], [0, 1, 2, 3, 4].map(c => [c])];
+  let cKind = 0, cGrade = 0, cSel = null, gSel = null;
+  function craftList(s, k, g) {   // [{it, who}]
+    if (k === 1) return [['heavy', '전사'], ['light', '궁수 · 도적'], ['robe', '마법사 · 성직자']].map(([t, w]) => ({ it: itemOf(t, g), who: w })).filter(x => x.it);
+    return [0, 1, 2, 3, 4].map(c => ({ it: itemOf(slotType(c, k), g), who: CLS[c] })).filter(x => x.it);
+  }
+  function craftHtml(s) {
+    const Gm = G(), gMax = Math.min(s.grade, 1); if (cGrade > gMax) cGrade = gMax;
+    const L = craftList(s, cKind, cGrade); if (!cSel || !L.some(x => x.it.id === cSel)) cSel = (L.find(x => !Gm.craftWhy(s, x.it.id)) || L[0] || {}).it?.id;
+    let h = `<div class="cxBar"><div class="seg">${KN.map((n, i) => `<span class="${i === cKind ? 'on' : ''}" data-ck="${i}">${n}</span>`).join('')}</div><div class="seg sm">${GR.slice(0, 2).map((g, i) => `<span class="${i === cGrade ? 'on' : ''} ${i > gMax ? 'lock' : ''}" data-cgr="${i}">${g}급</span>`).join('')}</div><span class="smGold">금고 ${Math.floor(s.gold).toLocaleString()}G</span></div>`;
+    h += '<div class="cxWrap"><div class="cxGrid">';
+    for (const x of L) { const R = Gm.craftInfo(s, x.it.id), ok = !Gm.craftWhy(s, x.it.id);
+      h += `<div class="cxIt ${x.it.id === cSel ? 'sel' : ''} ${ok ? 'ok' : 'no'}" data-csel="${x.it.id}"><img src="assets/${x.it.icon}" alt=""><b>${esc(x.it.name)}</b><i>${x.who}</i>${R.own ? `<em>${R.own > 99 ? '99+' : R.own}</em>` : ''}</div>`; }
+    h += '</div>';
+    const R = cSel ? Gm.craftInfo(s, cSel) : null, why = cSel ? Gm.craftWhy(s, cSel) : '';
+    if (R) {
+      h += `<div class="cxDet"><div class="cxHd"><span class="cxIc"><img src="assets/${R.item.icon}" alt=""><span class="gbx ${GR[R.g]}">${GR[R.g]}</span></span><div><b>${esc(R.item.name)}</b><small>${KN[R.k]} · 창고 ${R.own}개</small></div></div><div class="cxRc">`;
+      for (const x of R.need) { const m = mat(x.m), short = x.have < x.n; h += `<div class="cxM ${short ? 'no' : ''}">${m.icon ? `<img src="assets/${m.icon}" alt="">` : ''}<span>${esc(m.name)}</span><b>${x.have}<i> / ${x.n}</i></b></div>`; }
+      h += `<div class="cxM fee"><span>공임</span><b>${R.fee}G</b></div></div><button class="cxGo" data-cf="${R.item.id}" ${why ? 'disabled' : ''}>만들기</button><div class="cxWhy">${why ? esc(why) : '만든 장비는 장비 창고에 쌓입니다'}</div></div>`;
+    }
+    return h + '</div>';
+  }
   function giftHtml(s) {
-    const Gm = G(), al = s.advs.filter(a => a.alive);
-    let h = `<div class="smH">선물 <small>길드 금으로 한 칸씩 사서 줍니다 · 1개당 애착 ${GR.slice(0, 2).map((g, i) => `${g} +${(s.cfg.gear.giftAttach || [1, 2])[i]}`).join(' · ')} [임시]</small><span class="smGold">길드 금 ${Math.floor(s.gold).toLocaleString()}G</span></div><div class="gfList">`;
+    const Gm = G(), al = s.advs.filter(a => a.alive), inv = Object.values(s.gearInv || {}).reduce((t, n) => t + Math.max(0, n), 0);
+    let h = `<div class="cxBar"><span class="gxT">장비 창고 <b>${inv}</b>개</span><span class="gxT sub">빛나는 칸을 누르면 선물 · 애착 F +${(s.cfg.gear.giftAttach || [1, 2])[0]} · E +${(s.cfg.gear.giftAttach || [1, 2])[1]} [임시]</span></div><div class="gxList">`;
     for (const a of al) {
       const e = Gm.eqOf(a);
-      h += `<div class="gfRow">${face(a)}<span class="gfN"><b>${esc(a.name)}</b><div>${CLS[a.core]} · Lv ${a.lv}</div></span>`;
+      h += `<div class="gxRow">${face(a)}<span class="gxN"><b>${esc(a.name)}</b><i>${CLS[a.core]} · Lv ${a.lv}</i></span>`;
       for (let k = 0; k < 3; k++) {
-        const g = e[k], it = g >= 0 ? itemOf(slotType(a.core, k), g) : null, ng = g + 1, why = Gm.smithWhy(s, a, k), price = s.cfg.gear.weaponPrice[ng];
-        h += `<div class="gfSlot" title="${esc(Gm.EQ_NAME[k])}${it ? ' · ' + esc(it.name) : ' · 없음'}">${it ? `<img src="assets/${it.icon}" alt="">` : `<span class="e">${Gm.EQ_NAME[k].slice(0, 2)}</span>`}<span class="gbx ${g < 0 ? 'no' : GR[g]}">${g < 0 ? '－' : GR[g]}</span>`
-          + (ng <= s.grade ? `<button data-sg="${a.id}:${k}" ${why ? `disabled title="${esc(why)}"` : ''}>${GR[ng]}급 ${price}G</button>` : '<small>길드 등급까지</small>') + '</div>';
+        const g = e[k], cur = g >= 0 ? itemOf(slotType(a.core, k), g) : null, x = Gm.giftItems(s, a, k)[0];
+        const show = x ? x.item : cur, gg = x ? x.g : g;
+        h += `<div class="gxS ${x ? 'up' : ''}" ${x ? `data-sg="${a.id}:${k}"` : ''} title="${KN[k]}${cur ? ' · 지금 ' + esc(cur.name) : ' · 없음'}">`
+          + (show ? `<span class="ic"><img src="assets/${show.icon}" alt="">${gg >= 0 ? `<span class="gbx ${GR[gg]}">${GR[gg]}</span>` : ''}</span>` : `<span class="ic none">${KN[k][0]}</span>`)
+          + `<span class="tx"><small>${x ? KN[k] + ' · 눌러서 선물' : KN[k]}</small>${x ? `<b>▲ ${esc(x.item.name)}</b>` : `<b class="cur">${cur ? esc(cur.name) : '없음'}</b>`}</span></div>`;
       }
       h += '</div>';
     }
-    return h + '</div><div class="smHint">칸마다 따로 선물합니다. 같은 등급은 선물할 수 없고, 길드 등급까지만 올릴 수 있습니다.</div>';
+    return h + '</div>';
   }
   function render() {
     const s = S(); if (!s || !box) return;
-    const body = tab === 'gift' ? giftHtml(s) : shopHtml(s);
+    const body = tab === 'gift' ? giftHtml(s) : tab === 'craft' ? craftHtml(s) : shopHtml(s);
     const sayHtml = say || (LINES[tab] || LINES.shop)[0];
     const ls = box.querySelector('.gfList'), y = ls ? ls.scrollTop : 0;
     box.innerHTML = `<div id="smPop"><div id="smHead">대장간</div><div id="smX" data-sx="1">✕</div>
 <div id="smL"><img src="assets/npc/npc_smith_stand.webp" alt=""><div id="smSay"><b>대장장이</b>${sayHtml}</div></div>
-<div id="smR"><div id="smTabs"><span class="smT ${tab === 'shop' ? 'on' : ''}" data-st="shop">진열대</span><span class="smT ${tab === 'gift' ? 'on' : ''}" data-st="gift">선물</span><span class="smT lock" title="강화는 2단계에서 만듭니다">🔒 강화 (준비 중)</span></div><div id="smBody">${body}</div></div></div>`;
+<div id="smR"><div id="smTabs"><span class="smT ${tab === 'shop' ? 'on' : ''}" data-st="shop">진열대</span><span class="smT ${tab === 'craft' ? 'on' : ''}" data-st="craft">만들기</span><span class="smT ${tab === 'gift' ? 'on' : ''}" data-st="gift">선물</span><span class="smT lock" title="강화는 2단계에서 만듭니다">🔒 강화 (준비 중)</span></div><div id="smBody">${body}</div></div></div>`;
     const ls2 = box.querySelector('.gfList'); if (ls2) ls2.scrollTop = y;
   }
   function onClick(e) {
     const s = S(); if (!s) return;
     if (e.target === box || e.target.closest('[data-sx]')) { Smithy.close(); return; }
     const t = e.target.closest('[data-st]'); if (t) { tab = t.dataset.st; say = null; render(); return; }
+    const ck = e.target.closest('[data-ck]'); if (ck) { cKind = +ck.dataset.ck; cSel = null; render(); return; }
+    const cg = e.target.closest('[data-cgr]'); if (cg) { cGrade = +cg.dataset.cgr; cSel = null; render(); return; }
+    const cs = e.target.closest('[data-csel]'); if (cs) { cSel = cs.dataset.csel; render(); return; }
+    const c = e.target.closest('[data-cf]'); if (c && !c.disabled) { const r = G().smithCraft(s, c.dataset.cf); if (r.ok) { say = pick(LINES.made); if (root.UI) { root.UI.toast(`${r.item}을 만들었습니다. (공임 ${r.fee}G)`, 'unlock'); root.UI.hud(); } } else if (root.UI) root.UI.toast(r.why, 'warn'); render(); return; }
     const b = e.target.closest('[data-sg]'); if (b && !b.disabled) {
       const [aid, k] = b.dataset.sg.split(':').map(Number), a = s.advs.find(x => x.id === aid), r = G().smithGift(s, aid, k);
-      if (r.ok) { say = `${pick(LINES.gave)}<span class="re"><b>${esc(a.name)}</b>${pick(LINES.react[a.social] || LINES.react[1])} <small>(애착 +${r.att})</small></span>`; if (root.UI) { root.UI.toast(`${a.name}에게 ${GR[r.g]}급 ${G().EQ_NAME[k]}를 선물했습니다. (${r.price}G)`, 'grow'); root.UI.hud(); } }
+      if (r.ok) { say = `${pick(LINES.gave)}<span class="re"><b>${esc(a.name)}</b>${pick(LINES.react[a.social] || LINES.react[1])} <small>(애착 +${r.att})</small></span>`; if (root.UI) { root.UI.toast(`${a.name}에게 ${r.item}을 선물했습니다.`, 'grow'); root.UI.hud(); } }
       else if (root.UI) root.UI.toast(r.why, 'warn');
       render();
     }
