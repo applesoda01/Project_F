@@ -587,6 +587,7 @@
   }
   // 물약 상점 (2026-11-19 사용자: 대장간과 똑같은 규칙) — 달이기: 창고 소재 + 공임 gear.potionFee[등급] [임시] → 물약 창고 s.potInv
   //   나눠 주기: 창고 물약 1병을 모험가 가방에(최대 3병) · 애착 +gear.giftAttach[등급] [임시] (장비 선물과 같음) · 금화로 사서 주기는 없음
+  //   2026-11-19 사용자 결정: 애착은 장비 선물과 같은 규칙 — 같은 등급 물약은 모험가마다 처음 1번만 오름(a.potAtt[등급]). 그 뒤로도 줄 수는 있음(애착 +0)
   const POT_ITEMS = () => ((GD.content && GD.content.items) || []).filter(i => i.kind === 'potion');
   const POT_BAG = 3;
   function potInfo(s, id) {
@@ -615,11 +616,12 @@
     if ((a.pots || 0) >= POT_BAG) return `가방이 꽉 찼습니다 (${POT_BAG}병)`;
     return null;
   }
+  const potAttGot = (a, g) => !!(a && a.potAtt && a.potAtt[g]);   // 이 등급 물약으로 애착을 이미 받았나
   function potGive(s, aid, id) {
     const a = s.advs.find(x => x.id === aid), why = potGiveWhy(s, a, id); if (why) return { ok: false, why };
-    const R = potInfo(s, id), att = ((s.cfg.gear.giftAttach || [1, 2])[R.g]) || 1;
-    s.potInv[id]--; a.pots = (a.pots || 0) + 1; a.attach = Math.min(100, a.attach + att);
-    log(s, `${J(a.name, '이', '가')} 마스터에게 ${R.item.name}을 받았습니다. (애착 +${att})`, 'grow', { who: [a.name] });
+    const R = potInfo(s, id), first = !potAttGot(a, R.g), att = first ? (((s.cfg.gear.giftAttach || [1, 2])[R.g]) || 1) : 0;
+    s.potInv[id]--; a.pots = (a.pots || 0) + 1; a.attach = Math.min(100, a.attach + att); if (first) (a.potAtt = a.potAtt || {})[R.g] = 1;
+    log(s, `${J(a.name, '이', '가')} 마스터에게 ${R.item.name}을 받았습니다.${att ? ` (애착 +${att})` : ''}`, 'grow', { who: [a.name] });
     return { ok: true, item: R.item.name, att };
   }
   function orderSources(s, m) { const out = []; for (const k in TPL) { const g = +k.split('_')[1]; if (g > s.grade) continue; for (const t of TPL[k]) if ((t.rewards || []).some(r => r.m === m && r.p >= 30)) out.push(t); } return out; }   // 발주 소재가 주 소재로 나오는 게시판 의뢰 (결정 26 · 27)
@@ -1427,6 +1429,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, mealBuffOf, POT_BAG, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

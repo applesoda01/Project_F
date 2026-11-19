@@ -139,12 +139,12 @@
   function giftHtml(s) {
     const Gm = G(), al = s.advs.filter(a => a.alive), I = s.potInv || {}, tot = Object.values(I).reduce((t, n) => t + Math.max(0, n), 0), A = s.cfg.gear.giftAttach || [1, 2];
     const show = POTS().filter(p => GR.indexOf(p.grade) <= Math.min(s.grade, 1));
-    let h = `<div class="cxBar"><span class="gxT">물약 창고 <b>${tot}</b>병</span><span class="gxT sub">빛나는 칸을 누르면 한 병 · 한 사람 ${Gm.POT_BAG}병까지 · 애착 F +${A[0]} · E +${A[1]} [임시]</span></div><div class="gxList">`;
+    let h = `<div class="cxBar"><span class="gxT">물약 창고 <b>${tot}</b>병</span><span class="gxT sub">빛나는 칸을 누르면 한 병 · 한 사람 ${Gm.POT_BAG}병까지 · 애착 F +${A[0]} · E +${A[1]} [임시] · 같은 등급은 한 사람에 처음 1번만</span></div><div class="gxList">`;
     for (const a of al) {
       const n = Math.min(Gm.POT_BAG, a.pots || 0);
       h += `<div class="gxRow">${face(a)}<span class="gxN"><b>${esc(a.name)}</b><i>${CLS[a.core]} · Lv ${a.lv}</i></span><span class="pBag">${[0, 1, 2].map(i => `<span class="${i < n ? 'on' : ''}"></span>`).join('')}<small>${n}/${Gm.POT_BAG}병</small></span>`;
       for (const p of show) { const have = I[p.id] || 0, ok = !Gm.potGiveWhy(s, a, p.id);
-        h += `<div class="gxS ${ok ? 'up' : ''}" ${ok ? `data-pg="${a.id}:${p.id}"` : ''}><span class="ic"><img src="assets/${p.icon}" alt=""><span class="gbx ${p.grade}">${p.grade}</span></span><span class="tx"><small>${ok ? '눌러서 한 병 · 창고 ' + have : n >= Gm.POT_BAG ? '가방이 꽉 참' : '창고에 없음'}</small><b class="${ok ? '' : 'cur'}">${esc(p.name)}</b></span></div>`; }
+        h += `<div class="gxS ${ok ? 'up' : ''}" ${ok ? `data-pg="${a.id}:${p.id}"` : ''}><span class="ic"><img src="assets/${p.icon}" alt=""><span class="gbx ${p.grade}">${p.grade}</span></span><span class="tx"><small>${ok ? '눌러서 한 병 · 창고 ' + have + (Gm.potAttGot(a, GR.indexOf(p.grade)) ? ' · 애착 받음' : '') : n >= Gm.POT_BAG ? '가방이 꽉 참' : '창고에 없음'}</small><b class="${ok ? '' : 'cur'}">${esc(p.name)}</b></span></div>`; }
       h += '</div>';
     }
     return h + '</div>';
@@ -167,7 +167,7 @@
     const cg = e.target.closest('[data-cgr]'); if (cg) { cGrade = +cg.dataset.cgr; cSel = null; render(); return; }
     const cs = e.target.closest('[data-csel]'); if (cs) { cSel = cs.dataset.csel; render(); return; }
     const c = e.target.closest('[data-cf]'); if (c && !c.disabled) { const r = G().potBrew(s, c.dataset.cf); if (r.ok) { say = pick(LINES.made); if (root.UI) { root.UI.toast(`${r.item}을 달였습니다. (공임 ${r.fee}G)`, 'unlock'); root.UI.hud(); } } else if (root.UI) root.UI.toast(r.why, 'warn'); render(); return; }
-    const pg = e.target.closest('[data-pg]'); if (pg) { const [aid, pid] = pg.dataset.pg.split(':'), a = s.advs.find(x => x.id === +aid), r = G().potGive(s, +aid, pid); if (r.ok) { say = `${pick(LINES.gave)}<span class="re"><b>${esc(a.name)}</b>${pick(LINES.react[a.social] || LINES.react[1])} <small>(애착 +${r.att})</small></span>`; if (root.UI) { root.UI.toast(`${a.name}에게 ${r.item}을 쥐여 주었습니다.`, 'grow'); root.UI.hud(); } } else if (root.UI) root.UI.toast(r.why, 'warn'); render(); return; }
+    const pg = e.target.closest('[data-pg]'); if (pg) { const [aid, pid] = pg.dataset.pg.split(':'), a = s.advs.find(x => x.id === +aid), r = G().potGive(s, +aid, pid); if (r.ok) { say = `${pick(LINES.gave)}<span class="re"><b>${esc(a.name)}</b>${pick(LINES.react[a.social] || LINES.react[1])} <small>(${r.att ? '애착 +' + r.att : '이 등급 애착은 이미 받음'})</small></span>`; if (root.UI) { root.UI.toast(`${a.name}에게 ${r.item}을 쥐여 주었습니다.`, 'grow'); root.UI.hud(); } } else if (root.UI) root.UI.toast(r.why, 'warn'); render(); return; }
   }
   PotShop.open = function (t) { if (!ensure()) return; tab = t || 'shop'; say = (LINES[tab] || LINES.shop)[Math.floor(Math.random() * (LINES[tab] || LINES.shop).length)]; box.style.display = 'block'; render(); };
   PotShop.close = function () { if (box) box.style.display = 'none'; };
