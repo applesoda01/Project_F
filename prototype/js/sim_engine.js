@@ -69,7 +69,7 @@
         upMargin: 5, upSell: 3,                    // 주점 업그레이드 마진 +G, 판매 창구 업그레이드 소재 +G
         drinkMargin: [2, 3, 4, 5, 6, 7, 8],        // 술 1잔 길드 마진 (2026-11-12, F·E 확정, D 이상 가안). 확률은 mealBuyRate
         mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02, mealMode: 1,
-        mealCook: 1, mealPrep: 4, mealKeep: 2, mealPK: 1.5, mealPMin: 0.1, mealPMax: 1.6, shopRate: 1.5,
+        mealCook: 1, mealPrep: 4, mealKeep: 0, mealLeft: 2, mealSale: 0.5, freeAttach: 1, mealPK: 1.5, mealPMin: 0.1, mealPMax: 1.6, shopRate: 1.5,
         popOn: 1, popStart: 60, popTake: 5, popRegen: 0.05, popLow: 30, popHigh: 85, popLowBoard: 0.5, popLowDraw: 0.5, popLowJudge: 0.15, popHighTown: 2,   // 2026-11-19 V4 3단계 (결정 44)
         mktOn: 1, mktTarget: 20, mktTargetSpice: 15, mktK: 0.6, mktMin: 0.5, mktMax: 2, mktUse: 0.1, mktPop: 100, buyRateOpt: [0.5, 0.7, 0.9], storeCap: 30, lowBuyK: 0.25   // 2026-11-19 V4 2단계 (결정 40 · 43)   // 2026-11-19 V4 1단계 (결정 37 · 38 · 39): 식당 재료 소모 · 메뉴 가격 · 잡화 양념 (balance.csv와 같게)   // mealMode 1 = 요리 버프(능력치 +n, 발견 보너스 없음, 2026-11-19) · 0 = 예전 C안
       },
@@ -98,7 +98,7 @@
       },
       contract: {   // 2026-11-17 경제 개편 V2 계약 모험가 [임시] (balance.csv contract.* 와 같게, 결정표 economy_v2_decisions.md)
         slots: 1, minAttach: 30, minDone: 3, weeksOpt: [8, 12], weeks: 12, rateOpt: [0.15, 0.2, 0.25, 0.3], rate: 0.2, pay: 25, payMax: 60, sup: 10, supMax: 30, step: 5, supUse: 0.5,
-        attachAdj: 0.15, spendReq: [0.95, 1, 1.03], riskReq: [0.97, 1, 1.05], socialReq: [1.05, 1, 0.98], maybe: 0.05, callMax: 2, callWin: 4, look: 8
+        attachAdj: 0.15, spendReq: [0.95, 1, 1.03], riskReq: [0.97, 1, 1.05], socialReq: [1.05, 1, 0.98], maybe: 0.05, callMax: 2, callWin: 4, look: 8, ratioMin: 1, minPay: [20, 40, 60, 80, 100, 120, 150]
       },
       town: {
         startPop: 150, baseAdd: 2, perSuccess: [1, 2, 3, 4, 5, 6, 8], residentAttach: 65, perResident: 2,   // 2026-11-13 정수 가산형 인구 (balance.csv와 같게)
@@ -425,16 +425,19 @@
         for (const m of d.mats) { if ((SPICE.has(m) && E.shopRate) || (s.orders || []).some(o => o.m === m)) continue; if ((s.orders || []).length >= max) return; if (!srcOk(m)) continue; (s.orders = s.orders || []).push({ m, target: t, mult: E.orderMult != null ? E.orderMult : 1.5 }); } }
     }
     const dishBase = d => Math.round(Q.reward[d.g] * E.mealPriceRate);
-    const menuOf = d => { const M = s.menu = s.menu || {}; if (!M[d.name]) M[d.name] = { price: dishBase(d), prep: E.mealPrep != null ? E.mealPrep : 4 }; return M[d.name]; };
+    const menuOf = d => { const M = s.menu = s.menu || {}; if (!M[d.name]) M[d.name] = { price: dishBase(d), prep: E.mealPrep != null ? E.mealPrep : 4, left: E.mealLeft === 2 ? 'free' : 'sale' }; return M[d.name]; };
+    const salePrice = d => { const mu = menuOf(d), old = ((s.bowls || {})[d.name] || []).some(b => b.n > 0 && b.w < s.week); return mu.left === 'sale' && old ? Math.max(1, Math.floor(mu.price * (E.mealSale != null ? E.mealSale : 0.5) + 1e-9)) : mu.price; };   // 결정 47 (게임과 같음)
     const priceK = (d, price) => Math.max(E.mealPMin != null ? E.mealPMin : 0.1, Math.min(E.mealPMax != null ? E.mealPMax : 1.6, 1 + (E.mealPK != null ? E.mealPK : 1.5) * (1 - price / (dishBase(d) || 1))));
     const stockOf = d => ((s.bowls || {})[d.name] || []).reduce((a, b) => a + b.n, 0);
     const shopPrice = id => Math.ceil(matBase(id) * (E.shopRate != null ? E.shopRate : 1.5) - 1e-9);
     function kitchenWeekly() {
       if (!E.mealCook) return; const B = s.bowls = s.bowls || {};
       for (const d of DISH) { if (!s.dishes[d.name]) continue;
-        const L = (B[d.name] || []).filter(b => b.n > 0 && s.week - b.w <= 1), mu = menuOf(d); let have = L.reduce((a, b) => a + b.n, 0);
+        const L0 = B[d.name] || [], L = L0.filter(b => b.n > 0 && s.week - b.w <= 1), mu = menuOf(d); let have = L.reduce((a, b) => a + b.n, 0);
+        if (mu.left === 'free') { let waste = L0.filter(b => b.n > 0 && s.week - b.w > 1).reduce((a, b) => a + b.n, 0); const T2 = s.advs.filter(a => a.alive && a.busy === 0).sort((x, y) => x.attach - y.attach); let k = 0; while (waste > 0 && k < T2.length) { const a = T2[k++]; a.attach = Math.min(100, a.attach + (E.freeAttach != null ? E.freeAttach : 1)); waste--; } }   // 결정 47: 무료 식사
         while (have < mu.prep) {
-          const keep = E.mealKeep || 0, need = d.mats.filter(m => !(s.mats[m] > keep)); if (need.some(m => !SPICE.has(m)) || (need.length && !E.shopRate)) break;
+          const RS = {}; if (s.rq) for (const r of s.rq.open) for (const [m, k] of Object.entries(needOf(r).mats || {})) RS[m] = (RS[m] || 0) + k;   // 게임 reqReserve 와 같음
+          const keep = m => (RS[m] || 0) + (E.mealKeep || 0), need = d.mats.filter(m => !((s.mats[m] || 0) - keep(m) >= 1)); if (need.some(m => !SPICE.has(m)) || (need.length && !E.shopRate)) break;
           const cost = need.reduce((a, m) => a + shopPrice(m), 0); if (cost > s.gold) break;
           for (const m of need) { const c = shopPrice(m); s.gold -= c; s.op -= c; s.st.shopPaid = (s.st.shopPaid || 0) + c; s.mats[m] = (s.mats[m] || 0) + 1; }
           for (const m of d.mats) s.mats[m]--;
@@ -462,8 +465,10 @@
         for (const a of party) {
           if (s.seatUsed >= s.tables * 2) break;   // 2026-11-12: 앉을 자리(테이블 세트 × 2)만큼만 이번 주에 식사
           if (E.mealCook && stockOf(dish) <= 0) break;   // 2026-11-19 결정 37: 품절
-          const price = E.mealCook ? menuOf(dish).price : Q.reward[dish.g] * E.mealPriceRate, inc = E.mealCook ? price : price * E.mealMargin;
-          if (a.wallet >= price && R() < Math.min(1, E.mealBuyRate[a.spend] * (E.mealCook ? priceK(dish, price) : 1))) { s.seatUsed++; a.wallet -= price; if (E.mealCook) { takeBowl(dish); const W = s.soldW = s.soldW || {}; W[dish.name] = (W[dish.name] || 0) + 1; } s.gold += inc; s.op += inc; s.st.mealIncome += inc; eaters++; ate.add(a); }
+          const full = E.mealCook ? menuOf(dish).price : Q.reward[dish.g] * E.mealPriceRate, sp = E.mealCook ? salePrice(dish) : full; let price = full;
+          if (!(a.wallet >= full && R() < Math.min(1, E.mealBuyRate[a.spend] * (E.mealCook ? priceK(dish, full) : 1)))) { if (!(sp < full && a.wallet >= sp && R() < Math.min(1, E.mealBuyRate[a.spend] * priceK(dish, sp)))) continue; price = sp; }   // 결정 47 (게임과 같음)
+          const inc = E.mealCook ? price : price * E.mealMargin;
+          { s.seatUsed++; a.wallet -= price; if (E.mealCook) { takeBowl(dish); const W = s.soldW = s.soldW || {}; W[dish.name] = (W[dish.name] || 0) + 1; } s.gold += inc; s.op += inc; s.st.mealIncome += inc; eaters++; ate.add(a); }
         }
         if (dish.stats.length) sm = (a, k) => ate.has(a) && dish.stats.includes(+k) ? (E.mealMode ? 1 + dish.val / Math.max(1, finalStat(a, +k)) : 1 + dish.pct) : 1;   // 2026-11-19 버프: 능력치 +val (게임과 같음)
         // 메뉴가 2개 열려 있으면 의뢰 유형에 맞는 요리를 고를 확률이 높음
@@ -673,7 +678,7 @@
       // 수입
       if (E.subsidyMode === 1) { if (Math.floor(s.week / WPM + 1) % (E.subsidyEvery || 6) === 0) { const pay = Math.floor((s.subHalf || 0) * (E.subsidyRate != null ? E.subsidyRate : 0.5) + 1e-9); s.gold += pay; s.op += pay; if (s.week < WPY) s.st.subPaid = (s.st.subPaid || 0) + pay; s.subHalf = 0; } }   // V2 결정 13: 반기 지급 (게임과 같음)
       else { s.gold += E.subsidy[s.grade]; s.op += E.subsidy[s.grade]; }
-      { const cf = E.consignFee != null ? E.consignFee : 0.1; for (const e of s.consign || []) { const sale = matBase(e.m), fee = Math.floor(sale * cf + 1e-9); s.gold += fee; s.op += fee; splitPay(e.ps, sale - fee); } s.consign = []; }   // 위탁품 판매 (결정 12)
+      { const cf = E.consignFee != null ? E.consignFee : 0.1; for (const e of s.consign || []) { const sale = matBase(e.m), fee = sale > 0 ? Math.min(sale, Math.max(1, Math.round(sale * cf))) : 0; s.gold += fee; s.op += fee; splitPay(e.ps, sale - fee); } s.consign = []; }   // 위탁품 판매 (결정 12)
       for (const id in s.mats) { const m = SIM_MAT[id]; if (m && m.line !== 'food' && s.mats[id] > 10) { const k = s.mats[id] - 10; let g = 0; for (let i = 0; i < k; i++) { g += matBase(id) + (s.up && s.up['판매창구'] ? (E.upSell || 3) : 0); mAdd(id, 1); } s.mats[id] = 10; s.gold += g; s.op += g; if (s.week < WPY) s.st.sellInc = (s.st.sellInc || 0) + g; } }   // 자동 판매 (게임 autoSell과 같음)
       // 주점 매출은 2026-11-12부터 매주 술 1잔 단위 (adventurersChoose 끝)
       // 유지비

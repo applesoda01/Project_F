@@ -45,6 +45,7 @@ function cand(g, not) {   // 계약 후보로 만든 모험가 (애착 60 · 성
 }
 function sign(g, a, terms) {   // 집무실을 짓고(검사용) 기본값 또는 terms로 계약 → 그 모험가
   g.built['집무실'] = true; a = a || cand(g); const keep = g.gold; if (g.gold < 0) g.gold = 0;
+  if (Gm.contractMinPay) terms = Object.assign({ pay: Math.max(Gm.contractDefault(g).pay, Gm.contractMinPay(g, a)) }, terms || {});   // 2026-11-19 결정 48: 화면 기본값처럼 최소 보수 이상으로
   const r = Gm.contractPropose(g, a.id, terms || {}); g.gold = keep;
   if (!r.ok) { a.earn = []; const r2 = Gm.contractPropose(g, a.id, terms || {}); if (!r2.ok) throw new Error('계약 체결 실패: ' + (r2.why || r2.mood)); }
   return a;

@@ -850,3 +850,6 @@
 
 /* 2026-11-19 V4 3단계: 개체수 */
 .res-row{gap:8px;align-items:baseline}.res-b{padding:0 8px;border-radius:7px;font-size:.9em}.res-b.r0{background:#f6dcdc;color:#b42332}.res-b.r1{background:#efe6d2;color:#5a3a22}.res-b.r2{background:#dcefe1;color:#1a6b30}.res-row small{color:#7a5f45}
+
+/* 2026-11-19 결정 47: 남은 그릇 처리 */
+.kmr .kleft button.on{border-color:#1f5f5a;background:#2f7f7a;color:#fff}.kmr .ksale{color:#b42332;font-weight:700}
