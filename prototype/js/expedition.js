@@ -133,6 +133,7 @@
     }
     return out;
   }
+  const BUFFI = {}; const buffImg = src => { if (!BUFFI[src]) { const im = new Image(); im.src = 'assets/' + src; BUFFI[src] = im; } return BUFFI[src]; };
   function open(id) {
     if (sel === id) { close(); return; }
     const s = getS(), e = entries().find(o => o.id === id); if (!e) return;
@@ -215,7 +216,7 @@
     v.say = v.say.filter(s => s.t < s.dur);
     g.font = 'bold 11px "MaruBuri",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
     for (const s of v.say) { if (s.t < 0) continue;
-      const w = Math.ceil(g.measureText(s.txt).width) + 12, h = 18, cx = Math.max(w / 2 + 2, Math.min(EVW - w / 2 - 2, Math.round(s.who.x))), y = SURF - 136;
+      const w = Math.ceil(g.measureText(s.txt).width) + 12, h = 18, cx = Math.max(w / 2 + 2, Math.min(EVW - w / 2 - 2, Math.round(s.who.x))), y = SURF - 136 - (s.who.adv && root.GuildGame && GuildGame.mealBuffOf && GuildGame.mealBuffOf(getS(), s.who.adv) ? 12 : 0);   // 요리 버프 아이콘이 있으면 말풍선을 12px 위로
       g.globalAlpha = Math.min(1, s.t * 8, (s.dur - s.t) * 6);
       g.fillStyle = 'rgba(255,250,238,.96)'; g.strokeStyle = '#3a2614'; g.lineWidth = 1.5;
       g.beginPath(); g.roundRect ? g.roundRect(cx - w / 2, y, w, h, 6) : g.rect(cx - w / 2, y, w, h); g.fill(); g.stroke();
@@ -322,6 +323,8 @@
         let gv = 0;
         if (v.combat && !a.down && P === 'fight') { const T = a.acts; let k = 0; while (k < T.length && T[k] <= fp) k++; const nx = T[k], pv = k ? T[k - 1] : 0; const nx2 = nx == null ? 1 : nx; gv = Math.max(0, Math.min(1, (fp - pv) / Math.max(1e-6, nx2 - pv))); }   // 2026-11-16: 마지막 행동 뒤에도 비워 두지 않고 전투 끝까지 차오름
         if (!v.combat) gv = P === 'result' ? 1 : P === 'fight' ? Math.max(0, Math.min(1, (p - 0.5) / 0.35)) : 0;   // 수행 의뢰: 수행 구간 진행도만큼 차오름
+        { const Bf = root.GuildGame && GuildGame.mealBuffOf ? GuildGame.mealBuffOf(getS(), a.adv) : null;   // 2026-11-19 요리 버프: 막대 위 왼쪽 끝 작은 동그란 요리 그림 (이번 의뢰 동안)
+          if (Bf && Bf.icon) { const im = buffImg(Bf.icon); if (im.complete && im.naturalWidth) { const r = 8, cx = bx + r, cy = SURF - 112 - r - 2; g.save(); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fillStyle = '#fff3cf'; g.fill(); g.lineWidth = 1.2; g.strokeStyle = '#d9a64a'; g.stroke(); g.clip(); g.imageSmoothingEnabled = true; g.drawImage(im, cx - r + 1, cy - r + 1, r * 2 - 2, r * 2 - 2); g.restore(); } } }
         bar(bx, SURF - 112, BW, 4, gv, () => '#ffd23a');
         bar(bx, SURF - 106, BW, 4, a.hp / a.maxHp, () => '#e8443a');
         if (a.maxMp > 0) bar(bx, SURF - 100, BW, 4, a.mp / a.maxMp, () => '#3a8ee8');

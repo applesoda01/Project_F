@@ -121,7 +121,7 @@
   // 리나 응대 시간 (2026-11-12): 출발·귀환·식사·술 주문 모두 1.5초 (첫 방문 인사는 1.6초 그대로). 접수대 업그레이드 −0.5초는 구현 예정
   const SERVE = 1.5;
   // ---------- 주간 변화 → 대본 (M2-7) ----------
-  D.snap = function (s) {
+  D.snap = function (s) { D.s = s;
     return { active: new Map(s.active.map(x => [x.q.id, x])), board: new Set(s.board.map(q => q.id)),
       adv: new Map(s.advs.map(a => [a.id, { state: a.state, alive: a.alive, done: a.done, grade: a.grade }])), log: s.log[0] };
   };
@@ -223,7 +223,7 @@
     }
   };
   // 처음 화면: 마을에 있는 모험가를 바로 앉혀 둔다
-  D.init = function (s) {
+  D.init = function (s) { D.s = s;
     for (const a of s.advs) if (a.alive && a.state === 'town') {
       const ac = actor(a, INSIDE); const st = freeSeat(ac);
       if (st) { const sp0 = standPos(ac, st); ac.seat = st; ac.x = sp0.x; ac.y = sp0.y; ac.pose = 'sit'; ac.lab = '휴식 중'; startSit(ac, st, 'idle'); } else settle(ac);
@@ -435,6 +435,7 @@
   };
   D.nameplate = NP;
   const headY = ac => ac.y - (ac.pose === 'sit' ? 135 : 141);   // 서 있을 때 명찰이 머리에 더 붙도록 150 → 141
+  const BUFFI = {}; const buffImg = src => { if (!BUFFI[src]) { const im = new Image(); im.src = 'assets/' + src; BUFFI[src] = im; } return BUFFI[src]; };
   function plate(g, ac) {
     const a = ac.a; if (!a || a.alive === false) return 0;
     const GRs = (root.GuildGame && root.GuildGame.GR) || ['F', 'E', 'D', 'C', 'B', 'A', 'S'], L = GRs[a.grade] || 'F', im = badgeImg(L);
@@ -456,6 +457,8 @@
     if (!dark) g.strokeText(nm, tx1, ty + NP.ndy); g.fillStyle = dark ? '#3a2616' : NP.nameColor; g.fillText(nm, tx1, ty + NP.ndy);
     g.font = `700 ${NP.lfs}px ${FF}`;
     if (!dark) g.strokeText(lv, tx2, ty + NP.ldy); g.fillStyle = dark ? '#9a6228' : NP.lvColor; g.fillText(lv, tx2, ty + NP.ldy);
+    { const B = root.GuildGame && GuildGame.mealBuffOf && root.Director && D.s ? GuildGame.mealBuffOf(D.s, a) : null;   // 2026-11-19 요리 버프 (이번 원정 동안): 명찰 왼쪽 바깥 동그란 요리 그림
+      if (B && B.icon) { const im = buffImg(B.icon); if (im.complete && im.naturalWidth) { const r = 13, cx = x0 - r - 3, cy = y0 + H / 2; g.save(); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fillStyle = '#fff3cf'; g.fill(); g.lineWidth = 2; g.strokeStyle = '#d9a64a'; g.stroke(); g.clip(); g.drawImage(im, cx - r + 2, cy - r + 2, r * 2 - 4, r * 2 - 4); g.restore(); } } }
     let extra = 0;
     if (ac.lab) {   // 상태 문구 (2026-11-12): 명찰 바로 위 작은 글씨
       g.font = `700 14px ${FF}`; g.textAlign = 'center'; g.lineWidth = 3.5; g.strokeStyle = NP.outline;
