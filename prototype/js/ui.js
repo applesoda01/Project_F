@@ -25,7 +25,7 @@
     q('#ppBtn').onclick = () => hooks.setSpeed(curSp > 0 ? 0 : lastSp);
     // 기능 버튼 → 팝업
     stage.ui.querySelectorAll('[data-pop]').forEach(b => b.onclick = () => UI.open(b.dataset.pop));
-    { const gb = q('#goalBox'); if (gb) gb.onclick = () => UI.open('req'); }   // 목표 안내판 → 리퀘스트 장
+    { const gb = q('#goalBox'); if (gb) gb.onclick = () => { if (root.Tutorial && root.Tutorial.active && root.Tutorial.active()) return; UI.open('req'); }; }   // 목표 안내판 → 리퀘스트 장
     lbInit();
     q('#popClose').onclick = UI.close;
     q('#popBack').onclick = e => { if (e.target.id === 'popBack') UI.closeFx(); };
@@ -189,6 +189,7 @@
   UI.toast = toast;
   UI.faceStyle = (...a) => faceStyle(...a);   // 대장간 창 등 다른 창에서 얼굴 그림을 씀
   UI.onLogs = function (logs) { // 새 기록들 (오래된 것부터)
+    ctWatch();   // 2026-11-19 계약 갱신 알림 · 결산 카드 (테스트 의견 10 ⑤ ⑥)
     const gups = logs.filter(L => L.gup).map(L => L.gup); if (gups.length) gupShow(gups);   // 2026-11-12 모험가 승급 축하 카드
     for (const L of logs) {
       if (L.rq) {   // 리퀘스트: 의뢰 · 완료 · 실패 · 거절 대사 (data/quest_lines.csv). 외지인이 처음 오면 리나 한마디가 앞에 붙음
@@ -360,6 +361,7 @@
   // 목표 안내판 (2026-11-16 동료 피드백 "초반에 뭘 해야 할지 모르겠음" → 가안: 늘 보이는 작은 판). 누르면 리퀘스트 장
   function goalShow() {
     const box = q('#goalBox'); if (!box || !Gm.mainView) return;
+    if (root.Tutorial && root.Tutorial.active && root.Tutorial.active()) { if (root.Tutorial.goalPaint) root.Tutorial.goalPaint(); return; }   // 기본 튜토리얼 동안은 튜토리얼 목표 (tutorial.js goalPaint)
     const m = Gm.mainView(s), R = s.req ? s.req.open : [], cnt = st => R.filter(r => r.state === st).length;
     const nNew = R.filter(r => r.isNew).length, nOpen = cnt('open'), nGo = R.length - nOpen;
     let k = '다음 목표', t = '', bar = null, d = '', dc = '', main = false;
@@ -1067,7 +1069,7 @@
     let h = `<div class="bk2 bk-av ${root.BOOK_ATT || 'att-b'}"><section class="bk-l"><div class="ux-h">모험가 명부 <small>${list.length} / ${Gm.advCap(s)}명</small></div><div class="av-list ${root.BOOK_ADV_LIST || 'st-d'}">`;
     for (const a of list) { const pc = pty.get(a.id) && pty.get(a.id).col, on = sampleOn(a), t = ttlName(on);
       h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${pc ? 'pty' : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"${pc ? ` style="--pc:${pc}"` : ''}><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}</span>
-      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}${a.contract ? `<em class="ct-tag" title="계약 모험가 · ${a.contract.end + 1}주까지 (체결 주 ~ 체결 주 + 기간 − 1)">계약</em>` : ''}</span><span class="sub">${a.contract ? `계약 ${Math.max(0, Math.min(a.contract.weeks, s.week - a.contract.start + 1))}/${a.contract.weeks}주` : `${a.cls} · ${ST_SHORT[stOf(a)]}${stOf(a) === 'injured' ? ' ' + Math.max(0, a.until - s.week) + '주' : ''}`}${relIcons(a)}</span></span><i class="ux-grade av-gr" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)" title="${GR[a.grade]}급"></i>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
+      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}${a.contract ? `<em class="ct-tag" title="계약 모험가 · ${a.contract.end + 1}주까지 (체결 주 ~ 체결 주 + 기간 − 1)">계약</em>` : ''}</span><span class="sub">${a.contract ? `계약 ${Math.max(0, Math.min(a.contract.weeks, s.week - a.contract.start + 1))}/${a.contract.weeks}주<i class="ct-bar ${a.contract.end - s.week <= 1 ? 'end' : ''}" title="${a.contract.end - s.week <= 1 ? '곧 끝남 — 계약 제안에서 갱신할 수 있어요' : '계약 진행'}"><i style="width:${Math.round(Math.max(0, Math.min(1, (s.week - a.contract.start + 1) / a.contract.weeks)) * 100)}%"></i></i>` : `${a.cls} · ${ST_SHORT[stOf(a)]}${stOf(a) === 'injured' ? ' ' + Math.max(0, a.until - s.week) + '주' : ''}`}${relIcons(a)}</span></span><i class="ux-grade av-gr" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)" title="${GR[a.grade]}급"></i>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
     const a = s.advs.find(x => x.id === openAdv);
     return h + `</div></section><section class="bk-r av-main">${a ? advDetail(a) : '<div class="ux-empty">모험가가 없습니다.</div>'}</section><div class="qtip avtip" id="avTip"></div></div>`;
   }
@@ -1881,6 +1883,64 @@
     const josaFill = (k, sfx, v) => { if (!sfx) return v; const [a, b] = sfx.split('/'); const c = String(v).charCodeAt(String(v).length - 1); const bat = c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0; return v + (bat ? a : b); };   // {cls:이에요/예요} → 받침이면 앞, 없으면 뒤 (2026-11-16 대사 검수 D12 · T175)
     return (D[id] || []).map(l => ({ face: l.face, text: l.text.replace(/\{(\w+)(?::([^}]+))?\}/g, (m0, k, sfx) => vars && vars[k] != null ? josaFill(k, sfx, vars[k]) : m0) }));
   };
+  // ---------- 계약 흐름 (2026-11-19 사용자 결정 10 ② ⑤ ⑥ · 시안 docs/design/mockups/test_1119/4 · 5) ----------
+  //   ⑤ 끝나기 2주 전(갱신할 수 있게 되는 주) 리나가 기록창에 알림 · ⑥ 계약이 끝나거나 갱신되면 결산 카드 (게임 game_core.js 의 s.ctDone)
+  function ctWatch() {
+    if (!s) return;
+    for (const a of s.advs) { const c = a.contract; if (!a.alive || !c || c.next || s.week !== c.end - 1 || c.warned === c.end) continue;
+      c.warned = c.end; UI.chat('리나', `마스터, ${a.name} 씨 계약이 2주 뒤에 끝나요. 갱신하시려면 모험가 장 「계약 제안」에서 조건을 정해 주세요.`, 'lina'); }
+    const q_ = s.ctDone || []; if (!q_.length || document.querySelector('.ctEnd, .gupG') || UI.dlgBusy() || popup) return;   // 대화 · 창이 끝난 뒤 다음 주에 띄움
+    const r = q_.shift(), guild = r.fee - r.pay - r.sup, rec = r.done + r.fail;
+    const sp0 = curSp; hooks.setSpeed && hooks.setSpeed(0);
+    const m = document.createElement('div'); m.className = 'ctEnd gupG';
+    m.innerHTML = `<div class="gupG-card"><div class="sub">${r.weeks}주 계약이 ${r.how === 'renew' ? '끝나고 새 계약으로 이어져요' : '끝났어요'} (${r.start}주 ~ ${r.end}주)</div><h2 style="font-size:30px">${esc(r.name)} · 계약 결산</h2>
+      <div class="ctR"><span>함께 한 의뢰</span><span>성공 ${r.done} · 실패 ${r.fail} · 지명 ${r.nom}번</span><b>${rec}건</b></div>
+      <div class="ctR"><span>${esc(r.name)} 수입</span><span>의뢰 실수령 ${fmt(r.net)}G + 월 보수 ${fmt(r.pay)}G + 지원 ${fmt(r.sup)}G</span><b>${fmt(r.net + r.pay + r.sup)}G</b></div>
+      <div class="ctR"><span>길드 몫</span><span>계약 수수료 ${fmt(r.fee)}G − 보수 ${fmt(r.pay)}G − 지원 ${fmt(r.sup)}G</span><b class="${guild < 0 ? 'neg' : ''}">${guild >= 0 ? '+' : ''}${fmt(guild)}G</b></div>
+      ${r.att0 != null ? `<div class="ctR"><span>애착</span><span>${attStage(r.att0)} → ${attStage(r.att1)}</span><b>${r.att0} → ${r.att1}</b></div>` : ''}
+      <div class="lina"><i class="f"></i><span><b>리나</b> “${r.how === 'renew' ? `${esc(r.name)} 씨, 다음 계약도 잘 부탁해요!` : guild >= 0 ? `${esc(r.name)} 씨, 이번 계약 동안 정말 든든했어요.` : `${esc(r.name)} 씨 덕분에 의뢰는 잘 됐지만, 보수가 수수료보다 많았어요.`}”</span></div>
+      <button class="ux-btn primary" data-ct="ok">확인</button>${r.how === 'end' && s.advs.some(a => a.id === r.id && a.alive) ? ' <button class="ux-btn" data-ct="re">다시 계약 제안</button>' : ''}</div>`;
+    stage.ui.appendChild(m); requestAnimationFrame(() => m.classList.add('on'));
+    const close = () => { m.classList.remove('on'); setTimeout(() => m.remove(), 300); hooks.setSpeed && hooks.setSpeed(sp0 || 1); };
+    m.querySelector('[data-ct="ok"]').onclick = close;
+    const re = m.querySelector('[data-ct="re"]'); if (re) re.onclick = () => { close(); openAdv = r.id; UI.open('advs'); setTimeout(() => { openAdv = r.id; const t = document.querySelector('[data-sub="advs:contract"]'); if (t) t.click(); }, 50); };
+  }
+  const attStage = v => v >= 90 ? '토박이' : v >= 60 ? '동반자' : v >= 30 ? '새내기' : '방랑자';
+  { const st_ = document.createElement('style'); st_.textContent = `.ctEnd .ctR{display:grid;grid-template-columns:120px 1fr 92px;gap:8px;text-align:left;font-size:16px;padding:6px 4px;border-bottom:1px dashed rgba(122,74,40,.25)}.ctEnd .ctR b{text-align:right}.ctEnd .ctR b.neg{color:#b5302a}.ctEnd .ctR span:nth-child(2){color:#6b4a2e;font-size:14.5px}
+.bk-av .ct-bar{display:block;width:120px;height:5px;margin-top:3px;border-radius:3px;background:rgba(110,72,36,.2);overflow:hidden}.bk-av .ct-bar i{display:block;height:100%;background:#2f6a52}.bk-av .ct-bar.end i{background:#c9963e}`; document.head.appendChild(st_); }
+  // ---------- 길드 승급 카드 (2026-11-19 사용자 결정 17 · 시안 docs/design/mockups/test_1119/6_grade.png) ----------
+  //   침공 결과 창 「확인」 뒤 invasion.js가 부름. 배지 바뀜 · 리나 한마디 · 새로 열린 것 · 보상 → 「확인」을 누르면 배지가 왼쪽 위 등급 자리로 날아감. 그동안 시간 멈춤
+  //   팡파르: 게임에 효과음 파일이 아직 없어 넣지 않음 (효과음이 생기면 여기서 재생)
+  const GUP_LINA = ['', '해냈어요, 마스터! 이제 우리 길드도 어엿한 E급이에요!', '마스터, D급이래요! 마을 사람들이 우리 얘기만 해요!', 'C급… 이제 왕국에서도 우리 길드를 알아요!', 'B급이에요! 꿈만 같아요, 마스터.', 'A급… 마스터, 우리 정말 대단해요!', 'S급! 세상에서 제일 이름난 길드가 됐어요!'];
+  UI.gradeUp = function (g) {
+    if (!s || g < 1 || (s.gupShown || 0) >= g) return; s.gupShown = g; const old = g - 1, cap0 = Gm.advCap(Object.assign({}, s, { grade: old })), cap1 = Gm.advCap(s), R = (s.main && s.main.result) || {};
+    const facs = Object.keys(Gm.FAC_COST).filter(f => Gm.FAC_COST[f] === g).map(f => FAC_LABEL[f] || FACNAME[f] || f);
+    const list = [...facs.map(f => `<li><b>새로 열림</b> · ${esc(f)} 건설</li>`), cap1 > cap0 ? `<li><b>늘어남</b> · 모험가 정원 ${cap0} → ${cap1}명</li>` : '', `<li><b>새로 열림</b> · ${GR[g]}급 의뢰 · ${GR[g]}급 장비</li>`,
+      R.gold || R.fame ? `<li><b>보상</b> · ${R.gold ? fmt(R.gold) + 'G' : ''}${R.gold && R.fame ? ' · ' : ''}${R.fame ? '명성 +' + R.fame : ''}</li>` : ''].join('');
+    const sp0 = curSp; hooks.setSpeed && hooks.setSpeed(0);
+    const m = document.createElement('div'); m.className = 'gupG';
+    m.innerHTML = `<div class="gupG-card"><div class="sub">영주님이 길드를 인정했습니다</div><h2>${GR[g]}급 길드 승급!</h2>
+      <div class="bds"><i class="bd old" style="background-image:url(assets/ui/hud/badge_${GR[old]}.png)"></i><span class="ar">➜</span><i class="bd new" style="background-image:url(assets/ui/hud/badge_${GR[g]}.png)"></i></div>
+      <div class="lina"><i class="f"></i><span><b>리나</b> “${esc(GUP_LINA[g] || GUP_LINA[1])}”</span></div><ul>${list}</ul><button class="ux-btn primary" data-gup="ok">확인</button></div>`;
+    stage.ui.appendChild(m); requestAnimationFrame(() => m.classList.add('on'));
+    m.querySelector('[data-gup]').onclick = () => {
+      const bd = m.querySelector('.bd.new'), to = q('#hGrade'), ur = stage.ui.getBoundingClientRect(), k = ur.width / 1920 || 1;
+      if (bd && to) { const a = bd.getBoundingClientRect(), b = to.getBoundingClientRect(), fly = bd.cloneNode(); fly.className = 'gupG-fly'; fly.style.cssText += `;left:${(a.left - ur.left) / k}px;top:${(a.top - ur.top) / k}px;width:${a.width / k}px;height:${a.height / k}px`;
+        stage.ui.appendChild(fly); requestAnimationFrame(() => { fly.style.left = (b.left - ur.left) / k + 'px'; fly.style.top = (b.top - ur.top) / k + 'px'; fly.style.width = b.width / k + 'px'; fly.style.height = b.height / k + 'px'; });
+        setTimeout(() => { fly.remove(); to.classList.add('gupG-pop'); setTimeout(() => to.classList.remove('gupG-pop'), 700); UI.hud(); }, 750); }
+      m.classList.remove('on'); setTimeout(() => m.remove(), 300); hooks.setSpeed && hooks.setSpeed(sp0 || 1);
+    };
+  };
+  { const st_ = document.createElement('style'); st_.textContent = `.gupG{position:absolute;inset:0;z-index:45;background:rgba(18,10,4,.6);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}.gupG.on{opacity:1}
+.gupG-card{width:640px;background:#fbf3e2;border:3px solid #b8862e;border-radius:18px;padding:26px 34px;color:#3b2a1e;box-shadow:0 12px 40px rgba(0,0,0,.4);text-align:center;transform:scale(.9);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}.gupG.on .gupG-card{transform:none}
+.gupG-card h2{margin:6px 0 4px;font-size:36px;letter-spacing:2px}.gupG-card .sub{color:#8a6a4a;font-size:15px}
+.gupG-card .bds{display:flex;align-items:center;justify-content:center;gap:24px;margin:14px 0 6px}.gupG-card .bd{width:100px;height:100px;background:center/contain no-repeat}.gupG-card .bd.old{opacity:.4;transform:scale(.8)}
+.gupG-card .bd.new{filter:drop-shadow(0 0 14px #ffd75e);animation:gupGin .9s .3s both}.gupG-card .ar{font-size:30px;color:#b8862e}
+@keyframes gupGin{0%{transform:scale(0) rotate(-180deg);opacity:0}70%{transform:scale(1.2)}100%{transform:none;opacity:1}}
+.gupG-card .lina{display:flex;gap:12px;align-items:center;text-align:left;background:#fff;border-radius:12px;padding:10px 14px;margin:12px 0;font-size:16px}
+.gupG-card .lina .f{width:60px;height:60px;border-radius:50%;flex:none;border:2px solid #d9a066;background:url(assets/npc/lina_face_smile.png) -24px -22px/auto 130px no-repeat #f1d9c0}
+.gupG-card ul{text-align:left;margin:10px 0 14px;padding:0;list-style:none}.gupG-card li{padding:6px 10px;border-bottom:1px dashed rgba(122,74,40,.3);font-size:17px}.gupG-card li b{color:#2f6a52}
+.gupG-fly{position:absolute;z-index:46;background:center/contain no-repeat;transition:all .7s cubic-bezier(.5,0,.3,1)}.gupG-pop{animation:gupGpop .7s}@keyframes gupGpop{40%{transform:scale(1.5);filter:drop-shadow(0 0 10px #ffd75e)}}`; document.head.appendChild(st_); }
   UI.say = function (lines) { // [{face:'smile', text:'…'}, …]
     Dlg.lines.push(...lines);
     if (!Dlg.open) next();
@@ -1970,7 +2030,8 @@
     else out.push(...UI.lines('monthly_normal', v));
     UI.say(out);
   };
-  UI.gradeUp = g => UI.say(UI.lines('gradeup', { grade: GR[g] }));
+  // 2026-11-19: 길드 승급은 위의 승급 카드(UI.gradeUp)로 바뀜. 예전 리나 대화(dialog.csv gradeup)는 카드 안 리나 한마디로 대신함
+  // UI.gradeUp = g => UI.say(UI.lines('gradeup', { grade: GR[g] }));
 
   root.UI = UI;
 })(this);
