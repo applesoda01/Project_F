@@ -678,11 +678,11 @@
       if (!s.dishes[d.name]) continue;
       const L0 = B[d.name] || [], L = L0.filter(b => b.n > 0 && s.week - b.w <= 1);
       const waste = L0.filter(b => b.n > 0 && s.week - b.w > 1).reduce((a, b) => a + b.n, 0); if (waste) s.month.waste = (s.month.waste || 0) + waste;
-      const mu = menuOf(s, d); let have = L.reduce((a, b) => a + b.n, 0);
+      const mu = menuOf(s, d); let have = L.reduce((a, b) => a + b.n, 0); const KS = s.kShort = s.kShort || {}; KS[d.name] = false;   // kShort: 이번 주 재료 · 금고가 모자라 준비량을 못 채움 (품절 원인 구분용)
       while (have < mu.prep) {
         const keep = s.cfg.econ.mealKeep || 0, need = d.mats.filter(m => !(s.mats[m] > keep));   // mealKeep: 식당이 남겨 두는 재료 수 (납품 리퀘스트용) [임시]
-        if (need.some(m => !SPICE.has(m)) || (need.length && !s.cfg.econ.shopRate)) { s.month.soldOut = (s.month.soldOut || 0) + 1; break; }   // 재료가 없으면 품절 (결정 46: shopRate 0 = 잡화 상인 없음, 양념도 상시 발주로)
-        const cost = need.reduce((a, m) => a + shopPrice(s, m), 0); if (cost > s.gold) break;
+        if (need.some(m => !SPICE.has(m)) || (need.length && !s.cfg.econ.shopRate)) { s.month.soldOut = (s.month.soldOut || 0) + 1; KS[d.name] = true; break; }   // 재료가 없으면 품절 (결정 46: shopRate 0 = 잡화 상인 없음, 양념도 상시 발주로)
+        const cost = need.reduce((a, m) => a + shopPrice(s, m), 0); if (cost > s.gold) { KS[d.name] = true; break; }
         for (const m of need) { const c = shopPrice(s, m); s.gold -= c; s.month.shop = (s.month.shop || 0) - c; s.mats[m] = (s.mats[m] || 0) + 1; }
         for (const m of d.mats) s.mats[m]--;
         const n = d.serv || 2; L.push({ n, w: s.week }); have += n; s.month.cooked = (s.month.cooked || 0) + n;
