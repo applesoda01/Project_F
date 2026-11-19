@@ -847,3 +847,6 @@
 .mp-seg{display:flex;gap:3px}.mp-seg.r{min-width:150px;justify-content:flex-end}.mp-seg small{font-size:12px;color:#7a5f45}
 .mp-seg button{font:inherit;font-size:13px;font-weight:700;padding:2px 8px;border-radius:7px;border:1.5px solid #b9a385;background:#fffaf0;color:#5a3a22;cursor:pointer}
 .mp-seg button.on{border-color:#1f5f5a;background:#2f7f7a;color:#fff}
+
+/* 2026-11-19 V4 3단계: 개체수 */
+.res-row{gap:8px;align-items:baseline}.res-b{padding:0 8px;border-radius:7px;font-size:.9em}.res-b.r0{background:#f6dcdc;color:#b42332}.res-b.r1{background:#efe6d2;color:#5a3a22}.res-b.r2{background:#dcefe1;color:#1a6b30}.res-row small{color:#7a5f45}

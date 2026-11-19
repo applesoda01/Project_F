@@ -225,9 +225,30 @@
   //   레벨이 막 오르면 그 의뢰가 qlv.fresh번 끝날 때까지 적 정보 오차가 qlv.var로 커짐 ("들개가 늘었다는데 몇 마리인지는 몰라요")
   const QLV = s => { const L = s.cfg.qlv; return L && L.on ? L : null; };
   function qlvOf(s, id) { s.qlv = s.qlv || {}; return s.qlv[id] || (s.qlv[id] = { lv: 1, wins: 0, fresh: 0 }); }
+  // ---------- V4 3단계 (결정 44): 사냥터 · 채집지 개체수 ----------
+  // 자원지 = 게시판 의뢰 틀의 주 소재(가장 잘 나오는 소재). 0~100, 시작 popStart. 그 소재를 1개 가져올 때마다 −popTake, 매주 +popRegen.
+  // popLow 미만: 그 의뢰가 덜 올라옴(popLowBoard 확률로 다른 의뢰로) · 뽑기 수 절반 · 비전투 판정 기준 +popLowJudge · 의뢰 레벨이 오르지 않음
+  // popHigh 넘음(전투 의뢰의 자원지 = 몬스터): 매주 인구 증가 −popHighTown (밭 · 가축 피해), 달마다 한 번 알림 [모두 임시]
+  const resOn = s => !!(s.cfg.econ.popOn);
+  const RES_G = {};   // 자원지 → 그 소재가 나오는 가장 낮은 의뢰 등급 (길드 등급보다 높으면 아직 갈 수 없는 곳이라 개체수가 움직이지 않음)
+  const baseMatOf = T => T ? ((T.rewards || []).reduce((b, r) => (!b || r.p > b.p ? r : b), null) || {}).m : null;
+  const RES_IDS = (() => { const o = {}; for (const k in TPL) for (const t of TPL[k]) { const m = baseMatOf(t), g = +k.split('_')[1]; if (m) o[m] = o[m] || !!(t.enemies && t.enemies.length); if (m) RES_G[m] = Math.min(RES_G[m] != null ? RES_G[m] : 9, g); } return o; })();   // 자원지 → 몬스터(사냥형) 여부
+  const resOf = (s, m) => { if (!resOn(s) || !(m in RES_IDS)) return null; const R = s.res = s.res || {}; if (R[m] == null) R[m] = s.cfg.econ.popStart != null ? s.cfg.econ.popStart : 60; return R[m]; };
+  const resLow = (s, m) => { const v = resOf(s, m); return v != null && v < (s.cfg.econ.popLow || 30); };
+  const resBand = (s, m) => { const v = resOf(s, m); if (v == null || RES_G[m] > s.grade) return null; return v < (s.cfg.econ.popLow || 30) ? 0 : v > (s.cfg.econ.popHigh || 80) ? 2 : 1; };   // 0 적음 · 1 보통 · 2 많음 (화면은 숫자 숨김)
+  function resTake(s, m, n) { if (resOf(s, m) == null) return; s.res[m] = Math.max(0, s.res[m] - (s.cfg.econ.popTake != null ? s.cfg.econ.popTake : 3) * n); }
+  function resWeekly(s) {
+    if (!resOn(s)) return; const E = s.cfg.econ, hi = E.popHigh || 85, rg = E.popRegen != null ? E.popRegen : 0.12;
+    let worst = null;
+    for (const m in RES_IDS) { if (RES_G[m] > s.grade) continue; const v = Math.max(1, resOf(s, m)); s.res[m] = Math.min(100, v + rg * v * (1 - v / 100));   // 로지스틱 회복: 많을수록 천천히 참 (내버려 두면 100에 가까워짐) · 아직 갈 수 없는 등급의 자원지는 그대로
+      if (RES_IDS[m] && s.res[m] > hi && (!worst || s.res[m] > s.res[worst])) worst = m; }
+    if (worst && s.week % WPM === WPM - 1) { s.month.popAdd = (s.month.popAdd || 0) - (E.popHighTown != null ? E.popHighTown : 2); s.month.resHarm = (s.month.resHarm || 0) + 1;   // 달마다 가장 넘친 몬스터 사냥터 한 곳만 피해
+      const mt = MAT[worst]; log(s, `${mt ? mt.name : '짐승'}이 나오는 사냥터에 짐승이 너무 많아졌습니다. 밭과 가축이 피해를 입어 이번 달 마을이 덜 늘어납니다.`, 'town'); }
+  }
   function qlvAfter(s, q, ok) {   // 귀환 때: 정보 오차 남은 수 줄이고, 성공이면 레벨 셈
     const L = QLV(s); if (!L || !q.tid || q.rq || !s.qlv || !s.qlv[q.tid]) return;
     const V = s.qlv[q.tid]; if (q.fz && V.fresh > 0) V.fresh--;
+    if (ok && resLow(s, baseMatOf(QBYID[q.tid]))) ok = false;   // 결정 44: 개체수가 적을 때는 레벨이 오르지 않음 (승수도 세지 않음)
     if (ok && V.lv < L.max && ++V.wins >= L.need) { V.lv++; V.wins = 0; V.fresh = L.fresh; { const nm = q.name || '의뢰'; log(s, `「${nm}」${J(nm, '이', '가').slice(nm.length)} Lv${V.lv}로 올랐습니다. 상대가 강해진 대신 보상이 늘었습니다. (한동안 적 정보가 부정확)`, 'unlock'); } }
   }
   function makeQuest(s, g, force) {   // force: 템플릿 id (튜토리얼에서 정해진 의뢰를 올릴 때)
@@ -236,11 +257,12 @@
     while (req.length < n) { const k = ri(s, 5); if (!req.includes(k)) req.push(k); }
     let C = FT ? [FT] : TPL[type + '_' + g];
     if (!FT) { const O = liveOrders(s).filter(o => !SPICE.has(o.m)), B = O.length ? Math.max(...O.map(o => orderBiasOf(s, o))) : 0, DUP = s.cfg.econ.orderDup || 2;   // 2026-11-19 결정 41: 켜진 상시 발주 중 가장 센 쏠림 · 양념 발주는 게시판 쏠림 없음(모든 F급 의뢰에서 나옴) · 같은 의뢰는 DUP장까지만   // 2026-11-18 결정 26: 발주 중에는 새 의뢰의 orderBias [임시] 비율이 그 소재를 얻는 의뢰로 바뀜 (발주가 없으면 난수를 쓰지 않아 예전과 같은 결과)
-      if (B > 0 && O && O.length && s.R() < B) { const W = []; for (const k in TPL) if (k.endsWith('_' + g)) for (const t of TPL[k]) if ((t.rewards || []).some(r => r.p >= 30 && O.some(o => o.m === r.m)) && s.board.filter(x => x.tid === t.id).length < DUP) W.push(t); if (W.length) C = [W[Math.floor(s.R() * W.length)]]; } }
-    const T = !C ? null : C.length > 1 ? C[Math.floor(s.R() * C.length)] : C[0];   // 후보 1개면 난수를 쓰지 않아 예전과 같은 결과
+      if (B > 0 && O && O.length && s.R() < B) { const W = []; for (const k in TPL) if (k.endsWith('_' + g)) for (const t of TPL[k]) if ((t.rewards || []).some(r => r.p >= 30 && O.some(o => o.m === r.m)) && s.board.filter(x => x.tid === t.id).length < DUP && !(resLow(s, baseMatOf(t)) && s.R() < (s.cfg.econ.popLowBoard != null ? s.cfg.econ.popLowBoard : 0.5))) W.push(t); /* 결정 44: 개체수가 적으면 발주 쏠림도 약해짐 */ if (W.length) C = [W[Math.floor(s.R() * W.length)]]; } }
+    let T = !C ? null : C.length > 1 ? C[Math.floor(s.R() * C.length)] : C[0];   // 후보 1개면 난수를 쓰지 않아 예전과 같은 결과
+    if (!FT && T && resLow(s, baseMatOf(T)) && s.R() < (s.cfg.econ.popLowBoard != null ? s.cfg.econ.popLowBoard : 0.5)) { const W = []; for (const k in TPL) if (k.endsWith('_' + g)) for (const t of TPL[k]) if (!resLow(s, baseMatOf(t))) W.push(t); if (W.length) T = W[Math.floor(s.R() * W.length)]; }   // 결정 44: 개체수가 적은 의뢰는 다른 의뢰로
     const QL = QLV(s), LV = QL && T && T.board ? qlvOf(s, T.id) : null, lv = LV ? LV.lv : 1;   // 의뢰 레벨 (결정 35)
     const DF = ((Q.diff || [])[g] || 1) * (QL ? 1 + QL.foe * (lv - 1) : 1);   // 난이도 배수 (2026-11-16): 판정 기준치와 적 체력 · 공격력에 곱함 · 의뢰 레벨 배수
-    const R0 = (T ? T.ref : Q.ref[g]) * n * (0.85 + s.R() * 0.30) * DF;
+    const R0 = (T ? T.ref : Q.ref[g]) * n * (0.85 + s.R() * 0.30) * DF * (T && resLow(s, baseMatOf(T)) ? 1 + (s.cfg.econ.popLowJudge != null ? s.cfg.econ.popLowJudge : 0.15) : 1);   // 결정 44: 개체수가 적으면 흔적 찾기가 어려움(판정 기준 +15%)
     const q = { id: s.nextId++, g, type: T && T.type >= 0 ? T.type : type, req: T && T.stats && T.stats.length ? T.stats.slice() : req, r: R0 / n, reward: (T ? T.reward : Q.reward[g]) * (QL ? 1 + QL.pay * (lv - 1) : 1), posted: s.week };
     if (LV) { q.lv = lv; if (LV.fresh > 0) q.fz = true; }
     if (T) Object.assign(q, { tid: T.id, name: T.name, weeks: T.weeks, fameS: T.fameS, fameF: T.fameF, trustS: T.trustS, trustF: T.trustF, death: T.death });
@@ -512,6 +534,7 @@
     const RW = T.rewards || [], E = s.cfg.econ; if (!E.drawMode) return RW;
     const main = RW.filter(r => r.p >= 30), rare = RW.filter(r => r.p < 30), P = E.drawPts || [2, 3];
     let k = q.enemies && q.enemies.length ? q.enemies.length : P[0] + Math.floor(s.R() * (P[1] - P[0] + 1));
+    if (resLow(s, baseMatOf(T))) k = Math.max(1, Math.floor(k * (s.cfg.econ.popLowDraw != null ? s.cfg.econ.popLowDraw : 0.5)));   // 결정 44: 개체수가 적으면 뽑기 수 절반
     if ((q.lv || 1) > 1 && QLV(s)) { const kk = k * (1 + QLV(s).pay * (q.lv - 1)); k = Math.floor(kk) + (s.R() < kk - Math.floor(kk) ? 1 : 0); }   // 의뢰 레벨: 소재 개수 +pay
     const tot = main.reduce((a, r) => a + r.p, 0), om = main.find(r => liveOrders(s).some(o => o.m === r.m)), oo = om && (s.orders || []).find(o => o.m === om.m), ob = oo ? (s.cfg.econ.orderMode ? orderBiasOf(s, oo) : 1) : 0, out = [];
     for (let i = 0; i < k && main.length; i++) {
@@ -529,6 +552,7 @@
         if (o && ids.length) { const op = orderPriceOf(s, o); s.gold -= op; s.month.order = (s.month.order || 0) - op; o.got = (o.got || 0) + 1; s.mats[r.m] = (s.mats[r.m] || 0) + 1; payParty(s, ids, op); buyNote(s, r.m, ids, op, 1, true); if (!s.knownMats[r.m]) s.knownMats[r.m] = true;
           continue; } }
       mktAdd(s, r.m, 1);   // 2026-11-19 V4 2단계: 의뢰에서 나온 소재는 시장 공급으로 셈
+      resTake(s, r.m, 1);  // V4 3단계: 그 자원지 개체수 −3
       const pol = matPol(s, r.m), cap = s.cfg.econ.storeCap || 30;
       if (ids.length && pol.mode === 'none') { payParty(s, ids, matPrice(s, r.m)); if (!s.knownMats[r.m]) { s.knownMats[r.m] = true; const m = MAT[r.m]; if (m) log(s, `처음 보는 소재를 얻었습니다: ${m.name}`, 'unlock'); } continue; }   // 안 받음: 모험가가 시장에 직접 팖
       const bp = matBuyPrice(s, r.m);
@@ -1440,6 +1464,7 @@
     fameArrivals(s);
     s.seatUsed = 0;   // 이번 주 식사한 좌석 수
     contractWeekly(s);   // 계약 모험가: 근무 주 세기 · 끝난 계약 정산 (경제 개편 V2 3단계)
+    resWeekly(s);     // 2026-11-19 V4 3단계: 사냥터 · 채집지 개체수 회복 · 너무 많으면 피해
     mktWeekly(s);     // 2026-11-19 V4 2단계: 소재 시세 (바깥 공급 · 마을 소비)
     kitchenWeekly(s); // 2026-11-19 V4 1단계: 식당이 이번 주 팔 그릇을 만듦 (재료 소모 · 양념 구매)
     reqWeekly(s);     // 리퀘스트: 등장 판정 · 설치 요청 확인 · 지명 파티 출발(게시판보다 먼저)
@@ -1449,6 +1474,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
