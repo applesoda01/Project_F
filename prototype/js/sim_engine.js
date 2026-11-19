@@ -382,9 +382,9 @@
       const main = RW.filter(r => r.p >= 30), rare = RW.filter(r => r.p < 30), P = E.drawPts || [2, 3];
       let k = q.enemies && q.enemies.length ? q.enemies.length : P[0] + Math.floor(R() * (P[1] - P[0] + 1));
       if ((q.lv || 1) > 1) { const kk = k * q.lvm; k = Math.floor(kk) + (R() < kk - Math.floor(kk) ? 1 : 0); }   // 의뢰 레벨: 소재 개수
-      const tot = main.reduce((a, r) => a + r.p, 0), out = [], om = main.concat(rare.filter(r => SPICE.has(r.m))).find(r => liveOrders().some(o => o.m === r.m)), oo = om && (s.orders || []).find(o => o.m === om.m), ob = oo ? oBias(oo) : 0;   // 발주 중인 소재 (게임과 같음)
+      const tot = main.reduce((a, r) => a + r.p, 0), out = [], om = main.find(r => liveOrders().some(o => o.m === r.m)), oo = om && (s.orders || []).find(o => o.m === om.m), ob = oo ? oBias(oo) : 0;   // 발주 중인 소재 (게임과 같음)
       for (let i = 0; i < k && main.length; i++) { if (om && (ob >= 1 || R() < ob)) { out.push({ m: om.m, p: 100 }); continue; } let x = R() * tot, pick = main[main.length - 1]; for (const r of main) { x -= r.p; if (x <= 0) { pick = r; break; } } out.push({ m: pick.m, p: 100 }); }
-      return out.concat(rare);
+      return out.concat(rare.map(r => { const so = SPICE.has(r.m) && liveOrders().find(o => o.m === r.m); return so ? { m: r.m, p: Math.max(r.p, oBias(so) * 100) } : r; }));   // 결정 46 (게임 drawList 와 같음)
     };
     const baseMat = T => (T.rewards || []).reduce((b, r) => (!b || r.p > b.p ? r : b), null)?.m;
     // 2026-11-17 경제 개편 V2 결정 12: 게임 dropMats 와 같은 자동 매입 70% · 위탁 10% · 월말 자동 판매(음식 아닌 소재 10개 남김)

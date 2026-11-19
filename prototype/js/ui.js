@@ -724,7 +724,7 @@
       R += `<div class="od-tot">1개 값 <b>${fmt(p)}G</b> <small>(판매가 ${fmt(Gm.matSellPrice(s, odSel))}G × ${odM})</small> · 게시판 쏠림 <b>${Math.round(((E.orderBiasOpt || [])[bi] != null ? E.orderBiasOpt[bi] : (E.orderBias || 0)) * 100)}%</b><br><small>미리 내는 돈 없음 · 들어올 때마다 금고에서 지급 · 금고 ${fmt(Math.floor(s.gold))}G</small></div>`;
       R += `<div class="od-go"><button class="od-btn go" data-oplace="1" ${why ? 'disabled' : ''}>상시 발주 걸기</button>${why ? `<small class="od-why">${esc(why)}</small>` : ''}</div>`;
     }
-    R += `<div class="od-note">식당이 요리를 만들 때 재료를 쓰므로, 메뉴에 올린 요리의 재료를 걸어 두면 의뢰가 끊이지 않고 올라옵니다.${s.cfg.econ.shopRate ? ' 양념(소금 · 향신료 · 신선한 물 · 밀가루)은 모자라면 잡화 상인에게서 삽니다.' : ' 양념(소금 · 향신료 · 신선한 물 · 밀가루)은 의뢰에서 드물게 나오지만, 발주를 걸면 뽑기마다 쏠림 비율만큼 양념이 나옵니다.'}</div>`;
+    R += `<div class="od-note">식당이 요리를 만들 때 재료를 쓰므로, 메뉴에 올린 요리의 재료를 걸어 두면 의뢰가 끊이지 않고 올라옵니다.${s.cfg.econ.shopRate ? ' 양념(소금 · 향신료 · 신선한 물 · 밀가루)은 모자라면 잡화 상인에게서 삽니다.' : ' 양념(소금 · 향신료 · 신선한 물 · 밀가루)은 의뢰에서 드물게(15%) 나오지만, 발주를 걸면 의뢰마다 양념이 나올 확률이 쏠림 비율(30 · 50 · 70%)까지 오릅니다.'}</div>`;
     return `<div class="bk2 bk-od"><section class="bk-l">${L}</section><section class="bk-r">${R}</section></div>`;
   }
   function orderClick(e) {

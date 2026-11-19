@@ -487,12 +487,12 @@
     const main = RW.filter(r => r.p >= 30), rare = RW.filter(r => r.p < 30), P = E.drawPts || [2, 3];
     let k = q.enemies && q.enemies.length ? q.enemies.length : P[0] + Math.floor(s.R() * (P[1] - P[0] + 1));
     if ((q.lv || 1) > 1 && QLV(s)) { const kk = k * (1 + QLV(s).pay * (q.lv - 1)); k = Math.floor(kk) + (s.R() < kk - Math.floor(kk) ? 1 : 0); }   // 의뢰 레벨: 소재 개수 +pay
-    const tot = main.reduce((a, r) => a + r.p, 0), om = main.concat(rare.filter(r => SPICE.has(r.m))).find(r => liveOrders(s).some(o => o.m === r.m)), oo = om && (s.orders || []).find(o => o.m === om.m), ob = oo ? (s.cfg.econ.orderMode ? orderBiasOf(s, oo) : 1) : 0, out = [];
+    const tot = main.reduce((a, r) => a + r.p, 0), om = main.find(r => liveOrders(s).some(o => o.m === r.m)), oo = om && (s.orders || []).find(o => o.m === om.m), ob = oo ? (s.cfg.econ.orderMode ? orderBiasOf(s, oo) : 1) : 0, out = [];
     for (let i = 0; i < k && main.length; i++) {
       if (om && (ob >= 1 || s.R() < ob)) { out.push({ m: om.m, p: 100 }); continue; }   // 2026-11-19 상시 발주: 뽑기마다 쏠림 비율(30 · 50 · 70%)만큼만 발주 소재 — 늘 켜져 있어 다른 소재(고철 등)가 끊기지 않게 [임시] (예전 결정 27은 전부)
       let x = s.R() * tot, pick = main[main.length - 1]; for (const r of main) { x -= r.p; if (x <= 0) { pick = r; break; } } out.push({ m: pick.m, p: 100 });
     }
-    return out.concat(rare);
+    return out.concat(rare.map(r => { const so = SPICE.has(r.m) && liveOrders(s).find(o => o.m === r.m); return so ? { m: r.m, p: Math.max(r.p, orderBiasOf(s, so) * 100) } : r; }));   // 결정 46: 발주한 양념은 다른 소재 뽑기를 빼앗지 않고, 의뢰마다 한 번 굴리는 양념 확률만 쏠림 비율(30 · 50 · 70%)까지 올림 [임시]
   }
   function dropMats(s, q, party) {
     const T = QBYID[q.tid]; if (!T) return;
