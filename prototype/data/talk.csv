@@ -143,7 +143,7 @@ return_ok,reply,careful,,다음에도 조심해요.,귀환 성공 · 대답 · �
 return_ok,reply,friendly,,"응, {a}도 최고였어!",귀환 성공 · 대답 · 다정,heart
 return_ok,reply,friendly,,다음에도 같이 가자!,귀환 성공 · 대답 · 다정,note
 return_ok,reply,friendly,,"헤헤, 기분 좋다!",귀환 성공 · 대답 · 다정,smile
-return_ok,reply,loner,,…그래.,귀환 성공 · 대답 · 무뚝뚝,
+return_ok,reply,loner,,…나쁘지 않았어.,귀환 성공 · 대답 · 무뚝뚝,
 return_ok,reply,loner,,"…흥, 운이 좋았지.",귀환 성공 · 대답 · 무뚝뚝,smile
 return_ok,reply,loner,,…수고했어.,귀환 성공 · 대답 · 무뚝뚝,
 return_ok,reply,plain,,"응, 수고했어.",귀환 성공 · 대답 · 보통,
@@ -174,7 +174,7 @@ return_fail,reply,friendly,,"응… 고마워, {a}.",귀환 실패 · 대답 · 
 return_fail,reply,friendly,,같이 다시 힘내자!,귀환 실패 · 대답 · 다정,spark
 return_fail,reply,friendly,,"네가 있어서 다행이야, {a}.",귀환 실패 · 대답 · 다정,heart
 return_fail,reply,loner,,…알아.,귀환 실패 · 대답 · 무뚝뚝,
-return_fail,reply,loner,,…흥.,귀환 실패 · 대답 · 무뚝뚝,anger
+return_fail,reply,loner,,…다음엔 안 져.,귀환 실패 · 대답 · 무뚝뚝,anger
 return_fail,reply,loner,,…시끄러워.,귀환 실패 · 대답 · 무뚝뚝,anger
 return_fail,reply,plain,,"그래, 다음에 다시.",귀환 실패 · 대답 · 보통,
 return_fail,reply,plain,,"응, 좀 쉬자.",귀환 실패 · 대답 · 보통,
@@ -195,7 +195,7 @@ battle_start,reply,careful,,네!,전투 시작 · 대답 · 조심,
 battle_start,reply,careful,,뒤는 맡겨요.,전투 시작 · 대답 · 조심,
 battle_start,reply,friendly,,응!,전투 시작 · 대답 · 다정,
 battle_start,reply,friendly,,가자!,전투 시작 · 대답 · 다정,
-battle_start,reply,loner,,…흥.,전투 시작 · 대답 · 무뚝뚝,
+battle_start,reply,loner,,…빨리 끝내지.,전투 시작 · 대답 · 무뚝뚝,
 battle_start,reply,loner,,…알아.,전투 시작 · 대답 · 무뚝뚝,
 battle_start,reply,plain,,그래!,전투 시작 · 대답 · 보통,
 battle_start,reply,plain,,응!,전투 시작 · 대답 · 보통,
@@ -235,7 +235,7 @@ battle_heal,reply,careful,,고마워요.,치유 · 대답 · 조심,
 battle_heal,reply,careful,,살았어요…,치유 · 대답 · 조심,
 battle_heal,reply,friendly,,고마워!,치유 · 대답 · 다정,
 battle_heal,reply,friendly,,최고야!,치유 · 대답 · 다정,
-battle_heal,reply,loner,,…흥.,치유 · 대답 · 무뚝뚝,
+battle_heal,reply,loner,,…쓸 만하네.,치유 · 대답 · 무뚝뚝,
 battle_heal,reply,loner,,…갚을게.,치유 · 대답 · 무뚝뚝,
 battle_heal,reply,plain,,고마워.,치유 · 대답 · 보통,
 battle_heal,reply,plain,,나아졌어.,치유 · 대답 · 보통,
@@ -256,7 +256,7 @@ battle_win,reply,careful,,다행이에요.,승리 · 대답 · 조심,
 battle_win,reply,friendly,,야호!,승리 · 대답 · 다정,
 battle_win,reply,friendly,,최고야!,승리 · 대답 · 다정,
 battle_win,reply,loner,,…흥.,승리 · 대답 · 무뚝뚝,
-battle_win,reply,loner,,…그래.,승리 · 대답 · 무뚝뚝,
+battle_win,reply,loner,,…끝났군.,승리 · 대답 · 무뚝뚝,
 battle_win,reply,plain,,수고했어.,승리 · 대답 · 보통,
 battle_win,reply,plain,,좋아.,승리 · 대답 · 보통,
 battle_lose,open,bold,,"쳇, 물러난다!",패배 · 말 걸기 · 호탕,
