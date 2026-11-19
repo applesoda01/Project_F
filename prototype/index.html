@@ -338,6 +338,11 @@ body:not(.dev) #devToggle,body:not(.dev) #dev,body:not(.dev) #titleSkip,body:not
 #hudBR,#hudTR{transition:transform .9s cubic-bezier(.4,0,.2,1) .3s,opacity .7s ease .3s}
 .dlgOn:not(:has(#townUi.on)) #hudBR,.dlgOn:not(:has(#townUi.on)) #hudTR{transform:translateY(200px);opacity:0;pointer-events:none;transition-delay:0s}
 .dlgOn:not(:has(#townUi.on)) #hudBR *,.dlgOn:not(:has(#townUi.on)) #hudTR *{pointer-events:none}
+/* 2026-11-19 사용자: 대사 장면(리퀘스트 · 튜토리얼 등 아래 대화창)에서는 HUD를 모두 숨김 — 위 HUD · 원정 현황은 위로, 목표 칸은 왼쪽으로 */
+#hudTL{transition:transform .9s cubic-bezier(.4,0,.2,1) .3s,opacity .7s ease .3s}
+#hudExp{transition:opacity .3s ease .3s,transform .9s cubic-bezier(.4,0,.2,1) .3s}
+.dlgOn:not(:has(#townUi.on)) #hudTL,.dlgOn:not(:has(#townUi.on)) #hudExp{transform:translateY(-760px);opacity:0;pointer-events:none;transition-delay:0s}
+.dlgOn:not(:has(#townUi.on)) #goalBox{transform:translateX(-480px);opacity:0;pointer-events:none}
 /* 원정 현황 패널(hudExp)·미니 뷰(expView) — expedition.js, docs/design/expedition_panel.md */
 #hudExp{position:absolute;right:16px;top:96px;width:360px;max-height:704px;display:flex;flex-direction:column;opacity:.5;transition:opacity .3s ease .3s;z-index:3;
  background:linear-gradient(180deg,#3a2617,#2a1b10);border:2px solid #6b4a2b;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.45),inset 0 0 0 2px rgba(230,201,138,.18);font-family:"MaruBuri","Malgun Gothic",serif}

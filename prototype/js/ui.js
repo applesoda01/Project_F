@@ -510,7 +510,7 @@
   UI.chapterOf = name => (chapterOf(name) || {}).id || null;   // 2026-11-19 튜토리얼: 책이 열려 있을 때 메뉴 단추 대신 밝힐 책갈피
   UI.popupName = () => popup;   // 2026-11-18 튜토리얼: 지금 펼친 장
   UI.repop = () => { if (popup) renderPopup(); };   // 지금 장을 다시 그림 (튜토리얼이 재료를 준 뒤 등)
-  UI.dlgBusy = () => !!(Dlg.cur || Dlg.lines.length);
+  UI.dlgBusy = () => !!(Dlg.cur || Dlg.lines.length || Dlg.gap > 0);
   UI.closeFx = function () { if (root.BookFX && popup) root.BookFX.closeCover(() => UI.close()); else UI.close(); };   // 책끈 · Esc · 바깥 누르기 = 표지 덮으며 닫기
   let bookHold = false, bookSp = 1;   // 책이 펼쳐진 동안 시간 정지: 닫으면 펼치기 전 속도로
   UI.close = function () { if (bookHold) { bookHold = false; document.body.classList.remove('bookOn'); hooks.setSpeed && hooks.setSpeed(bookSp); } mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
@@ -1897,7 +1897,10 @@
 
   // ---------- 리나 대화 (M2-11) ----------
   const DLG_WAIT = 1.0; // 하단 HUD가 다 내려간 뒤(초) 대사창이 나타난다
-  const Dlg = { open: false, lines: [], cur: null, shown: 0, t: 0, hold: 0, wait: 0 };
+  const Dlg = { open: false, lines: [], cur: null, shown: 0, t: 0, hold: 0, wait: 0, gap: 0 };
+  // 2026-11-19 사용자: 리퀘스트 대사가 이어서 오면 한 대화처럼 보임 → UI.say 한 번 = 한 장면. 앞 장면이 끝나면 대화창을 닫고 HUD가 돌아온 뒤(DLG_GAP초)
+  //   다음 장면을 다시 「HUD 빠짐 → 대화 → 대화 끝 → HUD 원위치」 순서로 시작. 장면 사이는 {brk} 줄로 표시
+  const DLG_GAP = 2.2;   // HUD가 원위치로 돌아오는 시간(지연 0.3 + 0.9초) + 약 1초 쉼
   // 대화 장면 (data/dialog.csv): 장면 이름과 {변수} 값으로 [{face, text}] 를 만든다
   UI.lines = function (id, vars) {
     const D = (root.GAME_DATA && root.GAME_DATA.dialog) || {};
@@ -1963,8 +1966,10 @@
 .gupG-card ul{text-align:left;margin:10px 0 14px;padding:0;list-style:none}.gupG-card li{padding:6px 10px;border-bottom:1px dashed rgba(122,74,40,.3);font-size:17px}.gupG-card li b{color:#2f6a52}
 .gupG-fly{position:absolute;z-index:46;background:center/contain no-repeat;transition:all .7s cubic-bezier(.5,0,.3,1)}.gupG-pop{animation:gupGpop .7s}@keyframes gupGpop{40%{transform:scale(1.5);filter:drop-shadow(0 0 10px #ffd75e)}}`; document.head.appendChild(st_); }
   UI.say = function (lines) { // [{face:'smile', text:'…'}, …]
+    if (!lines || !lines.length) return;
+    if (Dlg.cur || Dlg.lines.length || Dlg.gap > 0) Dlg.lines.push({ brk: true });   // 앞 장면이 아직 있으면 장면 나눔
     Dlg.lines.push(...lines);
-    if (!Dlg.open) next();
+    if (!Dlg.open && !(Dlg.gap > 0)) next();
   };
   // 리나 초상: 눈 뜬 상반신 + 얼굴 조각(뜸·반쯤·감김)을 캔버스에 겹쳐 그린다. 그림이 없으면 예전 lina_face_* 한 장으로 대신한다.
   const BLINK = { rows: ['smile', 'serious', 'laugh', 'worried', 'awkward', 'surprised'], x: 117, y: 116, w: 97, h: 93 };
@@ -2024,7 +2029,8 @@
   }
   function next() {
     let L = Dlg.lines.shift();
-    while (L && L.fn) { try { L.fn(); } catch (e) { console.error(e); } L = Dlg.lines.shift(); }   // 2026-11-18 튜토리얼: {fn} 줄 = 대사 사이에서 실행할 일 (대사창에는 안 나옴)
+    while (L && (L.fn || (L.brk && !Dlg.cur))) { if (L.fn) { try { L.fn(); } catch (e) { console.error(e); } } L = Dlg.lines.shift(); }   // 2026-11-18 튜토리얼: {fn} 줄 = 대사 사이에서 실행할 일 (대사창에는 안 나옴) · 장면 첫머리의 {brk}는 건너뜀
+    if (L && L.brk) { Dlg.gap = DLG_GAP; L = null; }   // 장면 끝: 대화창을 닫고 HUD가 돌아올 때까지 쉼 (남은 줄은 그대로)
     if (!L) { Dlg.open = false; Dlg.cur = null; Dlg.wait = 0; q('#dlg').classList.remove('open'); q('#logBox').classList.remove('hide'); stage.ui.classList.remove('dlgOn'); root.Lina.chatting = false; return; }
     Dlg.open = true; Dlg.cur = L; Dlg.shown = 0; Dlg.t = 0; Dlg.hold = 0;
     const first = !stage.ui.classList.contains('dlgOn');
@@ -2042,6 +2048,7 @@
     else next();
   };
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
+    if (!Dlg.cur && Dlg.gap > 0) { if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
     if (rqdQ.length && !rqdOn && !Dlg.cur) rqdNext();   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
     if (!Dlg.cur) return;
     blinkTick(dt);
