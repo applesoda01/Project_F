@@ -148,3 +148,47 @@ hurry,loner,"…늦었군.",서두름 · 무뚝뚝,
 hurry,loner,"…서두른다.",서두름 · 무뚝뚝,
 hurry,plain,"늦었다!",서두름 · 보통,sweat
 hurry,plain,"어이쿠, 늦겠다!",서두름 · 보통,sweat
+qk_quarrel,plain,네가 굼뜨니까 다 놓쳤잖아!,버릇 · 보통 (2026-11-20),anger
+qk_quarrel,plain,그럼 혼자 가든가!,버릇 · 보통 (2026-11-20),anger
+qk_quarrel,bold,내 앞을 막지 말라고!,버릇 · 호탕 (2026-11-20),anger
+qk_quarrel,careful,…다음엔 따로 갈게요.,버릇 · 조심 (2026-11-20),sweat
+qk_quarrel,friendly,"미안, 나도 모르게 화가 나서…",버릇 · 다정 (2026-11-20),sweat
+qk_quarrel,loner,말 걸지 마.,버릇 · 무뚝뚝 (2026-11-20),anger
+qk_oversleep,plain,으음… 오늘은 좀… 내일 갈게요…,버릇 · 보통 (2026-11-20),sweat
+qk_oversleep,plain,머리가 깨질 것 같아…,버릇 · 보통 (2026-11-20),sweat
+qk_oversleep,bold,"한 잔만 더… 아니, 한 판만 더 잘래…",버릇 · 호탕 (2026-11-20),sweat
+qk_oversleep,careful,어제 너무 마셨나 봐요…,버릇 · 조심 (2026-11-20),sweat
+qk_oversleep,friendly,"리나 씨, 물 한 잔만요…",버릇 · 다정 (2026-11-20),sweat
+qk_cowardQuit,plain,"저, 저기… 이번 건 예감이 안 좋아요…",버릇 · 보통 (2026-11-20),sweat
+qk_cowardQuit,plain,오늘은 몸이 좀… 다음 주에 가요!,버릇 · 보통 (2026-11-20),sweat
+qk_cowardQuit,careful,준비가 덜 된 것 같아서요…,버릇 · 조심 (2026-11-20),sweat
+qk_cowardQuit,friendly,"미안해요, 다리가 안 움직여요…",버릇 · 다정 (2026-11-20),sweat
+qk_cowardFlee,plain,살았다… 먼저 빠져서 다행이야.,버릇 · 보통 (2026-11-20),sweat
+qk_cowardFlee,plain,무서워서 그만 뛰어 버렸어요…,버릇 · 보통 (2026-11-20),sweat
+qk_cowardFlee,careful,물러나는 것도 용기예요… 아마도.,버릇 · 조심 (2026-11-20),sweat
+qk_cowardFlee,friendly,다들 무사하죠? 정말 미안해요…,버릇 · 다정 (2026-11-20),sweat
+qk_sneak,plain,이 정도 의뢰야 나한테는 산책이지!,버릇 · 보통 (2026-11-20),spark
+qk_sneak,plain,몰래 한 장 떼 왔지. 비밀이야!,버릇 · 보통 (2026-11-20),spark
+qk_sneak,friendly,"같이 가면 금방이야, 걱정 마!",버릇 · 다정 (2026-11-20),spark
+qk_sneak,loner,내 실력엔 이게 맞아.,버릇 · 무뚝뚝 (2026-11-20),spark
+qk_cover,plain,뒤로 물러나! 여긴 내가 막을게!,버릇 · 보통 (2026-11-20),spark
+qk_cover,plain,다들 무사하면 됐죠.,버릇 · 보통 (2026-11-20),heart
+qk_cover,careful,제가 맞는 게 낫겠다 싶어서요.,버릇 · 조심 (2026-11-20),heart
+qk_cover,bold,이 정도 상처쯤이야!,버릇 · 호탕 (2026-11-20),spark
+qk_cover,friendly,동료를 두고 볼 순 없잖아요.,버릇 · 다정 (2026-11-20),heart
+qk_selfFlee,plain,난 여기서 죽을 생각 없어. 먼저 간다!,버릇 · 보통 (2026-11-20),sweat
+qk_selfFlee,plain,살아야 다음 의뢰도 받지.,버릇 · 보통 (2026-11-20),sweat
+qk_selfFlee,bold,내 목숨이 제일 비싸거든.,버릇 · 호탕 (2026-11-20),spark
+qk_selfFlee,loner,남 챙길 여유는 없어.,버릇 · 무뚝뚝 (2026-11-20),sweat
+qk_hunger,plain,"배, 배고파서 힘이 안 나…",버릇 · 보통 (2026-11-20),sweat
+qk_hunger,plain,출발 전에 뭐 좀 먹을걸…,버릇 · 보통 (2026-11-20),sweat
+qk_hunger,bold,밥부터 줘! 그래야 싸우지!,버릇 · 호탕 (2026-11-20),anger
+qk_hunger,friendly,"리나 씨, 오늘 메뉴 뭐예요?",버릇 · 다정 (2026-11-20),note
+qk_omenWait,plain,창밖 좀 봐요… 이런 날은 꼭 일이 생겨요.,버릇 · 보통 (2026-11-20),sweat
+qk_omenWait,plain,비 오는 날 떠나면 재수가 없대요.,버릇 · 보통 (2026-11-20),sweat
+qk_omenWait,careful,부적이 젖으면 효과가 없거든요.,버릇 · 조심 (2026-11-20),sweat
+qk_omenWait,bold,비 그치면 바로 간다!,버릇 · 호탕 (2026-11-20),note
+qk_rush,plain,저 녀석보다 먼저 쓰러질 순 없지!,버릇 · 보통 (2026-11-20),anger
+qk_rush,plain,다음엔 내가 더 많이 잡는다.,버릇 · 보통 (2026-11-20),spark
+qk_rush,bold,지는 건 질색이야!,버릇 · 호탕 (2026-11-20),anger
+qk_rush,careful,…저도 질 수는 없어요.,버릇 · 조심 (2026-11-20),spark

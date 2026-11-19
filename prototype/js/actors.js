@@ -220,6 +220,7 @@
       if (L.kind === 'grow' && L.text.includes('의 레벨이')) { const a = s.advs.find(b => L.text.startsWith(b.name + '의')); const ac = a && D.actors.get(a.id); if (ac && !ac.bubble) say(ac, Speech.line(a, 'levelup'), 2.2); }
       if (L.kind === 'ledger' && root.UI && !root.UI.autoReport) Lina.say(Speech.lina('lina_ledger'), 2.4);
       if (L.kind === 'unlock') Lina.say(Speech.lina('lina_unlock'), 2.4);
+      if (L.kind === 'quirk' && L.qev && L.who) { const a = s.advs.find(b => b.name === L.who[0]); const ac = a && D.actors.get(a.id); if (ac && !ac.bubble) say(ac, Speech.line(a, 'qk_' + L.qev), 2.6); }   // 2026-11-20 버릇이 터질 때 한마디 (사용자 결정: 말풍선 + 기록)
     }
   };
   // 처음 화면: 마을에 있는 모험가를 바로 앉혀 둔다

@@ -155,7 +155,7 @@
   }
   // 2026-11-12 채팅 로그 개선: 시스템 기록 앞에 종류 꼬리표, 대화 줄에 얼굴 · 이름 · 직업 Lv (이름·얼굴을 누르면 모험가 정보)
   const LOG_TAG = { depart: ['출발', 't-go'], success: ['성공', 't-ok'], fail: ['실패', 't-bad'], injury: ['부상', 't-bad'], death: ['사망', 't-bad'], arrive: ['도착', 't-new'], leave: ['떠남', 't-gray'],
-    req: ['부탁', 't-new'], main: ['메인', 't-gold'], ledger: ['결산', 't-gold'], build: ['건설', 't-gray'], unlock: ['발견', 't-gold'], grow: ['성장', 't-ok'], promo: ['전직', 't-new'], expire: ['기한', 't-gray'], withdraw: ['취소', 't-gray'] };
+    req: ['부탁', 't-new'], main: ['메인', 't-gold'], ledger: ['결산', 't-gold'], build: ['건설', 't-gray'], unlock: ['발견', 't-gold'], grow: ['성장', 't-ok'], promo: ['전직', 't-new'], expire: ['기한', 't-gray'], withdraw: ['취소', 't-gray'], quirk: ['버릇', 't-new'] };
   UI.logLine = function (text, kind) { // 시스템 기록
     const el = document.createElement('div'); el.className = 'ln k-' + (kind || 'info');
     const tg = LOG_TAG[kind]; if (tg) { const i = document.createElement('i'); i.className = 'tag ' + tg[1]; i.textContent = tg[0]; el.append(i); }
@@ -1613,7 +1613,7 @@
   // 길드 기록: 월 단위 카드(머리 = 그 달 결산) · 종류 아이콘 · 필터. 'sys'(버튼 반응)·'debug'는 기록에서 숨김
   const LK = {   // 종류 → [아이콘 글자, 이름, 필터 묶음]
     success: ['✓', '의뢰 성공', 'q'], fail: ['✕', '의뢰 실패', 'q'], withdraw: ['⊘', '의뢰 철회', 'q'], expire: ['⌛', '의뢰 만료', 'q'], depart: ['➜', '출발', 'q'],
-    death: ['☠', '사망', 'a'], injury: ['✚', '부상', 'a'], leave: ['↩', '떠남', 'a'], arrive: ['☺', '새 모험가', 'a'], grow: ['▲', '성장', 'a'], promo: ['★', '전직', 'a'],
+    death: ['☠', '사망', 'a'], injury: ['✚', '부상', 'a'], leave: ['↩', '떠남', 'a'], arrive: ['☺', '새 모험가', 'a'], grow: ['▲', '성장', 'a'], promo: ['★', '전직', 'a'], quirk: ['♣', '버릇', 'a'],
     unlock: ['◆', '발견', 'g'], build: ['⌂', '건설', 'g'], guild: ['⚑', '길드', 'g'], info: ['•', '기록', 'g'], warn: ['!', '알림', 'g']
   };
   const LF = [['all', '전체'], ['q', '의뢰'], ['a', '모험가'], ['g', '길드'], ['imp', '중요']], LIMP = { death: 1, injury: 1, leave: 1 }, isImp = e => LIMP[e.kind] || (e.kind === 'promo' && (e.done || /전직했습니다/.test(e.text)));   // 중요 = 사망·부상·떠남·실제 전직 (제안·거절·보류 제외)
