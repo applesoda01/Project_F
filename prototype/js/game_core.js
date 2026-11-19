@@ -175,7 +175,7 @@
   //   a.mem = 최근 일 [{ k: 종류, w: 주, n: 말한 횟수, …빈칸 재료 }] 최대 5개 · 8주 지나면 흐려짐 · 2번 말하면 지움 [임시]
   //   종류: win_big(어려운 의뢰 성공) · fail(실패, late=늦장) · hurt(부상) · saved(구해 줌 got/gave) · gift(마스터 선물) · grow(레벨 5단위 · 승급 · 전직) · nomin(지명 수락 · 거절) · qlv(하던 의뢰가 Lv업)
   //   s.rel["작은id-큰id"] = 친밀도 0~100 (처음 40, 숨김) — 같은 파티 성공 +2~+7(성향 궁합, 기본 +5) · 실패 −3 · 로비 대화 주 1번 +1 [임시]
-  const MEM = { max: 5, weeks: 8, say: 2, hard: 75, relStart: 40, relWin: 5, relFail: -3 };   // [임시] 친밀도: 처음 40 · 같은 파티 성공 +5(궁합 ±) · 실패 −3
+  const MEM = { max: 5, weeks: 8, say: 2, hard: 75, relStart: 40, relWin: 8, relFail: -3, relGood: 60, relBad: 30 };   // [임시] 친밀도: 처음 40 · 같은 파티 성공 +8(궁합 ±) · 실패 −3 · 단짝 60 이상 · 서먹 30 미만 (2026-11-19 사용자: 밤사이 측정 제안 「성공 +8 · 단짝 60」 — 전엔 +5 · 70, 단짝이 한 판 0.8쌍뿐)
   function remember(s, a, k, o) {
     if (!a || !a.alive) return;
     const m = Object.assign({ k, w: s.week, n: 0 }, o || {});
@@ -187,14 +187,14 @@
   const relKey = (i, j) => i < j ? i + '-' + j : j + '-' + i;
   const relBase = (s, i, j) => { const a = s.advs.find(x => x.id === i), b = s.advs.find(x => x.id === j); if (!a || !b) return MEM.relStart; let v = MEM.relStart; if (Math.abs(a.risk - b.risk) === 2) v -= 15; if (a.social === 2 && b.social === 2) v += 10; if (a.social === 0 || b.social === 0) v -= 10; return v; };   // 처음 친밀도 = 성향 궁합 (무모 · 신중 −15 · 둘 다 사교적 +10 · 독불장군 −10) [임시]
   const relOf = (s, i, j) => { const v = s.rel && s.rel[relKey(i, j)]; return v == null ? relBase(s, i, j) : v; };
-  function relAdd(s, i, j, d) { if (i === j) return; s.rel = s.rel || {}; const k = relKey(i, j), v0 = relOf(s, i, j), v = Math.max(0, Math.min(100, v0 + d)); s.rel[k] = v; if (v0 < 70 && v >= 70) palMet(s, i, j, k); }
-  function palMet(s, i, j, k) {   // 2026-11-19 사용자(시안 11 B안): 처음 단짝(친밀도 70 이상, relTier 'good')이 되면 두 사람 경력에 한 줄씩. 같은 짝은 한 번만
+  function relAdd(s, i, j, d) { if (i === j) return; s.rel = s.rel || {}; const k = relKey(i, j), v0 = relOf(s, i, j), v = Math.max(0, Math.min(100, v0 + d)); s.rel[k] = v; if (d > 0 && v >= MEM.relGood) palMet(s, i, j, k); }   // 처음부터 친한 짝(성향 궁합)도 함께 성공하면 기록
+  function palMet(s, i, j, k) {   // 2026-11-19 사용자(시안 11 B안): 처음 단짝(친밀도 MEM.relGood 이상, relTier 'good')이 되면 두 사람 경력에 한 줄씩. 같은 짝은 한 번만
     s.palMet = s.palMet || {}; if (s.palMet[k] != null) return; s.palMet[k] = s.week;
     const a = s.advs.find(x => x.id === i), b = s.advs.find(x => x.id === j); if (!a || !b) return;
     for (const [x, y] of [[a, b], [b, a]]) if (x.career) x.career.push({ week: s.week, text: `♥ ${J(y.name, '과', '와')} 단짝이 됨`, pal: 1 });
   }
-  const relStep = (a, b) => { let d = MEM.relWin; if (Math.abs(a.risk - b.risk) === 2) d -= 2; if (a.social === 2 && b.social === 2) d += 1; if (a.social === 0 || b.social === 0) d -= 1; return Math.max(2, Math.min(7, d)); };   // 성향 궁합 (제안서 3-1)
-  const relTier = v => v >= 70 ? 'good' : v < 30 ? 'bad' : '';
+  const relStep = (a, b) => { let d = MEM.relWin; if (Math.abs(a.risk - b.risk) === 2) d -= 2; if (a.social === 2 && b.social === 2) d += 1; if (a.social === 0 || b.social === 0) d -= 1; return Math.max(2, Math.min(MEM.relWin + 2, d)); };   // 성향 궁합 (제안서 3-1)
+  const relTier = v => v >= MEM.relGood ? 'good' : v < MEM.relBad ? 'bad' : '';
   function memQuest(s, x, ok, party, lv0) {   // 귀환 때: 파티원마다 기억 · 친밀도
     const q = x.q, F = x.fight, qname = q.name || qn(q), mon = F && F.enemies && F.enemies[0] ? F.enemies[0].name : null;
     const ids = party.filter(Boolean).map(a => a.id), others = id => ids.filter(j => j !== id);
