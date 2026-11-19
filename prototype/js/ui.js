@@ -447,11 +447,16 @@
         Rr += `<div class="rq-nom ${r.state !== 'open' || v.lock ? 'off' : ''}"><div class="nh"><span>모험가</span><span>${d.req && d.req[0] >= 0 ? Gm.STATS[d.req[0]] : rows[0] && rows[0].stat != null ? '주력' : ''}</span><span>애착</span><span>수락</span><span>섭외비</span><span>상태</span></div>`;
         for (const x of rows) { const a = s.advs.find(z => z.id === x.id);
           const st = x.inParty ? (x.busy ? `<b class="ok">✔ 예약 (${x.busy})</b>` : '<b class="ok">✔ 함께 감</b>') : x.other ? `<b class="ng" title="「${esc(x.other)}」에 가기로 함">다른 리퀘스트</b>` : x.busy ? `${x.busy} · 예약 가능` : x.refused ? '<b class="ng">✖ 이번 주 거절</b>' : x.back ? '이번 주 귀환' : x.away ? '마을 밖' : '길드에 있음';
-          Rr += `<button class="nr ${x.inParty ? 'in' : ''} ${x.refused || (x.other && !x.inParty) ? 'no' : ''}" data-rqnom="${x.id}"><span class="who"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span><b>${esc(x.name)}</b><em>${esc(x.cls)} Lv ${x.lv}</em></span></span><span class="sv">${d.req ? (x.meets ? '<i class="star">★</i>' : '') : ''}${x.stat != null ? x.stat : ''}</span><span>${x.attach}</span><span class="ch">${x.owner ? '본인' : x.chance + '%'}</span><span class="fee ${!x.inParty && x.fee > s.gold ? 'lack' : ''}">${x.inParty || !x.fee ? '—' : x.fee + 'G'}</span><span class="stx">${st}</span></button>`; }
+          Rr += `<button class="nr ${x.inParty ? 'in' : ''} ${x.refused || (x.other && !x.inParty) ? 'no' : ''}" data-rqnom="${x.id}"><span class="who"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span><b>${esc(x.name)}</b><em>${esc(x.cls)} Lv ${x.lv}${ctTag(a)}</em></span></span><span class="sv">${d.req ? (x.meets ? '<i class="star">★</i>' : '') : ''}${x.stat != null ? x.stat : ''}</span><span>${x.attach}</span><span class="ch ${!x.owner && Gm.cActive(s, a) && Gm.cCallsLeft(s, a) > 0 ? 'ct' : ''}">${x.owner ? '본인' : x.chance + '%'}</span><span class="fee ${!x.inParty && x.fee > s.gold ? 'lack' : ''}">${x.inParty || !x.fee ? '—' : x.fee + 'G'}</span><span class="stx">${st}</span></button>`; }
         Rr += '</div>';
       }
     }
     return `<div class="bk2 bk-rq"><section class="bk-l">${L}</section><section class="bk-r">${Rr}</section></div>`;
+  }
+  // 2026-11-19 계약 표시 (사용자: 디자인은 Claude 에게 · 칸 크기가 바뀌지 않게) — 직업 · Lv 줄 끝에 작은 남색 꼬리표, 점 = 남은 '거절 없는 지명' (4주 2번)
+  function ctTag(a) {
+    if (!Gm.cActive(s, a)) return ''; const left = Math.max(0, Gm.cCallsLeft(s, a)), max = (s.cfg.contract && s.cfg.contract.callMax) || 2;
+    return `<span class="ct-tag ${left ? '' : 'used'}" title="계약 모험가 · 거절 없는 지명 ${left}/${max}번 남음 (4주마다 다시 참)">계약${Array.from({ length: max }, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('')}</span>`;
   }
   function rqShake(why) {   // 못 채운 요구 칩이 좌우로 흔들림 + 이유 (2026-11-19)
     const box = document.querySelector('.bk-rq .bk-r'); if (!box) return;
