@@ -183,7 +183,7 @@
 <p class="book-version-status">V4 시장 제안판 · V3를 보존하고 결정 36(시세 경제 도입)과 소재 시장 · 식당 순환 제안을 넣은 판. 초록 목차·본문을 클릭하면 V3 대비 변경 요약을 볼 수 있습니다. 새 규칙은 게임 미반영입니다.</p><section class="book-change" data-book-change="ch09/market.html" aria-label="V1 대비 변경된 내용"><button type="button" class="book-change-trigger" aria-haspopup="dialog">변경 요약</button>
                         <h1 id="소재-시장과-식당-순환-v4"><a class="header" href="#소재-시장과-식당-순환-v4">소재 시장과 식당 순환 (V4)</a></h1>
 <blockquote>
-<p><strong>V4 변경 · 결정 36~45 (2026-11-19) · 기획: 방향 · 규칙 결정, 수치 [임시] / 게임: 미반영</strong><br>
+<p><strong>V4 변경 · 결정 36~46 (2026-11-19) · 기획: 방향 · 규칙 결정, 수치 [임시] / 게임: 1~3단계 반영(브랜치 <code>feature/market-stage1</code>, PR #9 · main 미병합)</strong><br>
 원본 제안서: <code>docs/design/proposal_market_v1.md</code></p>
 </blockquote>
 <p><strong>V4는 소재가 "무한히 나오고 무한히 팔리는" 구조를 닫힌 시장으로 바꿉니다.</strong> 결정 36으로 V2 적용 범위의 "완전한 시세 경제 제외"를 뒤집었습니다. 식당이 재료를 쓰고, 재료가 모자라면 발주가 다시 켜지고, 모험가가 가져온 양과 사냥터 개체수에 따라 소재 값이 움직입니다.</p>
@@ -256,6 +256,38 @@
 <li><strong>3단계 개체수</strong> (규칙 7 개체수 · 의뢰 레벨 연결)</li>
 </ol>
 <p>9가지 결정(결정 37~45)과 추천안 대비 바뀐 점은 <a href="../appendix/pending.html">부록 C</a>에 있습니다.</p>
+<h2 id="게임-반영-결과-2026-11-19"><a class="header" href="#게임-반영-결과-2026-11-19">게임 반영 결과 (2026-11-19)</a></h2>
+<blockquote>
+<p><strong>V4 게임 반영 (2026-11-19) · 브랜치 <code>feature/market-stage1</code> · PR applesoda01/Project_F#9 (main 미병합)</strong> — 측정 <code>docs/balance/market_v4_stage1.md</code></p>
+</blockquote>
+<p><strong>1~3단계를 모두 게임과 시뮬레이터에 넣었습니다.</strong> 구현하면서 바뀐 것과 측정 결과입니다.</p>
+<h3 id="구현하며-바뀐-것-임시"><a class="header" href="#구현하며-바뀐-것-임시">구현하며 바뀐 것 [임시]</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>항목</th><th>결정 · 처음 안</th><th>게임에 넣은 것</th><th>까닭</th></tr></thead><tbody>
+<tr><td>양념 (결정 46)</td><td>잡화 상인(결정 38)</td><td><strong>양념도 상시 발주 + 잡화 상인 유지</strong>(시세 × 1.5). 양념 발주는 다른 소재 뽑기를 빼앗지 않고, 의뢰마다 한 번 굴리는 양념 확률(15%)만 쏠림 비율(30 · 50 · 70%)까지 올림</td><td>1단계 테스트 중 사용자: 향신료를 다 쓰니 발주를 못 함</td></tr>
+<tr><td>상시 발주 뽑기</td><td>발주 중이면 뽑기마다 전부 발주 소재(결정 27)</td><td>뽑기마다 <strong>쏠림 비율만큼만</strong></td><td>전부면 고철 등이 끊겨 대장간 · 납품이 막힘(승급 77 → 50판)</td></tr>
+<tr><td>발주 소재 의뢰 먼저 맡기</td><td>결정 26</td><td><strong>끔</strong>(<code>orderFirst</code> 0), 돈이 필요한 모험가는 발주 값으로만 끌림</td><td>켜면 게임 · 시뮬레이터 차이 12.8%</td></tr>
+<tr><td>동시 발주</td><td>3건(결정 41)</td><td><strong>6건</strong></td><td>양념까지 F급 요리 재료 6종</td></tr>
+<tr><td>같은 의뢰</td><td>—</td><td>발주 쏠림으로는 게시판에 <strong>2장까지</strong></td><td>같은 의뢰가 4장씩 쌓여 보임</td></tr>
+<tr><td>식당 재료</td><td>—</td><td>재료마다 <strong>2개는 남겨 둠</strong>(<code>mealKeep</code>)</td><td>납품 리퀘스트 재료를 식당이 다 써 버림</td></tr>
+<tr><td>메뉴 가격</td><td>1G 단위 자유 입력(결정 39)</td><td>±1G · ±5G 단추</td><td>책 화면</td></tr>
+<tr><td>개체수</td><td>+4/주, 많으면 피해</td><td><strong>잡으면 −5, 로지스틱 회복 0.05</strong>, 달마다 가장 넘친 몬스터 사냥터 한 곳만 인구 증가 −2, 길드 등급보다 높은 곳은 그대로</td><td>처음 값은 대부분 '많음' · 피해 판당 470주 · 장비 0%</td></tr>
+</tbody></table>
+</div>
+<h3 id="측정-100판--48주"><a class="header" href="#측정-100판--48주">측정 (100판 · 48주)</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>지표</th><th style="text-align: right">V4 끔</th><th style="text-align: right">V4 1~3단계</th></tr></thead><tbody>
+<tr><td>첫해 월 운영 순이익</td><td style="text-align: right">459G</td><td style="text-align: right">433G</td></tr>
+<tr><td>의뢰 성공률</td><td style="text-align: right">91.5%</td><td style="text-align: right">91.4%</td></tr>
+<tr><td>48주 금고 중앙</td><td style="text-align: right">1,758G</td><td style="text-align: right"><strong>1,423G</strong> (목표 1,500G 이하 ✅)</td></tr>
+<tr><td>식사 매출 (월)</td><td style="text-align: right">72G</td><td style="text-align: right">108G</td></tr>
+<tr><td>모험가 지갑 · 장비 1칸 이상</td><td style="text-align: right">601G · 39%</td><td style="text-align: right">637G · 42%</td></tr>
+<tr><td>48주 안 E급 승급</td><td style="text-align: right">77판</td><td style="text-align: right">72판</td></tr>
+<tr><td>품절 주: 다 팔림 / 재료 부족</td><td style="text-align: right">—</td><td style="text-align: right">11% / 16%</td></tr>
+<tr><td>시세 배수 (F급 소재)</td><td style="text-align: right">고정</td><td style="text-align: right">0.6 ~ 1.5배, 평균 1.04 ~ 1.13</td></tr>
+<tr><td>개체수 적음 / 보통 / 많음</td><td style="text-align: right">—</td><td style="text-align: right">4 / 92 / 4% · 피해 판당 1달</td></tr>
+<tr><td>관문 1 (게임 / 시뮬)</td><td style="text-align: right">459 / 430G</td><td style="text-align: right">433 / 405G ✅</td></tr>
+</tbody></table>
+</div>
+<p><strong>남은 것:</strong> 버린 그릇(월 9.7 중 5.0) · E급 승급 −5판 · 자동 플레이가 메뉴 가격 · 소재 처리를 바꾸지 않아 플레이어 선택의 효과는 화면 조작으로만 확인 · 개체수 '많음' 피해는 기록 알림뿐(피해 리퀘스트는 후속).</p>
 
                     </section></main>
 

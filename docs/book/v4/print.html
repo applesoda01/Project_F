@@ -284,6 +284,7 @@
 <tr><td>V3 · 경제 6단계</td><td>2026-11-18</td><td>길드 발주(결정 24~26) · 몬스터 · 탐색 포인트마다 소재 뽑기(결정 27)</td><td>게임 반영</td></tr>
 <tr><td><strong>V4 시장 제안판</strong></td><td>2026-11-19</td><td>V3를 보존하고, 결정 36(시세 경제 도입 — V2의 "완전한 시세 경제 제외" 뒤집음)과 소재 시장 · 식당 순환 제안(식당 재료 소모 · 메뉴 가격 · 잡화 양념 · 상시 발주 · 수수료 5% · 소재 시세 · 위탁 정리 · 개체수)을 이 판에 넣음. V3 대비 변경은 <strong>초록색</strong></td><td>제안 / 게임 미반영</td></tr>
 <tr><td>V4 · 시장 규칙 결정</td><td>2026-11-19</td><td>시장 규칙 9가지 결정(결정 37~45): 요리마다 그릇 수 · 잡화 양념 · 메뉴 가격 1G 단위 · 시세 0.5~2.0배 · 상시 발주 · 수수료 5% · 소재마다 매입 / 위탁 / 안 받음 · 개체수 3단계 표시 · 단계별 도입</td><td>결정 / 게임 미반영</td></tr>
+<tr><td>V4 · 1~3단계 게임 반영</td><td>2026-11-19</td><td>식당 재료 소모 · 메뉴 가격 · 상시 발주 · 수수료 5% · 양념 발주(결정 46) · 시세 · 잡화 상인 유지 · 매입 / 위탁 / 안 받음 · 개체수 — 브랜치 <code>feature/market-stage1</code>(PR #9, main 미병합)</td><td>브랜치 반영 · 관문 1 통과</td></tr>
 <tr><td>V3 · 경제 8단계</td><td>2026-11-18</td><td>통합 점검(첫해 48주) · 기능 관리표 구현 상태 갱신 · 결정 28(금 쌓임 뒤로) · 29(판단 범위 48주)</td><td>검증</td></tr>
 </tbody></table>
 </div>
@@ -347,7 +348,7 @@
 <tr><td>ADV-02</td><td>정식 계약 운영</td><td>계약·급여 체계 없음(첨부 기준)</td><td>F급 + 집무실 소수 계약(정원 1명 · 기간 8/12주 · 섭외비 0 · 범위 안 거절 없음 · 기본 20%·25G·10G [임시] · 수락 복합식 · 지명 4주 2번 · 금고 마이너스는 자동 지급만), 기본값+조건 직접 선택, 보수·실비·예약·종료</td><td>제안 / 수치 검증용</td><td>반영 — 규칙 <code>bb19513</code> · 화면 <code>d393b9f</code> · 8단계 검증 2026-11-18 (<code>ef26ace</code>)</td><td>P1</td><td><a href="ch03/lifecycle.html">상세</a></td></tr>
 <tr><td>QUEST-01</td><td>발주·지명</td><td>기존 분류, 자유 지명 비용·확률</td><td>자동 의뢰 유지 + 의뢰 관리 수수료, 리퀘스트의 <strong>길드 발주(선지급 모으기 · 게시판 쏠림 · 소재 뽑기, 결정 24~27)</strong> · 외부 의뢰(보류)</td><td>길드 발주 결정</td><td>길드 발주 반영 (2026-11-18)</td><td>P1–P3</td><td><a href="ch04/requests.html">상세</a></td></tr>
 <tr><td>ITEM-01</td><td>소재·장비 소유</td><td>공용 재고·자동 차익 존재 기록</td><td>개인/길드/위탁, 매입·판매·대여 구분 — 자동 매입 70% [임시] · 위탁 10% [임시] · 자동 차익 폐지(결정 12)</td><td>결정 2026-11-17</td><td>반영 — 자동 매입 · 위탁 <code>6b27572</code> · 매입 위탁 화면 <code>bf13ee3</code> · 8단계 검증 2026-11-18 (<code>ef26ace</code>)</td><td>P2</td><td><a href="ch06/potion.html">상세</a></td></tr>
-<tr><td><strong>MARKET-01 (V4)</strong></td><td>소재 시장 · 식당 순환</td><td>고정가 무제한 매입 · 판매, 식당 재료 소모 없음</td><td>— (V4 신규) 결정 36: 시세 경제 도입 — 재료 소모 · 메뉴 가격 · 잡화 양념 · 상시 발주 · 수수료 5% · 시세 · 위탁 정리 · 개체수</td><td>방향 · 규칙 결정 2026-11-19 (결정 36~45) / 수치 [임시]</td><td>미반영</td><td>1 → 2 → 3단계</td><td><a href="ch09/market.html">상세</a></td></tr>
+<tr><td><strong>MARKET-01 (V4)</strong></td><td>소재 시장 · 식당 순환</td><td>고정가 무제한 매입 · 판매, 식당 재료 소모 없음</td><td>— (V4 신규) 결정 36: 시세 경제 도입 — 재료 소모 · 메뉴 가격 · 잡화 양념 · 상시 발주 · 수수료 5% · 시세 · 위탁 정리 · 개체수</td><td>방향 · 규칙 결정 2026-11-19 (결정 36~46) / 수치 [임시]</td><td>1~3단계 반영 — 브랜치 <code>feature/market-stage1</code> (PR #9, main 미병합) · 관문 1 433G / 405G</td><td>1 → 2 → 3단계</td><td><a href="ch09/market.html">상세</a></td></tr>
 <tr><td>GUILD-01</td><td>시설</td><td>관리소 전직, 정보실 수수료 효과 기획</td><td>집무실 계약 기능(관리소 연결은 프로토타입 뒤), 정보실 서비스 역할</td><td>제안</td><td>미반영</td><td>P1–P2</td><td><a href="ch07/facilities.html">상세</a></td></tr>
 <tr><td>TOWN-01</td><td>마을·인구</td><td>거주/애착 기준 불일치 기록</td><td>독립 상점 유지, 지역 기여/실제 거주 분리</td><td>유지 + 제안 / 경계 미결</td><td>재확인 필요</td><td>P0</td><td><a href="ch07/town.html">상세</a></td></tr>
 <tr><td>PROGRESS-01</td><td>F→E 승급</td><td>리퀘스트 8회 → 침공</td><td>유지, 계약 인원 필수 조건 없음</td><td>기존 유지 + 제안</td><td>v1 기록 / 계약 미반영</td><td>P1</td><td><a href="ch08/index.html">상세</a></td></tr>
@@ -1240,6 +1241,12 @@
 <tr><td>개체수 (3단계)</td><td>—</td><td>사냥터 개체수가 낮으면 쏠림이 약해지고 잘 안 모임 → 메뉴를 바꿀지 판단</td></tr>
 </tbody></table>
 </div>
+<blockquote>
+<p><strong>V4 게임 반영 (2026-11-19) · 브랜치 <code>feature/market-stage1</code> · PR applesoda01/Project_F#9 (main 미병합)</strong> — 측정 <code>docs/balance/market_v4_stage1.md</code></p>
+</blockquote>
+<ul>
+<li><strong>게임 반영 [임시]:</strong> 동시 6건 · 양념(소금 · 향신료 · 신선한 물 · 밀가루)도 발주 가능(의뢰마다 양념이 나올 확률이 쏠림 비율까지) · 발주 쏠림으로 같은 의뢰는 게시판에 2장까지 · 뽑기는 쏠림 비율만큼만 발주 소재 · '발주 소재 의뢰를 가장 먼저 맡음'은 끔 · 개체수가 적은 사냥터는 쏠림이 약해짐.</li>
+</ul>
 <p><strong>예시 — 고철 조각 10개 발주</strong></p>
 <ol>
 <li>리퀘스트 장 → 길드 발주에서 고철 조각 10개를 고르면 <strong>90G</strong>(9G × 10)가 금고에서 나갑니다.</li>
@@ -1757,6 +1764,13 @@
 <li>대장간·물약 상점은 독립 경제. 길드는 납품·별도 서비스 대가만 얻습니다.</li>
 </ul>
 <p><a href="ch06/gear.html">장비 선물·대여</a> · <a href="ch06/../ch09/ledger.html">현금과 손익</a></p>
+<blockquote>
+<p><strong>V4 게임 반영 (2026-11-19) · 브랜치 <code>feature/market-stage1</code> · PR applesoda01/Project_F#9 (main 미병합)</strong> — 측정 <code>docs/balance/market_v4_stage1.md</code></p>
+</blockquote>
+<ul>
+<li><strong>게임 반영:</strong> 시세는 마을 시장 재고(바깥 공급 · 마을 소비 · 의뢰 획득 · 길드 판매)로 움직이며 F급 소재는 기준가의 0.6 ~ 1.5배 사이였습니다. 판매 창구는 한 개 팔 때마다 값이 내려가고 "전부 팔면" 미리 보기와 4주 추세(▲▼)가 보입니다. 경영 → 매입 · 위탁 책갈피에서 소재마다 매입(50 · 70 · 90%) / 위탁 / 안 받음을 고릅니다.</li>
+<li><strong>개체수 (게임 값):</strong> 잡으면 −5, 매주 로지스틱 회복(0.05), 30 미만이면 적음, 85 넘으면 많음 — 의뢰 상세에 '사냥터 · 채집지 적음 · 보통 · 많음'.</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="요리"><a class="header" href="#요리">요리</a></h1>
 <p><strong>요리는 식당 조리대에서 소재 1~3개를 조합해 "발견"하고, 발견한 요리가 많을수록 모든 모험가가 강해집니다.</strong> 요리는 길드의 식사 판매 수입원이기도 합니다.</p>
 <div class="table-wrapper"><table><thead><tr><th>항목</th><th>규칙</th></tr></thead><tbody>
@@ -1788,6 +1802,12 @@
 <tr><td>발견 수 보너스</td><td>발견한 요리 수 × 2%</td><td>품절 아닌 요리만 셈</td></tr>
 </tbody></table>
 </div>
+<blockquote>
+<p><strong>V4 게임 반영 (2026-11-19) · 브랜치 <code>feature/market-stage1</code> · PR applesoda01/Project_F#9 (main 미병합)</strong> — 측정 <code>docs/balance/market_v4_stage1.md</code></p>
+</blockquote>
+<ul>
+<li><strong>게임 반영:</strong> 양념은 잡화 상인(시세 × 1.5)에서 사거나 상시 발주로 모읍니다(결정 46). 식당은 납품 리퀘스트를 위해 재료마다 2개는 남겨 둡니다. 메뉴판에 재고 · 1그릇 원가 · 가격 ±1 · ±5 · 마진 · 손님 배율 · 한 주 준비량이 보입니다.</li>
+</ul>
 <p>예: 멧돼지 스테이크 정식(2그릇) = 멧돼지 고기 6G + 향신료 6G → 1그릇 원가 6G, 25G에 팔면 마진 19G. 들버섯 수프(3그릇)는 (6 + 6) ÷ 3 = 4G 원가. 싸게 팔면 많이 팔려 재료가 빨리 닳고 발주가 자주 켜집니다.</p>
 <h2 id="결제와-지원--econ-04--제안미반영"><a class="header" href="#결제와-지원--econ-04--제안미반영">결제와 지원 — ECON-04 / 제안·미반영</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>항목</th><th>처리</th></tr></thead><tbody>
@@ -2084,7 +2104,7 @@
 <p>v1의 월 운영 순이익 573G, 보조금 비중 54%, 성공률 94.9%는 기존 규칙의 과거 결과입니다. 신규 계약·거래·반기 보조금 결합 효과는 측정하지 않았습니다.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="소재-시장과-식당-순환-v4"><a class="header" href="#소재-시장과-식당-순환-v4">소재 시장과 식당 순환 (V4)</a></h1>
 <blockquote>
-<p><strong>V4 변경 · 결정 36~45 (2026-11-19) · 기획: 방향 · 규칙 결정, 수치 [임시] / 게임: 미반영</strong><br>
+<p><strong>V4 변경 · 결정 36~46 (2026-11-19) · 기획: 방향 · 규칙 결정, 수치 [임시] / 게임: 1~3단계 반영(브랜치 <code>feature/market-stage1</code>, PR #9 · main 미병합)</strong><br>
 원본 제안서: <code>docs/design/proposal_market_v1.md</code></p>
 </blockquote>
 <p><strong>V4는 소재가 "무한히 나오고 무한히 팔리는" 구조를 닫힌 시장으로 바꿉니다.</strong> 결정 36으로 V2 적용 범위의 "완전한 시세 경제 제외"를 뒤집었습니다. 식당이 재료를 쓰고, 재료가 모자라면 발주가 다시 켜지고, 모험가가 가져온 양과 사냥터 개체수에 따라 소재 값이 움직입니다.</p>
@@ -2157,6 +2177,38 @@
 <li><strong>3단계 개체수</strong> (규칙 7 개체수 · 의뢰 레벨 연결)</li>
 </ol>
 <p>9가지 결정(결정 37~45)과 추천안 대비 바뀐 점은 <a href="ch09/../appendix/pending.html">부록 C</a>에 있습니다.</p>
+<h2 id="게임-반영-결과-2026-11-19"><a class="header" href="#게임-반영-결과-2026-11-19">게임 반영 결과 (2026-11-19)</a></h2>
+<blockquote>
+<p><strong>V4 게임 반영 (2026-11-19) · 브랜치 <code>feature/market-stage1</code> · PR applesoda01/Project_F#9 (main 미병합)</strong> — 측정 <code>docs/balance/market_v4_stage1.md</code></p>
+</blockquote>
+<p><strong>1~3단계를 모두 게임과 시뮬레이터에 넣었습니다.</strong> 구현하면서 바뀐 것과 측정 결과입니다.</p>
+<h3 id="구현하며-바뀐-것-임시"><a class="header" href="#구현하며-바뀐-것-임시">구현하며 바뀐 것 [임시]</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>항목</th><th>결정 · 처음 안</th><th>게임에 넣은 것</th><th>까닭</th></tr></thead><tbody>
+<tr><td>양념 (결정 46)</td><td>잡화 상인(결정 38)</td><td><strong>양념도 상시 발주 + 잡화 상인 유지</strong>(시세 × 1.5). 양념 발주는 다른 소재 뽑기를 빼앗지 않고, 의뢰마다 한 번 굴리는 양념 확률(15%)만 쏠림 비율(30 · 50 · 70%)까지 올림</td><td>1단계 테스트 중 사용자: 향신료를 다 쓰니 발주를 못 함</td></tr>
+<tr><td>상시 발주 뽑기</td><td>발주 중이면 뽑기마다 전부 발주 소재(결정 27)</td><td>뽑기마다 <strong>쏠림 비율만큼만</strong></td><td>전부면 고철 등이 끊겨 대장간 · 납품이 막힘(승급 77 → 50판)</td></tr>
+<tr><td>발주 소재 의뢰 먼저 맡기</td><td>결정 26</td><td><strong>끔</strong>(<code>orderFirst</code> 0), 돈이 필요한 모험가는 발주 값으로만 끌림</td><td>켜면 게임 · 시뮬레이터 차이 12.8%</td></tr>
+<tr><td>동시 발주</td><td>3건(결정 41)</td><td><strong>6건</strong></td><td>양념까지 F급 요리 재료 6종</td></tr>
+<tr><td>같은 의뢰</td><td>—</td><td>발주 쏠림으로는 게시판에 <strong>2장까지</strong></td><td>같은 의뢰가 4장씩 쌓여 보임</td></tr>
+<tr><td>식당 재료</td><td>—</td><td>재료마다 <strong>2개는 남겨 둠</strong>(<code>mealKeep</code>)</td><td>납품 리퀘스트 재료를 식당이 다 써 버림</td></tr>
+<tr><td>메뉴 가격</td><td>1G 단위 자유 입력(결정 39)</td><td>±1G · ±5G 단추</td><td>책 화면</td></tr>
+<tr><td>개체수</td><td>+4/주, 많으면 피해</td><td><strong>잡으면 −5, 로지스틱 회복 0.05</strong>, 달마다 가장 넘친 몬스터 사냥터 한 곳만 인구 증가 −2, 길드 등급보다 높은 곳은 그대로</td><td>처음 값은 대부분 '많음' · 피해 판당 470주 · 장비 0%</td></tr>
+</tbody></table>
+</div>
+<h3 id="측정-100판--48주"><a class="header" href="#측정-100판--48주">측정 (100판 · 48주)</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>지표</th><th style="text-align: right">V4 끔</th><th style="text-align: right">V4 1~3단계</th></tr></thead><tbody>
+<tr><td>첫해 월 운영 순이익</td><td style="text-align: right">459G</td><td style="text-align: right">433G</td></tr>
+<tr><td>의뢰 성공률</td><td style="text-align: right">91.5%</td><td style="text-align: right">91.4%</td></tr>
+<tr><td>48주 금고 중앙</td><td style="text-align: right">1,758G</td><td style="text-align: right"><strong>1,423G</strong> (목표 1,500G 이하 ✅)</td></tr>
+<tr><td>식사 매출 (월)</td><td style="text-align: right">72G</td><td style="text-align: right">108G</td></tr>
+<tr><td>모험가 지갑 · 장비 1칸 이상</td><td style="text-align: right">601G · 39%</td><td style="text-align: right">637G · 42%</td></tr>
+<tr><td>48주 안 E급 승급</td><td style="text-align: right">77판</td><td style="text-align: right">72판</td></tr>
+<tr><td>품절 주: 다 팔림 / 재료 부족</td><td style="text-align: right">—</td><td style="text-align: right">11% / 16%</td></tr>
+<tr><td>시세 배수 (F급 소재)</td><td style="text-align: right">고정</td><td style="text-align: right">0.6 ~ 1.5배, 평균 1.04 ~ 1.13</td></tr>
+<tr><td>개체수 적음 / 보통 / 많음</td><td style="text-align: right">—</td><td style="text-align: right">4 / 92 / 4% · 피해 판당 1달</td></tr>
+<tr><td>관문 1 (게임 / 시뮬)</td><td style="text-align: right">459 / 430G</td><td style="text-align: right">433 / 405G ✅</td></tr>
+</tbody></table>
+</div>
+<p><strong>남은 것:</strong> 버린 그릇(월 9.7 중 5.0) · E급 승급 −5판 · 자동 플레이가 메뉴 가격 · 소재 처리를 바꾸지 않아 플레이어 선택의 효과는 화면 조작으로만 확인 · 개체수 '많음' 피해는 기록 알림뿐(피해 리퀘스트는 후속).</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="돈의-흐름-한눈에-보기"><a class="header" href="#돈의-흐름-한눈에-보기">돈의 흐름 한눈에 보기</a></h1>
 <blockquote>
 <p>아래는 V1의 기존 자동 제공 의뢰와 경제 흐름입니다. 월 고정 보조금·자동 차익 등 코드 기록도 보존하며, V2 추가·교체 항목은 뒤에서 구분합니다. 보존한 V1 문장의 "중계료"는 지금 용어로 <strong>수수료</strong>입니다(결정 21).</p>
@@ -3356,7 +3408,11 @@
 <tr><td style="text-align: right">45</td><td>도입 순서</td><td>1 → 측정 → 2 → 측정 → 3</td><td>추천대로</td></tr>
 </tbody></table>
 </div>
-<p>남은 일: 1단계 구현 뒤 100판으로 [임시] 수치(그릇 수 · 가격 계수 · 양념값 · 발주 배수 · 쏠림)를 맞춥니다.</p>
+<p>| 46 | 양념 얻기 (1단계 테스트 중) | — | <strong>양념도 상시 발주</strong> · 잡화 상인 유지(사용자) |</p>
+<blockquote>
+<p><strong>V4 게임 반영 (2026-11-19) · 브랜치 <code>feature/market-stage1</code> · PR applesoda01/Project_F#9 (main 미병합)</strong> — 측정 <code>docs/balance/market_v4_stage1.md</code></p>
+</blockquote>
+<p>남은 일: 버린 그릇 줄이기 · E급 승급 −5판 확인 · 개체수 '많음' 피해 리퀘스트 · 플레이어 선택(메뉴 가격 · 소재 처리)을 넣은 측정 · PR #9 main 병합(충돌 풀기 · 관문 1 다시).</p>
 <h2 id="경제계약-결정-대기"><a class="header" href="#경제계약-결정-대기">경제·계약 결정 대기</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>항목</th><th>결정할 것</th></tr></thead><tbody>
 <tr><td>정식 계약</td><td>방향 채택·정원·기간·급여·지원·갱신</td></tr>
