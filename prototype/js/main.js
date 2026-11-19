@@ -172,7 +172,8 @@
       slotPick(done, mode, () => titleThenPick(done));
       await fadeTo(false, ms);
     };
-    const onMsg = e => { const d = e.data; if (!d || d.collegium !== 'title') return; leave(d.act === 'load' ? 'load' : 'new', 600); };
+    const onMsg = e => { const d = e.data; if (!d || d.collegium !== 'title') return; if (d.act === 'touch') { if (window.Snd && window.Snd.unlock) window.Snd.unlock(); return; }   // 2026-11-19 타이틀 안을 처음 누르면 소리를 풀어 타이틀 곡이 나오게
+      leave(d.act === 'load' ? 'load' : 'new', 600); };
     window.addEventListener('message', onMsg);
     if (skip) skip.onclick = () => leave(has ? 'load' : 'new', 150);   // 개발자 전용 SKIP: 저장 기록이 있으면 바로 이어하기 칸 고르기 (2026-11-16)
     fr.onload = () => { try { fr.contentWindow.focus(); } catch (er) { /* 무시 */ } };

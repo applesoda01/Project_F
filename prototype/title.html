@@ -528,6 +528,9 @@ requestAnimationFrame(frame);
   requestAnimationFrame(frame);
   const pr = document.getElementById('press'); if (pr) pr.setAttribute('filter', 'drop-shadow(0 2px 3px rgba(5,10,25,.85))');
 })();
+
+// 2026-11-19: 처음 누르면 바깥(게임 창)에 알려 소리를 풂 — 브라우저는 누르기 전에는 소리를 막고, iframe 안 클릭은 바깥에서 알 수 없음
+['pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>{try{parent.postMessage({collegium:'title',act:'touch'},'*');}catch(e){}},true));
 </script>
 
 </body>

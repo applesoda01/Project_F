@@ -11,7 +11,8 @@
   try { Object.assign(Opt, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* 저장소 없음 */ }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(Opt)); } catch (e) { /* 무시 */ } };
   const Snd = { opt: Opt, cur: null, key: null, unlocked: false, fade: [] };
-  const url = (k, part) => `assets/audio/town_${k}_${part}.ogg`;
+  const SCENE = ['title', 'siege'];   // 2026-11-19 장면 곡: 타이틀 「Lumière d'Aventure」(곡 전체 반복) · 침공 「Siege of C Minor」(intro 13초 + 반복 49.8초), Suno로 사용자 제작
+  const url = (k, part) => SCENE.includes(k) ? `assets/audio/${k}_${part}.ogg` : `assets/audio/town_${k}_${part}.ogg`;
   const clamp = v => Math.max(0, Math.min(1, +v || 0));
   const vol = () => Opt.mute ? 0 : clamp(Opt.master == null ? 1 : Opt.master) * clamp(Opt.bgm) * 0.8;
   const FADE = 1.2;
@@ -62,7 +63,10 @@
   // 매 프레임 호출: 계절이 바뀌면 즉시 크로스페이드로 교체, 음량 변화는 즉시 반영
   Snd.update = function (s, dt) {
     const L = root.LobbySky, key = (L && L.calendar && s) ? L.calendar(s).key : 'day';
-    const k = ['day', 'autumn', 'winter', 'rain'].includes(key) ? key : 'day';
+    let k = ['day', 'autumn', 'winter', 'rain'].includes(key) ? key : 'day';
+    const tl = root.document && root.document.getElementById('titleLay');
+    if (tl && tl.classList.contains('on')) k = 'title';   // 타이틀 화면이 떠 있는 동안
+    else if (s && s.main && s.main.state === 'live') k = 'siege';   // 침공(메인 퀘스트) 장면 동안 — 끝나면 계절 곡으로 크로스페이드
     if (Snd.unlocked && (!Snd.cur || Snd.cur.k !== k)) { if (Snd.cur) stop(Snd.cur); Snd.cur = start(k); }
     const v = vol(), c = Snd.cur;
     if (c) {
@@ -75,7 +79,9 @@
     }
   };
   // 브라우저는 사용자가 한 번 누르기 전에는 소리를 막는다 → 첫 클릭·키 입력에서 풀어 준다 (Web Audio도 이때 깨움)
-  const unlock = () => { Snd.unlocked = true; ensureCtx(); ['pointerdown', 'keydown'].forEach(e => root.removeEventListener(e, unlock, true)); };
+  const unlock = Snd.unlock = () => {   // 타이틀(iframe) 안을 눌러도 풀리게 main.js가 부름
+    if (Snd.unlocked) return;
+    Snd.unlocked = true; ensureCtx(); ['pointerdown', 'keydown'].forEach(e => root.removeEventListener(e, unlock, true)); };
   ['pointerdown', 'keydown'].forEach(e => root.addEventListener(e, unlock, true));
   Snd.set = function (k, v) { Opt[k] = v; save(); };
   // 효과음 음량 = 전체 × 효과음 (효과음은 아직 없음 — 효과음을 넣을 때 재생 음량에 이 값을 곱함)
