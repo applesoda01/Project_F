@@ -775,12 +775,12 @@
     }
 
     // ---------- F급 메인 퀘스트: 침공 "다리를 지켜라" (2026-11-16) — 게임 game_core.js MAIN_CFG · mainFight · mainWeekly와 같은 규칙 ----------
-    const MQC = { need: 8, lead: 2, block: 1, retry: 4, rest: 0.3, revive: 0.4, castle: 1, group: 6, deathLoss: 0.01, popLoss: 0.1, trustLoss: 5, gold: 1000, fame: 10, accept: 0.6, trials: 20,
+    const MQC = { foeScale: 0.6, need: 8, lead: 2, block: 1, retry: 4, rest: 0.3, revive: 0.4, castle: 1, group: 6, deathLoss: 0.01, popLoss: 0.1, trustLoss: 5, gold: 1000, fame: 10, accept: 0.6, trials: 20,
       waves: [{ mon: 'mon_04', n: 6, hp: 1.1, atk: 1.1 }, { mon: 'mon_04', n: 6, hp: 1.43, atk: 1.32 }, { mon: 'mon_04', n: 6, hp: 1.76, atk: 1.54 }, { mon: 'mon_05', n: 1, hp: 5.5, atk: 3.3, boss: true }] };
     const MQ2 = [{ 0: 50 }, { 1: 50 }, { 4: 50 }, { 2: 50 }, { 3: 50 }, { 0: 35, 1: 35 }, { 0: 40, 2: 30 }, { 0: 30, 3: 40 }, { 0: 30, 4: 40 }, { 1: 40, 2: 30 }, { 1: 35, 3: 35 }, { 1: 30, 4: 40 }, { 2: 40, 3: 30 }, { 2: 35, 4: 35 }, { 3: 30, 4: 40 }];   // 2차 전직 조건 (게임 CLASS2)
     const MONS = (gameData() && gameData().content && gameData().content.monsters) || [];
     s.mq = { state: 'none', at: null, cool: 0, tries: 0 }; s.st.mainOffer = null; s.st.mainClear = null; s.st.mainTries = 0;
-    const mqFoes = w => { const M = MONS.find(m => m.id === w.mon) || { hp: 300, atk: 55, def: 20 }; return Array.from({ length: w.n }, () => ({ hp: M.hp * w.hp, atk: M.atk * w.atk, def: M.def || 0, boss: !!w.boss })); };
+    const mqFoes = w => { const M = MONS.find(m => m.id === w.mon) || { hp: 300, atk: 55, def: 20 }; return Array.from({ length: w.n }, () => ({ hp: M.hp * w.hp * MQC.foeScale, atk: M.atk * w.atk * MQC.foeScale, def: M.def || 0, boss: !!w.boss })   /* 게임 MAIN_CFG.foeScale과 같음 (2026-11-19) */); };
     const mqBlocked = () => s.mq.state === 'set' && s.mq.at - s.week <= MQC.block;
     function mqFight(defs, Rf) {
       const down = new Set(); let castle = 0;

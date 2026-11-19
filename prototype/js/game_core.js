@@ -1282,10 +1282,11 @@
   // 리퀘스트를 need회 들어주면 등장(2026-11-16 15:04 결정: "리퀘스트 X회 + 메인 퀘스트 달성 시 승급") → 마스터가 받으면 lead주 뒤 침공 → 침공 1주 전부터 출발 금지
   // 침공: 차례마다 전투(체력을 다음 차례로 넘김), 차례 사이 정비(서 있는 사람 +rest, 쓰러진 사람 revive로 일어남),
   //       전멸하면 영주의 성이 버티는 동안 castle번 다시 일어나 남은 적과 싸움. 다 막으면 E급 승급, 성이 무너지면 실패(retry주 뒤 재도전)
-  const MAIN_CFG = { need: 8, lead: 2, block: 1, retry: 4, rest: 0.3, revive: 0.4, castle: 1, group: 6, deathLoss: 0.01, popLoss: 0.1, trustLoss: 5, gold: 1000, fame: 10, autoAccept: 0.6, autoTrials: 20,
+  const MAIN_CFG = { foeScale: 0.6, need: 8, lead: 2, block: 1, retry: 4, rest: 0.3, revive: 0.4, castle: 1, group: 6, deathLoss: 0.01, popLoss: 0.1, trustLoss: 5, gold: 1000, fame: 10, autoAccept: 0.6, autoTrials: 20,
     waves: [{ mon: 'mon_04', n: 6, hp: 1.1, atk: 1.1, name: '늑대' }, { mon: 'mon_04', n: 6, hp: 1.43, atk: 1.32, name: '사나운 늑대' }, { mon: 'mon_04', n: 6, hp: 1.76, atk: 1.54, name: '흉포한 늑대' }, { mon: 'mon_05', n: 1, hp: 5.5, atk: 3.3, boss: true, name: '우두머리 늑대' }] };   // 2026-11-16: 재참전이 남은 적(남은 체력)과 싸우게 바뀌면서 쉬워져 전체 ×1.1 (바로 받을 때 첫 도전 승률 약 46%)
   const mainOf = s => (s.main = s.main || { state: 'none', at: null, tries: 0, cool: 0, offered: null, clear: null });   // state: none → offer → set → (done | cool → offer …)
-  function mainFoes(w) { const M = (GD.content.monsters || []).find(m => m.id === w.mon) || { hp: 300, atk: 55, def: 20 }; return Array.from({ length: w.n }, () => ({ hp: M.hp * w.hp, atk: M.atk * w.atk, def: M.def || 0, name: w.name, mon: w.mon, boss: !!w.boss })); }
+  // 2026-11-19 레벨 곡선(160 × Lv)으로 바꾸며 침공 적 체력 · 공격 × foeScale 0.6 [임시] — 1년 안 E급 승급 63% (40판, 바꾸기 전 63% · 시뮬 70%)에 맞춘 프로토타입용 값
+  function mainFoes(w) { const M = (GD.content.monsters || []).find(m => m.id === w.mon) || { hp: 300, atk: 55, def: 20 }; return Array.from({ length: w.n }, () => ({ hp: M.hp * w.hp * MAIN_CFG.foeScale, atk: M.atk * w.atk * MAIN_CFG.foeScale, def: M.def || 0, name: w.name, mon: w.mon, boss: !!w.boss })); }
   const reqDoneN = s => Object.values(reqOf(s).done).reduce((t, x) => t + (x.n || 0), 0);   // 들어준 부탁 횟수
   const mainReady = s => reqDoneN(s) >= MAIN_CFG.need;
   const mainDefenders = (s, all) => aliveAdvs(s).filter(a => all ? !(a.state === 'injured' && a.until > s.week + MAIN_CFG.lead) : (a.state !== 'quest' && !(a.state === 'injured' && s.week < a.until)));
