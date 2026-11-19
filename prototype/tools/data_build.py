@@ -90,10 +90,15 @@ if dup: err('names.csv', '-', f'겹치는 이름: {", ".join(sorted(dup))}')
 
 # ---------- 요리·스킬 ----------
 meals = []
-for ln, r in read('meals.csv', ['등급', '요리', '재료', '효과']):
+for ln, r in read('meals.csv', ['등급', '요리', '재료', '효과', '그릇']):
     if r['등급'] not in GRADES: err('meals.csv', ln, f"등급 '{r['등급']}' 은 F E D C B A S 중 하나여야 합니다")
     if not r['요리']: err('meals.csv', ln, '요리 이름이 비었습니다')
-    meals.append({'grade': r['등급'], 'name': r['요리'], 'ingredient': r['재료'], 'effect': r['효과']})
+    serv = 2   # 2026-11-19 결정 37: 재료 1세트로 만드는 그릇 수 (요리마다, 비면 2) [임시]
+    if r['그릇']:
+        try: serv = int(r['그릇'])
+        except ValueError: err('meals.csv', ln, f"그릇 '{r['그릇']}' 은 1 이상의 정수여야 합니다")
+        if serv < 1: err('meals.csv', ln, '그릇은 1 이상이어야 합니다')
+    meals.append({'grade': r['등급'], 'name': r['요리'], 'ingredient': r['재료'], 'effect': r['효과'], 'serv': serv})
 skills = []
 for ln, r in read('skills.csv', ['계열', '단계', '직업', '스킬', '종류', '효과']):
     if r['계열'] not in STATS: err('skills.csv', ln, f"계열 '{r['계열']}' 은 {' '.join(STATS)} 중 하나여야 합니다")

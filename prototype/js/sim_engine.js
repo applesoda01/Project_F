@@ -57,9 +57,9 @@
         buildCost: [0, 2000, 4000, 8000, 15000, 30000, 0],
         upkeepRate: 0,   // 2026-11-05 시설 유지비 없앰 (balance.csv와 같게)
         tavernPerAdvWeek: 4, tavernGradeMult: 1.6,
-        feeOpt: [0.1, 0.15, 0.2], restK: 0.5,   // 결정 22: 높은 수수료를 거르는 세기 [임시]
+        feeOpt: [0.05, 0.1, 0.15, 0.2], restK: 0.5,   // 2026-11-19 결정 42: 5% 추가   // 결정 22: 높은 수수료를 거르는 세기 [임시]
         subsidyMode: 1, subsidyRate: 0.5, subsidyEvery: 1,   // 2026-11-17 V2 결정 13: 반기 지급 · 성공 보상 합의 50% [임시] (0 = 예전 매달 고정)   // 2026-11-17 V2 결정 11: 의뢰별 요율 선택지 [임시]
-        resaleRate: 0, matBuyRate: 0.7, consignFee: 0.1, orderMult: 1.5, orderMax: 2, orderBias: 0.5, drawMode: 1, drawPts: [2, 3],   // 2026-11-17 V2 결정 12: 소재 자동 차익 8% 없앰 → 자동 매입 70% · 위탁 10% [임시] (balance.csv와 같게)
+        resaleRate: 0, matBuyRate: 0.7, consignFee: 0.1, orderMult: 1.5, orderMax: 3, orderBias: 0.5, orderMode: 1, orderMultOpt: [1.2, 1.5, 2], orderBiasOpt: [0.3, 0.5, 0.7], orderTarget: 6, orderFirst: 0,   /* 2026-11-19 결정 41: 상시 발주 */ drawMode: 1, drawPts: [2, 3],   // 2026-11-17 V2 결정 12: 소재 자동 차익 8% 없앰 → 자동 매입 70% · 위탁 10% [임시] (balance.csv와 같게)
         effectCost: [0.10, 0.20, 0.35],
         effectOpen: 0,                             // 시설 효과 개방 (0 = 끔. 2026-11-12: 프로토타입 게임에는 없으므로 시뮬레이터도 끔)
         mealPriceRate: 0.15, mealMargin: 0.60, mealBuyRate: [0.30, 0.60, 0.90],
@@ -68,7 +68,8 @@
         upgradeCost: [500, 1000, 2000, 4000, 8000, 15000, 30000],   // 시설 업그레이드 비용 (시설 등급별)
         upMargin: 5, upSell: 3,                    // 주점 업그레이드 마진 +G, 판매 창구 업그레이드 소재 +G
         drinkMargin: [2, 3, 4, 5, 6, 7, 8],        // 술 1잔 길드 마진 (2026-11-12, F·E 확정, D 이상 가안). 확률은 mealBuyRate
-        mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02, mealMode: 1   // mealMode 1 = 요리 버프(능력치 +n, 발견 보너스 없음, 2026-11-19) · 0 = 예전 C안
+        mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02, mealMode: 1,
+        mealCook: 1, mealPrep: 4, mealPK: 1.5, mealPMin: 0.1, mealPMax: 1.6, shopRate: 1.5   // 2026-11-19 V4 1단계 (결정 37 · 38 · 39): 식당 재료 소모 · 메뉴 가격 · 잡화 양념 (balance.csv와 같게)   // mealMode 1 = 요리 버프(능력치 +n, 발견 보너스 없음, 2026-11-19) · 0 = 예전 C안
       },
       gear: {
         needSmith: 1,   // 2026-11-19: 대장간이 생긴 뒤부터 장비를 삼 (0 = 예전처럼 처음부터)
@@ -169,7 +170,7 @@
     const CL = combatLib(), CB = CL ? CL.make(gameData()) : null, COMBAT = !!(CB && CB.ok);   // 전투 의뢰 = 적이 있는 의뢰
     // 요리 (docs/design/cooking.md): meals.csv 메뉴 + 편집기 요리 레시피. 시뮬레이터는 '재료가 다 모이면 바로 만드는' 플레이어로 가정 (게임 autoCook과 같음)
     const STATS_ = ['힘', '민첩', '지력', '정신', '기교'], DISH_FX = (e => { const m = /\+\s*(\d+(?:\.\d+)?)%?/.exec(e || ''); if (!m) return { stats: [], pct: 0, val: 0 }; const part = (e || '').slice(0, m.index); return { stats: part.includes('모든 능력치') ? [0, 1, 2, 3, 4] : STATS_.map((n, i) => part.includes(n) ? i : -1).filter(i => i >= 0), pct: +m[1] / 100, val: +m[1] }; });
-    const DISH = (() => { const G = gameData(); if (!G || !G.meals) return []; return G.meals.map(m => { const it = G.content && G.content.items.find(i => i.kind === 'food' && i.name === m.name); return Object.assign({ name: m.name, g: 'FEDCBAS'.indexOf(m.grade), mats: it ? (it.recipe || []).map(r => r.m) : [] }, DISH_FX((it && it.desc) || m.effect)); }).filter(d => d.mats.length); })();
+    const DISH = (() => { const G = gameData(); if (!G || !G.meals) return []; return G.meals.map(m => { const it = G.content && G.content.items.find(i => i.kind === 'food' && i.name === m.name); return Object.assign({ name: m.name, serv: m.serv || 2, g: 'FEDCBAS'.indexOf(m.grade), mats: it ? (it.recipe || []).map(r => r.m) : [] }, DISH_FX((it && it.desc) || m.effect)); }).filter(d => d.mats.length); })();
     const MEAL_N = 'FEDCBAS'.split('').map(g => { const G = gameData(); return ((G && G.meals) || []).filter(m => m.grade === g).length || 2; });   // 등급별 요리 수 (meals.csv)
     const R = rng(seed);
     const bot = BOTS[botKey];
@@ -239,7 +240,9 @@
       const n = Q.reqCount[g];
       const req = [type];
       while (req.length < n) { const k = ri(5); if (!req.includes(k)) req.push(k); }
-      const C = boss ? null : TPL[type + '_' + g], T = !C ? null : C.length > 1 ? C[Math.floor(R() * C.length)] : C[0];   // 칸 후보 중 하나 (1개면 난수 안 씀)
+      let C = boss ? null : TPL[type + '_' + g];
+      if (!boss) { const O = liveOrders(), B = O.length ? Math.max(...O.map(oBias)) : 0; if (B > 0 && R() < B) { const W = []; for (const k in TPL) if (k.endsWith('_' + g)) for (const t of TPL[k]) if ((t.rewards || []).some(r => O.some(o => o.m === r.m))) W.push(t); if (W.length) C = [W[Math.floor(R() * W.length)]]; } }   // 2026-11-19 결정 41 (게임과 같음)
+      const T = !C ? null : C.length > 1 ? C[Math.floor(R() * C.length)] : C[0];   // 칸 후보 중 하나 (1개면 난수 안 씀)
       const req2 = T && T.stats && T.stats.length ? T.stats.slice() : req;
       const QL = cfg.qlv && cfg.qlv.on ? cfg.qlv : null, LV = QL && T && T.board ? (s.qlv[T.id] || (s.qlv[T.id] = { lv: 1, wins: 0, fresh: 0 })) : null, lv = LV ? LV.lv : 1, fz = !!(LV && LV.fresh > 0);   // 의뢰 레벨 (게임과 같음, 결정 35)
       const DF = ((Q.diff || [])[g] || 1) * (QL ? 1 + QL.foe * (lv - 1) : 1);   // 난이도 배수 (게임 makeQuest와 같음)
@@ -253,7 +256,7 @@
           seen.push({ hp: e.hp * DF * (1 + (f0 - 1) * look), atk: e.atk * DF * (1 + (f0 - 1) * look), def: e.def || 0, name: e.name, boss: !!e.boss });
         }
       }
-      return { g, type, req: req2, r: R0 / n, boss: !!boss, T, enemies, seen, combat: enemies.length > 0, posted: s.week, lv, lvm: QL ? 1 + QL.pay * (lv - 1) : 1, fz };
+      return { g, type: T && T.type >= 0 ? T.type : type, req: req2, r: R0 / n, boss: !!boss, T, enemies, seen, combat: enemies.length > 0, posted: s.week, lv, lvm: QL ? 1 + QL.pay * (lv - 1) : 1, fz };
     }
 
     function successP(party, q, sm) {
@@ -379,8 +382,8 @@
       const main = RW.filter(r => r.p >= 30), rare = RW.filter(r => r.p < 30), P = E.drawPts || [2, 3];
       let k = q.enemies && q.enemies.length ? q.enemies.length : P[0] + Math.floor(R() * (P[1] - P[0] + 1));
       if ((q.lv || 1) > 1) { const kk = k * q.lvm; k = Math.floor(kk) + (R() < kk - Math.floor(kk) ? 1 : 0); }   // 의뢰 레벨: 소재 개수
-      const tot = main.reduce((a, r) => a + r.p, 0), out = [];
-      for (let i = 0; i < k && main.length; i++) { let x = R() * tot, pick = main[main.length - 1]; for (const r of main) { x -= r.p; if (x <= 0) { pick = r; break; } } out.push({ m: pick.m, p: 100 }); }
+      const tot = main.reduce((a, r) => a + r.p, 0), out = [], om = main.find(r => liveOrders().some(o => o.m === r.m)), oo = om && (s.orders || []).find(o => o.m === om.m), ob = oo ? oBias(oo) : 0;   // 발주 중인 소재 (게임과 같음)
+      for (let i = 0; i < k && main.length; i++) { if (om && (ob >= 1 || R() < ob)) { out.push({ m: om.m, p: 100 }); continue; } let x = R() * tot, pick = main[main.length - 1]; for (const r of main) { x -= r.p; if (x <= 0) { pick = r; break; } } out.push({ m: pick.m, p: 100 }); }
       return out.concat(rare);
     };
     const baseMat = T => (T.rewards || []).reduce((b, r) => (!b || r.p > b.p ? r : b), null)?.m;
@@ -388,6 +391,39 @@
     const SIM_MAT = {}; { const G = gameData(); if (G && G.content) for (const m of G.content.materials) SIM_MAT[m.id] = m; }
     const SELL_P = [6, 9, 12, 30, 36, 48, 90], GRL = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
     const matBase = id => { const m = SIM_MAT[id]; return m ? (m.price || SELL_P[Math.max(0, GRL.indexOf(m.grade))]) : 0; };
+    // 2026-11-19 V4 1단계 (게임 game_core.js 와 같은 규칙): 상시 발주 · 식당 재료 소모 · 잡화 양념
+    const SPICE = new Set(Object.keys(SIM_MAT).filter(id => ['소금', '향신료', '신선한 물', '밀가루'].includes(SIM_MAT[id].name)));
+    const oMult = o => o.mult, oPrice = o => Math.floor(matBase(o.m) * oMult(o) + 1e-9);
+    const oBias = o => { const i = (E.orderMultOpt || [1.2, 1.5, 2]).findIndex(x => Math.abs(x - o.mult) < 1e-9); return E.orderBiasOpt && i >= 0 ? E.orderBiasOpt[i] : (E.orderBias || 0); };
+    const oLive = o => (s.mats[o.m] || 0) < o.target && s.gold >= oPrice(o);
+    const liveOrders = () => (s.orders || []).filter(oLive);
+    const ordBonus = q => { const O = liveOrders(); if (!O.length || !q.T) return 0; let b = 0; for (const r of q.T.rewards || []) { const o = O.find(x => x.m === r.m); if (o) b += oPrice(o) * r.p / 100; } return b; };
+    function autoOrders() {   // 게임 autoOrders 와 같음
+      if (!E.mealCook || !E.orderMode) return; const max = E.orderMax != null ? E.orderMax : 3, t = E.orderTarget || 6;
+      { const A = s.soldAvg = s.soldAvg || {}, W = s.soldW || {}; for (const d of DISH) if (s.dishes[d.name]) { A[d.name] = (A[d.name] || 0) * 0.7 + (W[d.name] || 0) * 0.3; menuOf(d).prep = Math.max(1, Math.min(10, Math.ceil(A[d.name]) + 1)); } s.soldW = {}; }   // 게임 autoOrders 와 같음
+      const srcOk = m => { for (const k in TPL) { const g = +k.split('_')[1]; if (g > s.grade) continue; for (const t2 of TPL[k]) if ((t2.rewards || []).some(r => r.m === m && r.p >= 30)) return true; } return false; };
+      for (const d of DISH) { if (!s.dishes[d.name] || d.g > s.grade) continue;
+        for (const m of d.mats) { if (SPICE.has(m) || (s.orders || []).some(o => o.m === m)) continue; if ((s.orders || []).length >= max) return; if (!srcOk(m)) continue; (s.orders = s.orders || []).push({ m, target: t, mult: E.orderMult != null ? E.orderMult : 1.5 }); } }
+    }
+    const dishBase = d => Math.round(Q.reward[d.g] * E.mealPriceRate);
+    const menuOf = d => { const M = s.menu = s.menu || {}; if (!M[d.name]) M[d.name] = { price: dishBase(d), prep: E.mealPrep != null ? E.mealPrep : 4 }; return M[d.name]; };
+    const priceK = (d, price) => Math.max(E.mealPMin != null ? E.mealPMin : 0.1, Math.min(E.mealPMax != null ? E.mealPMax : 1.6, 1 + (E.mealPK != null ? E.mealPK : 1.5) * (1 - price / (dishBase(d) || 1))));
+    const stockOf = d => ((s.bowls || {})[d.name] || []).reduce((a, b) => a + b.n, 0);
+    const shopPrice = id => Math.ceil(matBase(id) * (E.shopRate != null ? E.shopRate : 1.5) - 1e-9);
+    function kitchenWeekly() {
+      if (!E.mealCook) return; const B = s.bowls = s.bowls || {};
+      for (const d of DISH) { if (!s.dishes[d.name]) continue;
+        const L = (B[d.name] || []).filter(b => b.n > 0 && s.week - b.w <= 1), mu = menuOf(d); let have = L.reduce((a, b) => a + b.n, 0);
+        while (have < mu.prep) {
+          const need = d.mats.filter(m => !(s.mats[m] > 0)); if (need.some(m => !SPICE.has(m))) break;
+          const cost = need.reduce((a, m) => a + shopPrice(m), 0); if (cost > s.gold) break;
+          for (const m of need) { const c = shopPrice(m); s.gold -= c; s.op -= c; s.st.shopPaid = (s.st.shopPaid || 0) + c; s.mats[m] = (s.mats[m] || 0) + 1; }
+          for (const m of d.mats) s.mats[m]--;
+          const n = d.serv || 2; L.push({ n, w: s.week }); have += n;
+        }
+        B[d.name] = L; }
+    }
+    const takeBowl = d => { const L = (s.bowls || {})[d.name] || []; L.sort((a, b) => a.w - b.w); const b = L.find(x => x.n > 0); if (b) b.n--; };
     const splitPay = (ps, total) => { const live = ps.filter(a => a.alive); if (!live.length || total <= 0) return; const b0 = Math.floor(total / live.length), rem = total - b0 * live.length; live.forEach((a, i) => { a.wallet += b0 + (i < rem ? 1 : 0); }); };   // 그 의뢰에서 가장 잘 나오는 소재
     function markX2(q) {
       const r = R();
@@ -401,13 +437,14 @@
     }
     function runQuest(party, q) {
       let mealB = 0, sm = null;
-      let dish = null, bs = -1; for (const d of DISH) { if (!s.dishes[d.name] || d.g > q.g) continue; const sc = d.stats.filter(k => q.req.includes(k)).length * 1000 + d.g * 10 + d.pct * 100; if (sc > bs) { bs = sc; dish = d; } }   // 게임 dishFor와 같음
+      let dish = null, bs = -1; for (const d of DISH) { if (!s.dishes[d.name] || d.g > q.g || (E.mealCook && stockOf(d) <= 0)) continue; const sc = d.stats.filter(k => q.req.includes(k)).length * 1000 + d.g * 10 + d.pct * 100; if (sc > bs) { bs = sc; dish = d; } }   // 게임 dishFor와 같음
       if (dish) {
         let eaters = 0; const ate = new Set();
         for (const a of party) {
           if (s.seatUsed >= s.tables * 2) break;   // 2026-11-12: 앉을 자리(테이블 세트 × 2)만큼만 이번 주에 식사
-          const price = Q.reward[dish.g] * E.mealPriceRate;
-          if (a.wallet >= price && R() < E.mealBuyRate[a.spend]) { s.seatUsed++; a.wallet -= price; s.gold += price * E.mealMargin; s.op += price * E.mealMargin; s.st.mealIncome += price * E.mealMargin; eaters++; ate.add(a); }
+          if (E.mealCook && stockOf(dish) <= 0) break;   // 2026-11-19 결정 37: 품절
+          const price = E.mealCook ? menuOf(dish).price : Q.reward[dish.g] * E.mealPriceRate, inc = E.mealCook ? price : price * E.mealMargin;
+          if (a.wallet >= price && R() < Math.min(1, E.mealBuyRate[a.spend] * (E.mealCook ? priceK(dish, price) : 1))) { s.seatUsed++; a.wallet -= price; if (E.mealCook) { takeBowl(dish); const W = s.soldW = s.soldW || {}; W[dish.name] = (W[dish.name] || 0) + 1; } s.gold += inc; s.op += inc; s.st.mealIncome += inc; eaters++; ate.add(a); }
         }
         if (dish.stats.length) sm = (a, k) => ate.has(a) && dish.stats.includes(+k) ? (E.mealMode ? 1 + dish.val / Math.max(1, finalStat(a, +k)) : 1 + dish.pct) : 1;   // 2026-11-19 버프: 능력치 +val (게임과 같음)
         // 메뉴가 2개 열려 있으면 의뢰 유형에 맞는 요리를 고를 확률이 높음
@@ -438,7 +475,7 @@
       { const L = cfg.qlv; if (L && L.on && q.T && s.qlv[q.T.id]) { const V = s.qlv[q.T.id]; if (q.fz && V.fresh > 0) V.fresh--; if (ok && V.lv < L.max && ++V.wins >= L.need) { V.lv++; V.wins = 0; V.fresh = L.fresh; } } }   // 의뢰 레벨 (게임 qlvAfter와 같음)
       if (ok) {
         s.st.qDone++; s.subHalf = (s.subHalf || 0) + (q.T ? q.T.reward * (q.lvm || 1) : Q.reward[q.g]); s.popAdd += T.perSuccess[q.g] || 0;   // 성과 보조금 실적: 기본 보상만 (게임과 같음 — ×2 · 보스 배수 전, 2026-11-18 보스 ×2 집계를 빼서 게임에 맞춤)   // 의뢰 성공 → 인구 (2026-11-13)
-        if (q.T) { let paid = 0; for (const r of drawList(q)) if (R() * 100 < r.p) { const bp = Math.floor(matBase(r.m) * (E.matBuyRate != null ? E.matBuyRate : 0.7) + 1e-9); if (s.gold >= bp) { s.mats[r.m] = (s.mats[r.m] || 0) + 1; s.gold -= bp; s.op -= bp; paid += bp; } else (s.consign = s.consign || []).push({ m: r.m, ps: party.slice() }); } splitPay(party, paid); }   // 소재 획득 → 자동 매입 (게임 dropMats와 같음)
+        if (q.T) { let paid = 0; for (const r of drawList(q)) if (R() * 100 < r.p) { { const o = (s.orders || []).find(x => x.m === r.m && oLive(x)); if (o) { const op = oPrice(o); s.gold -= op; s.op -= op; s.st.orderPaid = (s.st.orderPaid || 0) + op; s.mats[r.m] = (s.mats[r.m] || 0) + 1; splitPay(party, op); continue; } } const bp = Math.floor(matBase(r.m) * (E.matBuyRate != null ? E.matBuyRate : 0.7) + 1e-9); if (s.gold >= bp) { s.mats[r.m] = (s.mats[r.m] || 0) + 1; s.gold -= bp; s.op -= bp; paid += bp; } else (s.consign = s.consign || []).push({ m: r.m, ps: party.slice() }); } splitPay(party, paid); }   // 소재 획득 → 자동 매입 (게임 dropMats와 같음)
         if (q.T && s.deco.has('locker')) { const b = baseMat(q.T); if (b) s.mats[b] = (s.mats[b] || 0) + cfg.deco.mat; }   // 사물함: 기본 소재 +1
         for (const d of DISH) if (!s.dishes[d.name] && d.g <= s.grade && d.mats.every(m => s.mats[m] > 0)) { for (const m of d.mats) s.mats[m]--; s.dishes[d.name] = s.week; s.meals[d.g]++; s.st.mealsUnlocked.push(s.week); }
         // 2026-11-17 경제 개편 V2 결정 8: 게임 econSplit 과 같은 정수 배분 (나머지는 대장 먼저 1G씩, 길드 몫 버림)
@@ -479,9 +516,9 @@
         const hi = Math.min(s.grade, a.grade + range[1]), lo = Math.min(hi, Math.max(0, a.grade + range[0]));   // 게임과 같음 (2026-11-12)
         const th = A.departTh[a.risk];
         const GE = cfg.gear, nxe = eqNext(a), needy = a.spend === 2 || (!!nxe && a.wallet < nxe.price * (1 + GE.reserveMult[a.spend] * 0.5));   // 게임 needsMoney 와 같음 (V2 결정 11)
-        const effq = q => Math.floor((q.T ? q.T.reward * (q.lvm || 1) : Q.reward[q.g]) * (q.x2 ? 2 : 1) * (1 - feeRate()) + 1e-9) / (q.T ? q.T.weeks : Q.weeks[q.g]);
-        const cands = s.board.map((q, i) => ({ q, i })).filter(o => o.q.g >= lo && o.q.g <= hi).sort(needy ? (x, y) => (effq(y.q) - effq(x.q)) || (y.q.g - x.q.g) : (x, y) => y.q.g - x.q.g);
-        const base0 = (E.feeOpt || [0.1])[0], skipP = needy && E.restK ? Math.min(1, Math.max(0, feeRate() - base0) / base0 * E.restK) : 0;   // 게임과 같은 보완(결정 22) — 시뮬레이터는 수수료가 하나
+        const effq = q => (Math.floor((q.T ? q.T.reward * (q.lvm || 1) : Q.reward[q.g]) * (q.x2 ? 2 : 1) * (1 - feeRate()) + 1e-9) + ordBonus(q)) / (q.T ? q.T.weeks : Q.weeks[q.g]), oh = q => (E.orderFirst || !E.orderMode) && ordBonus(q) > 0 ? 1 : 0;   // 발주 값 (게임 questEff 와 같음) · 상시 발주(orderMode 1)는 '가장 먼저 맡음' 없이 발주 값으로만 끌림 (게임 ordHit 와 같음)
+        const cands = s.board.map((q, i) => ({ q, i })).filter(o => o.q.g >= lo && o.q.g <= hi).sort(needy ? (x, y) => (oh(y.q) - oh(x.q)) || (effq(y.q) - effq(x.q)) || (y.q.g - x.q.g) : (x, y) => (oh(y.q) - oh(x.q)) || (y.q.g - x.q.g));   // 발주 소재 의뢰를 가장 먼저 (게임 pickOrder 와 같음)
+        const base0 = E.feeBase != null ? E.feeBase : 0.1, skipP = needy && E.restK ? Math.min(1, Math.max(0, feeRate() - base0) / base0 * E.restK) : 0;   // 게임과 같은 보완(결정 22) — 시뮬레이터는 수수료가 하나
         for (const { q, i } of cands) {
           if (skipP > 0 && R() < skipP) continue;
           let party = [a];
@@ -827,6 +864,7 @@
       expireQuests();
       generateQuests();   // 2026-11-12: 매주 게시 (예전에는 매달 초에만 = 월 유입의 1/4만 들어왔음)
       s.seatUsed = 0;   // 이번 주 식사한 좌석 수
+      kitchenWeekly();   // 2026-11-19 V4 1단계: 식당이 이번 주 팔 그릇을 만듦 (게임 stepWeekTail 과 같은 자리: 리퀘스트 출발 전)
       mainStep();         // 메인 퀘스트(침공): 수주 · 등장 · 침공 판정 (게임 autoMain → mainWeekly 순서와 같음)
       reqStep();          // 리퀘스트: 자동 처리 → 지명 파티 출발(게시판보다 먼저) → 등장 판정
       if (!mqBlocked()) adventurersChoose();   // 침공 1주 전: 의뢰 출발 금지
@@ -835,6 +873,7 @@
       raidStep();
       endgameStep();
       for (const a of s.advs) if (a.busy > 0) a.busy--;
+      autoOrders();   // 2026-11-19: 게임 자동 플레이(autoCook 뒤 autoOrders)와 같음
     }
 
     // 시작 모험가 3명

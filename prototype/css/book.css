@@ -820,3 +820,19 @@
 .mk5-q.pop{position:absolute;left:var(--bkc-x);top:calc(var(--bkc-y) - 14px);transform:translateY(-100%);width:calc(var(--bk-rw) - 24px);margin:0;z-index:3;background:#fbf1d6;box-shadow:0 6px 18px rgba(60,35,10,.28)}
 .mk5-q .fd-h{display:flex;align-items:baseline;cursor:pointer}
 .mk5-q .fd-ar{margin-left:auto;font-style:normal;font-weight:400;font-size:14px;color:#8a5a12}
+
+/* 2026-11-19 V4 1단계: 상시 발주 · 메뉴판 운영 · 수수료 5% */
+.od-ed{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.od-mx{font:inherit;font-size:15px;font-weight:700;padding:3px 10px;border-radius:8px;border:2px solid #b9a385;background:#fffaf0;color:#5a3a22;cursor:pointer}
+.od-mx.on{border-color:#1f5f5a;background:#2f7f7a;color:#fff}
+.od-on{color:#2f7f7a;font-style:normal;font-weight:700}.od-off{color:#9a8670;font-style:normal}
+.od-strip span.off{opacity:.5}
+.kmr{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:6px;font-size:13px;color:#5a3a22}
+.kmr button{font:inherit;font-size:12px;font-weight:700;padding:1px 7px;border-radius:6px;border:1.5px solid #b9a385;background:#fffaf0;color:#5a3a22;cursor:pointer;margin:0 2px}
+.kmr button:disabled{opacity:.4;cursor:default}.kmr button.rs{border-style:dashed}
+.kmr .kst b{font-size:15px}.kmr .kst.out{color:#b42332;font-weight:700}
+.kmr .kwarn{color:#b42332}.kmr .kshop{color:#7a5f45}
+.kmr .kpr b,.kmr .kpp b{font-size:15px;margin:0 3px}
+.mk5-chip.lo{background:#e3f1e5;color:#1a6b30;border-color:#7ec795}
+.mk5-eta{font-size:12px;color:#7a5f45;margin-left:4px;white-space:nowrap}
+.ct-seg button.fast{border-color:#7ec795}
