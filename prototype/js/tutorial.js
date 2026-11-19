@@ -106,10 +106,10 @@
       hold(true); const s = getS(), t = s.tut;
       if (t.aid == null || !s.advs.some(a => a.id === t.aid)) t.aid = act(() => Gm.tutSpawn(s, { core: 1 + Math.floor(s.R() * 4) })).id;
       t.cur = t.aid;
-      after(2, () => say('FT0005', 1, () => { t.cur = null; t.ph = 'week'; t.at = s.week; hold(false); }));
+      after(2, () => say('FT0005', 1, () => { t.cur = null; t.ph = 'wait'; after(1, () => go('FT0008')); }));   // 2026-11-19 사용자: 한 주 기다림 없이 바로 요리 단계로 (전엔 다음 주까지 최대 30초 기다림)
     },
     FT0008() { hold(true); say('FT0008', 1, () => { getS().tut.ph = 'meals'; }); },
-    FT0009() { hold(true); say('FT0009', 1, () => { const t = getS().tut; t.ph = 'week'; t.at = getS().week; hold(false); }); },
+    FT0009() { hold(true); say('FT0009', 1, () => { getS().tut.ph = 'wait'; after(1, () => go('FT0006')); }); },   // 2026-11-19 사용자: 한 주 기다림 없이 바로 집무실 단계로
     FT0006() {
       hold(true); const s = getS(), t = s.tut;
       if (t.rid == null || !(s.req && s.req.open.some(r => r.id === t.rid))) { const r = Gm.tutReq(s, 'f_req_bat01'); t.rid = r ? r.id : null; root.UI.reqBadge && root.UI.reqBadge(); }
