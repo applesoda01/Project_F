@@ -11,8 +11,18 @@
   const EMO = SP.emo || {}, emoOf = t => (t && EMO[t]) || null;   // 2026-11-18 대사 → 감정 아이콘 (speech.csv · talk.csv 의 감정 열)
 
   function tone(a) { if (!a) return 'plain'; if (a.risk === 2) return 'bold'; if (a.risk === 0) return 'careful'; if (a.social === 2) return 'friendly'; if (a.social === 0) return 'loner'; return 'plain'; }
+  // 2026-11-20 소문 조합 힌트: 소문이 나올 때 HINT_P는 아직 모르는 요리의 힌트 (대식가는 소문을 2배 자주 — 「먹보가 맛집을 안다」) [임시]
+  const HINT_P = 0.5, HINT_TALK = 0.12;   // HINT_TALK: 로비 두 사람 대화 중 힌트로 시작할 확률 [임시]
+  const HINT_REPLY = { plain: ['오, 정말?', '그거 리나 씨한테 말해 볼까?'], bold: ['당장 만들어 달라고 하자!', '좋아, 먹어 보자!'], careful: ['정말요? 기억해 둘게요.', '리나 씨께 여쭤봐요.'], friendly: ['우와, 같이 먹자!', '리나 씨한테 알려 주자!'], loner: ['…흥, 그래.', '알아서 해.'] };
+  function hintLine(a) {
+    const s = getS && getS(), G = root.GuildGame; if (!s || !G || !G.hintPeek) return null;
+    const h = G.hintPeek(s); if (!h) return null;
+    const g = L[h.ev] || {}, tl = g[tone(a)], set = tl && tl.length ? tl : (g.plain || []); if (!set.length) return null;
+    const text = set[Math.floor(Math.random() * set.length)].replace(/\{(\w+)(?::([^}]+))?\}/g, (m0, k, sfx) => h.v[k] != null ? josa(String(h.v[k]), sfx) : m0);
+    G.hintSaid(s, h, text, a); return text;
+  }
   function line(a, ev, seed) {
-    if (ev === 'chat' && RUMOR.length && Math.random() < 0.3) return RUMOR[Math.floor(Math.random() * RUMOR.length)];
+    if (ev === 'chat' && Math.random() < 0.3 * (a && a.quirk === 'glutton' ? 2 : 1)) { const h = Math.random() < (a && a.quirk === 'glutton' ? 1 : HINT_P) ? hintLine(a) : null; if (h) return h; if (RUMOR.length) return RUMOR[Math.floor(Math.random() * RUMOR.length)]; }
     const g = L[ev] || L.chat || {}, t = g[tone(a)];
     const set = t && t.length ? t : (g.plain || ['…']);
     const i = seed != null ? Math.abs(seed) % set.length : Math.floor(Math.random() * set.length);
@@ -134,6 +144,7 @@
       } }
     if (MEM_SITS[sit] && Math.random() < MEM_P) { const L = memTalk(a, b, rel); if (L) return L; }
     if (Math.random() < JOKE_P) { const L = joke(a, b, sit, rel, others); if (L) return L; }   // 2026-11-19 농담 세트
+    if (LOBBY[sit] && Math.random() < HINT_TALK * (a.quirk === 'glutton' ? 2 : 1)) { const h = hintLine(a); if (h) { const R = HINT_REPLY[tone(b)] || HINT_REPLY.plain, out = [h, R[Math.floor(Math.random() * R.length)]]; out.emo = [emoOf(h), 'qex']; return out; } }   // 2026-11-20 로비 대화 중 소문 조합 힌트 (대식가 2배)
     const V = { a: a.name, b: b.name, q: q || '이번 의뢰' };
     const fill = s => s.replace(/\{([abq])(?::([^}]+))?\}/g, (m0, k, sfx) => { const v = V[k]; if (!sfx) return v; const [x, y] = sfx.split('/'); const c = v.charCodeAt(v.length - 1); return v + (c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0 ? x : y); });   // {a:이/가} 같은 조사 처리 (2026-11-16)
     const o = pick('open', sit, tone(a), rel), r = pick('reply', sit, tone(b), rel); if (!o || !r) return null;

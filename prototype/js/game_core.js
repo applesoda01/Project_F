@@ -722,6 +722,23 @@
   }
   // 시험용 자동 조합 (관문 1 검증·시뮬레이터와 같은 기준): 재료가 다 있는 미발견 요리를 바로 만듦 (실패 없음 = 가장 잘하는 플레이어)
   // [개발] 식당 시험: fill = F·E 음식 소재 각 3개(알게 됨 처리), reset = 발견한 요리 초기화
+  // ---------- 소문 조합 힌트 (2026-11-20 야간, 사용자: 모험가 대사에 조합법 힌트가 나오는 게 원래 컨셉) ----------
+  //   잡담 소문 중 일부가 아직 모르는 요리(길드 등급 이하)의 힌트. 같은 요리를 다시 들을수록 한 단계씩: ① 효과 ② 재료 1개 ③ 재료 2개(재료 3개 요리) · 요리 이름과 재료 수(재료 1~2개 요리)
+  //   레시피 전체는 말하지 않음. 들은 힌트는 s.hints[요리] = 단계, s.hintLog(최근 30개, 「들은 소문」 화면용). 규칙 · 난수(s.R)에 영향 없음 (대사 고르기는 화면 쪽 Math.random)
+  const HINT_FX = ['힘이 불끈 나는', '몸이 가벼워지는', '머리가 맑아지는', '마음이 차분해지는', '손끝이 야무져지는'];
+  function hintPeek(s, rnd) {
+    const r = rnd || Math.random, H = s.hints || {};
+    const C = DISH.filter(d => !s.dishes[d.name] && d.g <= s.grade && (H[d.name] || 0) < 3); if (!C.length) return null;
+    const lo = Math.min(...C.map(d => H[d.name] || 0)), P = C.filter(d => (H[d.name] || 0) === lo), d = P[Math.floor(r() * P.length)];
+    const st = lo + 1, ms = d.mats.map(id => matName(id));
+    const fx = d.stats.length === 5 ? '온몸에 기운이 도는' : d.stats.length ? HINT_FX[d.stats[0]] : '먹으면 든든하다는';
+    const ev = st === 1 ? 'hint_1' : st === 2 ? 'hint_2' : ms.length >= 3 ? 'hint_3a' : 'hint_3b';
+    return { dish: d.name, stage: st, ev, v: { fx, m1: ms[0] || '그 재료', m2: ms[1] || '', dish: d.name, n: ms.length } };
+  }
+  function hintSaid(s, h, text, a) {   // 실제로 말했을 때 단계를 올리고 기록
+    if (!h) return; s.hints = s.hints || {}; if ((s.hints[h.dish] || 0) >= h.stage) return; s.hints[h.dish] = h.stage;
+    (s.hintLog = s.hintLog || []).unshift({ w: s.week, dish: h.dish, stage: h.stage, text, who: a ? a.name : '' }); if (s.hintLog.length > 30) s.hintLog.length = 30;
+  }
   function debugKitchen(s, mode) {
     if (mode === 'reset') { s.dishes = {}; syncMeals(s); return; }
     for (const id in MAT) { const m = MAT[id]; if (m.line === 'food' && GR.indexOf(m.grade) <= 1) { s.mats[id] = (s.mats[id] || 0) + 3; s.knownMats[id] = true; } }
@@ -1519,6 +1536,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, hintPeek, hintSaid, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

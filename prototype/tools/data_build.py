@@ -21,7 +21,8 @@ FACES = ['smile', 'serious', 'laugh', 'worried', 'awkward', 'surprised']
 EVENTS = ['accept', 'depart', 'success', 'fail', 'levelup', 'gradeup', 'meal', 'drink', 'first', 'chat',
           'iv_start', 'iv_wave', 'iv_boss', 'iv_down', 'iv_rest', 'iv_castle', 'iv_win', 'iv_lose',   # iv_ = 침공 (2026-11-17)
           'hurry',   # hurry = 주가 넘어가 서둘러 자리로 갈 때 (2026-11-19)
-          'qk_quarrel', 'qk_oversleep', 'qk_cowardQuit', 'qk_cowardFlee', 'qk_sneak', 'qk_cover', 'qk_selfFlee', 'qk_hunger', 'qk_omenWait', 'qk_rush']   # qk_ = 버릇이 터질 때 (2026-11-20 야간, 기록 kind 'quirk' · qev)
+          'qk_quarrel', 'qk_oversleep', 'qk_cowardQuit', 'qk_cowardFlee', 'qk_sneak', 'qk_cover', 'qk_selfFlee', 'qk_hunger', 'qk_omenWait', 'qk_rush',
+          'hint_1', 'hint_2', 'hint_3a', 'hint_3b']   # hint_ = 소문 조합 힌트 (2026-11-20 야간, {fx} {m1} {m2} {dish} {n})   # qk_ = 버릇이 터질 때 (2026-11-20 야간, 기록 kind 'quirk' · qev)
 TONES = ['bold', 'careful', 'friendly', 'loner', 'plain']
 LINA_EVENTS = ['lina_meal', 'lina_drink', 'lina_depart', 'lina_first', 'lina_success', 'lina_fail', 'lina_ledger', 'lina_unlock', 'lina_idle',
                'lina_iv_start', 'lina_iv_win', 'lina_iv_lose']
