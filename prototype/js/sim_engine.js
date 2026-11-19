@@ -49,7 +49,8 @@
         visitBaseWeeks: 2,
         leaveAfterYears: 2, leaveAttach: 20,
         heirDelayWeeks: 24,
-        departTh: [0.70, 0.55, 0.35], seekTh: [0.30, 0.50, 0.70]   // 출발 기준(신중|보통|무모), 동료 찾는 기준(독불장군|보통|사교적)
+        departTh: [0.70, 0.55, 0.35], seekTh: [0.30, 0.50, 0.70],   // 출발 기준(신중|보통|무모), 동료 찾는 기준(독불장군|보통|사교적)
+        relParty: 30   // 2026-11-19: 게임에서 동료를 고를 때 친밀도 흔들림 폭 [임시] (시뮬레이터는 친밀도가 없어 쓰지 않음, balance.csv와 같게)
       },
       econ: {
         startGold: 3000, feeBase: 0.10, feePerInfo: 0.02,

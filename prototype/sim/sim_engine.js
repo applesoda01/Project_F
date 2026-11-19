@@ -49,7 +49,8 @@
         visitBaseWeeks: 2,
         leaveAfterYears: 2, leaveAttach: 20,
         heirDelayWeeks: 24,
-        departTh: [0.70, 0.55, 0.35], seekTh: [0.30, 0.50, 0.70]   // 출발 기준(신중|보통|무모), 동료 찾는 기준(독불장군|보통|사교적)
+        departTh: [0.70, 0.55, 0.35], seekTh: [0.30, 0.50, 0.70],   // 출발 기준(신중|보통|무모), 동료 찾는 기준(독불장군|보통|사교적)
+        relParty: 30   // 2026-11-19: 게임에서 동료를 고를 때 친밀도 흔들림 폭 [임시] (시뮬레이터는 친밀도가 없어 쓰지 않음, balance.csv와 같게)
       },
       econ: {
         startGold: 3000, feeBase: 0.10, feePerInfo: 0.02,
@@ -73,6 +74,8 @@
       gear: {
         needSmith: 1,   // 2026-11-19: 대장간이 생긴 뒤부터 장비를 삼 (0 = 예전처럼 처음부터)
         pieceBuy: 1, giftAttach: [1, 2, 3, 4, 5, 6, 7],   // 2026-11-18 대장간: 장비 1칸씩 사기 · 선물 애착 [임시]
+        craftFee: [30, 60, 120, 240, 480, 960, 1920],   // 2026-11-19 대장간 만들기 공임 (F 30 · E 60 [임시], D 이상 가안)
+        potionFee: [5, 10, 20, 40, 50, 65, 125],   // 2026-11-19 물약 상점 달이기 공임 1병 (F 5 · E 10 [임시], D 이상 가안)
         weaponPrice: [150, 400, 1000, 2500, 6000, 14000, 30000], setMult: 3.0,
         weaponStat: [3, 5, 8, 12, 16, 21, 27], armorStat: [1, 2, 4, 6, 8, 10, 13],
         accStat: [2, 3, 5, 7, 10, 13, 17], weaponAtk: [10, 18, 28, 40, 55, 72, 92],
@@ -239,7 +242,8 @@
       const n = Q.reqCount[g];
       const req = [type];
       while (req.length < n) { const k = ri(5); if (!req.includes(k)) req.push(k); }
-      const C = boss ? null : TPL[type + '_' + g], T = !C ? null : C.length > 1 ? C[Math.floor(R() * C.length)] : C[0];   // 칸 후보 중 하나 (1개면 난수 안 씀)
+      let C = boss ? null : TPL[type + '_' + g]; if (C) { const F2 = C.filter(x => !s.board.some(b => b.T === x)); if (!F2.length) return null; C = F2; }   // 게시판에 같은 의뢰가 있으면 안 붙임 (게임과 같음, 2026-11-19)
+      const T = !C ? null : C.length > 1 ? C[Math.floor(R() * C.length)] : C[0];   // 칸 후보 중 하나 (1개면 난수 안 씀)
       const req2 = T && T.stats && T.stats.length ? T.stats.slice() : req;
       const QL = cfg.qlv && cfg.qlv.on ? cfg.qlv : null, LV = QL && T && T.board ? (s.qlv[T.id] || (s.qlv[T.id] = { lv: 1, wins: 0, fresh: 0 })) : null, lv = LV ? LV.lv : 1, fz = !!(LV && LV.fresh > 0);   // 의뢰 레벨 (게임과 같음, 결정 35)
       const DF = ((Q.diff || [])[g] || 1) * (QL ? 1 + QL.foe * (lv - 1) : 1);   // 난이도 배수 (게임 makeQuest와 같음)
@@ -370,7 +374,7 @@
         let g = s.grade;
         const r = R();
         if (r > bot.filterFocus) g = ri(s.grade + 1);
-        if (s.board.length < cap) { const q = makeQuest(g, false); markX2(q); s.board.push(q); }
+        if (s.board.length < cap) { const q = makeQuest(g, false); if (q) { markX2(q); s.board.push(q); } }
       }
     }
     // ×2 의뢰 (2026-11-12): 게시될 때 x2Rate 확률, 트로피 장식장이 있으면 달마다 처음 게시되는 의뢰부터 x2PerMonth건 보장 (게임 markX2와 같음)

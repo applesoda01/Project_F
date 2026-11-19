@@ -187,7 +187,12 @@
   const relKey = (i, j) => i < j ? i + '-' + j : j + '-' + i;
   const relBase = (s, i, j) => { const a = s.advs.find(x => x.id === i), b = s.advs.find(x => x.id === j); if (!a || !b) return MEM.relStart; let v = MEM.relStart; if (Math.abs(a.risk - b.risk) === 2) v -= 15; if (a.social === 2 && b.social === 2) v += 10; if (a.social === 0 || b.social === 0) v -= 10; return v; };   // 처음 친밀도 = 성향 궁합 (무모 · 신중 −15 · 둘 다 사교적 +10 · 독불장군 −10) [임시]
   const relOf = (s, i, j) => { const v = s.rel && s.rel[relKey(i, j)]; return v == null ? relBase(s, i, j) : v; };
-  function relAdd(s, i, j, d) { if (i === j) return; s.rel = s.rel || {}; const k = relKey(i, j); s.rel[k] = Math.max(0, Math.min(100, relOf(s, i, j) + d)); }
+  function relAdd(s, i, j, d) { if (i === j) return; s.rel = s.rel || {}; const k = relKey(i, j), v0 = relOf(s, i, j), v = Math.max(0, Math.min(100, v0 + d)); s.rel[k] = v; if (v0 < 70 && v >= 70) palMet(s, i, j, k); }
+  function palMet(s, i, j, k) {   // 2026-11-19 사용자(시안 11 B안): 처음 단짝(친밀도 70 이상, relTier 'good')이 되면 두 사람 경력에 한 줄씩. 같은 짝은 한 번만
+    s.palMet = s.palMet || {}; if (s.palMet[k] != null) return; s.palMet[k] = s.week;
+    const a = s.advs.find(x => x.id === i), b = s.advs.find(x => x.id === j); if (!a || !b) return;
+    for (const [x, y] of [[a, b], [b, a]]) if (x.career) x.career.push({ week: s.week, text: `♥ ${J(y.name, '과', '와')} 단짝이 됨`, pal: 1 });
+  }
   const relStep = (a, b) => { let d = MEM.relWin; if (Math.abs(a.risk - b.risk) === 2) d -= 2; if (a.social === 2 && b.social === 2) d += 1; if (a.social === 0 || b.social === 0) d -= 1; return Math.max(2, Math.min(7, d)); };   // 성향 궁합 (제안서 3-1)
   const relTier = v => v >= 70 ? 'good' : v < 30 ? 'bad' : '';
   function memQuest(s, x, ok, party, lv0) {   // 귀환 때: 파티원마다 기억 · 친밀도
@@ -717,7 +722,12 @@
         let party = [a];
         let pp = perceived(s, a, questP(s, party, q));
         if (pp < s.cfg.adv.seekTh[a.social]) {
-          const mates = idle.filter(b => b !== a && b.state === 'town' && Math.abs(b.grade - q.g) <= 1 && !cPastEnd(s, b, q.weeks || s.cfg.quest.weeks[q.g])).slice(0, 4);
+          let mates = idle.filter(b => b !== a && b.state === 'town' && Math.abs(b.grade - q.g) <= 1 && !cPastEnd(s, b, q.weeks || s.cfg.quest.weeks[q.g]));
+          // 2026-11-19 사용자: 동료를 고를 때 친밀도도 봄 — 절대적이지 않게. 점수 = 친밀도 + 흔들림(±adv.relParty/2) [임시] 이 큰 순서로 4명까지 후보
+          //   예: relParty 30 → 친밀도가 30 넘게 차이 나면 늘 친한 쪽 먼저, 10 차이면 약 4번에 3번꼴. 0이면 예전처럼 명부 순서
+          const RP = s.cfg.adv.relParty || 0;
+          if (RP > 0 && mates.length > 1) mates = mates.map(b => ({ b, k: relOf(s, a.id, b.id) + (s.R() - 0.5) * RP })).sort((x, y) => y.k - x.k).map(x => x.b);
+          mates = mates.slice(0, 4);
           for (const m of mates) { party.push(m); if (perceived(s, a, questP(s, party, q)) >= th) break; }
           pp = perceived(s, a, questP(s, party, q));
         }
