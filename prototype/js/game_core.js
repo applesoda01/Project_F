@@ -538,23 +538,51 @@
     const ow = reqOwnerFor(s, d), r = { id: 'r' + (R.next++), key, state: 'open', stage: 1, who: ow ? ow.id : null, party: ow && d.party ? [ow.id] : [], refused: {}, at: s.week, isNew: true, fails: 0, tut: true };
     R.open.push(r); reqLog(s, r, 'req', `${J(reqGiver(s, r), '이', '가')} 리퀘스트를 맡겼습니다: 「${reqName(s, r)}」`); return r;
   }
-  // 대장간 마스터 선물 (2026-11-18): 길드 금으로 장비 1칸을 사서 줌 — 다음 등급만(길드 등급까지), 애착 +gear.giftAttach[등급] [임시]
+  // 대장간 (2026-11-19 사용자: A안 · 금화로 사서 주기 없앰 · 「만들기」와 「선물하기」를 따로)
+  //   만들기: 길드 창고 소재 + 공임 gear.craftFee[등급] [임시] → 길드 장비 창고 s.gearInv[아이템 id]. 조합법 = 소재 편집기 장비 조합법
+  //   선물: 창고에 있는 장비 중 그 모험가 칸(직업에 맞는 종류)에 맞고 지금보다 높은 등급(길드 등급까지)을 줌 · 애착 +gear.giftAttach[등급] [임시]
+  const matName = id => (MAT[id] || {}).name || id;
+  const GEAR_T = [['sword', 'bow', 'staff', 'mace', 'dagger'], ['heavy', 'light', 'robe', 'robe', 'light'], ['ring', 'anklet', 'necklace', 'rosary', 'gloves']];
+  const gearType = (core, k) => k === 2 ? GEAR_T[2][(core + 2) % 5] : GEAR_T[k][core];   // 장신구는 명부 표시와 같은 짝
+  const GEAR_ITEMS = () => ((GD.content && GD.content.items) || []).filter(i => i.kind === 'gear');
+  const gearSlot = it => GEAR_T.findIndex(L => L.includes(it.gtype));
+  function craftInfo(s, id) {
+    const it = GEAR_ITEMS().find(i => i.id === id); if (!it) return null; const g = GR.indexOf(it.grade);
+    return { item: it, g, k: gearSlot(it), fee: ((s.cfg.gear.craftFee || [30, 60, 120, 240, 480, 960, 1920])[g]) || 0, need: (it.recipe || []).map(r => ({ m: r.m, n: r.n, have: (s.mats || {})[r.m] || 0 })), own: (s.gearInv || {})[id] || 0 };
+  }
+  function craftWhy(s, id) {
+    if (!(s.townUnlock || {}).smith) return '대장간이 아직 없습니다';
+    const R = craftInfo(s, id); if (!R) return '조합법이 없습니다';
+    if (R.g > s.grade) return '길드 등급까지만 만들 수 있습니다';
+    const lack = R.need.filter(x => x.have < x.n); if (lack.length) return '소재가 모자랍니다: ' + lack.map(x => `${matName(x.m)} ${x.have}/${x.n}`).join(', ');
+    if (s.gold < R.fee) return `공임이 모자랍니다 (${R.fee}G)`;
+    return null;
+  }
+  function smithCraft(s, id) {
+    const why = craftWhy(s, id); if (why) return { ok: false, why };
+    const R = craftInfo(s, id); for (const x of R.need) s.mats[x.m] -= x.n;
+    s.gold -= R.fee; s.month.gift = (s.month.gift || 0) - R.fee; s.gearInv = s.gearInv || {}; s.gearInv[id] = (s.gearInv[id] || 0) + 1;
+    log(s, `대장간에서 ${R.item.name}을 만들었습니다. (소재 ${R.need.map(x => matName(x.m) + ' ' + x.n).join(' · ')} · 공임 ${R.fee}G)`, 'unlock');
+    return { ok: true, item: R.item.name, fee: R.fee };
+  }
+  function giftItems(s, a, k) {   // 이 모험가 · 칸에 줄 수 있는 창고 장비 (높은 등급 먼저)
+    const cur = eqOf(a)[k], t = gearType(a.core, k);
+    return GEAR_ITEMS().filter(i => i.gtype === t && ((s.gearInv || {})[i.id] || 0) > 0).map(i => ({ item: i, g: GR.indexOf(i.grade), own: s.gearInv[i.id] })).filter(x => x.g > cur && x.g <= s.grade).sort((x, y) => y.g - x.g);
+  }
   function smithWhy(s, a, k) {
     if (!(s.townUnlock || {}).smith) return '대장간이 아직 없습니다';
     if (!a || !a.alive) return '모험가가 없습니다';
-    if (s.gold < 0) return '금고 적자 — 금고가 0G 이상이 되면 선물할 수 있어요';
-    const g = eqOf(a)[k] + 1; if (g > s.grade) return '길드 등급까지만 올릴 수 있습니다';
-    const price = s.cfg.gear.weaponPrice[g]; if (s.gold < price) return `금고가 모자랍니다 (${price}G 필요)`;
+    if (!giftItems(s, a, k).length) return '창고에 맞는 장비가 없습니다 — 「만들기」에서 먼저 만드세요';
     return null;
   }
   function smithGift(s, aid, k) {
     const a = s.advs.find(x => x.id === aid), why = smithWhy(s, a, k); if (why) return { ok: false, why };
-    const g = eqOf(a)[k] + 1, price = s.cfg.gear.weaponPrice[g], att = ((s.cfg.gear.giftAttach || [1, 2])[g]) || 1;
-    s.gold -= price; s.month.gift = (s.month.gift || 0) - price; setEq(a, k, g); a.attach = Math.min(100, a.attach + att);
-    (s.smithLog = s.smithLog || []).unshift({ w: s.week, id: a.id, k, g, price, t: 'gift' }); if (s.smithLog.length > 30) s.smithLog.length = 30;
-    (a.career = a.career || []).push({ week: s.week, text: `마스터에게 ${GR[g]}급 ${EQ_NAME[k]}를 선물받음` }); remember(s, a, 'gift', { part: EQ_NAME[k], g: GR[g] });
-    log(s, `${J(a.name, '이', '가')} 마스터에게 ${GR[g]}급 ${EQ_NAME[k]}를 선물받았습니다. (${price}G · 애착 +${att})`, 'grow', { who: [a.name] });
-    return { ok: true, g, price, att };
+    const x = giftItems(s, a, k)[0], g = x.g, att = ((s.cfg.gear.giftAttach || [1, 2])[g]) || 1;
+    s.gearInv[x.item.id]--; setEq(a, k, g); a.attach = Math.min(100, a.attach + att);
+    (s.smithLog = s.smithLog || []).unshift({ w: s.week, id: a.id, k, g, price: 0, t: 'gift', item: x.item.name }); if (s.smithLog.length > 30) s.smithLog.length = 30;
+    (a.career = a.career || []).push({ week: s.week, text: `마스터에게 ${x.item.name}(${GR[g]}급 ${EQ_NAME[k]})를 선물받음` }); remember(s, a, 'gift', { part: EQ_NAME[k], g: GR[g] });
+    log(s, `${J(a.name, '이', '가')} 마스터에게 ${x.item.name}을 선물받았습니다. (애착 +${att})`, 'grow', { who: [a.name] });
+    return { ok: true, g, att, item: x.item.name };
   }
   function orderSources(s, m) { const out = []; for (const k in TPL) { const g = +k.split('_')[1]; if (g > s.grade) continue; for (const t of TPL[k]) if ((t.rewards || []).some(r => r.m === m && r.p >= 30)) out.push(t); } return out; }   // 발주 소재가 주 소재로 나오는 게시판 의뢰 (결정 26 · 27)
   function orderWhy(s, m, n) {
@@ -1351,6 +1379,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
