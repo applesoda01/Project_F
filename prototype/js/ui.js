@@ -507,6 +507,7 @@
     go();
     if (root.BookFX && !wasOpen) root.BookFX.openCover();
   };
+  UI.chapterOf = name => (chapterOf(name) || {}).id || null;   // 2026-11-19 튜토리얼: 책이 열려 있을 때 메뉴 단추 대신 밝힐 책갈피
   UI.popupName = () => popup;   // 2026-11-18 튜토리얼: 지금 펼친 장
   UI.repop = () => { if (popup) renderPopup(); };   // 지금 장을 다시 그림 (튜토리얼이 재료를 준 뒤 등)
   UI.dlgBusy = () => !!(Dlg.cur || Dlg.lines.length);

@@ -40,6 +40,11 @@
     if (!dimEl.isConnected) ui.appendChild(dimEl);
     if (!els || !els.length) { if (dimOn) { dimEl.style.display = 'none'; dimOn = false; } return; }
     const ur = ui.getBoundingClientRect(), k = ur.width / 1920 || 1;
+    // 2026-11-19 안전장치: 밝힌 칸이 실제로 눌리는지(가운데를 찍어 그 요소가 맞는지) 보고, 하나도 안 눌리면 덮지 않음
+    { const pe = dimEl.style.pointerEvents; dimEl.style.pointerEvents = 'none';
+      const ok = els.some(el => { const r = el.getBoundingClientRect(); if (!r.width || !r.height) return false; const h = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!h && (h === el || el.contains(h)); });
+      dimEl.style.pointerEvents = pe;
+      if (!ok) { if (dimOn) { dimEl.style.display = 'none'; dimOn = false; } return; } }
     let d = 'M0 0H1920V1080H0Z';
     for (const el of els) { const r = el.getBoundingClientRect(); if (!r.width) continue; const x = (r.left - ur.left) / k - 6, y = (r.top - ur.top) / k - 6, w = r.width / k + 12, h = r.height / k + 12;
       d += `M${x.toFixed(1)} ${y.toFixed(1)}h${w.toFixed(1)}v${h.toFixed(1)}h${(-w).toFixed(1)}Z`; }
@@ -47,8 +52,13 @@
   }
   function glow(sel, sec) { glowSel = sel; glowUntil = sec ? clock + sec : 0; paintGlow(); }
   function unglow() { glowSel = null; paintGlow(); }
+  // 2026-11-19 암전 버그: 책이 열려 있으면 아래 메뉴 단추는 책 뒤에 가려짐 → 같은 장의 책갈피를 밝힘
+  function bookSel(sel) {
+    if (!root.UI.popupName || !root.UI.popupName() || !root.UI.chapterOf) return sel;
+    return sel.replace(/\[data-pop="([\w:-]+)"\]/g, (m, p) => { const ch = root.UI.chapterOf(p); return ch ? `#bookMarks [data-ch="${ch}"]` : m; });
+  }
   function paintGlow() {
-    const want = new Set(glowSel ? document.querySelectorAll(glowSel) : []);
+    const want = new Set(glowSel ? document.querySelectorAll(bookSel(glowSel)) : []);
     for (const el of document.querySelectorAll('.tutGlow')) if (!want.has(el)) el.classList.remove('tutGlow');
     for (const el of want) el.classList.add('tutGlow');
     const s = getS(), t = s && s.tut, W = t && !t.base && WAIT[t.ph];
@@ -124,7 +134,7 @@
     nom: { glow: () => { if (root.UI.popupName() !== 'req') return '[data-pop="req"]';   // 리퀘스트 장 → 들개 떼 부탁 → 모험가 줄 → 보내기
         const s = getS(), r = s.req && s.req.open.find(x => x.id === s.tut.rid), card = `[data-rq="${s.tut.rid}"]`; if (!r) return null;
         if (!document.querySelector(card + '.on')) return card;
-        if (r.party.length && document.querySelector('[data-rqact="send"]:not([disabled])')) return '[data-rqact="send"]';
+        if (r.party.length && document.querySelector('[data-rqact="send"]:not([disabled]):not(.soft-off)')) return '[data-rqact="send"]';   // 2026-11-19: 조건을 못 채운 보내기(soft-off)는 밝히지 않고 모험가 줄을 밝힘 (암전 버그)
         return '[data-rqnom]:not(.no)'; }, hint: () => '리퀘스트 장에서 들개 떼 부탁에 모험가를 지명해 보내 주세요',
       test: () => { const s = getS(), r = s.req && s.req.open.find(x => x.id === s.tut.rid); return !r || r.state === 'queued' || r.state === 'active'; },
       done() { const t = getS().tut; t.ph = 'wait'; t.nomGo = true; say('FT0006', 3, () => { t.base = true; t.noGo = false; t.step = null; t.ph = null; hold(false); }); } }
