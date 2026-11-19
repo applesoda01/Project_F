@@ -19,7 +19,7 @@
 "growth.trainPerWeek": 0,
 "growth.statCap": 0,
 "adv.arrivalPerMonth": 0,
-"adv.fameStep": 7, "adv.fameSkip": 0, "adv.founderWarrior": 0, "gear.pieceBuy": 0, "gear.needSmith": 0, "gear.giftAttach": 7, "gear.craftFee": 7,
+"adv.fameStep": 7, "adv.fameSkip": 0, "adv.founderWarrior": 0, "gear.pieceBuy": 0, "gear.needSmith": 0, "gear.giftAttach": 7, "gear.craftFee": 7, "gear.potionFee": 7,
 "adv.arrivalPerGrade": 0,
 "adv.startCount": 0,
 "adv.startCore": 0,

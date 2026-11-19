@@ -584,6 +584,43 @@
     log(s, `${J(a.name, '이', '가')} 마스터에게 ${x.item.name}을 선물받았습니다. (애착 +${att})`, 'grow', { who: [a.name] });
     return { ok: true, g, att, item: x.item.name };
   }
+  // 물약 상점 (2026-11-19 사용자: 대장간과 똑같은 규칙) — 달이기: 창고 소재 + 공임 gear.potionFee[등급] [임시] → 물약 창고 s.potInv
+  //   나눠 주기: 창고 물약 1병을 모험가 가방에(최대 3병) · 애착 +gear.giftAttach[등급] [임시] (장비 선물과 같음) · 금화로 사서 주기는 없음
+  const POT_ITEMS = () => ((GD.content && GD.content.items) || []).filter(i => i.kind === 'potion');
+  const POT_BAG = 3;
+  function potInfo(s, id) {
+    const it = POT_ITEMS().find(i => i.id === id); if (!it) return null; const g = GR.indexOf(it.grade);
+    return { item: it, g, fee: ((s.cfg.gear.potionFee || [5, 10, 20, 40, 50, 65, 125])[g]) || 0, need: (it.recipe || []).map(r => ({ m: r.m, n: r.n, have: (s.mats || {})[r.m] || 0 })), own: (s.potInv || {})[id] || 0 };
+  }
+  function potWhy(s, id) {
+    if (!(s.townUnlock || {}).potion) return '물약 상점이 아직 없습니다';
+    const R = potInfo(s, id); if (!R) return '조합법이 없습니다';
+    if (R.g > s.grade) return '길드 등급까지만 달일 수 있습니다';
+    const lack = R.need.filter(x => x.have < x.n); if (lack.length) return '소재가 모자랍니다: ' + lack.map(x => `${matName(x.m)} ${x.have}/${x.n}`).join(', ');
+    if (s.gold < R.fee) return `공임이 모자랍니다 (${R.fee}G)`;
+    return null;
+  }
+  function potBrew(s, id) {
+    const why = potWhy(s, id); if (why) return { ok: false, why };
+    const R = potInfo(s, id); for (const x of R.need) s.mats[x.m] -= x.n;
+    s.gold -= R.fee; s.month.gift = (s.month.gift || 0) - R.fee; s.potInv = s.potInv || {}; s.potInv[id] = (s.potInv[id] || 0) + 1;
+    log(s, `물약 상점에서 ${R.item.name}을 달였습니다. (소재 ${R.need.map(x => matName(x.m) + ' ' + x.n).join(' · ')} · 공임 ${R.fee}G)`, 'unlock');
+    return { ok: true, item: R.item.name, fee: R.fee };
+  }
+  function potGiveWhy(s, a, id) {
+    if (!(s.townUnlock || {}).potion) return '물약 상점이 아직 없습니다';
+    if (!a || !a.alive) return '모험가가 없습니다';
+    if (!((s.potInv || {})[id] > 0)) return '창고에 없습니다 — 「달이기」에서 먼저 달이세요';
+    if ((a.pots || 0) >= POT_BAG) return `가방이 꽉 찼습니다 (${POT_BAG}병)`;
+    return null;
+  }
+  function potGive(s, aid, id) {
+    const a = s.advs.find(x => x.id === aid), why = potGiveWhy(s, a, id); if (why) return { ok: false, why };
+    const R = potInfo(s, id), att = ((s.cfg.gear.giftAttach || [1, 2])[R.g]) || 1;
+    s.potInv[id]--; a.pots = (a.pots || 0) + 1; a.attach = Math.min(100, a.attach + att);
+    log(s, `${J(a.name, '이', '가')} 마스터에게 ${R.item.name}을 받았습니다. (애착 +${att})`, 'grow', { who: [a.name] });
+    return { ok: true, item: R.item.name, att };
+  }
   function orderSources(s, m) { const out = []; for (const k in TPL) { const g = +k.split('_')[1]; if (g > s.grade) continue; for (const t of TPL[k]) if ((t.rewards || []).some(r => r.m === m && r.p >= 30)) out.push(t); } return out; }   // 발주 소재가 주 소재로 나오는 게시판 의뢰 (결정 26 · 27)
   function orderWhy(s, m, n) {
     const E = s.cfg.econ, max = E.orderMax != null ? E.orderMax : 2;
@@ -710,7 +747,7 @@
         if (isCombat(q)) {
           // 전투 의뢰: 출발할 때 물약을 사고 전투를 미리 계산해 둠 (귀환할 때 결과 반영, 미니 뷰가 기록을 재생)
           const C = CB.C, price = C.potionPrice[Math.min(q.g, s.grade)];
-          for (const m of party) { const want = C.potionCarry[m.spend] - (s.R() < 0.5 ? 1 : 0); while (m.pots < want && m.wallet >= price) { m.wallet -= price; m.pots++; } }
+          for (const m of party) { const want = C.potionCarry[m.spend] - (s.R() < 0.5 ? 1 : 0), p0 = m.pots; while (m.pots < want && m.wallet >= price) { m.wallet -= price; m.pots++; } if (m.pots > p0 && (s.townUnlock || {}).potion) { (s.potLog = s.potLog || []).unshift({ w: s.week, id: m.id, n: m.pots - p0, price }); if (s.potLog.length > 30) s.potLog.length = 30; } }   // 2026-11-19 물약 상점 손님 기록 (상점이 생긴 뒤)
           const r = CB.fight(party.map(m => unitOf(s, m, mealB, sm)), q.enemies, q.g, s.R, party[0].risk, true);
           fight = { win: r.win, result: r.result, rounds: r.rounds, log: r.log.map(e => e.hp != null ? Object.assign({}, e, { hp: Math.round(e.hp) }) : e),
             units: r.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), maxMp: Math.round(u.maxMp || 0), hp: Math.round(u.hp), down: u.down, pots: u.pots, used: u.used })),
@@ -1379,6 +1416,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, POT_BAG, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

@@ -439,6 +439,7 @@
     cv.addEventListener('mouseleave', () => { hover = null; mouse = { x: -1, y: -1 }; });
     cv.addEventListener('click', e => { if (!Town.active) return; const p = stage.toGame(e.clientX, e.clientY); sel = pick(getS(), p.x, p.y);
       if (sel && sel.id === 'smith' && unl(getS()).smith && root.Smithy) { root.Smithy.getS = getS; root.Smithy.open(); sel = null; }   // 2026-11-18: 대장간(해금 뒤)을 누르면 대장간 창
+      if (sel && sel.id === 'potion' && unl(getS()).potion && root.PotShop) { root.PotShop.getS = getS; root.PotShop.open(); sel = null; }   // 2026-11-19: 물약 상점(해금 뒤)을 누르면 물약 상점 창
       refreshUi(); });
   }
   function refreshUi() {
