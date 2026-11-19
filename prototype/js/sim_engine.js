@@ -11,7 +11,7 @@
       run: { runs: 100, maxYears: 20, seed: 1 },
       late: { on: 1, base: -0.01, soft: 1 },   // 2026-11-18 결정 19 · 30: 늦장 실패
       qlv: { on: 1, need: 3, max: 3, foe: 0.15, pay: 0.2, var: 0.6, fresh: 4 },   // 2026-11-18 결정 35: 의뢰 레벨 [임시]
-      quirk: { rate: 0.3, safeWeeks: 12, homeAt: 85, homeMul: 0.5, hotAtk: 5, hotRel: 1, hotFight: 0.2, hotFightAtk: 5, hotFightRel: 5, drunkHp: 15, drunkInj: 1, drunkSleep: 0.1, drunkDrink: 1, drunkAttach: 1, cowardFlee: 0.3, cowardStat: 3, cowardQuit: 0.2, bluffNom: 0.05, bluffNew: 2, bluffSneak: 0.1, bluffTh: 0.2, devotedNom: 0.05, devotedCover: 0.3, devotedInj: 1, selfishXp: 0.1, selfishAt: 0.5, selfishFlee: 0.1, selfishRel: 5, glutBuff: 1.5, glutMeal: 1, glutHunger: 0.2, glutHungerMul: 0.9, omenRare: 10, omenRain: 0.2, rivalXp: 0.1, rivalRush: 0.2 },   // 2026-11-20 야간: 버릇 9종 (data/quirks.csv · balance.csv quirk) [임시], 규칙은 combat.js QK
+      quirk: { rate: 0.3, safeWeeks: 12, homeAt: 85, homeMul: 0.5, hotAtk: 5, hotRel: 1, hotFight: 0.2, hotFightAtk: 5, hotFightRel: 5, drunkHp: 15, drunkInj: 1, drunkSleep: 0.06, drunkDrink: 1, drunkAttach: 1, cowardFlee: 0.3, cowardStat: 3, cowardQuit: 0.2, bluffNom: 0.05, bluffNew: 2, bluffSneak: 0.1, bluffTh: 0.2, devotedNom: 0.05, devotedCover: 0.3, devotedInj: 1, selfishXp: 0.1, selfishAt: 0.5, selfishFlee: 0.1, selfishRel: 5, glutBuff: 1.5, glutMeal: 1, glutHunger: 0.2, glutHungerMul: 0.9, omenRare: 10, omenRain: 0.2, rivalXp: 0.1, rivalRush: 0.2 },   // 2026-11-20 야간: 버릇 9종 (data/quirks.csv · balance.csv quirk) [임시], 규칙은 combat.js QK
       quest: {
         ref: [15, 25, 35, 45, 60, 75, 90],        // 판정 기준치
         reqCount: [1, 1, 2, 2, 3, 3, 4],           // 요구 능력치 수
@@ -499,7 +499,7 @@
       for (const a of idle) {
         if (a.busy > 0 || !a.alive) continue;
         if (a.quirk && QC) {   // 2026-11-20 버릇: 술꾼 늦잠 · 미신가 비 (게임 qkSkip과 같음)
-          if (a.quirk === 'drunk' && s.drinkIds && s.drinkIds.has(a) && R() < qkRisk(a, QC.drunkSleep)) { qkN('oversleep'); continue; }
+          if (a.quirk === 'drunk' && R() < qkRisk(a, QC.drunkSleep) * (s.drinkIds && s.drinkIds.has(a) ? 2 : 1)) { qkN('oversleep'); continue; }
           if (a.quirk === 'omen' && CB.QK.rainy(seed, s.week) && R() < qkRisk(a, QC.omenRain)) { qkN('omenWait'); continue; }
         }
         const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];

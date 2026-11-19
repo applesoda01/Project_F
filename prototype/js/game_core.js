@@ -791,7 +791,7 @@
   }
   function qkSkip(s, a) {   // 이번 주 게시판 의뢰를 맡지 않는 버릇 (리스크 · 보호 구간 뒤)
     const QC = s.cfg.quirk;
-    if (a.quirk === 'drunk' && (s.drinks || []).includes(a.id) && s.R() < qkRisk(s, a, QC.drunkSleep)) { qkLog(s, a, 'oversleep', `${J(a.name, '이', '가')} 지난밤 주점에서 늦게까지 마셔 늦잠을 잤습니다. (술꾼 · 이번 주는 쉼)`); return true; }
+    if (a.quirk === 'drunk' && s.R() < qkRisk(s, a, QC.drunkSleep) * ((s.drinks || []).includes(a.id) ? 2 : 1)) { qkLog(s, a, 'oversleep', `${J(a.name, '이', '가')} 지난밤 주점에서 늦게까지 마셔 늦잠을 잤습니다. (술꾼 · 이번 주는 쉼)`); return true; }
     if (a.quirk === 'omen' && QKr().rainy(s.seed, s.week) && s.R() < qkRisk(s, a, QC.omenRain)) { qkLog(s, a, 'omenWait', `${J(a.name, '이', '가')} 비가 그칠 때까지 출발을 미뤘습니다. (미신가)`); return true; }
     return false;
   }
