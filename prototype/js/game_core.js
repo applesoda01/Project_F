@@ -10,7 +10,7 @@
   // 소재 편집기의 기본 의뢰 35칸 (data/collegium_data.json). 이름·소요 주·보상·기준치·명성·신뢰도·요구 능력치를 덮어씀. 없으면 balance 값
   // 칸(유형_등급)마다 후보 목록. 기본 의뢰가 맨 앞, 칸에 추가한 퀘스트가 뒤. 후보가 2개 이상일 때만 무작위로 고름(난수 1회 추가)
   const STATS_ = ['힘', '민첩', '지력', '정신', '기교'];
-  const DISH_FX = (e => { const m = /\+\s*(\d+(?:\.\d+)?)%/.exec(e || ''); if (!m) return { stats: [], pct: 0 }; const part = (e || '').slice(0, m.index); return { stats: part.includes('모든 능력치') ? [0, 1, 2, 3, 4] : STATS_.map((n, i) => part.includes(n) ? i : -1).filter(i => i >= 0), pct: +m[1] / 100 }; });   // '힘·기교 +3%' → {stats:[0,4], pct:0.03} (요리별 능력치 효과)
+  const DISH_FX = (e => { const m = /\+\s*(\d+(?:\.\d+)?)%?/.exec(e || ''); if (!m) return { stats: [], pct: 0, val: 0 }; const part = (e || '').slice(0, m.index); return { stats: part.includes('모든 능력치') ? [0, 1, 2, 3, 4] : STATS_.map((n, i) => part.includes(n) ? i : -1).filter(i => i >= 0), pct: +m[1] / 100, val: +m[1] }; });   // '힘·기교 +3' → {stats:[0,4], val:3, pct:0.03} (요리별 능력치 효과 · 2026-11-19 버프: 능력치 +val, 예전 방식은 +pct)
   const QBYID = {}, MAT = {}; if (GD.content) { for (const t of GD.content.quests) QBYID[t.id] = t; for (const m of GD.content.materials) MAT[m.id] = m; }
   // 요리: meals.csv의 메뉴(등급·순서) + 편집기 요리 아이템의 레시피(이름으로 연결)
   const DISH = (GD.meals || []).map(m => { const it = GD.content && GD.content.items.find(i => i.kind === 'food' && i.name === m.name); return Object.assign({ name: m.name, g: GR.indexOf(m.grade), mats: it ? (it.recipe || []).map(r => r.m) : [], icon: it ? it.icon : '', effect: (it && it.desc) || m.effect || '' }, DISH_FX((it && it.desc) || m.effect)); })   // 효과 원본 = 소재 편집기 요리 '효과'(desc), 비면 meals.csv.filter(d => d.mats.length);
@@ -674,8 +674,9 @@
           if (m.wallet >= price && s.R() < E.mealBuyRate[m.spend]) { s.seatUsed++; m.wallet -= price; const inc = price * E.mealMargin + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += inc; s.month.meal += inc; eaters++; ate.add(m.id); const md = s.month.dishes = s.month.dishes || {}; md[dish.name] = (md[dish.name] || 0) + 1; }
         }
         // 식사 효과 (C안): ① 발견한 요리 하나당 +2% (비전투 성공 확률·전투 공격력, 먹은 비율만큼) ② 먹은 요리의 능력치 +n% (먹은 사람만)
-        const mealB = dish ? (eaters / party.length) * E.mealPerDish * Object.keys(s.dishes).length : 0;
-        const sm = dish && dish.stats.length ? (a, k) => ate.has(a.id) && dish.stats.includes(+k) ? 1 + dish.pct : 1 : null;
+        // 2026-11-19 사용자 결정 (econ.mealMode 1): 요리 = 이번 의뢰 동안의 버프 — 먹은 사람의 요리 능력치 +val(고정값), 발견 수 보너스 없음. 의뢰가 끝나면 사라짐. 0 = 예전 C안
+        const mealB = dish && !E.mealMode ? (eaters / party.length) * E.mealPerDish * Object.keys(s.dishes).length : 0;
+        const sm = dish && dish.stats.length ? (a, k) => ate.has(a.id) && dish.stats.includes(+k) ? (E.mealMode ? 1 + dish.val / Math.max(1, finalStat(s, a, +k)) : 1 + dish.pct) : 1 : null;
         const weeks = q.weeks || Q.weeks[q.g];              // 편집기에서 기간을 바꾼 의뢰는 그 값
         let p, fight = null;
         if (isCombat(q)) {

@@ -38,6 +38,8 @@
   const VOICE = a => tone(a) === 'careful' ? 'jon' : 'ban';
   function josa(v, sfx) {
     if (!sfx) return v; const [x, y] = sfx.split('/'), c = String(v).charCodeAt(String(v).length - 1);
+    if (c >= 48 && c <= 57) { const d = c - 48, jong = [1, 1, 0, 1, 0, 0, 1, 1, 1, 0][d], rieul = d === 1 || d === 7 || d === 8;   // 2026-11-19 숫자: 영 · 일 · 삼 · 육 · 칠 · 팔 = 받침 있음 (일 · 칠 · 팔 = ㄹ)
+      if (x === '으로') return v + (rieul || !jong ? y : x); return v + (jong ? x : y); }
     if (c < 0xac00 || c > 0xd7a3) return v + y; const jong = (c - 0xac00) % 28;
     if (x === '으로' && jong === 8) return v + y;   // ㄹ 받침 + 으로/로 → 로
     return v + (jong ? x : y);

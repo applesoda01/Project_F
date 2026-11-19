@@ -7,9 +7,9 @@
   const Gm = root.GuildGame, GR = Gm.GR;
   const fmt = n => Math.round(n).toLocaleString();
   // 2026-11-16 상단 HUD 오버 설명: 브라우저 기본 풍선(title) 대신 모험가 성향 쪽지와 같은 크림색 카드
-  // 길드 승급 조건 (design_v0.1.md 승급 표). 길드 승급은 아직 게임에 없어서 문구 끝에 밝힘 (working_rules 7: 구현 전 효과는 표시)
-  const GUILD_UP = ['보스급 의뢰 2건을 해내고 침공을 막으면 E급으로 올라가요.', '보스급 의뢰 3건을 해내고 모험가 관리소를 지은 뒤,\n침공을 막으면 D급으로 올라가요.', '보스급 의뢰 3건을 해내고 훈련장을 지은 뒤,\n침공을 막으면 C급으로 올라가요.', '보스급 의뢰 4건을 해내고 의무실을 지은 뒤,\n침공을 막으면 B급으로 올라가요.',
-    '보스급 의뢰 4건을 해내고 해체장을 지은 뒤,\n침공을 막으면 A급으로 올라가요.', '보스급 의뢰 5건, 명예의 전당, S급 후보 2명을 갖추고\n침공을 막으면 S급으로 올라가요.'].map(t => t + '\n(승급은 아직 게임에 적용되지 않았어요)').concat(['가장 높은 등급이에요.']);
+  // 길드 승급 조건 (design_v0.1.md 승급 표). F → E만 게임에 있음(리퀘스트 8번 + 침공, 2026-11-16 결정) — 나머지는 아직이라 문구 끝에 밝힘 (working_rules 7: 구현 전 효과는 표시)
+  const GUILD_UP = ['리퀘스트를 8번 들어주면 영주의 부탁(침공)이 와요.\n침공을 막으면 E급으로 올라가요.', '보스급 의뢰 3건을 해내고 모험가 관리소를 지은 뒤,\n침공을 막으면 D급으로 올라가요.', '보스급 의뢰 3건을 해내고 훈련장을 지은 뒤,\n침공을 막으면 C급으로 올라가요.', '보스급 의뢰 4건을 해내고 의무실을 지은 뒤,\n침공을 막으면 B급으로 올라가요.',
+    '보스급 의뢰 4건을 해내고 해체장을 지은 뒤,\n침공을 막으면 A급으로 올라가요.', '보스급 의뢰 5건, 명예의 전당, S급 후보 2명을 갖추고\n침공을 막으면 S급으로 올라가요.'].map((t, i) => i === 0 ? t : t + '\n(이 승급은 아직 게임에 적용되지 않았어요)').concat(['가장 높은 등급이에요.']);
   const TRUST_TXT = ['들어오는 의뢰가 크게 줄고, 보상과 경험치도 줄어요.', '들어오는 의뢰가 줄고, 보상과 경험치가 조금 줄어요.', '들어오는 의뢰와 보상·경험치 모두 평소와 같아요.', '들어오는 의뢰가 늘고, 보상과 경험치가 조금 늘어요.', '들어오는 의뢰가 크게 늘고, 보상과 경험치도 늘어요.'];   // 2026-11-16 14:06 존댓말로
   function hudTip(el, txt) { if (!el) return; el.removeAttribute('title'); el.classList.add('has-htip'); let t = el.querySelector(':scope > .htip'); if (!t) { t = document.createElement('i'); t.className = 'htip'; el.appendChild(t); } if (t.textContent !== txt) t.textContent = txt; }
   const badge = g => `<i class="ux-grade" style="background-image:url(assets/ui/hud/badge_${GR[g]}.png)" title="${GR[g]}급"></i>`;   // HUD 등급 배지 (시설·음식·전직 제안 공통)
@@ -1364,7 +1364,7 @@
     게시판: '의뢰가 붙는 곳. 18칸, 붙은 의뢰는 4주가 지나면 사라집니다.',   // 2026-11-12: 칸 고정 18·기한 4주로 문구 수정 접수대: '모험가가 의뢰를 받아 가고 결과를 보고합니다.',
     주점: '출발 전 식사로 능력치가 오르고, 식사 수입이 들어옵니다.', 판매창구: '의뢰에서 얻은 소재를 되팔아 수입을 얻습니다.',
     관리소: '2차 전직을 할 수 있게 됩니다.', 의무실: '부상 회복이 빨라지고, 사망 확률이 줄어듭니다.',
-    집무실: '메인·서브 퀘스트에 모험가를 지명합니다. (메인·서브 퀘스트는 아직 게임에 없음)', 훈련장: '힘·민첩·기교를 훈련합니다. D → C 승급 조건.', 창고: '소재를 보관합니다.',
+    집무실: '리퀘스트에 모험가를 지명해 보내고, 계약 모험가와 계약합니다.',   // 2026-11-19 옛 문구("메인·서브 퀘스트는 아직 게임에 없음") 바로잡음 훈련장: '힘·민첩·기교를 훈련합니다. D → C 승급 조건.', 창고: '소재를 보관합니다.',
     추모실: '떠난 모험가와 가문의 기록을 남깁니다.', 정보실: '예상 성공률이 정확해집니다.', 도서관: '지력·정신을 훈련합니다.',
     해체장: '원재료를 가공해 상위 레시피를 엽니다. B → A 승급 조건.', 휴게실: '모험가의 애착이 더 빨리 오릅니다.', '명예의 전당': '명성이 오르고 3차 직업 모험가를 기록합니다. A → S 승급 조건.'
   };
@@ -1569,7 +1569,7 @@
       const hid = d => (kAnim && kAnim.r.dish && kAnim.r.dish.name === d.name) || kHide === d.name;   // 연출 중에는 새 요리를 아직 숨김
       const ds = Gm.DISH.filter(d => d.g === g), got = ds.filter(d => s.dishes[d.name] && !hid(d)).length; if (!ds.length) continue;
       const bump = kFlip && ds.some(d => d.name === kFlip);
-      menu += `<div class="kgrade">${badge(g)}<b>${GR[g]}급 요리</b><span class="ux-muted">${got} / ${ds.length} 발견</span>${got ? `<span class="ux-tag town ${bump ? 'bump' : ''}">식사 효과 +${Math.round(perDish * got * 10) / 10}%</span>` : ''}</div><div class="kmenu">`;
+      menu += `<div class="kgrade">${badge(g)}<b>${GR[g]}급 요리</b><span class="ux-muted">${got} / ${ds.length} 발견</span>${got && !s.cfg.econ.mealMode ? `<span class="ux-tag town ${bump ? 'bump' : ''}">식사 효과 +${Math.round(perDish * got * 10) / 10}%</span>` : ''}</div><div class="kmenu">`;
       for (const d of ds) {
         const on = !!s.dishes[d.name] && !hid(d);
         const back = `<div class="kdish off"><span class="pic unk">${d.icon ? `<img src="assets/${d.icon}" alt="">` : ''}</span><div><b>???</b><div class="rc ux-muted">아직 모르는 요리</div></div></div>`;

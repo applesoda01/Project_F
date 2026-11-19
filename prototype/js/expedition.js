@@ -58,23 +58,28 @@
     X.reset();
   };
   // 새 게임·불러오기
-  X.reset = function () { const s = getS(); evPos = (s.ui && s.ui.expView) || null; ghosts.clear(); known.clear(); close(); place(); render(); };
+  X.reset = function () { const s = getS(); evPos = (s.ui && s.ui.expView) || null; ghosts.clear(); known.clear(); seen0.clear(); close(); place(); render(); };
   function place() { if (evPos) { ev.style.left = evPos.x + 'px'; ev.style.top = evPos.y + 'px'; ev.style.right = 'auto'; } else { ev.style.left = ''; ev.style.top = ''; ev.style.right = ''; } }
   function updSmall() { let o = !!view; if (o && evPos) { const a = evPos; o = a.x < PANEL.x + PANEL.w && a.x + EVW > PANEL.x && a.y < PANEL.y + PANEL.h && a.y + EVH > PANEL.y; } ui.querySelector('#hudExp').classList.toggle('small', o); }
 
   // ---------- 목록 ----------
   // C작업 (2026-11-12): 의뢰를 수락해도 파티원이 아직 로비에 있으면(리나에게 접수 → 문으로 걸어 나가는 중) 목록에 올리지 않음. 모두 건물을 나간 뒤에 표시
+  const seen0 = new Map();   // 원정별 처음 목록에 보인 순간의 실제 진행률 (8 ⓐ, 2026-11-19)
   const outside = x => !(root.Director && root.Director.actors && x.party.some(id => root.Director.actors.has(id)));
   const shown = s => s.active.filter(outside);
   function entries() {
     const s = getS(), out = [];
     for (const x of shown(s)) out.push(entry(s, x, false));
     for (const gh of ghosts.values()) out.push(entry(s, gh.x, true));
+    if (seen0.size > 40) { const live = new Set(s.active.map(x => x.uid != null ? 'u' + x.uid : 'q' + x.q.id)); for (const k of [...seen0.keys()]) if (!live.has(k)) seen0.delete(k); }
     return out;
   }
   function entry(s, x, done) {
     const weeks = x.weeks || x.q.weeks || 1, start = x.start != null ? x.start : x.back - weeks;
-    const p = done ? 1 : Math.max(0, Math.min(1, (s.week - 1 - start + frac) / weeks));
+    const raw = Math.max(0, Math.min(1, (s.week - 1 - start + frac) / weeks));
+    // 2026-11-19 사용자 결정 8 ⓐ: 목록에는 파티가 로비를 걸어 나간 뒤에야 올라오므로, 처음 보인 순간을 0%로 다시 잡아 귀환(주 끝)까지 늘여 보여 줌. 정산 시점은 그대로
+    const k = x.uid != null ? 'u' + x.uid : 'q' + x.q.id; if (!done && !seen0.has(k)) seen0.set(k, raw);
+    const r0 = seen0.has(k) ? seen0.get(k) : 0, p = done ? 1 : r0 >= 0.98 ? raw : Math.max(0, Math.min(1, (raw - r0) / (1 - r0)));
     return { x, id: x.q.id, p, done, weeks, left: Math.max(0, x.back - s.week) + (done ? 0 : 1) };
   }
   const advOf = (s, id) => s.advs.find(a => a.id === id);

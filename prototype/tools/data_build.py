@@ -241,7 +241,7 @@ if os.path.exists(CPATH) and not errors:          # 밸런스에 오류가 있�
                 for m in ms:
                     if m in mat_ids and m not in reward_mats: cwarn(w, f'재료 {m} 을 주는 퀘스트가 없습니다')
                 d = it.get('desc') or ''
-                if d and not re.search(r'\d+(?:\.\d+)?\s*%', d): cwarn(w, f"효과 '{d}' 를 해석할 수 없습니다 ('능력치 +n%' 꼴, 수치 없는 효과는 발견 수 보너스만)")
+                if d and not re.search(r'\d', d): cwarn(w, f"효과 '{d}' 를 해석할 수 없습니다 ('능력치 +n' 꼴, 수치 없는 효과는 능력치 버프 없음)")
             if it.get('kind') == 'gear':
                 if it.get('gtype') not in GEAR_TYPES: cerr(w, f"장비 종류 '{it.get('gtype')}' 를 모릅니다 (편집기에서 종류를 고르세요)")
                 for k, v in (it.get('stats') or {}).items():

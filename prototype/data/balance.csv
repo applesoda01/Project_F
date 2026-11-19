@@ -77,6 +77,7 @@ econ,mealMargin,0.6,
 econ,mealBuyRate,0.3|0.6|0.9,
 econ,mealBonus,0.03|0.04|0.045|0.05|0.06|0.05|0.07,
 econ,mealUnlockChance,0.5,
+econ,mealMode,1,요리 효과: 1 = 의뢰 1건 동안의 버프(먹은 요리 능력치 +n 고정값 · 발견 수 보너스 없음 · 2026-11-19 사용자 결정) · 0 = 예전 C안(능력치 +n% · 발견 1개당 +2%)
 econ,mealPerDish,0.02,
 gear,weaponPrice,150|300|500|1500|2400|3750|7500,
 gear,setMult,3,예전 한 벌 값 = 1칸 값 × 이 값 (gear.pieceBuy 0일 때만 씀)

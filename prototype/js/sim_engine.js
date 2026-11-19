@@ -68,7 +68,7 @@
         upgradeCost: [500, 1000, 2000, 4000, 8000, 15000, 30000],   // 시설 업그레이드 비용 (시설 등급별)
         upMargin: 5, upSell: 3,                    // 주점 업그레이드 마진 +G, 판매 창구 업그레이드 소재 +G
         drinkMargin: [2, 3, 4, 5, 6, 7, 8],        // 술 1잔 길드 마진 (2026-11-12, F·E 확정, D 이상 가안). 확률은 mealBuyRate
-        mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02
+        mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02, mealMode: 1   // mealMode 1 = 요리 버프(능력치 +n, 발견 보너스 없음, 2026-11-19) · 0 = 예전 C안
       },
       gear: {
         needSmith: 1,   // 2026-11-19: 대장간이 생긴 뒤부터 장비를 삼 (0 = 예전처럼 처음부터)
@@ -168,7 +168,7 @@
     const TPL = questTemplates();
     const CL = combatLib(), CB = CL ? CL.make(gameData()) : null, COMBAT = !!(CB && CB.ok);   // 전투 의뢰 = 적이 있는 의뢰
     // 요리 (docs/design/cooking.md): meals.csv 메뉴 + 편집기 요리 레시피. 시뮬레이터는 '재료가 다 모이면 바로 만드는' 플레이어로 가정 (게임 autoCook과 같음)
-    const STATS_ = ['힘', '민첩', '지력', '정신', '기교'], DISH_FX = (e => { const m = /\+\s*(\d+(?:\.\d+)?)%/.exec(e || ''); if (!m) return { stats: [], pct: 0 }; const part = (e || '').slice(0, m.index); return { stats: part.includes('모든 능력치') ? [0, 1, 2, 3, 4] : STATS_.map((n, i) => part.includes(n) ? i : -1).filter(i => i >= 0), pct: +m[1] / 100 }; });
+    const STATS_ = ['힘', '민첩', '지력', '정신', '기교'], DISH_FX = (e => { const m = /\+\s*(\d+(?:\.\d+)?)%?/.exec(e || ''); if (!m) return { stats: [], pct: 0, val: 0 }; const part = (e || '').slice(0, m.index); return { stats: part.includes('모든 능력치') ? [0, 1, 2, 3, 4] : STATS_.map((n, i) => part.includes(n) ? i : -1).filter(i => i >= 0), pct: +m[1] / 100, val: +m[1] }; });
     const DISH = (() => { const G = gameData(); if (!G || !G.meals) return []; return G.meals.map(m => { const it = G.content && G.content.items.find(i => i.kind === 'food' && i.name === m.name); return Object.assign({ name: m.name, g: 'FEDCBAS'.indexOf(m.grade), mats: it ? (it.recipe || []).map(r => r.m) : [] }, DISH_FX((it && it.desc) || m.effect)); }).filter(d => d.mats.length); })();
     const MEAL_N = 'FEDCBAS'.split('').map(g => { const G = gameData(); return ((G && G.meals) || []).filter(m => m.grade === g).length || 2; });   // 등급별 요리 수 (meals.csv)
     const R = rng(seed);
@@ -409,9 +409,9 @@
           const price = Q.reward[dish.g] * E.mealPriceRate;
           if (a.wallet >= price && R() < E.mealBuyRate[a.spend]) { s.seatUsed++; a.wallet -= price; s.gold += price * E.mealMargin; s.op += price * E.mealMargin; s.st.mealIncome += price * E.mealMargin; eaters++; ate.add(a); }
         }
-        if (dish.stats.length) sm = (a, k) => ate.has(a) && dish.stats.includes(+k) ? 1 + dish.pct : 1;
+        if (dish.stats.length) sm = (a, k) => ate.has(a) && dish.stats.includes(+k) ? (E.mealMode ? 1 + dish.val / Math.max(1, finalStat(a, +k)) : 1 + dish.pct) : 1;   // 2026-11-19 버프: 능력치 +val (게임과 같음)
         // 메뉴가 2개 열려 있으면 의뢰 유형에 맞는 요리를 고를 확률이 높음
-        mealB = (eaters / party.length) * E.mealPerDish * Object.keys(s.dishes).length * (1 + 0.5 * (effN('주점') >= 3 ? 1 : 0));   // 2026-11-05: 발견한 요리 하나당 +2% (등급 무관)
+        mealB = E.mealMode ? 0 : (eaters / party.length) * E.mealPerDish * Object.keys(s.dishes).length * (1 + 0.5 * (effN('주점') >= 3 ? 1 : 0));   // 2026-11-05: 발견한 요리 하나당 +2% (등급 무관)
       }
       let ok, fightRes = null;
       if (q.combat) {
