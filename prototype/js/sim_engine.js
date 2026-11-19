@@ -480,7 +480,7 @@
     }
 
     function adventurersChoose() {
-      const idle = s.advs.filter(present);   // s.seatUsed 는 weekly 에서 0으로 (지명 출발이 먼저 식사)
+      const idle = s.advs.filter(a => present(a) && !a.resv);   // 2026-11-19: 지명 예약자는 게시판 의뢰를 받지 않음 (게임 reqReserved와 같음)   // s.seatUsed 는 weekly 에서 0으로 (지명 출발이 먼저 식사)
       for (const a of idle) {
         if (a.busy > 0 || !a.alive) continue;
         const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
@@ -763,11 +763,17 @@
           continue;
         }
         if (mqBlocked()) continue;   // 침공 대비 주에는 지명하지 않음 (게임과 같음)
-        r.party = r.party.filter(a => a.alive && (a === r.who || a.busy === 0));   // 그사이 다른 의뢰를 떠난 사람은 파티에서 뺌
-        const pool = alive().filter(a => a.busy === 0 && !r.party.includes(a) && r.refused.get(a) !== s.week).sort((x, y) => { const k = a => finalStat(a, d.req && d.req[0] === -2 ? a.core : questOf(r).req[0]); return (meets(r, y) - meets(r, x)) || (k(y) - k(x)); });
-        const q0 = questOf(r), okNow = () => r.party.length >= d.party[0] && r.party.some(a => meets(r, a)) && r.party.every(a => a.alive && a.busy === 0) && questP(sortRow(r.party), q0) >= RQC.send;
+        r.party = r.party.filter(a => a.alive && (a === r.who || a.busy === 0 || (r.waitUntil && a.busy <= 2)));   // 그사이 다른 의뢰를 떠난 사람은 파티에서 뺌
+        const pool = alive().filter(a => (a.busy === 0 || (a.busy <= 2 && !a.resv)) && !r.party.includes(a) && r.refused.get(a) !== s.week).sort((x, y) => { const k = a => finalStat(a, d.req && d.req[0] === -2 ? a.core : questOf(r).req[0]); return (meets(r, y) - meets(r, x)) || (k(y) - k(x)); });
+        const q0 = questOf(r), okNow = () => r.party.length >= d.party[0] && r.party.some(a => meets(r, a)) && r.party.every(a => a.alive) && questP(sortRow(r.party), q0) >= RQC.send;
         for (const a of pool) { if (r.party.length >= d.party[1] || okNow()) break; if (!meets(r, a) && !r.party.some(m => meets(r, m))) break;   /* ★부터 구한다 (게임 autoRequests와 같음) */ const fee = a === r.who ? 0 : (E.scoutFee || [])[a.grade] || 0; if (s.gold - fee < RQC.reserve) break; s.gold -= fee; a.wallet += fee; s.op -= fee; s.st.scoutGold = (s.st.scoutGold || 0) + fee;   /* 섭외비: 거절당해도 나감, 운영 순이익에 넣음 · 2026-11-17 결정 10: 부탁받은 모험가 지갑으로 */ if (R2() < chanceOf(r, a)) r.party.push(a); else r.refused.set(a, s.week); R2(); }
         if (!okNow()) continue;
+        if (r.party.some(a => a.busy > 0)) {   // 2026-11-19 예약: 곧 돌아올 사람을 기다림(게임 autoWaitMax와 같은 3주), 넘으면 그 사람을 빼고 다시 구함
+          if (!r.waitUntil) r.waitUntil = s.week + 3;
+          if (s.week >= r.waitUntil) { for (const a of r.party) a.resv = false; r.party = r.party.filter(a => a === r.who || a.busy === 0); r.waitUntil = 0; } else for (const a of r.party) a.resv = true;
+          continue;
+        }
+        for (const a of r.party) a.resv = false; r.waitUntil = 0;
         const party = sortRow(r.party), q = questOf(r);
         for (const m of party) m.busy = d.weeks;
         r.run = { at: s.week + d.weeks, win: runQuest(party, q), party };   // 결과는 지금 정하고, 반영은 돌아오는 주에

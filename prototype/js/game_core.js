@@ -1065,7 +1065,7 @@
   // 2026-11-16 결정: 리퀘스트는 거절 없음(화면에서 [거절] 뺌, reqRefuse 규칙 코드는 남김) · 받은 부탁은 사라지지 않고 쌓임(maxOpen = Infinity)
   // 지명: 파티 중 1명만 조건 능력치 충족 · 수락 = 애착 단계 × 위험 · 거절해도 다음 주에 다시 지명 · 보상은 게시판처럼 보수 몫 · 대열은 자동(직업 순)
   const NQ = GD.namedQuests || [], NQ_BY = Object.fromEntries(NQ.map(d => [d.id, d])), QLINES = GD.questLines || {};
-  const REQ_CFG = { maxOpen: Infinity, appear: 0.5, refuseCool: 12, base: [0.40, 0.65, 0.90, 1.00], riskMul: [[1.0, 0.8, 0.5], [1.0, 1.0, 0.8], [1.0, 1.1, 1.2]], rowOrder: [0, 4, 1, 3, 2], bossHp: 3, bossAtk: 1.3, autoReserve: 400, autoSend: 0.6 };
+  const REQ_CFG = { autoWait: 2, autoWaitMax: 3, maxOpen: Infinity, appear: 0.5, refuseCool: 12, base: [0.40, 0.65, 0.90, 1.00], riskMul: [[1.0, 0.8, 0.5], [1.0, 1.0, 0.8], [1.0, 1.1, 1.2]], rowOrder: [0, 4, 1, 3, 2], bossHp: 3, bossAtk: 1.3, autoReserve: 400, autoSend: 0.6 };
   const REQ_QTYPE = { hunt: 0, search: 2 }, REQ_QTYPE_BY = { f_req_bat05: 3, f_req_srch04: 1, f_req_srch01: 3, f_req_srch05: 3, f_req_srch06: 3 };   // 미니 뷰 배경 · 성장 능력치용 의뢰 종류
   const SEASONS = ['spring', 'summer', 'autumn', 'winter'], SEASON_NAME = { spring: '봄', summer: '여름', autumn: '가을', winter: '겨울' };
   const seasonOf = w => { const mo = (2 + Math.floor(Math.max(0, w) / WPM)) % 12 + 1; return mo >= 3 && mo <= 5 ? 'spring' : mo >= 6 && mo <= 8 ? 'summer' : mo >= 9 && mo <= 11 ? 'autumn' : 'winter'; };   // 길드 · 마을 달력과 같음 (3월 시작)
@@ -1231,6 +1231,7 @@
     { const late = party.find(a => cPastEnd(s, a, d.weeks)); if (late) return `${late.name}의 계약이 끝나기 전에 돌아올 수 없습니다`; }   // 결정 9
     return null;   // 2026-11-16 예약 지명: 원정 중 · 부상 중인 파티원이 있어도 보낼 수 있음 → 모두 돌아온 주에 출발 (reqLaunch)
   }
+  const autoWaitOk = (s, id) => { const a = s.advs.find(x => x.id === id); return !!a && a.state === 'quest' && a.until - s.week <= REQ_CFG.autoWait; };   // 자동 예약: 원정에서 autoWait주 안에 돌아오는 사람만 (부상자는 기다리지 않음)
   const reqWaitOf = (s, r) => reqPartyOf(s, r).filter(a => reqBusy(s, a));   // 예약: 아직 돌아오지 않은 파티원
   const reqReserved = (s, a) => reqOf(s).open.some(r => r.state === 'queued' && r.party.includes(a.id));   // 보내기를 누른 지명 파티의 예약자 = 돌아와도 게시판 의뢰를 받지 않고 기다림
   function reqSend(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); if (!r || r.state !== 'open' || !reqNominated(NQ_BY[r.key]) || reqSendWhy(s, r)) return false; r.state = 'queued'; return true; }
@@ -1241,7 +1242,7 @@
       r.party = reqPartyOf(s, r).map(a => a.id);
       if (reqSendWhy(s, r)) { r.state = 'open'; log(s, `「${reqName(s, r)}」 지명 파티가 출발하지 못했습니다. (${reqSendWhy(s, r)})`, 'sys'); continue; }
       const wt = reqWaitOf(s, r);
-      if (wt.length && r.auto) { r.state = 'open'; delete r.auto; log(s, `「${reqName(s, r)}」 지명 파티가 출발하지 못했습니다. (${wt[0].name}: ${reqBusy(s, wt[0])})`, 'sys'); continue; }   // 자동 처리(관문 1 · 시뮬레이터와 같은 규칙)는 예약을 쓰지 않음
+      if (wt.length && r.auto && s.week >= (r.autoBy || 0)) { r.state = 'open'; delete r.auto; log(s, `「${reqName(s, r)}」 지명 파티가 출발하지 못했습니다. (${wt[0].name}: ${reqBusy(s, wt[0])})`, 'sys'); continue; }   // 자동 처리(관문 1 · 시뮬레이터와 같은 규칙)는 예약을 쓰지 않음
       if (wt.length) continue;   // 예약: 원정 · 부상에서 모두 돌아올 때까지 기다림
       delete r.auto;
       const party = reqSorted(reqPartyOf(s, r)), q = reqQuest(s, r, false);
@@ -1279,7 +1280,7 @@
       if (reqNominated(d) && mainBlocked(s)) continue;   // 침공 대비 주에는 지명하지 않음
       if (!reqNominated(d)) { const n = reqNeed(s, r); if ((n.gold || Object.keys(n.mats).length) && reqCanPay(s, r) && s.gold - n.gold >= keep) reqGive(s, r.id); continue; }
       r.party = r.party.filter(id => id === r.who || !reqBusy(s, s.advs.find(x => x.id === id) || {}));   // 그사이 다른 의뢰를 떠난 사람은 파티에서 뺌
-      const rows = reqNomList(s, r.id).filter(x => !x.busy && !x.inParty && !x.refused).sort((x, y) => (y.meets - x.meets) || ((y.stat || 0) - (x.stat || 0)));
+      const rows = reqNomList(s, r.id).filter(x => (!x.busy || autoWaitOk(s, x.id)) && !x.inParty && !x.refused).sort((x, y) => (y.meets - x.meets) || ((y.stat || 0) - (x.stat || 0)));
       for (const x of rows) {
         const party = reqPartyOf(s, r); if (party.length >= d.party[1]) break;
         if (party.length >= d.party[0] && party.some(a => reqMeets(s, r, a)) && reqPredict(s, r.id) >= REQ_CFG.autoSend) break;
@@ -1287,7 +1288,7 @@
         if (s.gold - x.fee < keep) break;   // 섭외비를 내고도 여유가 남을 때만
         reqNominate(s, r.id, x.id);
       }
-      if (!reqSendWhy(s, r) && !reqWaitOf(s, r).length && reqPredict(s, r.id) >= REQ_CFG.autoSend && reqSend(s, r.id)) r.auto = true;   // 자동 처리는 예약(밖에 있는 사람 기다리기)을 쓰지 않음 = 시뮬레이터 reqPolicy와 같음
+      if (!reqSendWhy(s, r) && reqPredict(s, r.id) >= REQ_CFG.autoSend && reqSend(s, r.id)) { r.auto = true; r.autoBy = s.week + REQ_CFG.autoWaitMax; }   // 2026-11-19: 자동 처리도 플레이어처럼 예약(원정에서 곧 돌아올 사람 기다리기)을 씀 — autoWaitMax주 안에 안 모이면 취소 (시뮬레이터와 같음)
     }
   }
   // ---------- F급 메인 퀘스트: 침공 "다리를 지켜라" (2026-11-16, docs/design/raid_invasion_v2.md) ----------
