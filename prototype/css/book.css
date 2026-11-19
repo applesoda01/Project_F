@@ -863,3 +863,8 @@
 .pc-base{stroke:#9a8670;stroke-width:1;stroke-dasharray:4 3}.pc-ax{stroke:#d8c6a4;stroke-width:1}
 .pc-t{font-size:11px;fill:#7a5f45}.pc-v{font-size:12px;font-weight:700;fill:#3b2a1a}
 .pc-spark{vertical-align:middle;margin:0 2px}.pc-spark path{fill:none;stroke:#00897b;stroke-width:1.5}
+
+/* 2026-11-19 음식 장: 쪽 상자가 #popBody[data-p=meals] .kitchen{height:100%}(ui_kit.css)를 받아 책 아래로 삐져나오던 것 — 쪽 높이로 고정 */
+#popBody .bk-mg.bk2>.bk-l.kitchen{height:var(--bk-lh)}#popBody .bk-mg.bk2>.bk-r.kitchen{height:var(--bk-rh)}
+
+.kmnote{font-size:12px;color:#7a5f45;text-align:center;margin:-4px 0 4px;line-height:1.35}

@@ -1627,7 +1627,7 @@
         + `<div class="kmr"><span class="kleft">남은 그릇 <button class="${mu.left === 'sale' ? 'on' : ''}" data-kleft="${esc(d.name)}:sale" title="지난주에 만든 그릇이 남았으면 반값으로 팝니다">마감 할인</button><button class="${mu.left === 'free' ? 'on' : ''}" data-kleft="${esc(d.name)}:free" title="버릴 그릇을 마을에 남은 모험가에게 무료로 대접합니다 (애착 +${s.cfg.econ.freeAttach != null ? s.cfg.econ.freeAttach : 1})">무료 식사</button></span>${Gm.oldBowl(s, d) && mu.left === 'sale' ? `<span class="ksale">지금 마감 할인 ${Gm.salePrice(s, d)}G</span>` : ''}</div>`; }   // 결정 47
     return `<div class="kitchen"><div class="kpan"><div class="ux-h">소재 보관함 <small>음식 소재</small></div><div class="kpantry">${pantry}</div></div>
       <div class="kpan"><div class="ux-h">조리대</div><div class="kslots">${slots}</div>${pot}<button class="ux-btn kcook" data-kcook="1" ${kSel.length && !kAnim ? '' : 'disabled'}>만들어 보기</button>${msg}</div>
-      <div class="kpan wide"><div class="ux-h">메뉴판${s.cfg.econ.mealCook ? ` <small>팔 때마다 재료를 씁니다 · 매주 준비량만큼 만들고 남은 그릇은 다음 주까지 팝니다 · 받아 둔 납품 리퀘스트에 필요한 재료는 남겨 둡니다</small>` : ''}</div><div class="kmenuwrap">${menu}</div></div></div>`;
+      <div class="kpan wide"><div class="ux-h">메뉴판</div>${s.cfg.econ.mealCook ? '<div class="kmnote">팔 때마다 재료를 씁니다 · 매주 준비량만큼 만들고 남은 그릇은 다음 주까지 팝니다 · 받아 둔 납품 리퀘스트에 필요한 재료는 남겨 둡니다</div>' : ''}<div class="kmenuwrap">${menu}</div></div></div>`;
   }
   // 길드 기록: 월 단위 카드(머리 = 그 달 결산) · 종류 아이콘 · 필터. 'sys'(버튼 반응)·'debug'는 기록에서 숨김
   const LK = {   // 종류 → [아이콘 글자, 이름, 필터 묶음]

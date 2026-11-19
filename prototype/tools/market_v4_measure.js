@@ -41,6 +41,7 @@ const T = {
   prep6: c => { c.econ.mealPrep = 6; },
   nomkt: c => { c.econ.mktOn = 0; },
   nopop: c => { c.econ.popOn = 0; },
+  noorder: c => { c.econ.orderMode = 0; },
   sale: c => { c.econ.mealLeft = 1; },
   nosale: c => { c.econ.mealSale = 1; },
 };
