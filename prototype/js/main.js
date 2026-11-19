@@ -203,7 +203,8 @@
     const dt = Math.min(0.1, (now - last) / 1000); last = now; T += dt;
     if (started) s.playSec = (s.playSec || 0) + dt;   // 플레이 시간(초): 일시정지 중에도 흐름, 저장에 함께 기록됨
     // 2026-11-19 사용자 결정: 아래 대화창(리퀘스트 · 리나 · 침공 등)이 떠 있는 동안 게임 시계를 멈춤. 배속 버튼은 그대로, 대화가 끝나면 쓰던 배속으로 다시 흐름
-    const run = UI.dlgBusy && UI.dlgBusy() ? 0 : speed;
+    // 2026-11-19 사용자 결정(책 V2 7장 대조): 마을 화면에 들어가 있는 동안도 시계 멈춤 — 침공 중(Invasion.on)에는 흐름
+    const run = (UI.dlgBusy && UI.dlgBusy()) || (Town.active && !(window.Invasion && Invasion.on)) ? 0 : speed;
     if (run > 0) { acc += dt * 1000 * run; let n = 0; while (acc >= WEEK_MS) { acc -= WEEK_MS; step(); n++; } if (n) UI.hud(); }
     UI.weekBar(acc / WEEK_MS);
     Expedition.update(dt, acc / WEEK_MS, run);
