@@ -389,7 +389,7 @@
         g.shadowColor = 'rgba(30,18,8,.35)'; g.shadowBlur = 5; g.shadowOffsetY = 2;
         g.fillStyle = '#5a3820'; g.beginPath(); g.roundRect(rx, ry, rw, rh, 15); g.fill();
         g.shadowColor = 'transparent'; g.strokeStyle = 'rgba(232,196,128,.55)'; g.lineWidth = 1.5; g.beginPath(); g.roundRect(rx + 2.5, ry + 2.5, rw - 5, rh - 5, 12.5); g.stroke();
-        g.textBaseline = 'middle'; g.font = F1; g.fillStyle = '#fbf1dc'; g.fillText(A2.name, rx + 13, ry + rh / 2 + 1);
+        g.textBaseline = 'middle'; g.textAlign = 'left'; g.font = F1; g.fillStyle = '#fbf1dc'; g.fillText(A2.name, rx + 13, ry + rh / 2 + 1);   // 2026-11-19: 앞 표시가 남긴 가운데 정렬 때문에 이름이 리본 왼쪽 밖으로 밀리던 것
         g.font = F2; g.fillStyle = '#e2c79a'; g.fillText(A2.cls, rx + 13 + w1 + 8, ry + rh / 2 + 2); g.restore();
       }
       /* [보관] 예전 마을 말풍선

@@ -42,7 +42,11 @@
   const after = (sec, fn) => timers.push({ at: clock + sec, fn });
 
   // ---------- 시간 ----------
-  function hold(on) { const t = getS().tut; t.pause = !!on; if (on) H.setSpeed(0); else if (!root.UI.popupName()) H.setSpeed(1); }
+  // 2026-11-19: 멈추기 전 배속(t.sp)을 기억했다가 풀 때 그 배속으로. 책 · 창이 열려 있으면 닫히는 순간 다시 흐름(t.resume) — 책이 닫히며 0배속으로 되돌리는 것까지 덮음
+  const wantSp = t => t.sp > 0 ? t.sp : 1;
+  function hold(on) { const t = getS().tut; t.pause = !!on;
+    if (on) { const v = H.getSpeed ? H.getSpeed() : 0; if (v > 0) t.sp = v; H.setSpeed(0); t.resume = false; }
+    else { t.resume = true; if (!root.UI.popupName()) { H.setSpeed(wantSp(t)); t.resume = false; } } }
 
   // ---------- 로비 연출: 한 주 진행 밖에서 생긴 일도 도착 · 출발 장면으로 ----------
   function act(fn) { const s = getS(), D = root.Director, B = root.Lobby && root.Lobby.Board; const before = D && D.snap(s); const r = fn(); if (D && before && B) D.onWeek(before, s, B); root.UI.hud(); return r; }
@@ -60,7 +64,7 @@
       if (t.qid == null || !s.board.some(q => q.id === t.qid)) t.qid = Gm.tutPost(s, 'q_hunt_F_2').id;
       t.ph = 'board';
     }); },
-    FT0003() { hold(true); say('FT0003', 1, () => { getS().tut.ph = 'mini'; }); },
+    FT0003() { hold(true); say('FT0003', 1, () => { getS().tut.ph = 'mini'; hold(false); }); },   // 2026-11-19: 대화가 끝나면 바로 시간이 흐름 (원정 목록 누르기는 안내만)
     FT0004() { hold(true); say('FT0004', 1, () => { getS().tut.ph = 'table'; }); },
     FT0005() {
       hold(true); const s = getS(), t = s.tut;
@@ -82,7 +86,7 @@
   // 단계별 기다림: 조건(test)을 매 프레임 확인, 그동안 빛낼 곳(glow) · 안내 문구(hint)
   const WAIT = {
     board: { glow: () => root.UI.popupName() === 'board' ? `.qcard[data-q="${getS().tut.qid}"]` : '[data-pop="board"]', hint: () => root.UI.popupName() === 'board' ? '「오늘 저녁 삼겹살」을 눌러 보내 주세요' : '아래 「의뢰」를 눌러 게시판을 여세요' },
-    mini: { glow: () => '#hudExp', hint: () => '오른쪽 원정 목록의 줄을 눌러 보세요', test: () => !!document.querySelector('#expView.on'), done() { const t = getS().tut; t.ph = 'away'; hold(false); } },
+    mini: { glow: () => '#hudExp', hint: () => '오른쪽 원정 목록의 줄을 눌러 보세요', test: () => !!document.querySelector('#expView.on') || WAIT.away.test(), done() { getS().tut.ph = 'away'; } },
     away: { test: () => { const s = getS(), t = s.tut, a = s.advs.find(x => x.id === t.wid); return !a || (a.state !== 'quest' && !s.active.some(x => x.party.includes(t.wid))); }, done() { getS().tut.ph = 'wait'; after(3.5, () => go('FT0004')); } },
     table: { glow: () => root.UI.popupName() === 'fac' ? null : '[data-pop="fac"]', hint: () => '「시설」에서 테이블 세트를 놓아 주세요', test: () => getS().place.items.some(i => i.id === 'table'), done() { getS().tut.ph = 'wait'; after(1.5, () => go('FT0005')); } },
     meals: { glow: () => '[data-pop="meals"]', hint: () => '아래 「음식」을 눌러 보세요', test: () => root.UI.popupName() === 'meals',
@@ -170,12 +174,14 @@
     for (let i = timers.length - 1; i >= 0; i--) if (clock >= timers[i].at) { const f = timers[i].fn; timers.splice(i, 1); f(); }
     const s = getS(), t = s && s.tut; if (!t || !t.on) { if (glowSel) unglow(); return; }
     if (glowSel && glowUntil && clock > glowUntil) unglow();
+    if (t.base && t.resume && !root.UI.popupName() && H.getSpeed) { if (H.getSpeed() === 0) H.setSpeed(wantSp(t)); t.resume = false; }   // 튜토리얼 끝(FT0006) 뒤 책을 닫으면 저절로 시작
     if (t.base) {
       if (t.ph === 'upg' && Gm.upg(s, '접수대') && !root.UI.dlgBusy()) { t.ph = null; say('FT0007', 2); }
       hint(null); if (glowSel && !glowUntil) unglow(); else if (glowSel) paintGlow();
       return;
     }
-    if (t.pause && H.getSpeed && H.getSpeed() > 0 && !root.UI.popupName()) H.setSpeed(0);   // 기본 튜토리얼 안내 중에는 시간 멈춤
+    if (t.pause && H.getSpeed && H.getSpeed() > 0 && !root.UI.popupName()) { t.sp = H.getSpeed(); H.setSpeed(0); }   // 기본 튜토리얼 안내 중에는 시간 멈춤 (그동안 누른 배속은 기억)
+    if (!t.pause && t.resume && !root.UI.popupName() && H.getSpeed) { if (H.getSpeed() === 0) H.setSpeed(wantSp(t)); t.resume = false; }
     const W = WAIT[t.ph];
     if (!W || root.UI.dlgBusy()) { hint(null); if (glowSel) unglow(); return; }
     if (W.tick) W.tick();

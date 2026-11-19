@@ -19,7 +19,8 @@ GRADES = ['F', 'E', 'D', 'C', 'B', 'A', 'S']
 STATS = ['힘', '민첩', '지력', '정신', '기교']
 FACES = ['smile', 'serious', 'laugh', 'worried', 'awkward', 'surprised']
 EVENTS = ['accept', 'depart', 'success', 'fail', 'levelup', 'gradeup', 'meal', 'drink', 'first', 'chat',
-          'iv_start', 'iv_wave', 'iv_boss', 'iv_down', 'iv_rest', 'iv_castle', 'iv_win', 'iv_lose']   # iv_ = 침공 (2026-11-17)
+          'iv_start', 'iv_wave', 'iv_boss', 'iv_down', 'iv_rest', 'iv_castle', 'iv_win', 'iv_lose',   # iv_ = 침공 (2026-11-17)
+          'hurry']   # hurry = 주가 넘어가 서둘러 자리로 갈 때 (2026-11-19)
 TONES = ['bold', 'careful', 'friendly', 'loner', 'plain']
 LINA_EVENTS = ['lina_meal', 'lina_drink', 'lina_depart', 'lina_first', 'lina_success', 'lina_fail', 'lina_ledger', 'lina_unlock', 'lina_idle',
                'lina_iv_start', 'lina_iv_win', 'lina_iv_lose']

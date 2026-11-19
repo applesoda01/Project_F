@@ -509,7 +509,9 @@
   // ---------- 길드 발주 (경제 개편 V2 6단계 · 결정 24 · 25): 선지급 모으기 ----------
   const orderPrice = (s, m) => Math.floor(matBase(m) * (s.cfg.econ.orderMult != null ? s.cfg.econ.orderMult : 1.5) + 1e-9);   // 1개 값 = 판매가 × 1.5 [임시]
   // ---------- 튜토리얼 도우미 (2026-11-18, docs/design/튜토리얼.md) ----------
-  function tutPost(s, tid) { const q = makeQuest(s, 0, tid); s.board.push(q); return q; }   // 정해진 의뢰를 게시판에 올림
+  function tutPost(s, tid) { const q = makeQuest(s, 0, tid); tutEase(q); s.board.push(q); return q; }   // 정해진 의뢰를 게시판에 올림
+  // 2026-11-19 첫 의뢰 쉽게: 원래 멧돼지 2마리면 Lv1 전사 혼자 300판 중 300판 짐 → 1마리 · 체력 50% · 공격 70% [임시] (300판: 첫 판에 무사히 이김 275판, 다시 굴려도 못 이긴 판 0)
+  function tutEase(q) { if (!q || !q.enemies || !q.enemies.length) return; q.enemies = [Object.assign({}, q.enemies[0], { hp: q.enemies[0].hp * 0.5, atk: q.enemies[0].atk * 0.7 })]; if (q.seen) q.seen = q.seen.slice(0, 1); }
   function tutLaunch(s, aid, qid) {   // 정해진 모험가를 정해진 의뢰로 바로 출발시킴 (강제)
     const a = s.advs.find(x => x.id === aid), q = s.board.find(x => x.id === qid); if (!a || !q || a.state !== 'town') return false;
     s.board.splice(s.board.indexOf(q), 1);
@@ -519,7 +521,7 @@
       launchParty(s, q, [a], questP(s, [a], q));
       const x = s.active[s.active.length - 1], good = x.ok && !x.late && (!x.fight || x.fight.units.every(u => !u.down));
       if (good) return true;
-      if (k === 39) { x.ok = true; x.late = false; if (x.fight) { x.fight.win = true; x.fight.units.forEach(u => { u.down = false; }); } return true; }
+      if (k === 39) { x.ok = true; x.late = false; x.fight = null; return true; }   // 그래도 안 되면 성공으로 고치되, 진 전투 기록은 버림 (미니 뷰가 쓰러지는 장면을 재생하지 않게 — 비전투 수행 장면으로)
       s.active.pop(); Object.assign(a, JSON.parse(keep)); while (s.log.length && s.log[0] !== top) s.log.shift(); s.uidNext = uid0; s.gold = g0; s.month.meal = mm; s.seatUsed = su;
     }
     return true;
@@ -847,7 +849,7 @@
     // 장비 구매 (2026-11-18 대장간): 한 달에 1칸씩, 다음 칸 값 × (1 + 저축 성향 × 0.5)이 모이면 삼. 손님 기록은 대장간 진열대에 보임
     s.smithLog = (s.smithLog || []).filter(x => x.w > s.week - WPM * 3);
     for (const a of s.advs) {
-      if (!a.alive) continue;
+      if (!a.alive || (GE.needSmith && !(s.townUnlock || {}).smith)) continue;   // 2026-11-19: 대장간(리퀘스트 「떠돌이 대장장이」)이 생기기 전에는 장비를 사지 않음
       const n = eqNext(s, a); if (!n) continue;
       const need = n.price * (1 + GE.reserveMult[a.spend] * 0.5);
       if (a.wallet >= need) { a.wallet -= n.price; if (n.k < 0) { for (let k = 0; k < 3; k++) setEq(a, k, n.g); } else setEq(a, n.k, n.g); s.smithLog.unshift({ w: s.week, id: a.id, k: n.k, g: n.g, price: n.price, t: 'buy' }); log(s, `${J(a.name, '이', '가')} ${GR[n.g]}급 ${n.k < 0 ? '장비' : EQ_NAME[n.k]}를 샀습니다. (${Math.round(n.price)}G)`, 'grow', { who: [a.name] }); }
@@ -1083,11 +1085,12 @@
   }
   function reqPartyOf(s, r) { return r.party.map(id => s.advs.find(a => a.id === id)).filter(a => a && a.alive); }
   function reqPredict(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); if (!r) return null; const party = reqSorted(reqPartyOf(s, r)); return party.length ? questP(s, party, reqQuest(s, r, true)) : null; }
+  const reqOtherOf = (s, r, aid) => reqOf(s).open.find(o => o !== r && o.party.includes(aid) && (o.state === 'open' || o.state === 'queued' || o.state === 'active')) || null;   // 이 모험가가 들어가 있는 다른 리퀘스트
   function reqNomList(s, rid) {   // 지명 창 목록: 조건(★) · 상태 · 수락 확률
     const r = reqOf(s).open.find(x => x.id === rid); if (!r) return [];
     const d = NQ_BY[r.key];
     return aliveAdvs(s).map(a => ({ id: a.id, name: a.name, cls: a.cls, core: a.core, lv: a.lv, grade: a.grade, attach: Math.round(a.attach), stat: reqStatI(s, r, a) == null ? null : Math.round(finalStat(s, a, reqStatI(s, r, a))), need: d.req && d.req[0] !== -1 ? d.req[1] : null,
-      meets: reqMeets(s, r, a), fee: scoutFee(s, r, a), busy: reqBusy(s, a), chance: Math.round(reqChance(s, r, a) * 100), inParty: r.party.includes(a.id), refused: r.refused[a.id] === s.week, away: a.state === 'away', back: a.state === 'quest' && a.until <= s.week, owner: a.id === r.who }))
+      meets: reqMeets(s, r, a), fee: scoutFee(s, r, a), other: (o => o ? reqName(s, o) : null)(reqOtherOf(s, r, a.id)), busy: reqBusy(s, a), chance: Math.round(reqChance(s, r, a) * 100), inParty: r.party.includes(a.id), refused: r.refused[a.id] === s.week, away: a.state === 'away', back: a.state === 'quest' && a.until <= s.week, owner: a.id === r.who }))
       .sort((x, y) => (y.owner - x.owner) || (y.inParty - x.inParty) || (y.meets - x.meets) || ((y.stat || 0) - (x.stat || 0)) || (x.id - y.id));
   }
   function reqNominate(s, rid, aid) {   // 누르면 그 자리에서 수락 · 거절이 정해짐. 다시 누르면 파티에서 뺌
@@ -1096,6 +1099,7 @@
     const lock = reqLock(s, r); if (lock) return { ok: false, why: lock };
     if (r.party.includes(aid)) { if (aid === r.who) return { ok: false, why: '의뢰한 본인은 꼭 함께 갑니다' }; r.party = r.party.filter(x => x !== aid); return { ok: true, removed: true }; }
     // 2026-11-16 예약 지명: 원정 중 · 부상 중인 모험가도 부탁할 수 있음(수락 판정 · 섭외비는 지금). '마을 밖'은 예전처럼 바로 부탁 가능(그 주 길드에 없을 뿐)
+    { const o = reqOtherOf(s, r, aid); if (o) return { ok: false, why: `${a.name}: 다른 리퀘스트 「${reqName(s, o)}」에 가기로 했습니다` }; }   // 2026-11-19: 한 모험가가 두 리퀘스트에 들어가지 않게 (섭외비 두 번도 막음)
     if (r.refused[aid] === s.week) return { ok: false, why: '이번 주에는 거절했습니다 (다음 주에 다시 부탁할 수 있어요)' };
     if (r.party.length >= d.party[1]) return { ok: false, why: '파티가 가득 찼습니다' };
     if (s.gold < 0) return { ok: false, why: '금고 적자 — 금고가 0G 이상이 되면 다시 부탁할 수 있어요' };   // 결정 7: 마이너스인 동안 지명 막힘

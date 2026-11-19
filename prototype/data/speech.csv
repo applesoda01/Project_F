@@ -138,3 +138,13 @@ iv_lose,plain,다음엔 꼭 막아요.,침공 패배 · 보통 (2026-11-17),
 lina_iv_start,lina,"마스터, 늑대 떼가 다리 쪽으로 오고 있어요! 다들 준비됐어요.",리나 · 침공 (2026-11-17),
 lina_iv_win,lina,"해냈어요, 마스터! 영주님께서 길드 승급을 허락하신대요!",리나 · 침공 (2026-11-17),
 lina_iv_lose,lina,이번엔 막지 못했어요… 4주 뒤에 다시 도전할 수 있어요. 다들 쉬게 할게요.,리나 · 침공 (2026-11-17),
+hurry,bold,"늦었다! 비켜 비켜!",서두름 · 호탕,sweat
+hurry,bold,"이크! 벌써 시간이 이렇게!",서두름 · 호탕,qex
+hurry,careful,"늦었어요…! 죄송해요!",서두름 · 조심,sweat
+hurry,careful,"앗, 지나갈게요!",서두름 · 조심,sweat
+hurry,friendly,"앗, 늦겠다! 기다려 줘요~",서두름 · 다정,sweat
+hurry,friendly,"헉, 시간 봐!",서두름 · 다정,qex
+hurry,loner,"…늦었군.",서두름 · 무뚝뚝,
+hurry,loner,"…서두른다.",서두름 · 무뚝뚝,
+hurry,plain,"늦었다!",서두름 · 보통,sweat
+hurry,plain,"어이쿠, 늦겠다!",서두름 · 보통,sweat

@@ -71,6 +71,7 @@
         mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02
       },
       gear: {
+        needSmith: 1,   // 2026-11-19: 대장간이 생긴 뒤부터 장비를 삼 (0 = 예전처럼 처음부터)
         pieceBuy: 1, giftAttach: [1, 2, 3, 4, 5, 6, 7],   // 2026-11-18 대장간: 장비 1칸씩 사기 · 선물 애착 [임시]
         weaponPrice: [150, 400, 1000, 2500, 6000, 14000, 30000], setMult: 3.0,
         weaponStat: [3, 5, 8, 12, 16, 21, 27], armorStat: [1, 2, 4, 6, 8, 10, 13],
@@ -668,7 +669,7 @@
       for (const a of s.advs) if (a.alive) tryPromoteClass(a);
       // 장비 구매
       for (const a of s.advs) {
-        if (!a.alive) continue;
+        if (!a.alive || (GE.needSmith && !(s.townUnlock || {}).smith)) continue;   // 2026-11-19: 대장간이 생기기 전에는 장비를 사지 않음 (게임과 같음)
         const n = eqNext(a); if (!n) continue;   // 2026-11-18: 한 달에 1칸 (게임과 같음)
         if (a.wallet >= n.price * (1 + GE.reserveMult[a.spend] * 0.5)) { a.wallet -= n.price; const e = eqOf(a).slice(); if (n.k < 0) e.fill(n.g); else e[n.k] = n.g; a.eq = e; a.gear = Math.min(...e); }
       }
@@ -724,6 +725,7 @@
       if (rw.pop) s.popAdd += rw.pop;
       if (rw.attach) { const w = rw.attach[0], n = rw.attach[1], list = w === 'all' ? alive() : w === 'party' ? (party || []) : (r.who ? [r.who] : []); for (const a of list) if (a.alive) a.attach = Math.min(100, a.attach + n); }
       for (const m of Object.keys(rw.mats)) s.mats[m] = (s.mats[m] || 0) + rw.mats[m];
+      if (rw.town) (s.townUnlock = s.townUnlock || {})[rw.town] = true;   // 2026-11-19: 마을 건물 해금 (대장간 = 장비 구매 시작, 게임과 같음)
       if (rw.unlock === 'table') s.tableCap = Math.min(4, s.tableCap + 1);   // 장식은 자동 배치가 사지 않으므로(게임 autoPlace와 같음) 효과 없음
       const ex = rw.extra || {};
       if (ex.popMonthly) s.rq.popMonthly += ex.popMonthly;

@@ -141,7 +141,7 @@
         else if (k.k === 'lina' && !k.sent && k.job.onStart) k.job.onStart();
         else if (k.k === 'remove') { release(ac); D.actors.delete(id); gone = true; break; }
       }
-      if (!gone && (ac.pose === 'stand' || ac.pose === 'sit')) { const gx = x0 - ac.x, gy = y0 - ac.y; if (Math.hypot(gx, gy) > 12 && Math.hypot(gx, gy) < 3000) ac.gl = { x: gx, y: gy, face: ac.face }; }   // 주가 넘어갈 때 순간이동 대신, 옛 자리에서 걸어오는 모습을 그림으로만 보여 준다 (논리 위치는 이미 도착)
+      if (!gone && (ac.pose === 'stand' || ac.pose === 'sit')) { const gx = x0 - ac.x, gy = y0 - ac.y; if (Math.hypot(gx, gy) > 12 && Math.hypot(gx, gy) < 3000) { ac.gl = { x: gx, y: gy, face: ac.face }; if (ac.a && root.Speech && Math.hypot(gx, gy) > 120 && !ac.bubble) say(ac, Speech.line(ac.a, 'hurry'), 1.6); } }   // 2026-11-19: 멀리 서둘러 갈 때는 "늦었다!" 한마디   // 주가 넘어갈 때 순간이동 대신, 옛 자리에서 걸어오는 모습을 그림으로만 보여 준다 (논리 위치는 이미 도착)
     }
     for (const w in D.winUse) D.winUse[w] = [];
   };

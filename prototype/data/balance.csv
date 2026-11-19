@@ -80,6 +80,7 @@ econ,mealUnlockChance,0.5,
 econ,mealPerDish,0.02,
 gear,weaponPrice,150|300|500|1500|2400|3750|7500,
 gear,setMult,3,예전 한 벌 값 = 1칸 값 × 이 값 (gear.pieceBuy 0일 때만 씀)
+gear,needSmith,1,장비 사기: 1이면 대장간(리퀘스트 「떠돌이 대장장이」)이 생긴 뒤부터 · 0이면 예전처럼 처음부터 (2026-11-19)
 gear,pieceBuy,1,장비 사기: 1이면 무기 · 방어구 · 장신구를 한 달에 1칸씩 따로(2026-11-18 대장간 결정) · 0이면 예전처럼 한 벌
 gear,giftAttach,1|2|3|4|5|6|7,대장간 선물 1칸당 애착 (F|E|D…, F 1 · E 2 [임시], D 이상 가안)
 gear,weaponStat,0|0|0|0|0|0|0,무기 능력치 보정 폐지
