@@ -17,8 +17,8 @@ quest,bossMult,1.15,보스급 기준치 배수
 growth,xpBase,240,성공 경험치 = xpBase × mult^등급
 growth,xpGradeMult,2,
 growth,xpFailRate,0.3,
-growth,lvA,14,다음 레벨 필요 경험치 = A × Lv^B
-growth,lvB,1.55,
+growth,lvA,160,다음 레벨 필요 경험치 = A × Lv^B (2026-11-19 사용자: 퀘스트 하나에 Lv4는 말이 안 됨 → 14 × Lv^1.55 에서 160 × Lv [임시]. 첫 의뢰 Lv2 · 12주 Lv5 · 48주 Lv11)
+growth,lvB,1,
 growth,lvCap,30|40|50,
 growth,trainPerWeek,0.1,훈련장·도서관 주간 훈련량
 growth,statCap,100,
