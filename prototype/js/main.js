@@ -195,9 +195,11 @@
   function frame(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now; T += dt;
     if (started) s.playSec = (s.playSec || 0) + dt;   // 플레이 시간(초): 일시정지 중에도 흐름, 저장에 함께 기록됨
-    if (speed > 0) { acc += dt * 1000 * speed; let n = 0; while (acc >= WEEK_MS) { acc -= WEEK_MS; step(); n++; } if (n) UI.hud(); }
+    // 2026-11-19 사용자 결정: 아래 대화창(리퀘스트 · 리나 · 침공 등)이 떠 있는 동안 게임 시계를 멈춤. 배속 버튼은 그대로, 대화가 끝나면 쓰던 배속으로 다시 흐름
+    const run = UI.dlgBusy && UI.dlgBusy() ? 0 : speed;
+    if (run > 0) { acc += dt * 1000 * run; let n = 0; while (acc >= WEEK_MS) { acc -= WEEK_MS; step(); n++; } if (n) UI.hud(); }
     UI.weekBar(acc / WEEK_MS);
-    Expedition.update(dt, acc / WEEK_MS, speed);
+    Expedition.update(dt, acc / WEEK_MS, run);
     // 화면 속 동작 빠르기: 배속이 오르면 함께 빨라지되 최대 3배 (일시정지면 멈춤 — 기본 튜토리얼 동안은 멈춰 있어도 모험가가 걸어 들어오고 나감)
     const as = speed === 0 && !Tutorial.active() ? 0 : Math.min(3, Math.max(1, speed * 0.6)), adt = dt * as;
     if (window.Invasion) Invasion.check(s);
