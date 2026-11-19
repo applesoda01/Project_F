@@ -1035,6 +1035,8 @@
   const seatsOf = s => 2 * (s.place ? s.place.items.filter(it => it.id === 'table').length : 0);   // 테이블 세트 하나에 2석
   // 검증용 자동 배치 (관문 1·개발 패널): 시뮬레이터 tablePolicy와 같은 규칙. 첫 주 2세트, 이후 월말마다 구매 뒤 1,000G 이상 남으면 1세트씩 4세트까지. 자리는 예전 고정 테이블 칸
   function autoPlace(s, first) {
+    // 2026-11-19 측정 판(관문 1 · 자동 진행)의 시작 = 튜토리얼이 끝난 상태: 튜토리얼 FT0006에서 리나가 1,000G를 내줘 집무실을 지음 → 금고는 그대로, 집무실만 있음
+    if (first && !s.built['집무실']) { const c = facCost(s, '집무실') || 0; s.gold += c; build(s, '집무실'); }
     if (!first) autoSell(s);
     const tc = capOf(s, 'table'), want = first ? 2 : (placedN(s, 'table') < tc && s.gold - 200 >= 1000 ? 1 : 0);   // 테이블 상한 = 해금된 세트 수 (처음 2)
     for (let k = 0; k < want; k++) { const spot = OLD_TABLES.find(([gx, gy]) => placeOk(s, 'table', { gx, gy })); if (!spot || s.gold < 200 || placedN(s, 'table') >= tc) break; placeBuy(s, 'table', { gx: spot[0], gy: spot[1] }); }

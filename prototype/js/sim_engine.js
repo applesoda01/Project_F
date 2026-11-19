@@ -184,7 +184,7 @@
     const s = {
       qlv: {},   // 의뢰 레벨 (결정 35)
       week: 0, grade: 0, gold: E.startGold, pop: T.startPop, trust: 50, fame: 0,
-      op: 0, built: {}, eff: {}, meals: [0, 0, 0, 0, 0, 0, 0], mats: {}, dishes: {}, advs: [], board: [], nextId: 1,
+      op: 0, built: cfg.run && cfg.run.preTut ? {} : { '집무실': true }, eff: {},   /* 2026-11-19 시작 = 튜토리얼이 끝난 상태(리나 지원으로 집무실이 있음, 게임 autoPlace(first)와 같음). run.preTut 이면 예전처럼 없음 */ meals: [0, 0, 0, 0, 0, 0, 0], mats: {}, dishes: {}, advs: [], board: [], nextId: 1,
       boss: [], bossDone: 0, bossRefill: [], invasionCooldown: 0,
       nextRaid: P.raidMonths[0] * WPM, heirsQueue: [],
       phase: 'normal', officer: 0, mainCooldown: 0, demonFlagFallback: false, ended: false, rebirthAdded: false,
