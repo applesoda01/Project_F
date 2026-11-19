@@ -246,12 +246,24 @@
       // 개체 차이: 실제 적은 게시 정보보다 강하거나 약할 수 있음(±enemyVar). 모험가는 게시 정보(seen)로 판단, 정보실이 있으면 실제에 가까워짐
       const f0 = 1 + (s.R() * 2 - 1) * (q.fz ? QL.var : (CB.C.enemyVar || 0)), f = f0 * DF, look = Math.min(1, 0.25 * effN(s, '정보실'));
       q.enemies = []; q.seen = []; q.foe = f0 * ((Q.diff || [])[g] || 1);   // 강약 표시(▲▼)는 개체 차이만 (의뢰 레벨 배수 제외)
-      for (const e of T.enemies) for (let k = 0; k < e.count; k++) {
+      const PM = force ? 1 : partyMulOf(s, g); if (PM > 1) q.party = PM;   // 2026-11-19 보호 구간 = 혼자 판(적 수 × soloMul) · 그 뒤 일부 = 파티 판(적 수 × partyMul)
+      for (const e of foeList(T.enemies, PM)) {
         q.enemies.push({ hp: e.hp * f, atk: e.atk * f, def: e.def || 0, name: e.name, mon: e.mon, boss: !!e.boss });
         q.seen.push({ hp: e.hp * DF * (1 + (f0 - 1) * look), atk: e.atk * DF * (1 + (f0 - 1) * look), def: e.def || 0, name: e.name, boss: !!e.boss });
       }
     }
     return q;
+  }
+  // 2026-11-19 사용자: 보호 구간(약 12주)엔 한 명, 그 뒤에는 파티 사냥. F급 전투 의뢰만, 수치는 balance quest.soloMul · partyFrom · partyRate · partyMul [임시]
+  function partyMulOf(s, g) {
+    const Q = s.cfg.quest, F = Q.partyFrom; if (g !== 0 || !F) return 1;
+    if (s.week < F[0]) return Q.soloMul || 1;
+    const k = s.week < F[1] ? 0 : 1; return s.R() < Q.partyRate[k] ? Q.partyMul[k] : 1;
+  }
+  function foeList(E, m) {   // 적 목록을 배수만큼: 1보다 작으면 앞에서부터 줄임(최소 1), 크면 같은 목록을 되풀이 (보스는 한 번만)
+    const L = []; for (const e of E) for (let k = 0; k < e.count; k++) L.push(e);
+    if (m < 1) return L.slice(0, Math.max(1, Math.ceil(L.length * m)));
+    const out = L.slice(); for (let r = 1; r < m; r++) for (const e of L) if (!e.boss) out.push(e); return out;
   }
   function successP(s, party, q, sm) {   // sm(a, k): 요리 능력치 배율 (없으면 1)
     const Q = s.cfg.quest; let F = 0, bottleneck = false;

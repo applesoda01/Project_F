@@ -25,6 +25,7 @@
         upBoardWeeks: 1,                           // 게시판 업그레이드: 의뢰 기한 +주                // 의뢰 성공·실패 시 신뢰도 (2026-11-12 정수화, 예전 0.3·0.6)
         partyAssist: 0.25,                         // 파티원 보조 계수
         deathBase: [0.01, 0.01, 0.03, 0.03, 0.05, 0.05, 0.08],
+        soloMul: 0.5, partyFrom: [12, 24], partyRate: [0.2, 0.33], partyMul: [2, 3],   // 2026-11-19 보호 구간 혼자 판 · 그 뒤 파티 판 (balance.csv가 덮어씀)
         subGrowth: 0.2,                            // 성공 시 유형 능력치 성장
         diff: [1, 1, 1, 1, 1, 1, 1],                // 의뢰 난이도 배수 (등급별): 판정 기준치와 적 체력 · 공격력에 곱함 (2026-11-16)
         bossMult: 1.15                             // 보스급 기준치 배수
@@ -252,7 +253,10 @@
       if (COMBAT && T && T.enemies) {
         // 개체 차이: 실제 적은 게시된 정보보다 강하거나 약할 수 있음(±enemyVar). 정보실이 있으면 예측이 실제에 가까워짐
         const v = fz ? QL.var : (CB.C.enemyVar || 0), f0 = (1 + (R() * 2 - 1) * v), f = f0 * DF, look = Math.min(1, 0.25 * effN('정보실'));
-        for (const e of T.enemies) for (let k = 0; k < e.count; k++) {
+        const F = Q.partyFrom, PM = (g !== 0 || !F || boss) ? 1 : s.week < F[0] ? (Q.soloMul || 1) : (R() < Q.partyRate[s.week < F[1] ? 0 : 1] ? Q.partyMul[s.week < F[1] ? 0 : 1] : 1);   // 게임 partyMulOf와 같음 (2026-11-19)
+        const L0 = []; for (const e of T.enemies) for (let k = 0; k < e.count; k++) L0.push(e);
+        const FL = PM < 1 ? L0.slice(0, Math.max(1, Math.ceil(L0.length * PM))) : L0.concat(...Array.from({ length: Math.max(0, PM - 1) }, () => L0.filter(e => !e.boss)));
+        for (const e of FL) {
           enemies.push({ hp: e.hp * f, atk: e.atk * f, def: e.def || 0, name: e.name, boss: !!e.boss });
           seen.push({ hp: e.hp * DF * (1 + (f0 - 1) * look), atk: e.atk * DF * (1 + (f0 - 1) * look), def: e.def || 0, name: e.name, boss: !!e.boss });
         }

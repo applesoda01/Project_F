@@ -155,9 +155,9 @@ const CASES = [
     return { ok: ra === 0.25 && rb === Gm.questFee(g, q) && sum(Array.from(sp.net)) + sp.guild === 101,
       detail: `계약 ${Math.round(ra * 100)}% · 자유 ${Math.round(rb * 100)}% → 101G = 실수령 ${Array.from(sp.net).join(' · ')} + 길드 ${sp.guild}` };
   } },
-  { id: 'G1', name: 'V2 설정을 모두 예전 값으로 돌리면 관문 1 = 567G · 94.6% (11-19 553G · 95.9%)', need: [], src: 'E1-7 · 결정표 7장', run() {
+  { id: 'G1', name: 'V2 설정을 모두 예전 값으로 돌리면 관문 1 = 619G · 95.2% (11-19 567G · 94.6%)', need: [], src: 'E1-7 · 결정표 7장', run() {
     const r = gate(c => { c.econ.feePerInfo = 0.02; c.econ.subsidyMode = 0; c.econ.resaleRate = 0.08; c.econ.matBuyRate = 0; c.econ.restK = 0; c.contract.slots = 0; c.adv.zeroFameVisit = 0; c.adv.founderMix = 0; c.econ.drawMode = 0; c.late.on = 0; if (c.qlv) c.qlv.on = 0; c.adv.fameStep = 5; c.adv.fameSkip = 0; c.adv.founderWarrior = 0; c.gear.pieceBuy = 0; c.gear.needSmith = 0; c.econ.mealMode = 0; c.adv.relParty = 0; });   // 2026-11-19 대장간 전 구매 없음도 끔   // 2026-11-17 cd248c4: 의뢰 0건 판 대책 두 가지도 끔
-    return { ok: r.G === 567 && r.S === '94.6', detail: `게임 ${r.G}G · ${r.S}% (eb10e81 559G에서 −1G는 정수 배분 버림. 2026-11-18 대장간 리퀘스트 조건 완화(데이터)로 558 → 560G. 2026-11-19 한 모험가가 두 리퀘스트에 들어가지 않게 막아 560 → 557G. 2026-11-19 게시판에 같은 의뢰가 두 장 붙지 않게 막아 557 → 562G. 2026-11-19 리퀘스트 「들개 떼 우두머리」(2명 필수) 추가로 562 → 560G, 초반 보호 구간에 맞춰 들개 4 → 2로 560 → 553G. 레벨 곡선 160 × Lv · 침공 적 × 0.6으로 553 → 567G · 94.6%. 끈 것: 정보실 +2%p 복원 · 매달 보조금 · 자동 차익 8% · 매입 0 · 거름 0 · 계약 정원 0 · 의뢰 0건 대책 2가지)` };
+    return { ok: r.G === 619 && r.S === '95.2', detail: `게임 ${r.G}G · ${r.S}% (eb10e81 559G에서 −1G는 정수 배분 버림. 2026-11-18 대장간 리퀘스트 조건 완화(데이터)로 558 → 560G. 2026-11-19 한 모험가가 두 리퀘스트에 들어가지 않게 막아 560 → 557G. 2026-11-19 게시판에 같은 의뢰가 두 장 붙지 않게 막아 557 → 562G. 2026-11-19 리퀘스트 「들개 떼 우두머리」(2명 필수) 추가로 562 → 560G, 초반 보호 구간에 맞춰 들개 4 → 2로 560 → 553G. 레벨 곡선 160 × Lv · 침공 적 × 0.6으로 553 → 567G · 94.6%. 보호 구간 혼자 판 · 파티 판으로 567 → 619G · 95.2%. 끈 것: 정보실 +2%p 복원 · 매달 보조금 · 자동 차익 8% · 매입 0 · 거름 0 · 계약 정원 0 · 의뢰 0건 대책 2가지)` };
   } },
   { id: 'G2', name: '지금 설정 관문 1 (기록용, 월 순이익 300~600G 안이면 통과)', need: [], src: '관문 1', run() {
     const r = gate(() => {});
