@@ -410,6 +410,43 @@ if os.path.exists(os.path.join(DATA, 'talk_mem.csv')):
                 if not covers(S_['reply'], [v_, t_]): err('talk_mem.csv', '-', f'세트 {sid}: 대답에 {v_} · {t_} 경우가 없습니다')
         talk_mem.setdefault(S_['kind'], []).append({k: S_[k] for k in ('id', 'cond', 'open', 'reply', 'close')})
 
+# ---------- 농담 주고받기 세트 (2026-11-19, docs/design/drafts/농담_주고받기_초안_2026-11-19.md) ----------
+# 한 줄 = 세트의 대사 1줄. 세트 · 제목 · 종류(light 가벼움 / mem 기억 놀림 / three 세 사람) · 자리(table idle board depart return_ok …, 띄어 여러 개)
+# A · B · C = 말투(bold careful friendly loner plain, C는 세 사람 세트만) · 사이(good 단짝 / bad 서먹 / 비움 = 아무나)
+# 기억 = "주인(A/B) 종류 조건…" (예: B fail late · A saved gave together) — 그 기억이 있을 때만 나옴 · 누가(A/B/C) · 대사 · 감정
+JK_SITS = {'table', 'idle', 'board', 'depart', 'return_ok', 'return_fail'}
+JK_MEMC = {'mon', 'late', 'got', 'gave', 'lv', 'grade', 'yes', 'no', 'together'}
+JK_VARS = {'a', 'b', 'c', 'q', 'mon', 'giver', 'part', 'g', 'lv'}
+talk_joke = []
+if os.path.exists(os.path.join(DATA, 'talk_joke.csv')):
+    jk = {}
+    for ln, r in read('talk_joke.csv', ['세트', '제목', '종류', '자리', 'A', 'B', 'C', '사이', '기억', '누가', '대사', '감정']):
+        sid = r['세트']
+        if not sid: err('talk_joke.csv', ln, '세트 칸이 비었습니다'); continue
+        if r['종류'] not in ('light', 'mem', 'three'): err('talk_joke.csv', ln, "종류는 light · mem · three 중 하나여야 합니다"); continue
+        sits = r['자리'].split()
+        if not sits or any(x not in JK_SITS for x in sits): err('talk_joke.csv', ln, f"자리 '{r['자리']}' 는 {' '.join(sorted(JK_SITS))} 중에서 고릅니다")
+        for k in ('A', 'B') + (('C',) if r['종류'] == 'three' else ()):
+            if r[k] not in TONES: err('talk_joke.csv', ln, f"{k} 말투 '{r[k]}' 는 {' '.join(TONES)} 중 하나여야 합니다")
+        if r['사이'] not in ('', 'good', 'bad'): err('talk_joke.csv', ln, "사이는 good · bad · 비움 중 하나여야 합니다")
+        mem = r['기억'].split()
+        if r['종류'] == 'mem':
+            if len(mem) < 2 or mem[0] not in ('A', 'B') or mem[1] not in TM_KINDS or any(c not in JK_MEMC for c in mem[2:]):
+                err('talk_joke.csv', ln, f"기억 '{r['기억']}' 은 '주인(A/B) 종류({' '.join(TM_KINDS)}) 조건…' 모양이어야 합니다"); continue
+        if r['누가'] not in ('A', 'B', 'C') or (r['누가'] == 'C' and r['종류'] != 'three'): err('talk_joke.csv', ln, "누가는 A · B (세 사람 세트는 C도) 중 하나여야 합니다"); continue
+        if not r['대사']: err('talk_joke.csv', ln, '대사가 비었습니다'); continue
+        if r['감정'] and r['감정'] not in EMO_KINDS: err('talk_joke.csv', ln, f"감정 '{r['감정']}' 은 비움 또는 {' '.join(EMO_KINDS)} 중 하나여야 합니다")
+        for v in re.findall(r'\{(\w+)(?::[^}]+)?\}', r['대사']):
+            if v not in JK_VARS: err('talk_joke.csv', ln, f"{{{v}}} 는 쓸 수 없습니다 ({' '.join(sorted(JK_VARS))})")
+        S_ = jk.get(sid)
+        if not S_:
+            S_ = jk[sid] = {'id': sid, 'title': r['제목'], 'kind': r['종류'], 'sit': sits, 'tone': [r['A'], r['B']] + ([r['C']] if r['종류'] == 'three' else []), 'rel': r['사이'], 'mem': mem, 'lines': []}
+            talk_joke.append(S_)
+        S_['lines'].append(['ABC'.index(r['누가']), r['대사'], r['감정']])
+    for S_ in talk_joke:
+        if len(S_['lines']) < 2: err('talk_joke.csv', '-', f"세트 {S_['id']}: 2줄 이상이어야 합니다")
+        if S_['lines'][0][0] != 0: err('talk_joke.csv', '-', f"세트 {S_['id']}: 첫 줄은 A가 말해야 합니다")
+
 # ---------- 튜토리얼 대사 (2026-11-18, docs/design/튜토리얼.md) ----------
 # 번호(FT0001…) · 구간(1, 2… = 화면 안내로 끊기는 묶음) · 순서 · 화자(리나 · {전사} · {모험가} · 대장장이…) · 표정(리나만) · 대사
 tutorial = {}
@@ -432,7 +469,7 @@ if errors:
     print(f'오류 {len(errors)}건 — 파일을 만들지 않았습니다.')
     for e in errors: print('  -', e)
     sys.exit(1)
-data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial, 'talkMem': talk_mem}
+data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial, 'talkMem': talk_mem, 'talkJoke': talk_joke}
 if content is not None: data['content'] = content       # 편집기 데이터가 없으면 넣지 않음 (게임은 balance 값만 씀)
 # 로비 배치 칸 (2026-11-12, tools/lobby_grid_editor.html 로 칠한 값). 없으면 게임은 모든 바닥 칸을 놓기 가능으로 봄
 _lg = os.path.join(DATA, 'lobby_grid.json')
@@ -537,7 +574,7 @@ if os.path.exists(_nq):
     data['namedQuests'] = nq; data['questLines'] = ql
     print(f'서브 퀘스트 {len(nq)}개, 대사 {sum(len(x) for v in ql.values() for x in v.values())}줄')
 print(f'검사 통과: 밸런스 {len(seen)}항목, 의뢰 종류 {len(qtypes)}, 이름 {len(names)}, 요리 {len(meals)}, 스킬 {len(skills)}, '
-      f'말풍선 {sum(len(x) for e in speech["L"].values() for x in e.values()) + len(speech["rumor"]) + sum(len(x) for x in speech["lina"].values())}줄, 대화 {sum(len(v) for v in dialog.values())}줄'
+      f'말풍선 {sum(len(x) for e in speech["L"].values() for x in e.values()) + len(speech["rumor"]) + sum(len(x) for x in speech["lina"].values())}줄, 대화 {sum(len(v) for v in dialog.values())}줄, 농담 {len(talk_joke)}세트'
       + (f', 편집기 데이터: 소재 {len(content["materials"])}·아이템 {len(content["items"])}·몬스터 {len(content["monsters"])}·퀘스트 {len(content["quests"])}' if content else ', 편집기 데이터 없음(collegium_data.json)')
       + (f', 경고 {len(warns)}건' if warns else ''))
 if '--check' in sys.argv: sys.exit(0)

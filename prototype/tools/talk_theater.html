@@ -6,7 +6,8 @@
 <title>대화 극장</title>
 <!-- 2026-11-18: 플레이하지 않고 모험가들이 실제로 대화하는 모습만 지켜보는 도구 (사용자 요청 "실제로 대화하는 걸 보고 싶다").
      게임 규칙(game_core.js)으로 한 판을 자동으로 진행하면서, 매주 로비에 있는 모험가 둘이 게임과 같은 방식(speech.js)으로 대화함.
-     대화마다 "어떤 기억에서 나왔는지 · 함께 겪었는지 · 사이" 를 한 줄로 보여 줌. 게임과 연결되지 않은 따로 페이지 -->
+     대화마다 "어떤 기억에서 나왔는지 · 함께 겪었는지 · 사이" 를 한 줄로 보여 줌. 게임과 연결되지 않은 따로 페이지
+     2026-11-19: 위 칸에서 「농담 세트만 · 기억 대화만 · 모두」를 고름. 농담은 세트 번호 · 제목 · 종류(가벼움 · 기억 놀림 · 세 사람)를 보여 주고, 세 번째 사람(C) 줄은 연두색 -->
 <style>
 :root{--ink:#3b2a1e;--muted:#8a735a;--paper:#fffaf0;--line:rgba(120,82,44,.25);--wood:#5a3a22;--bg:#efe2c4;--bubble:#fff;--me:#fdf2dc;--gold:#c9963e}
 @media (prefers-color-scheme: dark){:root{--ink:#f0e4cf;--muted:#b8a184;--paper:#2b241c;--line:rgba(230,200,160,.18);--wood:#3a2616;--bg:#1d1813;--bubble:#352c22;--me:#3e3224;color-scheme:dark}}
@@ -24,6 +25,7 @@ label.tg{font-size:13px;display:flex;gap:4px;align-items:center;cursor:pointer}
 .why b{color:var(--ink)}
 .ln{display:flex;gap:8px;align-items:flex-start;margin:6px 0}
 .ln.b{flex-direction:row-reverse}
+.ln.c .bb{background:#e9f1e4}@media (prefers-color-scheme: dark){.ln.c .bb{background:#2f3a2a}}   /* 2026-11-19 세 번째 사람 */
 .av{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff}
 .bb{max-width:78%;background:var(--bubble);border:1px solid var(--line);border-radius:12px;padding:5px 11px}
 .ln.b .bb{background:var(--me)}
@@ -40,7 +42,7 @@ label.tg{font-size:13px;display:flex;gap:4px;align-items:center;cursor:pointer}
   <button id="play">▶ 자동</button>
   <button id="next">다음 대화</button>
   <select id="speed"><option value="2200">천천히</option><option value="1200" selected>보통</option><option value="500">빠르게</option></select>
-  <label class="tg"><input type="checkbox" id="memOnly" checked> 기억 대화만</label>
+  <select id="mode" title="어떤 대화를 볼지"><option value="joke" selected>농담 세트만</option><option value="mem">기억 대화만</option><option value="all">모두 (게임과 같은 비율)</option></select>
   <button id="new">새 판</button>
 </div>
 <div class="wrap" id="feed"><div class="empty">「▶ 자동」을 누르면 모험가들이 대화를 시작합니다.</div></div>
@@ -56,7 +58,8 @@ label.tg{font-size:13px;display:flex;gap:4px;align-items:center;cursor:pointer}
 const Gm = GuildGame, Sp = Speech, $ = id => document.getElementById(id);
 const CLS_COLOR = ['#b5452f', '#4f8a3c', '#5a5fbf', '#c9963e', '#6b4f8a'];
 const TONE = { bold: '호탕', careful: '조심', friendly: '다정', loner: '무뚝뚝', plain: '보통' };
-const SITS = [['table', '식탁'], ['idle', '로비'], ['board', '게시판 앞']];
+const SITS = [['table', '식탁'], ['idle', '로비'], ['board', '게시판 앞'], ['depart', '출발'], ['return_ok', '귀환']];
+const KIND = { light: '가벼움', mem: '기억 놀림', three: '세 사람' };
 const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 let g, timer = null, lastWeek = -1, count = 0, lastA = null;
 
@@ -82,17 +85,18 @@ function newGame() {
 }
 function advance() { Gm.autoRequests(g); Gm.stepWeek(g); Gm.autoCook(g); if (g.week % Gm.WPM === 0) Gm.autoPlace(g, false); }
 function status() { const al = g.advs.filter(a => a.alive); $('st').textContent = `${Gm.dateLabel(g.week)} · 모험가 ${al.length}명 · 대화 ${count}번`; }
-function attempt() {   // 이번 주 로비의 두 사람 → 대화 1번. 못 하면 null
+function attempt() {   // 이번 주 로비의 두 사람(+ 세 번째 후보) → 대화 1번. 못 하면 null
   const al = g.advs.filter(a => a.alive && a.state === 'town'); if (al.length < 2) return null;
-  const memOnly = $('memOnly').checked;
-  let cand = memOnly ? al.filter(a => Gm.memOf(g, a).length) : al; if (!cand.length) return null;
+  const mode = $('mode').value;
+  let cand = mode === 'mem' ? al.filter(a => Gm.memOf(g, a).length) : al; if (!cand.length) return null;
   if (cand.length > 1) cand = cand.filter(x => x.id !== lastA);   // 같은 사람이 연달아 말하지 않게
   const a = cand[Math.floor(Math.random() * cand.length)]; lastA = a.id; const others = al.filter(x => x !== a), b = others[Math.floor(Math.random() * others.length)];
+  const rest = al.filter(x => x !== a && x !== b), sitK = mode === 'joke' ? SITS[Math.floor(Math.random() * SITS.length)] : SITS[Math.floor(Math.random() * 3)];
   const rel = Gm.relTier(Gm.relOf(g, a.id, b.id)), before = Gm.memOf(g, a).map(m => [m, m.n]);
-  const L = memOnly ? Sp.memTalk(a, b, rel) : Sp.talk(a, b, SITS[Math.floor(Math.random() * 3)][0]);
+  const L = mode === 'mem' ? Sp.memTalk(a, b, rel) : mode === 'joke' ? Sp.joke(a, b, sitK[0], rel, rest) : Sp.talk(a, b, sitK[0], null, null, rest);
   if (!L) return null;
   const used = before.find(([m, n]) => m.n !== n || !(a.mem || []).includes(m));
-  return { a, b, L, rel, m: used ? used[0] : null, sit: SITS[Math.floor(Math.random() * 3)][1] };
+  return { a, b, c: L.c || null, L, rel, m: used ? used[0] : null, sit: sitK[1] };
 }
 function next() {
   let r = null;
@@ -100,24 +104,24 @@ function next() {
   if (!r) { advance(); status(); return; }
   count++; show(r); if (Math.random() < 0.5) advance(); status();
 }
-function show({ a, b, L, rel, m, sit }) {
+function show({ a, b, c, L, rel, m, sit }) {
   const f = $('feed'); if (f.querySelector('.empty')) f.innerHTML = '';
   if (g.week !== lastWeek) { lastWeek = g.week; f.insertAdjacentHTML('beforeend', `<div class="week">— ${Gm.dateLabel(g.week)} —</div>`); }
   const relName = rel === 'good' ? '단짝' : rel === 'bad' ? '서먹' : '보통 사이', together = m && ((m.with || []).includes(b.id) || (b.mem || []).some(x => x.k === m.k && x.q === m.q && x.w === m.w));
   const who = (x, cls) => `<div class="av" style="background:${CLS_COLOR[x.core] || '#888'}">${esc(x.name.slice(0, 2))}</div>`;
   const id = 't' + count;
-  f.insertAdjacentHTML('beforeend', `<div class="talk" id="${id}"><div class="head"><span>${sit}</span><span>${esc(a.name)}(${esc(a.cls)} · ${TONE[Sp.tone(a)]}) → ${esc(b.name)}(${esc(b.cls)} · ${TONE[Sp.tone(b)]})</span><span>${relName} (친밀도 ${Math.round(Gm.relOf(g, a.id, b.id))})</span></div>
-    <div class="why">${m ? `<b>${esc(a.name)}의 기억</b> — ${esc(memDesc(m, g))} · ${esc(b.name)}는 ${together ? '<b>함께 겪음</b>' : '처음 들음'}` : '평소 잡담 (기억 없음)'}</div></div>`);
+  f.insertAdjacentHTML('beforeend', `<div class="talk" id="${id}"><div class="head"><span>${sit}</span><span>${esc(a.name)}(${esc(a.cls)} · ${TONE[Sp.tone(a)]}) → ${esc(b.name)}(${esc(b.cls)} · ${TONE[Sp.tone(b)]})${c ? ` + ${esc(c.name)}(${esc(c.cls)} · ${TONE[Sp.tone(c)]})` : ''}</span><span>${relName} (친밀도 ${Math.round(Gm.relOf(g, a.id, b.id))})</span></div>
+    <div class="why">${L.joke ? `<b>농담 ${esc(L.joke.id.slice(1))}. ${esc(L.joke.title)}</b> · ${KIND[L.joke.kind]}${L.joke.m ? ' — 기억: ' + esc(memDesc(L.joke.m, g)) : ''}` : m ? `<b>${esc(a.name)}의 기억</b> — ${esc(memDesc(m, g))} · ${esc(b.name)}는 ${together ? '<b>함께 겪음</b>' : '처음 들음'}` : '평소 잡담 (기억 없음)'}</div></div>`);
   const box = $(id), sp = +$('speed').value;
   L.forEach((t, i) => setTimeout(() => {
-    const x = i === 1 ? b : a;
-    const e = (L.emo || [])[i], emo = e && window.Emote ? `<span class="emo" title="${Emote.NAME[e]}">${Emote.html(e, 44, i !== 1)}</span>` : '';
-    box.insertAdjacentHTML('beforeend', `<div class="ln ${i === 1 ? 'b' : ''}">${who(x)}<div class="bb"><small>${esc(x.name)}</small>${esc(t)}</div>${emo}</div>`);
+    const wi = L.who ? L.who[i] : (i === 1 ? 1 : 0), x = [a, b, c][wi] || a;   // 2026-11-19: 줄마다 말하는 사람 (A · B · C)
+    const e = (L.emo || [])[i], emo = e && window.Emote ? `<span class="emo" title="${Emote.NAME[e]}">${Emote.html(e, 44, wi !== 1)}</span>` : '';
+    box.insertAdjacentHTML('beforeend', `<div class="ln ${wi === 1 ? 'b' : wi === 2 ? 'c' : ''}">${who(x)}<div class="bb"><small>${esc(x.name)}</small>${esc(t)}</div>${emo}</div>`);
     box.scrollIntoView({ block: 'end', behavior: 'smooth' });
   }, i * sp * 0.6));
 }
 function stop() { if (timer) clearInterval(timer); timer = null; $('play').textContent = '▶ 자동'; }
-$('play').onclick = () => { if (timer) { stop(); return; } next(); timer = setInterval(next, +$('speed').value * 2.6); $('play').textContent = '⏸ 멈춤'; };
+$('play').onclick = () => { if (timer) { stop(); return; } next(); timer = setInterval(next, +$('speed').value * 3.6); $('play').textContent = '⏸ 멈춤'; };
 $('speed').onchange = () => { if (timer) { stop(); $('play').click(); } };
 $('next').onclick = () => { stop(); next(); };
 $('new').onclick = newGame;

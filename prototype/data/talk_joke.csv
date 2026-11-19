@@ -1,0 +1,258 @@
+﻿세트,제목,종류,자리,A,B,C,사이,기억,누가,대사,감정
+j01,고기 두 접시,light,table,bold,careful,,,,A,오늘은 고기 세 접시 먹을 거야!,note
+j01,고기 두 접시,light,table,bold,careful,,,,B,어제는 두 접시라더니 늘었네요.,
+j01,고기 두 접시,light,table,bold,careful,,,,A,어제 못 먹은 한 접시까지지!,
+j01,고기 두 접시,light,table,bold,careful,,,,B,…리나 씨한테 미리 말해 둘게요.,sweat
+j02,마지막 한 입,light,table,friendly,loner,,good,,A,"{b}, 그 빵 안 먹을 거면 나 줄래?",smile
+j02,마지막 한 입,light,table,friendly,loner,,good,,B,…먹을 거다.,
+j02,마지막 한 입,light,table,friendly,loner,,good,,A,아까부터 쳐다만 보던데?,
+j02,마지막 한 입,light,table,friendly,loner,,good,,B,…식혀 먹는 거다.,
+j02,마지막 한 입,light,table,friendly,loner,,good,,A,그 빵 원래 차가운 거야!,smile
+j03,매운 수프,light,table,plain,bold,,,,A,그 수프 엄청 맵대. 괜찮겠어?,
+j03,매운 수프,light,table,plain,bold,,,,B,매운 거? 나한테 매운 건 없어!,
+j03,매운 수프,light,table,plain,bold,,,,A,그럼 왜 물을 세 잔째 마셔?,
+j03,매운 수프,light,table,plain,bold,,,,B,…목이 말라서 그래!,sweat
+j04,요리 품평,light,table,careful,friendly,,good,,A,"오늘 요리, 간이 조금 세지 않아요?",
+j04,요리 품평,light,table,careful,friendly,,good,,B,그래? 난 맛있기만 한데!,
+j04,요리 품평,light,table,careful,friendly,,good,,A,{b} 씨는 뭐든 맛있다고 하잖아요.,
+j04,요리 품평,light,table,careful,friendly,,good,,B,맛있는 걸 어떡해!,smile
+j04,요리 품평,light,table,careful,friendly,,good,,A,…그 말에는 반박을 못 하겠네요.,smile
+j05,한 잔만,light,table,bold,plain,,bad,,A,한 잔만 더! 진짜 한 잔만!,note
+j05,한 잔만,light,table,bold,plain,,bad,,B,그 소리 벌써 다섯 번째야.,
+j05,한 잔만,light,table,bold,plain,,bad,,A,세는 사람이 더 이상한 거야!,
+j05,한 잔만,light,table,bold,plain,,bad,,B,내일 의뢰 늦으면 두고 보자.,anger
+j06,우유 한 잔,light,table,loner,bold,,,,A,…우유.,
+j06,우유 한 잔,light,table,loner,bold,,,,B,"술집에서 우유? 하하, 애냐?",
+j06,우유 한 잔,light,table,loner,bold,,,,A,"…지난번 팔씨름, 누가 이겼지?",
+j06,우유 한 잔,light,table,loner,bold,,,,B,"그, 그건 손이 미끄러워서…!",sweat
+j06,우유 한 잔,light,table,loner,bold,,,,A,…우유 한 잔 더.,smile
+j07,몰래 간식,light,table,friendly,careful,,good,,A,"쉿, 리나 씨 몰래 과자 가져왔어!",smile
+j07,몰래 간식,light,table,friendly,careful,,good,,B,그거 리나 씨가 만든 거잖아요.,
+j07,몰래 간식,light,table,friendly,careful,,good,,A,…그럼 몰래가 아니네?,
+j07,몰래 간식,light,table,friendly,careful,,good,,B,처음부터 다 알고 계셨을 거예요.,smile
+j08,배고픈 신호,light,table,plain,friendly,,,,A,방금 무슨 소리 났지? 늑대인가?,
+j08,배고픈 신호,light,table,plain,friendly,,,,B,응? 내 배에서 난 소린데.,smile
+j08,배고픈 신호,light,table,plain,friendly,,,,A,그렇게 크게 울리는 배는 처음이야.,
+j08,배고픈 신호,light,table,plain,friendly,,,,B,그러니까 빨리 밥 먹으러 가자!,note
+j09,한 방에,light,table idle board,bold,loner,,,,A,어제 늑대를 한 방에 잡았지!,win
+j09,한 방에,light,table idle board,bold,loner,,,,B,…세 방 봤는데.,
+j09,한 방에,light,table idle board,bold,loner,,,,A,마지막 한 방이 진짜였다고!,
+j09,한 방에,light,table idle board,bold,loner,,,,B,…앞의 두 방은.,
+j09,한 방에,light,table idle board,bold,loner,,,,A,"그건 인사였지, 인사!",sweat
+j10,전설의 검술,light,table idle board,bold,careful,,good,,A,"내 검술, 이제 전설 수준이야!",spark
+j10,전설의 검술,light,table idle board,bold,careful,,good,,B,지난주에 칼집을 거꾸로 차셨죠.,
+j10,전설의 검술,light,table idle board,bold,careful,,good,,A,그건 적을 방심시키는 기술이야.,
+j10,전설의 검술,light,table idle board,bold,careful,,good,,B,우리 편이 다 방심했어요.,
+j10,전설의 검술,light,table idle board,bold,careful,,good,,A,그럼 효과가 있었다는 거네!,
+j10,전설의 검술,light,table idle board,bold,careful,,good,,B,…그렇게 받아들이시면 할 말이 없네요.,smile
+j11,팔씨름,light,table idle board,plain,bold,,,,A,팔씨름 한 판 할래?,note
+j11,팔씨름,light,table idle board,plain,bold,,,,B,좋지! 지는 쪽이 저녁 사기다!,
+j11,팔씨름,light,table idle board,plain,bold,,,,A,좋아. 그럼 왼손으로.,
+j11,팔씨름,light,table idle board,plain,bold,,,,B,"…오른손으로 하자, 오른손.",sweat
+j12,활 솜씨,light,table idle board,friendly,plain,,good,,A,나 오늘 사과 맞혔다! 저 멀리 있는 거!,win
+j12,활 솜씨,light,table idle board,friendly,plain,,good,,B,"오, 대단한데? 몇 번 만에?",
+j12,활 솜씨,light,table idle board,friendly,plain,,good,,A,…열두 번째에.,
+j12,활 솜씨,light,table idle board,friendly,plain,,good,,B,앞의 열한 개는 어디 갔어?,
+j12,활 솜씨,light,table idle board,friendly,plain,,good,,A,사과나무 아저씨가 찾고 있대…,sweat
+j13,길치,light,table idle board,careful,bold,,bad,,A,이번엔 지도 꼭 보고 가세요.,
+j13,길치,light,table idle board,careful,bold,,bad,,B,지도 없이도 길은 다 알아!,
+j13,길치,light,table idle board,careful,bold,,bad,,A,지난번엔 마을을 두 바퀴 도셨잖아요.,
+j13,길치,light,table idle board,careful,bold,,bad,,B,그건 마을 구경을 한 거야!,
+j13,길치,light,table idle board,careful,bold,,bad,,A,의뢰 기한도 구경하다 넘기셨죠.,anger
+j14,갑옷 자랑,light,table idle board,bold,friendly,,,,A,새로 닦은 갑옷 봐! 반짝반짝하지?,spark
+j14,갑옷 자랑,light,table idle board,bold,friendly,,,,B,"와, 얼굴이 비친다!",
+j14,갑옷 자랑,light,table idle board,bold,friendly,,,,A,그치? 멋진 얼굴이 비치지?,
+j14,갑옷 자랑,light,table idle board,bold,friendly,,,,B,"응, 졸린 얼굴이 비쳐.",smile
+j15,늦잠,light,table idle,friendly,loner,,good,,A,"{b}, 오늘 아침에 코 고는 소리 들었어!",smile
+j15,늦잠,light,table idle,friendly,loner,,good,,B,…난 코 안 곤다.,
+j15,늦잠,light,table idle,friendly,loner,,good,,A,그럼 벽 너머 곰이었나?,
+j15,늦잠,light,table idle,friendly,loner,,good,,B,…곰이었다.,anger
+j16,일찍 일어난 날,light,table idle,plain,careful,,,,A,오늘 웬일로 일찍 나왔어?,
+j16,일찍 일어난 날,light,table idle,plain,careful,,,,B,어제 일찍 잤거든요. 무려 해 지기 전에요.,
+j16,일찍 일어난 날,light,table idle,plain,careful,,,,A,그건 일찍이 아니라 낮잠 아니야?,
+j16,일찍 일어난 날,light,table idle,plain,careful,,,,B,…길게 잔 낮잠이었네요.,sweat
+j17,모자 바뀜,light,table idle,careful,friendly,,good,,A,"{b} 씨, 그거 제 모자 같은데요.",qex
+j17,모자 바뀜,light,table idle,careful,friendly,,good,,B,어? 어쩐지 좀 크더라!,
+j17,모자 바뀜,light,table idle,careful,friendly,,good,,A,제 건 어디 두셨어요?,
+j17,모자 바뀜,light,table idle,careful,friendly,,good,,B,음… 네 머리 위에 있는 거 내 거야.,smile
+j17,모자 바뀜,light,table idle,careful,friendly,,good,,A,…어쩐지 좀 작더라고요.,smile
+j18,리나 씨 미소,light,table idle,friendly,bold,,,,A,리나 씨가 나 보고 웃어 줬어!,heart
+j18,리나 씨 미소,light,table idle,friendly,bold,,,,B,"하하, 나한테도 웃던데?",
+j18,리나 씨 미소,light,table idle,friendly,bold,,,,A,리나 씨는 원래 다 보고 웃잖아.,
+j18,리나 씨 미소,light,table idle,friendly,bold,,,,B,…그럼 우리 둘 다 특별한 게 아니네.,sweat
+j19,일기,light,table idle,loner,plain,,,,A,…뭘 그렇게 적나.,
+j19,일기,light,table idle,loner,plain,,,,B,일기. 오늘 너랑 말 섞은 거 적는 중.,
+j19,일기,light,table idle,loner,plain,,,,A,…그게 적을 일인가.,
+j19,일기,light,table idle,loner,plain,,,,B,한 달에 한 번이니까 기념이지.,smile
+j20,고양이,light,table idle,careful,loner,,good,,A,아까 길고양이한테 말 거시던데요.,qex
+j20,고양이,light,table idle,careful,loner,,good,,B,…잘못 봤다.,
+j20,고양이,light,table idle,careful,loner,,good,,A,"""배고프냐""라고 하셨잖아요.",
+j20,고양이,light,table idle,careful,loner,,good,,B,…고양이가 먼저 물었다.,
+j20,고양이,light,table idle,careful,loner,,good,,A,고양이랑 대화가 되시는군요.,smile
+j21,제일 센 의뢰,light,board,bold,careful,,,,A,제일 센 의뢰는 내 거다!,note
+j21,제일 센 의뢰,light,board,bold,careful,,,,B,그거 고양이 찾기예요.,
+j21,제일 센 의뢰,light,board,bold,careful,,,,A,…고양이가 제일 센 거야.,
+j21,제일 센 의뢰,light,board,bold,careful,,,,B,지난번에 할퀴셨던 그 고양이요?,
+j21,제일 센 의뢰,light,board,bold,careful,,,,A,그래서 복수전이다!,anger
+j22,보상만 보는 사람,light,board,plain,bold,,good,,A,넌 의뢰서 보상 칸만 보지?,
+j22,보상만 보는 사람,light,board,plain,bold,,good,,B,그게 제일 중요한 칸이잖아!,
+j22,보상만 보는 사람,light,board,plain,bold,,good,,A,기한 칸은?,
+j22,보상만 보는 사람,light,board,plain,bold,,good,,B,…그런 칸도 있었어?,qex
+j23,쉬운 의뢰,light,board,careful,friendly,,,,A,오늘은 쉬운 걸로 해요. 약초 캐기요.,
+j23,쉬운 의뢰,light,board,careful,friendly,,,,B,좋아! 근데 약초가 뭐였지?,
+j23,쉬운 의뢰,light,board,careful,friendly,,,,A,…풀이에요. 먹으면 안 되는 풀 빼고요.,
+j23,쉬운 의뢰,light,board,careful,friendly,,,,B,그럼 먹으면 안 되는 풀부터 알려 줘!,sweat
+j24,둘이 하면,light,board,friendly,loner,,bad,,A,"이 의뢰, 둘이 하면 금방 끝날 거야!",
+j24,둘이 하면,light,board,friendly,loner,,bad,,B,…혼자 하면 더 금방이다.,
+j24,둘이 하면,light,board,friendly,loner,,bad,,A,혼자 하면 심심하잖아.,
+j24,둘이 하면,light,board,friendly,loner,,bad,,B,…둘이 하면 시끄럽다.,
+j24,둘이 하면,light,board,friendly,loner,,bad,,A,그래도 시끄러운 게 덜 심심하지!,smile
+j25,짐 싸기,light,depart,careful,bold,,,,A,"물약, 붕대, 밧줄 다 챙기셨어요?",
+j25,짐 싸기,light,depart,careful,bold,,,,B,칼 챙겼으면 다 챙긴 거지!,
+j25,짐 싸기,light,depart,careful,bold,,,,A,저녁은요?,
+j25,짐 싸기,light,depart,careful,bold,,,,B,…그건 챙겨 줘.,smile
+j25,짐 싸기,light,depart,careful,bold,,,,A,결국 제가 다 챙기네요.,sweat
+j26,누가 앞장,light,depart,bold,bold,,good,,A,오늘은 내가 앞장선다!,note
+j26,누가 앞장,light,depart,bold,bold,,good,,B,"무슨 소리, 앞장은 내 자리야!",
+j26,누가 앞장,light,depart,bold,bold,,good,,A,그럼 둘이 같이 앞에 서자!,
+j26,누가 앞장,light,depart,bold,bold,,good,,B,…그럼 뒤는 누가 지켜?,qex
+j27,다녀와서,light,depart,friendly,plain,,good,,A,다녀와서 같이 밥 먹자!,note
+j27,다녀와서,light,depart,friendly,plain,,good,,B,지난번에도 그 말 하고 너 먼저 잤잖아.,
+j27,다녀와서,light,depart,friendly,plain,,good,,A,이번엔 진짜야! 밥 먹고 잘게!,
+j27,다녀와서,light,depart,friendly,plain,,good,,B,순서만 바뀌었네.,smile
+j28,흙투성이,light,return_ok,plain,careful,,,,A,돌아왔다! 근데 왜 그렇게 봐?,
+j28,흙투성이,light,return_ok,plain,careful,,,,B,머리에 풀이 자라고 있어요.,
+j28,흙투성이,light,return_ok,plain,careful,,,,A,…숲이 나를 좋아해서 그래.,
+j28,흙투성이,light,return_ok,plain,careful,,,,B,숲이 꽤 집요하게 좋아하네요.,smile
+j29,별명,light,table idle board,bold,friendly,,good,,A,"어이, 꼬마 대장!",smile
+j29,별명,light,table idle board,bold,friendly,,good,,B,그 별명 그만 불러! 키 컸다고!,
+j29,별명,light,table idle board,bold,friendly,,good,,A,손톱만큼?,
+j29,별명,light,table idle board,bold,friendly,,good,,B,…손가락만큼은 컸어!,anger
+j30,칭찬이 어색,light,table idle board,loner,careful,,good,,A,…오늘 잘했다.,
+j30,칭찬이 어색,light,table idle board,loner,careful,,good,,B,네? 방금 저 칭찬하신 거예요?,qex
+j30,칭찬이 어색,light,table idle board,loner,careful,,good,,A,…못 들었으면 됐다.,
+j30,칭찬이 어색,light,table idle board,loner,careful,,good,,B,"한 번만 더 해 주세요, 적어 둘게요!",smile
+j31,비꼬기,light,table idle board,careful,bold,,bad,,A,오늘은 몇 번 넘어지실 예정이에요?,
+j31,비꼬기,light,table idle board,careful,bold,,bad,,B,오늘은 한 번도 안 넘어진다!,
+j31,비꼬기,light,table idle board,careful,bold,,bad,,A,그럼 지난번 세 번은 연습이었나요?,
+j31,비꼬기,light,table idle board,careful,bold,,bad,,B,…연습도 실전처럼 하는 거야!,anger
+j32,화해 비슷한 것,light,table idle board,plain,loner,,bad,,A,저기… 아까는 내가 말이 좀 심했어.,
+j32,화해 비슷한 것,light,table idle board,plain,loner,,bad,,B,…그래.,
+j32,화해 비슷한 것,light,table idle board,plain,loner,,bad,,A,"그래서, 사과 받아 주는 거야?",
+j32,화해 비슷한 것,light,table idle board,plain,loner,,bad,,B,…밥 사면.,
+j32,화해 비슷한 것,light,table idle board,plain,loner,,bad,,A,그건 사과가 아니라 거래잖아!,smile
+j33,걱정 숨기기,light,table idle board,loner,friendly,,,,A,…다친 데는.,
+j33,걱정 숨기기,light,table idle board,loner,friendly,,,,B,어? 걱정해 주는 거야?,heart
+j33,걱정 숨기기,light,table idle board,loner,friendly,,,,A,…물어본 것뿐이다.,
+j33,걱정 숨기기,light,table idle board,loner,friendly,,,,B,그게 걱정이야!,smile
+j34,우리 둘이면,light,table idle board,friendly,careful,,good,,A,우리 둘이면 못 할 의뢰가 없어!,spark
+j34,우리 둘이면,light,table idle board,friendly,careful,,good,,B,지난주 닭 잡기는 놓쳤잖아요.,
+j34,우리 둘이면,light,table idle board,friendly,careful,,good,,A,그건 닭이 너무 빨랐어!,
+j34,우리 둘이면,light,table idle board,friendly,careful,,good,,B,닭이 우리보다 빨랐던 거죠.,sweat
+j35,늑장 실패,mem,table idle board,bold,careful,,good,B fail late,A,"{b}, 오늘은 늦잠 안 잤지?",smile
+j35,늑장 실패,mem,table idle board,bold,careful,,good,B fail late,B,그 얘기 또 해요? 벌써 세 번째예요.,
+j35,늑장 실패,mem,table idle board,bold,careful,,good,B fail late,A,네 번째야. 내가 세고 있거든.,
+j35,늑장 실패,mem,table idle board,bold,careful,,good,B fail late,B,…다음 의뢰는 {a} 씨 혼자 가세요.,anger
+j35,늑장 실패,mem,table idle board,bold,careful,,good,B fail late,A,"하하, 미안 미안! 밥은 내가 살게!",
+j36,업어 준 일,mem,table idle board,plain,bold,,good,B hurt together,A,이번엔 안 업어 준다? 무거웠어.,smile
+j36,업어 준 일,mem,table idle board,plain,bold,,good,B hurt together,B,그때 내가 갑옷을 입고 있어서 그래!,
+j36,업어 준 일,mem,table idle board,plain,bold,,good,B hurt together,A,갑옷 벗고도 무거울 것 같은데?,
+j36,업어 준 일,mem,table idle board,plain,bold,,good,B hurt together,B,"이건 근육이야, 근육!",
+j36,업어 준 일,mem,table idle board,plain,bold,,good,B hurt together,A,근육도 무겁긴 해.,smile
+j37,치료받은 사람,mem,table idle board,friendly,loner,,,B saved got together,A,그때 내가 치료해 줬던 거 기억나지?,heart
+j37,치료받은 사람,mem,table idle board,friendly,loner,,,B saved got together,B,…기억 안 난다.,
+j37,치료받은 사람,mem,table idle board,friendly,loner,,,B saved got together,A,고맙다는 말도 아직 못 들었는데!,
+j37,치료받은 사람,mem,table idle board,friendly,loner,,,B saved got together,B,…빚이라고 했잖아. 그게 고맙다는 거다.,
+j38,진 상대,mem,table idle board,bold,plain,,bad,A fail mon,A,"{mon} 따위, 다음엔 내가 끝장낸다!",anger
+j38,진 상대,mem,table idle board,bold,plain,,bad,A fail mon,B,지난번엔 {mon:이/가} 널 끝장냈잖아.,
+j38,진 상대,mem,table idle board,bold,plain,,bad,A fail mon,A,그건 봐준 거라고!,
+j38,진 상대,mem,table idle board,bold,plain,,bad,A fail mon,B,{mon}한테 봐준 거면 고마워해야지.,smile
+j39,선물 자랑,mem,table idle board,friendly,bold,,,A gift,A,"이 {part}, 마스터가 나한테 준 거다!",note
+j39,선물 자랑,mem,table idle board,friendly,bold,,,A gift,B,벌써 그 얘기 열 번은 들었어.,
+j39,선물 자랑,mem,table idle board,friendly,bold,,,A gift,A,그럼 열한 번째 들어!,
+j39,선물 자랑,mem,table idle board,friendly,bold,,,A gift,B,"하하, 차라리 그걸로 나 한 번 때려 봐.",
+j39,선물 자랑,mem,table idle board,friendly,bold,,,A gift,A,아까워서 안 돼!,smile
+j40,승급 뒤,mem,table idle board,plain,careful,,,B grow grade,A,{g}급 되더니 걸음걸이가 달라졌다?,smile
+j40,승급 뒤,mem,table idle board,plain,careful,,,B grow grade,B,"그, 그런 거 아니에요!",
+j40,승급 뒤,mem,table idle board,plain,careful,,,B grow grade,A,어깨가 한 뼘은 올라갔는데.,
+j40,승급 뒤,mem,table idle board,plain,careful,,,B grow grade,B,…자세가 좋아진 거예요.,sweat
+j41,지명 받은 사람,mem,table idle board,bold,friendly,,good,A nomin yes,A,{giver} 씨가 나만 찾는대!,spark
+j41,지명 받은 사람,mem,table idle board,bold,friendly,,good,A nomin yes,B,다른 사람이 다 바빠서래.,
+j41,지명 받은 사람,mem,table idle board,bold,friendly,,good,A nomin yes,A,…누가 그래?,
+j41,지명 받은 사람,mem,table idle board,bold,friendly,,good,A nomin yes,B,{giver} 씨가.,smile
+j42,레벨 오른 날,mem,table idle board,friendly,plain,,good,A grow lv,A,나 레벨 {lv} 됐어! 축하해 줘!,spark
+j42,레벨 오른 날,mem,table idle board,friendly,plain,,good,A grow lv,B,축하해. 근데 그거 아침에도 말했어.,
+j42,레벨 오른 날,mem,table idle board,friendly,plain,,good,A grow lv,A,점심에도 말할 거야!,
+j42,레벨 오른 날,mem,table idle board,friendly,plain,,good,A grow lv,B,저녁에는 내가 먼저 말해 줄게.,smile
+j43,쉬운 의뢰 실패,mem,table idle board,careful,bold,,bad,B fail,A,"「{q}」, 쉬운 의뢰라고 하셨죠?",
+j43,쉬운 의뢰 실패,mem,table idle board,careful,bold,,bad,B fail,B,쉬운 거였어. 운이 나빴을 뿐이야!,
+j43,쉬운 의뢰 실패,mem,table idle board,careful,bold,,bad,B fail,A,운이 그렇게 자주 나쁘시네요.,
+j43,쉬운 의뢰 실패,mem,table idle board,careful,bold,,bad,B fail,B,…오늘은 운이 좋을 거다.,anger
+j44,강해진 의뢰,mem,table idle board,plain,careful,,,A qlv,A,"「{q}」 Lv{lv}, 우리가 처음으로 깼대.",win
+j44,강해진 의뢰,mem,table idle board,plain,careful,,,A qlv,B,덕분에 그 뒤로 사람들이 저만 찾아요.,
+j44,강해진 의뢰,mem,table idle board,plain,careful,,,A qlv,A,좋은 거 아니야?,
+j44,강해진 의뢰,mem,table idle board,plain,careful,,,A qlv,B,다들 저한테 길을 물어봐요. 저도 몰라요.,sweat
+j44,강해진 의뢰,mem,table idle board,plain,careful,,,A qlv,A,그럼 같이 모르는 척하자.,smile
+j45,무서웠던 날,mem,table idle board,loner,friendly,,good,A hurt together,A,"…그날, 너 울었지.",
+j45,무서웠던 날,mem,table idle board,loner,friendly,,good,A hurt together,B,안 울었어! 눈에 흙 들어간 거야!,
+j45,무서웠던 날,mem,table idle board,loner,friendly,,good,A hurt together,A,…두 눈에 다.,
+j45,무서웠던 날,mem,table idle board,loner,friendly,,good,A hurt together,B,흙이 두 번 들어갔어!,anger
+j46,구해 준 생색,mem,table idle board,bold,careful,,,A saved gave together,A,그때 내가 없었으면 어쩔 뻔했어?,win
+j46,구해 준 생색,mem,table idle board,bold,careful,,,A saved gave together,B,고마워요. 정말로요.,heart
+j46,구해 준 생색,mem,table idle board,bold,careful,,,A saved gave together,A,…어? 그렇게 순순히?,
+j46,구해 준 생색,mem,table idle board,bold,careful,,,A saved gave together,B,대신 이제 그 얘기 그만하기로 해요.,
+j46,구해 준 생색,mem,table idle board,bold,careful,,,A saved gave together,A,그건 좀 아까운데.,smile
+j47,거절한 지명,mem,table idle board,friendly,plain,,,B nomin no,A,"{giver} 씨 부탁, 왜 거절했어?",
+j47,거절한 지명,mem,table idle board,friendly,plain,,,B nomin no,B,그날 몸이 안 좋았어. 진짜로.,
+j47,거절한 지명,mem,table idle board,friendly,plain,,,B nomin no,A,그날 점심 두 그릇 먹던데?,qex
+j47,거절한 지명,mem,table idle board,friendly,plain,,,B nomin no,B,…두 그릇 먹고 몸이 안 좋아진 거야.,sweat
+j48,위험한 의뢰 성공,mem,table idle board,bold,loner,,good,A win_big together,A,"「{q}」, 우리 둘이니까 해낸 거야!",win
+j48,위험한 의뢰 성공,mem,table idle board,bold,loner,,good,A win_big together,B,…내 덕이 칠할이다.,
+j48,위험한 의뢰 성공,mem,table idle board,bold,loner,,good,A win_big together,A,그럼 내가 삼할?,
+j48,위험한 의뢰 성공,mem,table idle board,bold,loner,,good,A win_big together,B,…이할. 나머지는 운.,smile
+j49,고기 분배,three,table idle board,bold,careful,friendly,,,A,고기는 제일 많이 싸운 사람이 먹는 거다!,
+j49,고기 분배,three,table idle board,bold,careful,friendly,,,B,그럼 저예요. 제일 많이 치료했으니까요.,
+j49,고기 분배,three,table idle board,bold,careful,friendly,,,A,치료는 싸움이 아니잖아!,
+j49,고기 분배,three,table idle board,bold,careful,friendly,,,C,둘 다 싸우는 동안 내가 다 먹었어!,smile
+j49,고기 분배,three,table idle board,bold,careful,friendly,,,A,…{c}!!,anger
+j50,누가 더 빨라,three,table idle board,bold,bold,loner,,,A,마을 끝까지 누가 먼저 가나 내기!,
+j50,누가 더 빨라,three,table idle board,bold,bold,loner,,,B,좋아! 지는 쪽이 짐 들기다!,
+j50,누가 더 빨라,three,table idle board,bold,bold,loner,,,C,…둘 다 출발선이 다른데.,
+j50,누가 더 빨라,three,table idle board,bold,bold,loner,,,A,어? 너 왜 한 발 앞에 있어!,qex
+j50,누가 더 빨라,three,table idle board,bold,bold,loner,,,B,"하하, 들켰다!",
+j51,리나 씨 생일,three,table idle board,friendly,plain,careful,,,A,리나 씨 생일이 언제지? 선물하고 싶어!,note
+j51,리나 씨 생일,three,table idle board,friendly,plain,careful,,,B,음… 봄? 여름?,
+j51,리나 씨 생일,three,table idle board,friendly,plain,careful,,,C,계절이 넷인데 그중 둘이면 반은 맞겠네요.,
+j51,리나 씨 생일,three,table idle board,friendly,plain,careful,,,A,"그럼 봄에 하나, 여름에 하나 주자!",smile
+j52,무서운 이야기,three,table idle board,plain,careful,bold,,,A,옛날에 숲에서 목 없는 기사가 나왔대.,
+j52,무서운 이야기,three,table idle board,plain,careful,bold,,,B,"그, 그만하세요. 오늘 숲 가는데요.",sweat
+j52,무서운 이야기,three,table idle board,plain,careful,bold,,,C,하하! 목 없으면 투구값은 아끼겠네!,
+j52,무서운 이야기,three,table idle board,plain,careful,bold,,,A,…그 기사가 투구를 찾으러 다닌대.,
+j52,무서운 이야기,three,table idle board,plain,careful,bold,,,C,…오늘 투구 벗고 가야겠다.,sweat
+j53,편지,three,table idle board,loner,friendly,plain,,,A,"…이거, 고향에서 온 편지다.",
+j53,편지,three,table idle board,loner,friendly,plain,,,B,"와, 누구한테서? 읽어 줘!",note
+j53,편지,three,table idle board,loner,friendly,plain,,,A,…개가 짖었다고 적혀 있다.,
+j53,편지,three,table idle board,loner,friendly,plain,,,C,"그 개, 잘 있다니 다행이네.",smile
+j54,노래,three,table idle board,friendly,loner,bold,,,A,우리 출발 전에 노래 한 곡 할까?,note
+j54,노래,three,table idle board,friendly,loner,bold,,,B,…안 한다.,
+j54,노래,three,table idle board,friendly,loner,bold,,,C,내가 할게! 내 노래 들으면 늑대도 도망간다!,
+j54,노래,three,table idle board,friendly,loner,bold,,,B,…그건 맞는 말이다.,
+j54,노래,three,table idle board,friendly,loner,bold,,,C,칭찬이지? 칭찬 맞지?,qex
+j55,장부 정리,three,table idle board,careful,plain,friendly,,,A,지난달 약값이 왜 이렇게 많이 나왔죠?,
+j55,장부 정리,three,table idle board,careful,plain,friendly,,,B,누가 물약을 간식처럼 마셔서.,
+j55,장부 정리,three,table idle board,careful,plain,friendly,,,C,…단맛이 나서 그만.,sweat
+j55,장부 정리,three,table idle board,careful,plain,friendly,,,A,이번 달부터 쓴 물약만 살게요.,anger
+j56,지도 그리기,three,table idle board,plain,bold,careful,,,A,"지난번 길, 지도로 그려 봤어.",
+j56,지도 그리기,three,table idle board,plain,bold,careful,,,B,이 동그라미는 뭐야?,
+j56,지도 그리기,three,table idle board,plain,bold,careful,,,A,네가 길 잃고 돈 자리.,
+j56,지도 그리기,three,table idle board,plain,bold,careful,,,C,동그라미가 세 개나 되네요.,smile
+j56,지도 그리기,three,table idle board,plain,bold,careful,,,B,…지도에서 지워 줘.,sweat
+j57,첫 의뢰 이야기,three,table idle board,bold,friendly,loner,good,,A,내 첫 의뢰는 멧돼지였지! 한 방에!,win
+j57,첫 의뢰 이야기,three,table idle board,bold,friendly,loner,good,,B,나는 닭 쫓다가 연못에 빠졌는데.,smile
+j57,첫 의뢰 이야기,three,table idle board,bold,friendly,loner,good,,C,…나는 첫 의뢰에서 너희 둘을 만났다.,
+j57,첫 의뢰 이야기,three,table idle board,bold,friendly,loner,good,,A,"오, 그게 제일 큰 수확이었지?",
+j57,첫 의뢰 이야기,three,table idle board,bold,friendly,loner,good,,C,…제일 큰 사고였다.,smile
+j58,마스터 이야기,three,table idle board,friendly,careful,plain,,,A,마스터는 잠을 언제 잘까? 늘 깨어 있어.,
+j58,마스터 이야기,three,table idle board,friendly,careful,plain,,,B,저희가 잘 때 주무시겠죠.,
+j58,마스터 이야기,three,table idle board,friendly,careful,plain,,,C,우리가 일어나면 벌써 일하고 계시던데?,
+j58,마스터 이야기,three,table idle board,friendly,careful,plain,,,A,…마스터는 사람이 아닌가 봐!,qex

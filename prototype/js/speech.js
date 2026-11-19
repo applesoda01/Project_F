@@ -89,13 +89,49 @@
     }
     return null;
   }
-  function talk(a, b, sit, rel, q) {   // q: 의뢰 이름 (출발 대화 {q})
+  // ---------- 농담 주고받기 세트 (2026-11-19, data/talk_joke.csv · 초안 docs/design/drafts/농담_주고받기_초안_2026-11-19.md) ----------
+  //   세트 하나 = 처음부터 끝까지 정해진 4~6줄 (A · B, 세 사람 세트는 C도). 말투는 존댓말(신중) / 반말이 맞아야 하고, 말투까지 같으면 더 자주 고름
+  //   사이(단짝 · 서먹) 세트는 그 사이일 때만, 기억 놀림 세트는 그 기억이 있을 때만, 세 사람 세트는 근처에 세 번째 사람이 있을 때만 [임시]
+  const TJ = (root.GAME_DATA && root.GAME_DATA.talkJoke) || [], JOKE_P = 0.5, JOKE_GAP = 8;   // 잡담 중 농담 세트 비율 · 같은 세트를 다시 쓰기까지 주 [임시]
+  const VOICE_T = t => t === 'careful' ? 'jon' : 'ban';
+  function jokeMem(st, a, b) {   // 기억 놀림: 그 기억(가장 최근)을 찾음
+    const s = getS && getS(), G = root.GuildGame; if (!s || !G || !G.memOf) return null;
+    const [own, k, ...cond] = st.mem, o = own === 'A' ? a : b, x = own === 'A' ? b : a;
+    for (const m of G.memOf(s, o).slice().reverse()) {
+      if (m.k !== k) continue;
+      const together = (m.with || []).includes(x.id) || (x.mem || []).some(y => y.k === m.k && y.q === m.q && y.w === m.w);
+      if (cond.every(c => c === 'mon' ? !!m.mon : c === 'late' ? !!m.late : (c === 'got' || c === 'gave') ? m.role === c : (c === 'lv' || c === 'grade') ? m.what === c : c === 'yes' ? m.yes === true : c === 'no' ? m.yes === false : c === 'together' ? together : true)) return m;
+    }
+    return null;
+  }
+  function joke(a, b, sit, rel, others) {
+    const s = getS && getS(); rel = rel || '';
+    const used = (s && (s.jokeUsed = s.jokeUsed || {})) || {}, wk = s ? s.week : 0, pool = [];
+    for (const st of TJ) {
+      if (!st.sit.includes(sit) || (st.rel && st.rel !== rel) || (used[st.id] != null && wk - used[st.id] < JOKE_GAP)) continue;
+      const fit = (x, t) => VOICE_T(tone(x)) === VOICE_T(t) ? (tone(x) === t ? 3 : 1) : 0;
+      let w = fit(a, st.tone[0]) * fit(b, st.tone[1]); if (!w) continue;
+      let c = null, m = null;
+      if (st.kind === 'three') { const cs = (others || []).filter(x => x && x !== a && x !== b && fit(x, st.tone[2])); if (!cs.length) continue; c = cs[Math.floor(Math.random() * cs.length)]; w *= fit(c, st.tone[2]); }
+      if (st.kind === 'mem') { m = jokeMem(st, a, b); if (!m) continue; w *= 3; }   // 기억이 맞으면 더 자주 (그 순간에만 할 수 있는 말)
+      pool.push({ st, c, m, w });
+    }
+    if (!pool.length) return null;
+    let r = Math.random() * pool.reduce((t, x) => t + x.w, 0), pk = pool[0]; for (const x of pool) { r -= x.w; if (r <= 0) { pk = x; break; } }
+    const { st, c, m } = pk; if (s) used[st.id] = wk;
+    const V = { a: a.name, b: b.name, c: c ? c.name : '', q: (m && m.q) || '그 의뢰', mon: (m && m.mon) || '몬스터', giver: (m && m.giver) || '의뢰인', part: (m && m.part) || '장비', g: (m && m.g) || 'F', lv: (m && m.lv) || '' };
+    const fill = t => t.replace(/\{(\w+)(?::([^}]+))?\}/g, (m0, k, sfx) => V[k] != null && V[k] !== '' ? josa(V[k], sfx) : m0);
+    const L = st.lines.map(x => fill(x[1])); L.who = st.lines.map(x => x[0]); L.emo = st.lines.map(x => x[2] || null); L.c = c; L.joke = { id: st.id, title: st.title, kind: st.kind, m };
+    return L;
+  }
+  function talk(a, b, sit, rel, q, others) {   // q: 의뢰 이름 (출발 대화 {q}) · others: 근처 다른 모험가 (세 사람 농담용)
     { const s = getS && getS(), G = root.GuildGame;   // 2026-11-18: 친밀도(숨김)로 관계 대사 고르기 · 로비 대화는 같은 둘에게 주 1번 친밀도 +1 [임시]
       if (s && G && G.relOf) {
         if (rel == null || rel === '') rel = G.relTier(G.relOf(s, a.id, b.id));
         if (LOBBY[sit] && G.relAdd) { s.relTalk = s.relTalk || {}; const k = a.id < b.id ? a.id + '-' + b.id : b.id + '-' + a.id; if (s.relTalk[k] !== s.week) { s.relTalk[k] = s.week; G.relAdd(s, a.id, b.id, 1); } }
       } }
     if (MEM_SITS[sit] && Math.random() < MEM_P) { const L = memTalk(a, b, rel); if (L) return L; }
+    if (Math.random() < JOKE_P) { const L = joke(a, b, sit, rel, others); if (L) return L; }   // 2026-11-19 농담 세트
     const V = { a: a.name, b: b.name, q: q || '이번 의뢰' };
     const fill = s => s.replace(/\{([abq])(?::([^}]+))?\}/g, (m0, k, sfx) => { const v = V[k]; if (!sfx) return v; const [x, y] = sfx.split('/'); const c = v.charCodeAt(v.length - 1); return v + (c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0 ? x : y); });   // {a:이/가} 같은 조사 처리 (2026-11-16)
     const o = pick('open', sit, tone(a), rel), r = pick('reply', sit, tone(b), rel); if (!o || !r) return null;
@@ -103,5 +139,5 @@
     const out = [fill(o), fill(r)].concat(c ? [fill(c)] : []); out.emo = [emoOf(o), emoOf(r), emoOf(c)];   // 채우기 전 글로 찾음
     return out;
   }
-  root.Speech = { line, lina, tone, talk, memTalk, bind, TONE_NAME, emoOf };
+  root.Speech = { line, lina, tone, talk, memTalk, joke, bind, TONE_NAME, emoOf };
 })(this);

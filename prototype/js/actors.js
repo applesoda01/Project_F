@@ -161,7 +161,7 @@
         T(ac, 'wait', { t: i * 0.5 }); enter(ac); LAB(ac, '보고 중');
         if (i === 0) visitWindow(ac, ok ? 'sale' : 'quest', { mode: ok ? 'happy' : 'talk', text: Speech.lina(ok ? 'lina_success' : 'lina_fail'), dur: SV }, Speech.line(a, ok ? 'success' : 'fail'));
         else visitWindow(ac, ok ? 'sale' : 'quest', null, i === 1 ? Speech.line(a, ok ? 'success' : 'fail') : null);
-        if (i === 0 && party.length > 1) { T(ac, 'wait', { t: 0.6 }); T(ac, 'do', { fn: () => partyTalk(ac, D.actors.get(party[1].id), ok ? 'return_ok' : 'return_fail') }); }   // ③ 보고 뒤 동료와 한마디
+        if (i === 0 && party.length > 1) { T(ac, 'wait', { t: 0.6 }); T(ac, 'do', { fn: () => partyTalk(ac, D.actors.get(party[1].id), ok ? 'return_ok' : 'return_fail', null, party.slice(2).map(b => D.actors.get(b.id))) }); }   // ③ 보고 뒤 동료와 한마디
         T(ac, 'do', { fn: () => clearParty(ac, qid) });   // 보고가 끝나면 파티 원을 지움
       });
     }
@@ -181,7 +181,7 @@
         if (i === 0) visitWindow(ac, 'quest', { mode: 'paper', text: Speech.lina('lina_depart'), dur: SV, onStart: () => Board.take(qid) }, Speech.line(a, 'accept'));
         else if (party.length > 1) T(ac, 'hold', { fn: () => grp.goAt != null && D.t >= grp.goAt, max: 25 });   // ③ 대표의 출발 대화(대답 포함)를 기다림
         else T(ac, 'wait', { t: 1.2 });
-        if (i === 0 && party.length > 1) { T(ac, 'do', { fn: () => { const d = partyTalk(ac, D.actors.get(party[1].id), 'depart', qn); grp.goAt = D.t + Math.max(0, d); if (d < 0) say(ac, Speech.line(a, 'depart'), 1.8); else if (d > 2.6) ac.tasks.unshift({ k: 'wait', t: d - 2.6 });   /* 앞 대화를 기다린 만큼 대표도 늦게 나감 */  } }); T(ac, 'wait', { t: 1.4 }); }
+        if (i === 0 && party.length > 1) { T(ac, 'do', { fn: () => { const d = partyTalk(ac, D.actors.get(party[1].id), 'depart', qn, party.slice(2).map(b => D.actors.get(b.id))); grp.goAt = D.t + Math.max(0, d); if (d < 0) say(ac, Speech.line(a, 'depart'), 1.8); else if (d > 2.6) ac.tasks.unshift({ k: 'wait', t: d - 2.6 });   /* 앞 대화를 기다린 만큼 대표도 늦게 나감 */  } }); T(ac, 'wait', { t: 1.4 }); }
         else T(ac, 'say', { text: i === 0 ? Speech.line(a, 'depart') : '' });
         leave(ac, '출발');
       });
@@ -265,29 +265,44 @@
     const p = talkPartner(ac); if (!p) return false;
     if (p.sit === 'table' && ac.tableTalk === ac.seat) return false;   // 같은 자리에서는 한 번만
     if (Math.random() > TALK_P[p.sit]) return false;
-    const L = Speech.talk(ac.a, p.o.a, p.sit); if (!L) return false;
-    const o = p.o;
+    const o = p.o, near = thirdNear(ac, o, p.sit);   // 2026-11-19: 근처 세 번째 사람 (세 사람 농담 세트용)
+    const L = Speech.talk(ac.a, o.a, p.sit, null, null, near.map(x => x.a)); if (!L) return false;
+    const c = L.c ? near.find(x => x.a === L.c) : null;
     if (ac.pose === 'stand') ac.face = o.x < ac.x; if (o.pose === 'stand') o.face = ac.x < o.x;   // 서 있으면 서로 마주 봄
-    const E = L.emo || [];   // 2026-11-18 감정 아이콘 (이름표 레벨 뒤)
-    say(ac, L[0], 1.8, 'talk', E[0]);
-    D.timers.push({ t: D.t + 1.2, fn: () => { if (D.actors.get(o.id) === o) say(o, L[1], 1.8, 'talk', E[1]); } });
-    if (L[2]) D.timers.push({ t: D.t + 2.4, fn: () => { if (D.actors.get(ac.id) === ac) say(ac, L[2], 1.6, 'talk', E[2]); } });
-    D.talk.busy = D.t + (L[2] ? 4 : 3);   // 대화 중에는 다른 사람 혼잣말을 미룸 (기록이 섞이지 않게)
-    D.talk.next = D.t + 4 + 20 + Math.random() * 20; ac.talkCool = o.talkCool = D.t + 60;
+    const end = playTalk([ac, o, c], L, 0);   // 2026-11-18 감정 아이콘 (이름표 레벨 뒤) · 11-19 4~6줄 세트 · 세 사람
+    D.talk.busy = D.t + end;   // 대화 중에는 다른 사람 혼잣말을 미룸 (기록이 섞이지 않게)
+    D.talk.next = D.t + end + 20 + Math.random() * 20; ac.talkCool = o.talkCool = D.t + 60; if (c) c.talkCool = D.t + 60;
     if (p.sit === 'table') { ac.tableTalk = ac.seat; o.tableTalk = o.seat; }
     return true;
   }
   // ③ 파티 대화 (출발 · 귀환): 판정 없이 파티마다 1번. 대답할 동료가 아직 로비에 있을 때만. 로비 잡담 쉼도 함께 늘림
   // ③ 파티 대화 (출발 · 귀환): 판정 없이 파티마다 1번. 대답할 동료가 아직 로비에 있을 때만.
   //   다른 대화가 진행 중이면 끝난 뒤(0.3초)로 미룸 → 돌려주는 값 = 대화가 끝나는 데까지 남은 초 (못 하면 -1)
-  function partyTalk(ac, o, sit, q) {
+  // 대사 줄을 차례로 띄움 (2026-11-19): L.who = 줄마다 말하는 사람 (0 = A, 1 = B, 2 = C), 없으면 A · B · A. 줄 간격 1.2초 → 끝나는 데까지 남은 초를 돌려줌
+  function playTalk(ppl, L, d0) {
+    const who = L.who || L.map((_, i) => i === 1 ? 1 : 0), E = L.emo || [], n = L.length;
+    L.forEach((txt, i) => { const ac = ppl[who[i]], t = d0 + i * 1.2, f = () => { if (ac && D.actors.get(ac.id) === ac) say(ac, txt, i === n - 1 ? 1.6 : 1.8, 'talk', E[i]); };
+      if (t > 0) D.timers.push({ t: D.t + t, fn: f }); else f(); });
+    return d0 + (n - 1) * 1.2 + 1.6;
+  }
+  function thirdNear(ac, o, sit) {   // 세 번째 사람 후보: 같은 식탁이거나 둘 중 한 사람 가까이에 서 있고, 말풍선 · 대화 쉼이 없는 모험가
+    const out = [];
+    for (const x of D.actors.values()) {
+      if (x === ac || x === o || !x.a || x.bubble || (x.talkCool || 0) > D.t) continue;
+      const tab = sit === 'table' && x.pose === 'sit' && x.seat && ac.seat && x.seat.tab === ac.seat.tab;
+      const close = Math.min(Math.hypot(x.x - ac.x, x.y - ac.y), Math.hypot(x.x - o.x, x.y - o.y)) < (TALK_R[sit] || TALK_R.idle);
+      if (tab || (sit !== 'table' && close)) out.push(x);
+    }
+    return out;
+  }
+  function partyTalk(ac, o, sit, q, rest) {   // rest: 같은 파티의 세 번째 이후 사람 (세 사람 농담용)
     if (!o || !o.a || !ac.a || D.actors.get(o.id) !== o || !Speech.talk) return -1;
-    const L = Speech.talk(ac.a, o.a, sit, null, q); if (!L) return -1;
-    const d = Math.max(0, (D.talk.busy || 0) + 0.3 - D.t), here = x => D.actors.get(x.id) === x;
-    const E = L.emo || [], line = (who, txt, t, e) => t > 0 ? D.timers.push({ t: D.t + t, fn: () => { if (here(who)) say(who, txt, 1.8, 'talk', e); } }) : say(who, txt, 1.8, 'talk', e);
-    line(ac, L[0], d, E[0]); line(o, L[1], d + 1.2, E[1]);
-    D.talk.busy = D.t + d + 3; D.talk.next = Math.max(D.talk.next, D.talk.busy + 20 + Math.random() * 20); ac.talkCool = o.talkCool = D.talk.busy + 57;
-    return d + 2.6;
+    const near = (rest || []).filter(x => x && x.a && D.actors.get(x.id) === x);
+    const L = Speech.talk(ac.a, o.a, sit, null, q, near.map(x => x.a)); if (!L) return -1;
+    const d = Math.max(0, (D.talk.busy || 0) + 0.3 - D.t), c = L.c ? near.find(x => x.a === L.c) : null;
+    const end = playTalk([ac, o, c], L, d);   // 2026-11-19: 맺음 줄 · 농담 세트(4~6줄)까지 모두
+    D.talk.busy = D.t + end; D.talk.next = Math.max(D.talk.next, D.talk.busy + 20 + Math.random() * 20); ac.talkCool = o.talkCool = D.talk.busy + 57; if (c) c.talkCool = ac.talkCool;
+    return end - 0.4;
   }
   function say(ac, text, dur, grp, emo) { if (text) { ac.bubble = { text, until: D.t + (dur || 1.8), t0: D.t }; if (emo === undefined && root.Speech && Speech.emoOf) emo = Speech.emoOf(text);   // 대사표(감정 열)에 적힌 감정
     if (emo) ac.emo = { k: emo, t0: D.t, until: D.t + (dur || 1.8) + 0.7 }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text, null, ac.a, grp); } }   // 얼굴·직업 표시용으로 모험가를 함께 넘김
