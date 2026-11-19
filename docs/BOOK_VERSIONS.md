@@ -2,9 +2,11 @@
 
 > **2026-11-18 V3 추가 (사용자 요청):** V2는 처음 공유된 상태(`1755881`, 11-17 14:03)로 되돌려 보존하고, 그 뒤 Claude가 수정 · 기록 · 반영한 내용은 **V3**(`docs/book-v3/` → `docs/book/v3/`)로 옮겼다. V3는 V2 대비 변경을 **파란색**으로 표시한다. **앞으로 책 수정은 V3에만** 한다. 문서 검사는 V1 → V2(`book-preservation-exceptions.json`)와 V1 → V3(`book-preservation-exceptions-v3.json`)를 각각 확인한다.
 
+> **2026-11-19 V4 추가 (사용자 요청):** V3를 그대로 복사해 **V4**(`docs/book-v4/` → `docs/book/v4/`)를 만들고, 결정 36(시세 경제 도입)과 소재 시장 · 식당 순환 제안(`docs/design/proposal_market_v1.md`)을 넣었다. V4는 V3 대비 변경을 **초록색**으로 표시한다(`data-book-version=v4`). **앞으로 책 수정은 V4에만** 한다. 문서 검사는 V1 → V4도 V3 예외 목록(`book-preservation-exceptions-v3.json`)으로 확인한다.
+
 ## 저장소에 보관하는 HTML
 
-- 최신 열람 파일: `docs/book/v3/index.html` (V3 반영판). V2 개선안 원본 열람: `docs/book/v2/index.html`.
+- 최신 열람 파일: `docs/book/v4/index.html` (V4 시장 제안판). V3 반영판: `docs/book/v3/index.html`. V2 개선안 원본 열람: `docs/book/v2/index.html`.
 - 버전 선택용 원본 HTML: `docs/book/v1/index.html`.
 - 공통 파일: `docs/book/_book-ui.css`, `docs/book/_book-ui.js`.
 - 기존 `docs/book/src`, `book.toml`, `theme` 원고·설정은 유지한다.
@@ -17,7 +19,8 @@
 
 - `docs/book/`: 원본 v1. `6df6325` 기준 파일 보존.
 - `docs/book-v2/`: 안내서 v2 (처음 공유된 개선안, 보존). 기존 `docs/design/v2/` 재분류 기획서와 다른 버전 체계.
-- `docs/book-v3/`: 안내서 v3 (V2 이후 Claude 반영판 · 앞으로 수정하는 곳).
+- `docs/book-v3/`: 안내서 v3 (V2 이후 Claude 반영판 · 보존).
+- `docs/book-v4/`: 안내서 v4 (소재 시장 · 식당 순환 제안판 · 앞으로 수정하는 곳).
 - `docs/book-v2/src/changes.md`: 기능 ID별 변경 비교.
 - `docs/book-v2/src/features.md`: 버전별 기능·기획 상태·게임 구현 상태.
 - `docs/references/guild-economy-contracts-2026-11-16/original.html`: 첨부 원문 보관. 책에 별도 장으로 게시하지 않는다.

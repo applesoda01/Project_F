@@ -13,3 +13,10 @@ test('v3 also keeps all v1 pages and original content except reviewed replacemen
   assert.deepEqual(audit.failures, []);
   assert.ok(audit.pages.length > 60, 'Audit all chapters, not only economics');
 });
+
+// 2026-11-19 V4: V3를 복사해 시장 제안만 더한 판 — V3와 같은 예외 목록으로 V1 원문 보존을 확인
+test('v4 also keeps all v1 pages and original content except reviewed replacements', () => {
+  const audit = auditPreservation('docs/book-v4/src', 'docs/tools/book-preservation-exceptions-v3.json');
+  assert.deepEqual(audit.failures, []);
+  assert.ok(audit.pages.length > 60, 'Audit all chapters, not only economics');
+});

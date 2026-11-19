@@ -13,6 +13,10 @@
 [data-book-version="v3"] { --book-change-color: #1f5fbf; --book-change-fill: #eef4ff; }
 [data-book-version="v3"].navy, [data-book-version="v3"].coal, [data-book-version="v3"].ayu { --book-change-color: #8fb8ff; --book-change-fill: #1f2a3d; }
 [data-book-version="v3"].rust { --book-change-color: #1f4f9f; --book-change-fill: #e3ebf7; }
+/* 2026-11-19 V4: 소재 시장 · 식당 순환 제안 — V3 대비 변경은 초록색 */
+[data-book-version="v4"] { --book-change-color: #1a7f37; --book-change-fill: #effaf1; }
+[data-book-version="v4"].navy, [data-book-version="v4"].coal, [data-book-version="v4"].ayu { --book-change-color: #7ee2a0; --book-change-fill: #1e3326; }
+[data-book-version="v4"].rust { --book-change-color: #1a6b30; --book-change-fill: #e3f1e5; }
 .chapter li a.book-toc-change:link,
 .chapter li a.book-toc-change:visited,
 .chapter li a.book-toc-change.active,
