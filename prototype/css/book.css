@@ -675,12 +675,12 @@
 .bk-rq .rq-chip.gold{border-color:#c9963e;background:#fff3cf}.bk-rq .rq-chip.key{border-color:#2f7f7a;background:#e6f3ee}.bk-rq .rq-chip.lack{border-color:#c2705c;background:#fbeae4;color:#8a2f1c}
 .bk-rq .rq-chip.star{border-color:#b38a26}.bk-rq .rq-chip.enemy{border-color:#b98a7a;color:#7a2f1c}
 /* 2026-11-19 요구 칩: 못 채움 = 붉은 글씨 · 채움 = 파란 글씨 · 보내기를 눌렀는데 못 채웠으면 흔들림 */
-.bk-rq .rq-chip.need.no{color:#e01b10;border-color:#e8392b;border-width:2px;background:#fff0ee;font-weight:700}
+.bk-rq .rq-chip.need.no{color:#ca2618;border-color:#df6150;border-width:1.5px;background:#fff0ee;font-weight:700}
 .bk-rq .rq-chip.need.ok{color:#1f5fa8;border-color:#8fb3dc;background:#eef4fb;font-weight:700}
 .bk-rq .rq-chip.need.ok::before{content:'✔';font-size:12px}
 .bk-rq .rq-chip.shake{animation:rqShake .5s ease-in-out}
 @keyframes rqShake{0%,100%{transform:translateX(0)}15%{transform:translateX(-7px)}30%{transform:translateX(6px)}45%{transform:translateX(-5px)}60%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
-.bk-rq .rq-msg.warn{color:#e01b10;font-weight:700;animation:rqShake .5s ease-in-out}
+.bk-rq .rq-msg.warn{color:#ca2618;font-weight:700;animation:rqShake .5s ease-in-out}
 .bk-rq .ux-btn.soft-off{filter:saturate(.35) brightness(1.05);opacity:.75}
 .bk-rq .rq-act{display:flex;align-items:center;gap:10px;min-height:38px}
 .bk-rq .rq-act .rq-no{margin-left:0;opacity:.85}.bk-rq .rq-msg{font:400 14px var(--hf);color:#7a5032;min-width:0}.bk-rq .rq-note{font:400 14px var(--hf);color:var(--ux-wood)}
