@@ -510,7 +510,7 @@
     // ---------- 2026-11-20 V4 결정 57~62: 떠돌이 상단 (게임 CARS ~ autoCar 와 같음, 시세 = matBase) ----------
     const CAR_FOOD = new Set(); for (const d of DISH) if (!d.dungeon) for (const m of d.mats) CAR_FOOD.add(m);   // 게임과 같음: 던전 요리 재료 제외
     const CARS = [
-      { id: 'farm', g: 0, gap: [6, 10], likes: m => CAR_FOOD.has(m) },
+      { id: 'farm', g: 0, gap: [5, 8], likes: m => CAR_FOOD.has(m) },
       { id: 'smith', g: 1, gap: [8, 12], likes: m => /^mat_(mine|hunt|slay|guard)_/.test(m) || m === 'mat_x015' || m === 'mat_x001' },
       { id: 'herb', g: 2, gap: [10, 14], likes: m => /^mat_study_/.test(m) || ['mat_x016', 'mat_x008'].includes(m) },
     ];
