@@ -601,7 +601,7 @@
         return `<div class="cdx-c ${on ? '' : 'off'}"><span class="ux-slot ${on ? '' : 'unk'} job" data-g="${c.st - 1}" ${on ? `data-jt="${esc(c.name)}"` : ''}>${c.icon ? `<i class="jface" style="${faceStyle({ core: c.line[0], id: 1 }, 70, 320, 36)}"></i>` : `<b class="jl">${on ? esc(c.name.slice(0, 1)) : ''}</b>`}</span><em>${on ? esc(c.name) : '???'}</em></div>`; }).join('');
         return `<div class="cdx-sub">${t}</div><div class="cdx-grid">${cs}</div>`; }).join('');
     }
-    else if (codexTab === 3) byGrade(Gm.DISH.map(d => ({ name: d.name, grade: GR[d.g], icon: d.icon })), d => ({ on: !!s.dishes[d.name], inner: img(d.icon), attr: `data-dt="${esc(d.name)}"` }));
+    else if (codexTab === 3) byGrade(Gm.DISH.filter(d => !d.dungeon || s.dishes[d.name]).map(d => ({ name: d.name, grade: GR[d.g], icon: d.icon })), d => ({ on: !!s.dishes[d.name], inner: img(d.icon), attr: `data-dt="${esc(d.name)}"` }));
     else byGrade((C.items || []).filter(i => i.kind === 'gear'), it => ({ on: GR.indexOf(it.grade) <= maxGear, inner: img(it.icon), attr: `data-gt="${it.id}"` }));
     const body = codexTab === 2 ? jobHtml : (subTitle || '') + rows.map(([g, cs]) => `<div class="cdx-row">${badge(g)}<div class="cdx-grid">${cs.join('')}</div></div>`).join('') + (extra || '');
     return `<div class="cdx">${tabs}<div class="cdx-head"><b>${CODEX_TABS[codexTab]} 도감</b><span class="ux-muted">${got} / ${n} 발견</span><span class="ux-bar"><i style="width:${n ? got / n * 100 : 0}%"></i></span></div><div class="cdx-list">${body}</div></div>`;
@@ -1612,7 +1612,7 @@
     let menu = '';
     for (let g = 0; g <= top; g++) {
       const hid = d => (kAnim && kAnim.r.dish && kAnim.r.dish.name === d.name) || kHide === d.name;   // 연출 중에는 새 요리를 아직 숨김
-      const ds = Gm.DISH.filter(d => d.g === g), got = ds.filter(d => s.dishes[d.name] && !hid(d)).length; if (!ds.length) continue;
+      const ds = Gm.DISH.filter(d => d.g === g && (!d.dungeon || s.dishes[d.name])), got = ds.filter(d => s.dishes[d.name] && !hid(d)).length; if (!ds.length) continue;
       const bump = kFlip && ds.some(d => d.name === kFlip);
       menu += `<div class="kgrade">${badge(g)}<b>${GR[g]}급 요리</b><span class="ux-muted">${got} / ${ds.length} 발견</span>${got && !s.cfg.econ.mealMode ? `<span class="ux-tag town ${bump ? 'bump' : ''}">식사 효과 +${Math.round(perDish * got * 10) / 10}%</span>` : ''}</div><div class="kmenu">`;
       for (const d of ds) {

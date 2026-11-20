@@ -110,6 +110,31 @@ if os.path.exists(os.path.join(DATA, 'quirks.csv')):
             blk = [m.group(1), int(m.group(2))]
         quirks.append({'key': r['키'], 'name': r['이름'], 'good': r['장점'], 'bad': r['리스크'], 'avoid': r['피하는 방법'], 'block': blk, 'icon': r['아이콘'], 'desc': (r.get('설명') or '').strip()})   # desc = 화면 마우스 설명 (숫자 없이, 2026-11-20 사용자 확정)
     if len({q['key'] for q in quirks}) != len(quirks): err('quirks.csv', '-', '같은 키가 두 번 나옵니다')
+# 던전 (2026-11-20 · docs/design/proposal_dungeon_v1.md): 방 · 길 · 적 / 특별 장비 · 요리 · 보스 몬스터. 수치 스위치는 balance.csv dungeon
+dungeons = {}
+if os.path.exists(os.path.join(DATA, 'dungeons.csv')):
+    for ln, r in read('dungeons.csv', ['던전', '이름', '등급', '방', '길', '적', '메모']):
+        k = r['던전']; d = dungeons.setdefault(k, {'key': k, 'name': r['이름'], 'g': GRADES.index(r['등급']) if r['등급'] in GRADES else 0, 'rooms': {}, 'mobs': {}, 'items': [], 'dish': None})
+        if r['길'] not in ('기본', '위험', '안전'): err('dungeons.csv', ln, '길은 기본 · 위험 · 안전 중 하나'); continue
+        foes = []
+        for part in r['적'].split('|'):
+            if ':' not in part: err('dungeons.csv', ln, f"적 '{part}' 은 몬스터키:수 형식"); continue
+            m, c = part.split(':', 1); foes.append({'m': m.strip(), 'n': int(c)})
+        d['rooms'].setdefault(r['방'], {})[{'기본': 'base', '위험': 'risky', '안전': 'safe'}[r['길']]] = foes
+if os.path.exists(os.path.join(DATA, 'dungeon_items.csv')):
+    for ln, r in read('dungeon_items.csv', ['종류', '키', '이름', '던전', '칸', '등급', '공격', '체력', '방어', '세트', '재료', '그림', '설명']):
+        d = dungeons.get(r['던전'])
+        if not d: err('dungeon_items.csv', ln, f"던전 '{r['던전']}' 이 dungeons.csv에 없습니다"); continue
+        rec = [{'m': p.split(':')[0].strip(), 'n': int(p.split(':')[1])} for p in r['재료'].split('|') if ':' in p]
+        g = GRADES.index(r['등급']) if r['등급'] in GRADES else 0
+        f = lambda v: num(v) if v else 0
+        if r['종류'] == '몬스터': d['mobs'][r['키']] = {'id': r['키'], 'name': r['이름'], 'atk': f(r['공격']), 'hp': f(r['체력']), 'def': f(r['방어']), 'boss': True, 'img': r['그림']}
+        elif r['종류'] == '장비':
+            slot = {'무기': 0, '방어구': 1, '장신구': 2}.get(r['칸'])
+            if slot is None: err('dungeon_items.csv', ln, '칸은 무기 · 방어구 · 장신구'); continue
+            d['items'].append({'key': r['키'], 'name': r['이름'], 'slot': slot, 'g': g, 'atk': f(r['공격']), 'hp': f(r['체력']), 'def': f(r['방어']), 'set': r['세트'] or None, 'rare': not r['세트'], 'recipe': rec, 'icon': r['그림'], 'desc': r['설명']})
+        elif r['종류'] == '요리': d['dish'] = {'key': r['키'], 'name': r['이름'], 'g': g, 'recipe': rec, 'icon': r['그림'], 'desc': r['설명']}
+        else: err('dungeon_items.csv', ln, '종류는 몬스터 · 장비 · 요리')
 skills = []
 for ln, r in read('skills.csv', ['계열', '단계', '직업', '스킬', '종류', '효과']):
     if r['계열'] not in STATS: err('skills.csv', ln, f"계열 '{r['계열']}' 은 {' '.join(STATS)} 중 하나여야 합니다")
@@ -485,7 +510,7 @@ if errors:
     print(f'오류 {len(errors)}건 — 파일을 만들지 않았습니다.')
     for e in errors: print('  -', e)
     sys.exit(1)
-data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial, 'talkMem': talk_mem, 'talkJoke': talk_joke, 'quirks': quirks}
+data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial, 'talkMem': talk_mem, 'talkJoke': talk_joke, 'quirks': quirks, 'dungeons': dungeons}
 if content is not None: data['content'] = content       # 편집기 데이터가 없으면 넣지 않음 (게임은 balance 값만 씀)
 # 로비 배치 칸 (2026-11-12, tools/lobby_grid_editor.html 로 칠한 값). 없으면 게임은 모든 바닥 칸을 놓기 가능으로 봄
 _lg = os.path.join(DATA, 'lobby_grid.json')
