@@ -521,8 +521,8 @@
     if (!n) return;   // 장부: '소재 판매' 줄 (game_core.sellMats)
     Gm.log(s, `소재 ${n}개를 팔아 ${g}G를 받았습니다.`, 'guild'); UI.hud && UI.hud(); }
   // 2026-11-19 시세 그래프 (V4 2단계): 한 소재의 최근 시세(G) 선 하나 + 기준가 점선. 주마다 마우스를 올리면 값. 색은 선 #00897b (검사 통과: 채도 · 대비), 글자는 잉크색
-  function priceChart(id, W, H) {
-    const L = Gm.mktLogOf(s, id), base = Gm.matBase(id), wk = w => { const d = s.week - w; return d <= 1 ? '이번 주' : (d - 1) + '주 전'; };
+  function priceChart(id, W, H, weeks) {
+    const L = weeks ? Gm.mktLogOf(s, id).slice(-weeks) : Gm.mktLogOf(s, id), base = Gm.matBase(id), wk = w => { const d = s.week - w; return d <= 1 ? '이번 주' : (d - 1) + '주 전'; };
     if (L.length < 2) return '<div class="pc-none">시세 기록이 2주 이상 쌓이면 그래프가 보입니다.</div>';
     const ps = L.map(x => x[1]), lo = Math.min(base, ...ps), hi = Math.max(base, ...ps), y0 = Math.max(0, Math.floor(lo - Math.max(0.5, (hi - lo) * 0.15))), y1 = Math.ceil(hi + Math.max(0.5, (hi - lo) * 0.15));
     const ml = 34, mr = 46, mt = 10, mb = 22, iw = W - ml - mr, ih = H - mt - mb;
@@ -896,16 +896,19 @@
     toast(r.ok ? `${(MATS[m] || { name: m }).name} ${r.n}개를 ${fmt(r.g)}G에 팔았습니다.` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); renderPopup(); return true;
   }
   // 2026-11-20 매입 개편 (결정 52 · 53): 소재마다 매입가 하나 — 모험가가 매입가와 시장을 비교해 고름 (위탁은 나중에 떠돌이 상단으로)
+  let buyChart = null, buyChartW = 12;
   function buyHtml() {
     const E = s.cfg.econ, cap = E.storeCap || 30, lo = E.buyRateMin != null ? E.buyRateMin : 0.5, hi = E.buyRateMax != null ? E.buyRateMax : 1.2, TH = E.sellTh || [0.9, 0.85, 0.75];
     const who = ids => ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean), face = a => `<span class="tr-f" style="${faceStyle(a, 34, 180, 17)}"></span>`;
     const known = Object.keys(s.knownMats || {}).filter(id => MATS[id] && GR.indexOf(MATS[id].grade) <= s.grade).sort((a, b) => GR.indexOf(MATS[a].grade) - GR.indexOf(MATS[b].grade));
     const sumH = (id, k) => ((s.sellHist || {})[id] || []).filter(x => x.w > s.week - 4).reduce((t, x) => t + (x[k] || 0), 0);
-    let L = `<div class="tr"><div class="ux-h">소재 매입가 <small>골드로 정함 · 정하지 않으면 시세의 ${Math.round((E.matBuyRate || 0.85) * 100)}%를 따라감</small></div><div class="mp-list gq-mp">`;
+    const help = `모험가가 매입가와 시장을 비교해 고릅니다. 매입가가 시세의 기준 이상이면 길드에, 아니면 시장에 직접 팝니다 (기준 절약 ${Math.round(TH[0] * 100)} · 보통 ${Math.round(TH[1] * 100)} · 낭비 ${Math.round(TH[2] * 100)}%, 애착이 높으면 조금 싸게도 넘김). 금고가 모자라거나 창고가 가득(${cap}개)이면 시장으로 갑니다.${Gm.carOn(s) ? ' 지난 떠돌이 상단 값이 훨씬 높으면 길드에 맡겨(위탁) 상단에 팝니다.' : ''}`;
+    let L = `<div class="tr"><div class="ux-h">소재 매입가 <small>골드로 정함</small><details class="tr-help"><summary title="모험가는 어디에 파나" aria-label="도움말">?</summary><div class="tr-help-b">${help}</div></details></div><div class="mp-list gq-mp">`;   // 2026-11-20 사용자: 설명은 물음표를 누르면
     for (const id of known) { const m = MATS[id], r = Gm.polRate(s, id), g = sumH(id, 'g'), k = sumH(id, 'm');
-      L += `<div class="mp-row"><span class="ic sm">${matImg(m)}</span><span class="mp-n"><b>${esc(m.name)}</b><small>시세 ${Gm.matPrice(s, id)}G ${trendTag(id)} ${priceSpark(id)} · 창고 ${(s.mats || {})[id] || 0}/${cap}</small><small class="gq-h">지난 4주 · <b>길드 ${g}</b> · 시장 ${k}${sumH(id, 'c') ? ` · <em class="gq-c">위탁 ${sumH(id, 'c')}</em>` : ''}</small></span><span class="gq-rate">${(() => { const bp = Gm.matBuyPrice(s, id), mx = Gm.buyGoldMax(s, id); return `<button data-bgold="${id}:-5" ${bp <= 1 ? 'disabled' : ''}>−5</button><button data-bgold="${id}:-1" ${bp <= 1 ? 'disabled' : ''}>−</button><b>${fmt(bp)}G</b><button data-bgold="${id}:1" ${bp >= mx ? 'disabled' : ''}>+</button><button data-bgold="${id}:5" ${bp >= mx ? 'disabled' : ''}>+5</button>`; })()}</span><span class="gq-bp" title="시세 대비">${Gm.buyGoldOf(s, id) != null ? `시세의 ${Math.round(Gm.matBuyPrice(s, id) / Math.max(1, Gm.matPrice(s, id)) * 100)}% <button class="gq-auto" data-bgold="${id}:auto" title="시세를 따라가게">자동</button>` : `자동 · 시세의 ${Math.round((E.matBuyRate || 0.85) * 100)}%`}</span></div>`; }   /* 2026-11-20 사용자: 매입가를 골드로 */
+      L += `<div class="mp-row"><span class="mp-ic" title="창고 ${(s.mats || {})[id] || 0}/${cap}개"><span class="ic sm">${matImg(m)}</span><b>${(s.mats || {})[id] || 0}</b></span><span class="mp-n"><b>${esc(m.name)}</b><small>시세 ${Gm.matPrice(s, id)}G ${trendTag(id)} ${Gm.mktLogOf(s, id).length >= 2 ? `<button class="mp-spk${buyChart === id ? ' on' : ''}" data-bchart="${id}" title="시세 그래프 보기">${priceSpark(id)}</button>` : ''}</small><small class="gq-h">지난 4주 · <b>길드 ${g}</b> · 시장 ${k}${sumH(id, 'c') ? ` · <em class="gq-c">위탁 ${sumH(id, 'c')}</em>` : ''}</small></span><span class="gq-rate">${(() => { const bp = Gm.matBuyPrice(s, id), mx = Gm.buyGoldMax(s, id); return `<button data-bgold="${id}:-5" ${bp <= 1 ? 'disabled' : ''}>−5</button><button data-bgold="${id}:-1" ${bp <= 1 ? 'disabled' : ''}>−</button><b>${fmt(bp)}G</b><button data-bgold="${id}:1" ${bp >= mx ? 'disabled' : ''}>+</button><button data-bgold="${id}:5" ${bp >= mx ? 'disabled' : ''}>+5</button>`; })()}</span><span class="gq-bp">${Gm.buyGoldOf(s, id) != null ? `<button class="gq-auto" data-bgold="${id}:auto" title="정한 값을 지우고 시세를 따라가게">자동으로</button>` : '<small class="gq-am">자동</small>'}</span></div>`;
+      if (buyChart === id) L += `<div class="mp-chart"><div class="mp-per">${[4, 12, 24, 48].map(w => `<button class="${buyChartW === w ? 'on' : ''}" data-bper="${w}">${w}주</button>`).join('')}<small>마우스를 올리면 그 주 값</small></div>${priceChart(id, 460, 150, buyChartW)}</div>`; }   // 2026-11-20 사용자: 그래프를 누르면 기간별 시세   /* 2026-11-20 사용자: 매입가를 골드로 */
     if (!known.length) L += '<div class="tr-none">아직 아는 소재가 없습니다.</div>';
-    L += `</div><div class="tr-note">모험가가 매입가와 시장을 비교해 고릅니다. 매입가가 시세의 기준 이상이면 길드에, 아니면 시장에 직접 팝니다 (기준 절약 ${Math.round(TH[0] * 100)} · 보통 ${Math.round(TH[1] * 100)} · 낭비 ${Math.round(TH[2] * 100)}%, 애착이 높으면 조금 싸게도 넘김). 금고가 모자라거나 창고가 가득(${cap}개)이면 시장으로 갑니다.${Gm.carOn(s) ? ' 지난 떠돌이 상단 값이 훨씬 높으면 길드에 맡겨(위탁) 상단에 팝니다.' : ''}</div></div>`;
+    L += `</div></div>`;
     const logs = (s.buyLog || []).slice(0, 8), M = s.month;
     let R = `<div class="tr"><h3>이번 달 매입</h3><div class="sub">모험가가 주워 온 소재는 모험가 것입니다 · 길드는 매입가로 삽니다</div>
       <div class="tr-sum"><div>길드 매입<b class="m">${M.matBuyN || 0}개 · ${fmt(-(M.matBuy || 0))}G</b>돈은 주워 온 모험가에게</div><div>시장으로<b>${M.mktSellN || 0}개</b>모험가가 직접 팖 · 길드 몫 없음</div></div>
@@ -2017,6 +2020,7 @@
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
+      { const bc = e.target.closest('[data-bchart], [data-bper]'); if (bc && popup === 'trade') { if (bc.dataset.bchart) buyChart = buyChart === bc.dataset.bchart ? null : bc.dataset.bchart; else buyChartW = +bc.dataset.bper; renderPopup(); return; } }
       { const bg = e.target.closest('[data-bgold]'); if (bg && popup === 'trade' && Gm.gqOn(s)) { if (bg.disabled) return; const [id, k] = bg.dataset.bgold.split(':'), r = Gm.setBuyGold(s, id, k === 'auto' ? null : Math.max(1, Math.min(Gm.buyGoldMax(s, id), Gm.matBuyPrice(s, id) + +k))); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }
       { const br = e.target.closest('[data-brate]'); if (br && popup === 'trade' && Gm.gqOn(s)) { if (br.disabled) return; const [id, k] = br.dataset.brate.split(':'), st = s.cfg.econ.buyRateStep || 0.05, r = Gm.setBuyRate(s, id, Gm.polRate(s, id) + +k * st); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }   // 2026-11-20 결정 52: 소재별 매입가 ±5%
       { const mp = !Gm.gqOn(s) && e.target.closest('[data-mpol], [data-mrate]'); if (mp && popup === 'trade') { const [id, v] = (mp.dataset.mpol || mp.dataset.mrate).split(':'), p = Gm.matPol(s, id), r = mp.dataset.mpol ? Gm.setMatPol(s, id, v, null) : Gm.setMatPol(s, id, 'buy', +v); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }   // 2026-11-19 결정 43
