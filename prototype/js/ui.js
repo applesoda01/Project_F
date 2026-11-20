@@ -191,6 +191,7 @@
   UI.onLogs = function (logs) { // 새 기록들 (오래된 것부터)
     ctWatch();   // 2026-11-19 계약 갱신 알림 · 결산 카드 (테스트 의견 10 ⑤ ⑥)
     const gups = logs.filter(L => L.gup).map(L => L.gup); if (gups.length) gupShow(gups);   // 2026-11-12 모험가 승급 축하 카드
+    for (const L of logs) if (L.kind === 'arrive' && L.who && L.who[0]) { const a = s.advs.find(b => b.name === L.who[0] && b.alive); if (a) arrShow(a); }   // 2026-11-20 새 모험가 소개 카드 (버릇은 영입할 때 공개, 사용자 결정)
     for (const L of logs) {
       if (L.rq) {   // 리퀘스트: 의뢰 · 완료 · 실패 · 거절 대사 (data/quest_lines.csv). 외지인이 처음 오면 리나 한마디가 앞에 붙음
         const R0 = Gm.reqOf(s), fr = (Gm.QLINES[L.rq.key] || {}).first; let ls = [];
@@ -213,6 +214,18 @@
   const gupQ = []; let gupEl = null, gupTimer = 0;
   const GUP_MS = 3500;   // 2026-11-16: 승급 카드는 [확인] 없이 3.5초 뒤 저절로 닫힘 (누르면 바로 다음으로)
   const STAT_NM = ['힘', '민첩', '지력', '정신', '기교'];
+  // 새 모험가 소개 카드 (2026-11-20 사용자 시안 확정 mk_quirk_arrive): 위쪽 가운데, 6초 뒤 또는 누르면 닫힘 · 시계는 멈추지 않음 · 여럿이면 차례로
+  let arrEl = null, arrTimer = 0; const arrQ = [], ARR_MS = 6000;
+  function arrShow(a) { if (arrQ.includes(a)) return; arrQ.push(a); if (!arrEl || !arrEl.classList.contains('on')) arrNext(); }
+  function arrNext() {
+    clearTimeout(arrTimer); const a = arrQ.shift(); if (!a) { if (arrEl) arrEl.classList.remove('on'); return; }
+    if (!arrEl) { arrEl = document.createElement('div'); arrEl.id = 'arrCard'; stage.ui.appendChild(arrEl); arrEl.addEventListener('pointerdown', () => arrNext()); }
+    const q = qkOf(a), RS = Gm.RISK || ['신중', '보통', '무모'], SP = Gm.SPEND || ['절약', '보통', '낭비'], SO = Gm.SOCIAL || ['독불장군', '보통', '사교적'];
+    arrEl.innerHTML = `<span class="arr-face" style="${faceStyle(a, 80, 300, 40)}"></span><h4>새 모험가가 찾아왔어요 <small>${esc(a.cls)} ${esc(a.name)} · Lv ${a.lv}</small></h4>`
+      + `<div class="arr-tr">모험심 ${RS[a.risk]} · 소비 ${SP[a.spend]} · 사교 ${SO[a.social]}</div>`
+      + (q ? `<div class="arr-qk"><em>버릇 「${esc(q.name)}」</em>${esc(q.desc || '')}</div>` : '') + `<i class="arr-bar" style="animation-duration:${ARR_MS}ms"></i>`;
+    arrEl.classList.remove('on'); void arrEl.offsetWidth; arrEl.classList.add('on'); arrTimer = setTimeout(arrNext, ARR_MS);
+  }
   function gupShow(list) { gupQ.push(list); if (!gupEl || !gupEl.classList.contains('on')) gupNext(); }
   function gupNext() {
     clearTimeout(gupTimer); const list = gupQ.shift(); if (!list) { if (gupEl) gupEl.classList.remove('on'); return; }
@@ -1094,7 +1107,7 @@
     let h = `<div class="bk2 bk-av ${root.BOOK_ATT || 'att-b'}"><section class="bk-l"><div class="ux-h">모험가 명부 <small>${list.length} / ${Gm.advCap(s)}명</small></div><div class="av-list ${root.BOOK_ADV_LIST || 'st-d'}">`;
     for (const a of list) { const pc = pty.get(a.id) && pty.get(a.id).col, on = sampleOn(a), t = ttlName(on);
       h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${pc ? 'pty' : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"${pc ? ` style="--pc:${pc}"` : ''}><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}${buffIco(a, 1)}</span>
-      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}${a.contract ? `<em class="ct-tag" title="계약 모험가 · ${a.contract.end + 1}주까지 (체결 주 ~ 체결 주 + 기간 − 1)">계약</em>` : ''}</span><span class="sub">${a.contract ? `계약 ${Math.max(0, Math.min(a.contract.weeks, s.week - a.contract.start + 1))}/${a.contract.weeks}주<i class="ct-bar ${a.contract.end - s.week <= 1 ? 'end' : ''}" title="${a.contract.end - s.week <= 1 ? '곧 끝남 — 계약 제안에서 갱신할 수 있어요' : '계약 진행'}"><i style="width:${Math.round(Math.max(0, Math.min(1, (s.week - a.contract.start + 1) / a.contract.weeks)) * 100)}%"></i></i>` : `${a.cls} · ${ST_SHORT[stOf(a)]}${stOf(a) === 'injured' ? ' ' + Math.max(0, a.until - s.week) + '주' : ''}`}${relIcons(a)}</span></span><i class="ux-grade av-gr" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)" title="${GR[a.grade]}급"></i>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
+      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}${qkOf(a) ? `<i class="qk1">${esc(qkOf(a).name[0])}</i>` : ''}${a.contract ? `<em class="ct-tag" title="계약 모험가 · ${a.contract.end + 1}주까지 (체결 주 ~ 체결 주 + 기간 − 1)">계약</em>` : ''}</span><span class="sub">${a.contract ? `계약 ${Math.max(0, Math.min(a.contract.weeks, s.week - a.contract.start + 1))}/${a.contract.weeks}주<i class="ct-bar ${a.contract.end - s.week <= 1 ? 'end' : ''}" title="${a.contract.end - s.week <= 1 ? '곧 끝남 — 계약 제안에서 갱신할 수 있어요' : '계약 진행'}"><i style="width:${Math.round(Math.max(0, Math.min(1, (s.week - a.contract.start + 1) / a.contract.weeks)) * 100)}%"></i></i>` : `${a.cls} · ${ST_SHORT[stOf(a)]}${stOf(a) === 'injured' ? ' ' + Math.max(0, a.until - s.week) + '주' : ''}`}${relIcons(a)}</span></span><i class="ux-grade av-gr" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)" title="${GR[a.grade]}급"></i>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
     const a = s.advs.find(x => x.id === openAdv);
     return h + `</div></section><section class="bk-r av-main">${a ? advDetail(a) : '<div class="ux-empty">모험가가 없습니다.</div>'}</section><div class="qtip avtip" id="avTip"></div></div>`;
   }
@@ -1114,10 +1127,14 @@
   }
   // 목록 줄 마우스 오버: 지금 이 모험가의 상황 (상태별) + 공통 한 줄
   let avHover = null, avTimer = 0;
+  // 2026-11-20 버릇 화면 (사용자 확정: 명부 줄 = 이름 옆 한 글자 · 상세 = 칭호 옆 배지 · 마우스 설명 = 뭉뚱그린 한 줄 · data/quirks.csv 설명 칸)
+  const qkOf = a => a && a.quirk ? ((window.GAME_DATA && window.GAME_DATA.quirks) || []).find(q => q.key === a.quirk) || null : null;
+  const qkTip = q => `<b class="qk-h">버릇 · ${esc(q.name)}</b>${esc(q.desc || '')}`;
   function advTipHtml(a) {
     const k = stOf(a), w = Math.max(0, a.until - s.week), promo = (s.proposals || []).find(p => p.id === a.id);
     let h = `<div class="t1"><span class="ux-face" style="${faceStyle(a, 36, 190, 18)};width:40px;height:40px"></span><b>${a.name}</b><span class="ux-muted">${a.cls} Lv ${a.lv}</span></div>`;
     h += `<div class="st ${k}">● ${ST_TXT[k]}</div>`;
+    { const q = qkOf(a); if (q) h += `<div class="row qk-row">${qkTip(q)}</div>`; }
     if (k === 'quest') {
       const x = s.active.find(e => e.party.includes(a.id));
       if (x) {
@@ -1165,7 +1182,8 @@
   function titleDD(a) {
     const got = sampleTitles(a), on = sampleOn(a);
     const opt = (k, nm, fx) => `<button class="tdo${k === on ? ' on' : ''}" data-tpick="${k}"><b>${nm}</b><em>${fx}</em></button>`;
-    return `<div class="av-ttl"><button class="av-tbtn" data-tsel="1" title="칭호 바꾸기"><span>${ttlName(on)}</span><i>▾</i></button><div class="av-tdd">`
+    const q = qkOf(a);
+    return `<div class="av-ttl"><button class="av-tbtn" data-tsel="1" title="칭호 바꾸기"><span>${ttlName(on)}</span><i>▾</i></button>${q ? `<span class="qkb">${esc(q.name)}<i class="tip">${qkTip(q)}</i></span>` : ''}<div class="av-tdd">`
       + opt(-1, '신입', '기본 칭호 · 효과 없음') + got.map(k => opt(k, TITLE_CAT[k][0], TITLE_CAT[k][2])).join('')
       + `<div class="tdh">아직 못 얻은 칭호</div>` + TITLE_CAT.map((_, k) => k).filter(k => !got.includes(k)).map(k => `<div class="tdo lock"><b>${TITLE_CAT[k][0]}</b><em>${TITLE_CAT[k][1]}</em></div>`).join('') + '</div></div>';
   }
@@ -1599,7 +1617,8 @@
       menu += `<div class="kgrade">${badge(g)}<b>${GR[g]}급 요리</b><span class="ux-muted">${got} / ${ds.length} 발견</span>${got && !s.cfg.econ.mealMode ? `<span class="ux-tag town ${bump ? 'bump' : ''}">식사 효과 +${Math.round(perDish * got * 10) / 10}%</span>` : ''}</div><div class="kmenu">`;
       for (const d of ds) {
         const on = !!s.dishes[d.name] && !hid(d);
-        const back = `<div class="kdish off"><span class="pic unk">${d.icon ? `<img src="assets/${d.icon}" alt="">` : ''}</span><div><b>???</b><div class="rc ux-muted">아직 모르는 요리</div></div></div>`;
+        const hs = (s.hints || {})[d.name] || 0, hl = hs ? (s.hintLog || []).find(h => h.dish === d.name && h.stage === hs) : null;   // 2026-11-20 식당 A안: 들은 소문 + 단계 점
+        const back = `<div class="kdish off"><span class="pic unk">${d.icon ? `<img src="assets/${d.icon}" alt="">` : ''}</span><div><b>???</b>${hl ? `<div class="rc rum" title="모험가들이 수다 중에 흘린 소문 (${hs}/3)"><em>소문</em>${esc(hl.text)} <u>${'●'.repeat(hs)}${'○'.repeat(3 - hs)}</u></div>` : `<div class="rc ux-muted">아직 모르는 요리</div>`}</div></div>`;
         if (on && kFlip === d.name) menu += `<div class="kflip"><div class="kin"><div class="kface">${dishFront(d)}</div><div class="kface bk">${back}</div></div></div>`;   // 뒤집히며 공개
         else menu += on ? dishFront(d) : back;
       }

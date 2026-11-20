@@ -709,3 +709,14 @@ span.kslot{cursor:default}
 /* 2026-11-19 파티 의뢰 꼬리표 (게시판 카드 둘째 줄, 사용자 확정) */
 .qparty{font-style:normal;font:700 12px/1 var(--hf);color:#2f4f7a;background:#e4edf8;border:1.5px solid #6f8fbf;border-radius:999px;padding:2px 6px 1px;margin:0 4px;white-space:nowrap;flex:none}
 .qcard .r2 .dlw{white-space:nowrap}
+/* 2026-11-20 새 모험가 소개 카드 (사용자 시안 확정 mk_quirk_arrive) */
+#arrCard{position:absolute;left:50%;top:150px;z-index:55;display:none;width:560px;padding:16px 20px 18px 112px;border-radius:12px;background:#fbf3df;border:2px solid #8a5a2b;box-shadow:0 8px 24px rgba(40,24,8,.45);font:400 18px/1.5 var(--bf,inherit);color:#4a2e18;transform:translateX(-50%);cursor:pointer;overflow:hidden}
+#arrCard.on{display:block;animation:arrIn .35s ease-out}
+@keyframes arrIn{from{opacity:0;transform:translate(-50%,-14px)}to{opacity:1;transform:translateX(-50%)}}
+#arrCard .arr-face{position:absolute;left:18px;top:16px;width:80px;height:80px;border-radius:50%;border:2px solid #8a5a2b;background-color:#efe2c4}
+#arrCard h4{margin:0 0 4px;font:700 22px/1.3 var(--hf);color:#5a3a20}
+#arrCard h4 small{margin-left:6px;font-size:15px;color:#8a6a46}
+#arrCard .arr-qk{margin-top:6px;padding:6px 10px;border-radius:8px;background:rgba(126,74,160,.10);border:1px solid rgba(91,45,116,.3);font-size:16px}
+#arrCard .arr-qk em{font-style:normal;font-weight:700;color:#4a2160;margin-right:6px}
+#arrCard .arr-bar{position:absolute;left:0;bottom:0;height:4px;width:100%;background:#c9963e;transform-origin:left;animation:arrBar linear forwards}
+@keyframes arrBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}

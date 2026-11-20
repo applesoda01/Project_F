@@ -100,7 +100,7 @@ for ln, r in read('meals.csv', ['등급', '요리', '재료', '효과']):
 QUIRK_KEYS = ['hot', 'drunk', 'coward', 'bluff', 'devoted', 'selfish', 'glutton', 'omen', 'rival']   # 규칙 코드(combat.js QK)가 아는 키
 quirks = []
 if os.path.exists(os.path.join(DATA, 'quirks.csv')):
-    for ln, r in read('quirks.csv', ['키', '이름', '장점', '리스크', '피하는 방법', '막는 성향', '아이콘']):
+    for ln, r in read('quirks.csv', ['키', '이름', '장점', '리스크', '피하는 방법', '막는 성향', '아이콘', '설명']):
         if r['키'] not in QUIRK_KEYS: err('quirks.csv', ln, f"키 '{r['키']}' 를 모릅니다 (새 버릇은 프로그래머가 규칙과 함께 추가합니다: {' '.join(QUIRK_KEYS)})"); continue
         if not r['이름']: err('quirks.csv', ln, '이름이 비었습니다')
         blk = None
@@ -108,7 +108,7 @@ if os.path.exists(os.path.join(DATA, 'quirks.csv')):
             m = re.match(r'^(risk|spend|social):([012])$', r['막는 성향'].strip())
             if not m: err('quirks.csv', ln, "막는 성향은 비움 또는 risk:0~2 · spend:0~2 · social:0~2 여야 합니다"); continue
             blk = [m.group(1), int(m.group(2))]
-        quirks.append({'key': r['키'], 'name': r['이름'], 'good': r['장점'], 'bad': r['리스크'], 'avoid': r['피하는 방법'], 'block': blk, 'icon': r['아이콘']})
+        quirks.append({'key': r['키'], 'name': r['이름'], 'good': r['장점'], 'bad': r['리스크'], 'avoid': r['피하는 방법'], 'block': blk, 'icon': r['아이콘'], 'desc': (r.get('설명') or '').strip()})   # desc = 화면 마우스 설명 (숫자 없이, 2026-11-20 사용자 확정)
     if len({q['key'] for q in quirks}) != len(quirks): err('quirks.csv', '-', '같은 키가 두 번 나옵니다')
 skills = []
 for ln, r in read('skills.csv', ['계열', '단계', '직업', '스킬', '종류', '효과']):

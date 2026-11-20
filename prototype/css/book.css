@@ -845,3 +845,14 @@
 .rq-pow i{font-style:normal;font-size:12px;letter-spacing:1px}
 .rq-pow.ok b,.rq-pow.ok i{color:#3f7a3a}.rq-pow.mid b,.rq-pow.mid i{color:#b07a16}.rq-pow.bad b,.rq-pow.bad i{color:#b5452f}
 p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 글 안에서는 줄 끝에 붙임 */
+/* 2026-11-20 버릇 (사용자 확정 시안: 명부 줄 한 글자 B · 상세 칭호 옆 배지 C · 마우스 설명) */
+.qk1{display:inline-flex;align-items:center;justify-content:center;width:1.25em;height:1.25em;margin-left:4px;border-radius:50%;font:700 .72em/1 var(--hf);font-style:normal;color:#fff;background:#7e4aa0;vertical-align:.15em;box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.bk-av .qkb{position:relative;display:inline-flex;align-items:center;margin-left:6px;padding:0 8px;height:1.55em;border-radius:999px;font:700 12px/1 var(--hf);color:#fff;background:#7e4aa0;box-shadow:0 1px 0 rgba(0,0,0,.25);vertical-align:middle;cursor:help}
+.bk-av .qkb .tip{display:none;position:absolute;left:0;top:calc(100% + 6px);z-index:7;width:250px;padding:7px 10px;border-radius:6px;background:#fffaf0;border:1px solid rgba(91,45,116,.45);box-shadow:0 3px 8px rgba(60,36,16,.25);font:400 13px/1.45 var(--bf,inherit);font-style:normal;color:#4a2e18;letter-spacing:0;white-space:normal;text-align:left}
+.bk-av .qkb:hover .tip{display:block}
+.qk-h{display:block;margin-bottom:2px;font-weight:700;color:#5b2d74}
+.qk-row{color:#4a2e18;font-size:.95em;line-height:1.45}
+/* 2026-11-20 식당 A안: 모르는 요리 칸에 들은 소문 + 단계 점 */
+.kdish .rc.rum{color:#8a4a12;font-size:12px;line-height:1.35}
+.kdish .rc.rum em{display:inline-block;margin-right:4px;padding:0 4px;border-radius:3px;background:#e9c98a;color:#5a3a20;font:700 10px/1.5 var(--hf);font-style:normal}
+.kdish .rc.rum u{text-decoration:none;color:#b06a18;letter-spacing:1px;white-space:nowrap}
