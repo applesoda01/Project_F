@@ -1053,9 +1053,9 @@
       const L0 = B[d.name] || [], L = L0.filter(b => b.n > 0 && s.week - b.w <= 1);
       let waste = L0.filter(b => b.n > 0 && s.week - b.w > 1).reduce((a, b) => a + b.n, 0);
       if (waste && menuOf(s, d).left === 'free') { const T = s.advs.filter(a => a.alive && a.state === 'town').sort((x, y) => x.attach - y.attach), A = s.cfg.econ.freeAttach != null ? s.cfg.econ.freeAttach : 1; let k = 0;   // 결정 47: 무료 식사 — 마을에 남은 모험가에게 (애착 낮은 사람부터)
-        while (waste > 0 && k < T.length) { const a = T[k++]; a.attach = Math.min(100, a.attach + A); waste--; s.month.freeMeal = (s.month.freeMeal || 0) + 1; }
+        while (waste > 0 && k < T.length) { const a = T[k++]; a.attach = Math.min(100, a.attach + A); waste--; s.month.freeMeal = (s.month.freeMeal || 0) + 1; { const D = s.month.dishFree = s.month.dishFree || {}; D[d.name] = (D[d.name] || 0) + 1; } }   // 2026-11-20 장부: 요리별 무료 식사
         if (k) log(s, `식당이 남은 ${d.name}을(를) 모험가 ${k}명에게 무료로 대접했습니다. (애착 +${A})`, 'guild'); }
-      if (waste) s.month.waste = (s.month.waste || 0) + waste;
+      if (waste) { s.month.waste = (s.month.waste || 0) + waste; const D = s.month.dishWaste = s.month.dishWaste || {}; D[d.name] = (D[d.name] || 0) + waste; }   // 2026-11-20 장부: 요리별 버린 그릇
       const mu = menuOf(s, d); let have = L.reduce((a, b) => a + b.n, 0); const KS = s.kShort = s.kShort || {}; KS[d.name] = false;   // kShort: 이번 주 재료 · 금고가 모자라 준비량을 못 채움 (품절 원인 구분용)
       while (have < mu.prep) {
         const RS = reqReserve(s), keep = m => (RS[m] || 0) + (s.cfg.econ.mealKeep || 0), need = d.mats.filter(m => !(s.mats[m] > keep(m) - 0 && s.mats[m] - keep(m) >= 1));   // 2026-11-19: 받아 둔 납품 리퀘스트에 필요한 만큼만 남겨 둠 (+ mealKeep)
@@ -1134,7 +1134,7 @@
           const full = MC ? menuOf(s, dish).price : Q.reward[dish.g] * E.mealPriceRate, sp = MC ? salePrice(s, dish) : full;
           let price = full, sale = false;
           if (!(m.wallet >= full && s.R() < Math.min(1, E.mealBuyRate[m.spend] * (m.quirk === 'glutton' ? s.cfg.quirk.glutMeal : 1) * (MC ? priceK(s, dish, full) : 1)))) { if (!(sp < full && m.wallet >= sp && s.R() < Math.min(1, E.mealBuyRate[m.spend] * (m.quirk === 'glutton' ? s.cfg.quirk.glutMeal : 1) * priceK(s, dish, sp)))) continue; price = sp; sale = true; }   // 결정 47: 제값에 안 사면, 지난주 그릇이 남았을 때만 반값으로 한 번 더 권함 (할인이 제값 손님을 빼앗지 않게)
-          { s.seatUsed++; m.wallet -= price; if (MC) { takeBowl(s, dish); const W = s.soldW = s.soldW || {}; W[dish.name] = (W[dish.name] || 0) + 1; if (sale) s.month.saleN = (s.month.saleN || 0) + 1; } const inc = (MC ? price : price * E.mealMargin) + (upg(s, '주점') ? (E.upMargin || 5) : 0); /* 결정 39: 가격 계수 · 매출 = 판매가 (재료는 매입 · 발주 · 잡화로 이미 냄) */ s.gold += inc; s.month.meal += inc; eaters++; ate.add(m.id); const md = s.month.dishes = s.month.dishes || {}; md[dish.name] = (md[dish.name] || 0) + 1; }
+          { s.seatUsed++; m.wallet -= price; if (MC) { takeBowl(s, dish); const W = s.soldW = s.soldW || {}; W[dish.name] = (W[dish.name] || 0) + 1; if (sale) { s.month.saleN = (s.month.saleN || 0) + 1; const D = s.month.dishSale = s.month.dishSale || {}; D[dish.name] = (D[dish.name] || 0) + 1; } } const inc = (MC ? price : price * E.mealMargin) + (upg(s, '주점') ? (E.upMargin || 5) : 0); /* 결정 39: 가격 계수 · 매출 = 판매가 (재료는 매입 · 발주 · 잡화로 이미 냄) */ s.gold += inc; s.month.meal += inc; eaters++; ate.add(m.id); const md = s.month.dishes = s.month.dishes || {}; md[dish.name] = (md[dish.name] || 0) + 1; }
         }
         // 식사 효과 (C안): ① 발견한 요리 하나당 +2% (비전투 성공 확률·전투 공격력, 먹은 비율만큼) ② 먹은 요리의 능력치 +n% (먹은 사람만)
         // 2026-11-19 사용자 결정 (econ.mealMode 1): 요리 = 이번 의뢰 동안의 버프 — 먹은 사람의 요리 능력치 +val(고정값), 발견 수 보너스 없음. 의뢰가 끝나면 사라짐. 0 = 예전 C안

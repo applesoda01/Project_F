@@ -311,7 +311,7 @@
     { id: 'opt', name: '설정', col: '#6a4785', pops: ['opts'] },
   ];
   const SUB_NAME = { board: '게시판', req: '리퀘스트', advs: '명부', 'advs:career': '경력', 'advs:contract': '계약 제안', promo: '전직 제안', fac: '시설', ledger: '장부', meals: '음식 설정', sell: '소재 판매', trade: '매입 위탁', car: '상단', order: '길드 발주', codex: '도감', log: '기록', opts: '설정' };
-  const GQ_NAME = { order: '길드 의뢰', trade: '매입' };   // 2026-11-20 길드 의뢰 · 매입 개편이 켜지면 책갈피 이름
+  const GQ_NAME = { order: '길드 의뢰', trade: '소재 관리' };   // 2026-11-20: 소재 판매 + 매입 = 소재 관리   // 2026-11-20 길드 의뢰 · 매입 개편이 켜지면 책갈피 이름
   const subName = p => (Gm.gqOn(s) && GQ_NAME[p]) || SUB_NAME[p] || TITLES[p];
   const popTitle = p => (Gm.gqOn(s) && GQ_NAME[p]) || TITLES[p] || '';
   const chapterOf = name => BOOK.find(c => c.pops.includes(name)) || null;
@@ -329,7 +329,7 @@
     q('#bookMarks').querySelectorAll('[data-ch]').forEach(b => b.classList.toggle('on', !!c && b.dataset.ch === c.id));
     q('#bookTitle').textContent = c ? c.name : popTitle(name);
     { const on = q('#bookMarks [data-ch].on'); q('#bookSub').style.setProperty('--bm', on ? getComputedStyle(on).getPropertyValue('--bm') : '#8a6a46'); }   // 오른쪽 책갈피 색 = 지금 장 색
-    const subs = c ? (c.id === 'adv' ? [['advs', name === 'advs' && advView === 'detail'], ['advs:career', name === 'advs' && advView === 'career'], ['promo', name === 'promo']].concat(Gm.contractOpen(s) ? [['advs:contract', name === 'advs' && advView === 'contract']] : []) : c.pops.filter(p => p !== 'car' || Gm.carOn(s)).map(p => [p, p === name])) : [];   // 모험가 장: 명부 · 경력 · 전직 제안
+    const subs = c ? (c.id === 'adv' ? [['advs', name === 'advs' && advView === 'detail'], ['advs:career', name === 'advs' && advView === 'career'], ['promo', name === 'promo']].concat(Gm.contractOpen(s) ? [['advs:contract', name === 'advs' && advView === 'contract']] : []) : c.pops.filter(p => (p !== 'car' || Gm.carOn(s)) && (p !== 'sell' || !Gm.gqOn(s))).map(p => [p, p === name])) : [];   // 모험가 장: 명부 · 경력 · 전직 제안
     q('#bookSub').innerHTML = subs.length > 1 ? subs.map(([p, on]) => `<button data-sub="${p}" class="${on ? 'on' : ''}">${subName(p).replace(/ /g, '')}</button>`).join('') : '';
   }
   // ---------- 책: 경영 장 정렬 (2026-11-13) — 기존 화면을 그대로 그린 뒤 왼쪽 / 오른쪽 쪽으로 나눠 담음 (쪽마다 원래 바깥 상자 class를 붙여 스타일 유지) ----------
@@ -511,6 +511,7 @@
   UI.reqBadge = function () { goalShow(); const n = (s.req ? s.req.open : []).filter(r => r.isNew).length + (s.main && s.main.state === 'offer' ? 1 : 0), b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); const c = q('#bReq'); if (c) { c.textContent = n; c.hidden = !n; } return n; };
   const TITLES = { req: '리퀘스트', order: '길드 발주', trade: '매입 · 위탁', car: '떠돌이 상단', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
+    if (name === 'sell' && Gm.gqOn(s)) name = 'trade';   // 2026-11-20: 소재 판매는 소재 관리에 합침
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
     const wasOpen = q('#popBack').classList.contains('open'), prev = popup;
     if (!bookHold) { bookHold = true; bookSp = curSp; hooks.setSpeed && hooks.setSpeed(0); document.body.classList.add('bookOn'); }   // 책을 펼치면 일시정지 + HUD 숨김 (2026-11-16)
@@ -545,7 +546,7 @@
     else if (popup === 'log') { const l0 = b.querySelector('.gl-list'), y = l0 ? l0.scrollTop : 0; b.innerHTML = logHtml(); mgBook(b, 'log'); const l1 = b.querySelector('.gl-list'); if (l1) l1.scrollTop = y; }   // 필터 줄은 고정, 목록만 스크롤 (다시 그려도 위치 유지)
     else if (popup === 'codex') { b.innerHTML = codexHtml(); mgBook(b, 'codex'); }
     else if (popup === 'sell') { b.innerHTML = sellHtml(); mgBook(b, 'sell'); }
-    else if (popup === 'trade') { const k = b.querySelector('.gq-mp'), y = k ? k.scrollTop : 0; b.innerHTML = Gm.gqOn(s) ? buyHtml() : tradeHtml(); const k1 = b.querySelector('.gq-mp'); if (k1) k1.scrollTop = y; }   // 2026-11-20 매입 개편: 목록 스크롤 유지
+    else if (popup === 'trade') { const k = b.querySelector('.gq-mp'), y = k ? k.scrollTop : 0; b.innerHTML = Gm.gqOn(s) ? matHtml() : tradeHtml(); const k1 = b.querySelector('.gq-mp'); if (k1) k1.scrollTop = y; }   // 2026-11-20 매입 개편: 목록 스크롤 유지
     else if (popup === 'car') { const keep = sel => { const el = b.querySelector(sel); return el ? el.scrollTop : 0; }, y1 = keep('.bk-car .bk-l'), y2 = keep('.bk-car .bk-r'); b.innerHTML = carHtml(); const l1 = b.querySelector('.bk-car .bk-l'), r1 = b.querySelector('.bk-car .bk-r'); if (l1) l1.scrollTop = y1; if (r1) r1.scrollTop = y2; }   // 2026-11-20 떠돌이 상단
     else if (popup === 'order') { const keep = sel => { const el = b.querySelector(sel); return el ? el.scrollTop : 0; }, y1 = keep('.bk-gq .bk-l'), y2 = keep('.bk-gq .bk-r'); b.innerHTML = Gm.gqOn(s) ? gqHtml() : orderHtml(); const l1 = b.querySelector('.bk-gq .bk-l'), r1 = b.querySelector('.bk-gq .bk-r'); if (l1) l1.scrollTop = y1; if (r1) r1.scrollTop = y2; }   // 2026-11-20 길드 의뢰
     else if (popup === 'opts') b.innerHTML = optsHtml();
@@ -948,6 +949,37 @@
     toast(r.ok ? `${(MATS[m] || { name: m }).name} ${r.n}개를 ${fmt(r.g)}G에 팔았습니다.` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); renderPopup(); return true;
   }
   // 2026-11-20 매입 개편 (결정 52 · 53): 소재마다 매입가 하나 — 모험가가 매입가와 시장을 비교해 고름 (위탁은 나중에 떠돌이 상단으로)
+  // 2026-11-20 사용자: 소재 판매 + 매입을 한 화면 '소재 관리'로 (시안 docs/design/mockups/market_trade). 마을 시장 재고도 함께
+  let mtSel = null, mtFlt = 'all';
+  function matHtml() {
+    const E = s.cfg.econ, cap = E.storeCap || 30, TH = E.sellTh || [0.9, 0.85, 0.75], mats = s.mats || {}, shop = !!s.built['판매창구'];
+    const known = Object.keys(s.knownMats || {}).filter(id => MATS[id] && GR.indexOf(MATS[id].grade) <= s.grade).sort((a, b) => GR.indexOf(MATS[a].grade) - GR.indexOf(MATS[b].grade) || (MATS[b].line === 'food') - (MATS[a].line === 'food'));
+    const list = known.filter(id => mtFlt === 'all' || (mtFlt === 'food') === (MATS[id].line === 'food'));
+    if (!mtSel || !list.includes(mtSel)) mtSel = list[0] || null;
+    const h4 = (id, k) => ((s.sellHist || {})[id] || []).filter(x => x.w > s.week - 4).reduce((t, x) => t + (x[k] || 0), 0);
+    const mT = id => Gm.SPICE.has(id) ? (E.mktTargetSpice || 15) : (E.mktTarget || 20), mM = id => Math.max(0, Math.round(((s.mkt || {})[id] != null ? s.mkt[id] : mT(id))));
+    const help = `<b>사들이기:</b> 모험가가 주워 온 소재는 모험가 것입니다. 매입가가 시세의 기준 이상이면 길드에, 아니면 시장에 직접 팝니다 (기준 절약 ${Math.round(TH[0] * 100)} · 보통 ${Math.round(TH[1] * 100)} · 낭비 ${Math.round(TH[2] * 100)}%, 애착이 높으면 조금 싸게도 넘김). 금고가 모자라거나 창고가 가득(${cap}개)이면 시장으로 갑니다.${Gm.carOn(s) ? ' 지난 떠돌이 상단 값이 훨씬 높으면 길드에 맡겨(위탁) 상단에 팝니다.' : ''}<br><b>마을 시장 재고:</b> 마을 상점들이 가진 양입니다. 의뢰에서 나온 소재 · 길드가 판 소재가 들어오고, 마을 사람들이 매주 사 가며(인구가 많을수록 많이), 식당이 모자란 상시 재료를 사 가도 줄어듭니다. 재고가 적으면 시세가 오르고 많으면 내립니다.`;
+    let L = `<div class="mt"><div class="ux-h">소재 관리 <small>팔기 · 사들이기 · 시세</small><details class="tr-help"><summary title="도움말" aria-label="도움말">?</summary><div class="tr-help-b">${help}</div></details></div>
+      <div class="mt-flt">${[['all', `전체 ${known.length}`], ['food', '음식 소재'], ['etc', '그 밖의 소재']].map(([k, t]) => `<button class="${mtFlt === k ? 'on' : ''}" data-mtf="${k}">${t}</button>`).join('')}</div><div class="mt-list gq-mp">`;
+    for (const id of list) { const m = MATS[id], n = mats[id] || 0, fixed = Gm.buyGoldOf(s, id) != null, bp = Gm.matBuyPrice(s, id), t = Gm.mktTrend(s, id);
+      L += `<button class="mt-row${id === mtSel ? ' on' : ''}" data-mtsel="${id}"><span class="mt-ic${n ? '' : ' zero'}" title="창고 ${n}/${cap}개">${matImg(m)}<b>${n}</b></span><span class="mt-nm"><b>${esc(m.name)}</b><small>시세 ${Gm.matPrice(s, id)}G ${t > 0 ? '<i class="up">▲</i>' : t < 0 ? '<i class="dn">▼</i>' : ''}${priceSpark(id)} · 시장 ${mM(id)}</small></span><span class="mt-bp${fixed ? '' : ' auto'}">매입가<b>${bp}G</b>${fixed ? '직접 정함' : '자동'}</span><span class="mt-h4">지난 4주<br>길드 <b>${h4(id, 'g')}</b> · 시장 ${h4(id, 'm')}</span></button>`; }
+    if (!list.length) L += '<div class="tr-none">아직 아는 소재가 없습니다.</div>';
+    const nf = known.filter(id => MATS[id].line !== 'food' && mats[id] > 0), sum = nf.reduce((t, id) => t + Gm.sellPreview(s, id, mats[id]), 0), M = s.month || {};
+    L += `</div><div class="mt-bar"><span>이번 달 판매 <b>${fmt(Math.round(M.sell || 0))}G</b> · 매입 <b>${M.matBuyN || 0}개 ${fmt(Math.round(-(M.matBuy || 0)))}G</b></span><button class="ux-btn primary" data-snf="1" ${nf.length && shop ? '' : 'disabled'}>음식이 아닌 소재 모두 팔기 (${fmt(sum)}G)</button></div></div>`;
+    let R = '<div class="mt-r">';
+    if (mtSel) { const id = mtSel, m = MATS[id], n = mats[id] || 0, mp = Gm.matPrice(s, id), bp = Gm.matBuyPrice(s, id), mx = Gm.buyGoldMax(s, id), fixed = Gm.buyGoldOf(s, id) != null, food = m.line === 'food', st = Gm.isStaple(s, id), mm = mM(id), tg = mT(id);
+      const logs = (s.buyLog || []).filter(b => b.m === id).slice(0, 3);
+      R += `<div class="mt-top"><span class="big ux-slot" data-g="${GR.indexOf(m.grade)}">${matImg(m)}</span><div><div class="mt-tn">${badge(GR.indexOf(m.grade))}<b>${esc(m.name)}</b>${food ? `<span class="tg ${st ? 'st' : 'rare'}" title="${st ? '창고에 없으면 식당이 시장에서 삼' : '시장에 없음 — 모험가 매입으로만'}">${st ? '상시 재료' : '희귀 재료'}</span>` : ''}</div><p>${esc(m.desc || '')}</p></div></div>
+        <div class="mt-ch"><div class="mt-per">${[4, 12, 24, 48].map(w => `<button class="${buyChartW === w ? 'on' : ''}" data-bper="${w}">${w}주</button>`).join('')}<em>지금 ${mp}G ${trendTag(id)}</em></div>${priceChart(id, 480, 128, buyChartW)}
+          <div class="mt-stock" title="마을 상점들이 가진 양 — 적으면 시세가 오름">마을 시장 재고 <span class="bar"><i style="width:${Math.min(100, Math.round(mm / (tg * 1.5) * 100))}%"></i><u style="left:${Math.round(100 / 1.5)}%"></u></span><b>${mm}개</b><small>보통 ${tg}개${mm < tg * 0.5 ? ' · 모자람' : mm > tg * 1.2 ? ' · 넉넉함' : ''}</small></div></div>
+        <div class="mt-two">
+          <div class="mt-box"><h4>팔기 <small>창고 ${n} / ${cap}개</small></h4><div class="mt-kv"><span>1개 값</span><b>${Gm.matSellPrice(s, id)}G</b><span>전부 팔면</span><b>${n ? Gm.sellPreview(s, id, n) : 0}G</b></div><div class="mt-btns"><button class="ux-btn" data-sone="${id}" ${n && shop ? '' : 'disabled'}>1개 팔기</button><button class="ux-btn primary" data-sall="${id}" ${n && shop ? '' : 'disabled'}>전부 팔기</button></div><div class="mt-note">${shop ? `많이 팔수록 마을 재고가 늘어 값이 내려갑니다${food ? ' · 팔면 요리를 못 만들 수 있음' : ''}` : '판매 창구를 지으면 팔 수 있습니다'}</div></div>
+          <div class="mt-box"><h4>사들이기 <small>모험가에게서</small></h4><div class="mt-step"><button data-bgold="${id}:-5" ${bp <= 1 ? 'disabled' : ''}>−5</button><button data-bgold="${id}:-1" ${bp <= 1 ? 'disabled' : ''}>−</button><b>${bp}G</b><button data-bgold="${id}:1" ${bp >= mx ? 'disabled' : ''}>+</button><button data-bgold="${id}:5" ${bp >= mx ? 'disabled' : ''}>+5</button></div><div class="mt-auto">${fixed ? `직접 정함 · <button class="gq-auto" data-bgold="${id}:auto">자동으로</button>` : '자동 (시세를 따라감)'}</div><div class="mt-who">${['절약', '보통', '낭비'].map((nm, i) => { const y = bp >= mp * TH[i] - 1e-9; return `<span class="${y ? 'y' : ''}">${nm}<br>${y ? '길드에' : '시장에'}</span>`; }).join('')}</div><div class="mt-note">이 매입가면 누가 길드에 파는지 (애착이 높으면 조금 더 싸게도)</div></div>
+        </div>
+        <div class="mt-log"><b>최근 매입</b>${logs.length ? logs.map(b => `<div><span>×${b.n} · ${b.w === s.week ? '이번 주' : (s.week - b.w) + '주 전'}</span><span>${fmt(b.g)}G</span></div>`).join('') : '<div><span>아직 없음</span></div>'}</div>`; }
+    else R += '<div class="tr-none">소재를 고르세요.</div>';
+    return `<div class="bk2 bk-tr bk-mt"><section class="bk-l">${L}</section><section class="bk-r">${R}</div></section></div>`;
+  }
   let buyChart = null, buyChartW = 12;
   function buyHtml() {
     const E = s.cfg.econ, cap = E.storeCap || 30, lo = E.buyRateMin != null ? E.buyRateMin : 0.5, hi = E.buyRateMax != null ? E.buyRateMax : 1.2, TH = E.sellTh || [0.9, 0.85, 0.75];
@@ -1053,7 +1085,10 @@
     if (k === 'matBuy' && Gm.gqOn(s)) return m.matBuyN ? `모험가가 주워 온 소재 <b>${m.matBuyN}개</b>를 소재마다 정한 매입가로 매입${m.mktSellN ? ` · 시장으로 ${m.mktSellN}개` : ''}` : '없음';   // 2026-11-20 매입 개편
     if (k === 'matBuy') return m.matBuyN ? `모험가가 주워 온 소재 <b>${m.matBuyN}개</b>를 판매가의 ${Math.round((E.matBuyRate || 0.7) * 100)}%로 매입` : '없음';
     if (k === 'consign') return m.consignN ? `위탁 소재 <b>${m.consignN}개</b> 판매 · 수수료 ${Math.round((E.consignFee || 0.1) * 100)}%` : '없음';
-    if (k === 'meal') { const d = m.dishes || {}, ks = Object.keys(d); return ks.length ? ks.map(n => `${esc(n)} <b>${d[n]}그릇</b>`).join('<br>') : (m.dishes ? '판매 없음' : '내역 없음 (예전 기록)'); }
+    if (k === 'meal') { const d = m.dishes || {}, sa = m.dishSale || {}, fr = m.dishFree || {}, wa = m.dishWaste || {}, ks = [...new Set([...Object.keys(d), ...Object.keys(fr), ...Object.keys(wa)])];   // 2026-11-20 사용자: 마감 할인 · 무료 식사 · 버린 그릇도
+      if (!ks.length) return m.dishes ? '판매 없음' : '내역 없음 (예전 기록)';
+      const one = n => `${esc(n)} 판매 <b>${d[n] || 0}그릇</b>${sa[n] ? ` (마감 할인 ${sa[n]})` : ''}${fr[n] ? ` · 무료 식사 ${fr[n]}` : ''}${wa[n] ? ` · 버림 ${wa[n]}` : ''}`;
+      return ks.map(one).join('<br>') + `<br><small>합계 판매 ${Object.values(d).reduce((a, b) => a + b, 0)}그릇 · 마감 할인 ${m.saleN || 0} · 무료 식사 ${m.freeMeal || 0} · 버림 ${m.waste || 0}</small>`; }
     if (k === 'tavern') return `술 <b>${m.drinks || 0}잔</b> 판매 · 1잔 마진 ${GR[s.grade]}급 ${(s.cfg.econ.drinkMargin || [2])[s.grade] || 2}G${Gm.upg(s, '주점') ? ' + 업그레이드 5G' : ''}`;   // 2026-11-12: 매주 술 1잔 단위
     if (k === 'subsidy' && E.subsidyMode === 1) { const pc = Math.round((E.subsidyRate != null ? E.subsidyRate : 0.5) * 100), ev = E.subsidyEvery || 6, base = cur ? (s.subHalf || 0) : (m.subsidyBase || 0);   // 2026-11-18 결정 23: 성과 보조금 (4주마다 [임시])
       return cur ? `${ev === 1 ? '월말 결산' : '6 · 12월 말'} 때 들어옵니다 · 지금까지 성공한 의뢰 보상 <b>${fmt(base)}G</b>의 ${pc}%` : (m.subsidy ? `성공한 의뢰 보상 <b>${fmt(base)}G</b>의 ${pc}%` : '지급 달이 아님'); }
@@ -2078,6 +2113,7 @@
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
+      { const mt = e.target.closest('[data-mtsel], [data-mtf]'); if (mt && popup === 'trade') { if (mt.dataset.mtsel) mtSel = mt.dataset.mtsel; else mtFlt = mt.dataset.mtf; renderPopup(); return; } }
       { const bc = e.target.closest('[data-bchart], [data-bper]'); if (bc && popup === 'trade') { if (bc.dataset.bchart) buyChart = buyChart === bc.dataset.bchart ? null : bc.dataset.bchart; else buyChartW = +bc.dataset.bper; renderPopup(); return; } }
       { const bg = e.target.closest('[data-bgold]'); if (bg && popup === 'trade' && Gm.gqOn(s)) { if (bg.disabled) return; const [id, k] = bg.dataset.bgold.split(':'), r = Gm.setBuyGold(s, id, k === 'auto' ? null : Math.max(1, Math.min(Gm.buyGoldMax(s, id), Gm.matBuyPrice(s, id) + +k))); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }
       { const br = e.target.closest('[data-brate]'); if (br && popup === 'trade' && Gm.gqOn(s)) { if (br.disabled) return; const [id, k] = br.dataset.brate.split(':'), st = s.cfg.econ.buyRateStep || 0.05, r = Gm.setBuyRate(s, id, Gm.polRate(s, id) + +k * st); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }   // 2026-11-20 결정 52: 소재별 매입가 ±5%
