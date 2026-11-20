@@ -144,7 +144,7 @@
     113,
     49
    ],
-   "note": "2026-11-20 던전 정복 왕국 포상(A+B) 사자. ComfyUI Illustrious 시드 2026112002 → 눈 고침(짝짝이 · 흐린 눈동자 → 날카로운 갈색 눈): qwen 편집 + 눈 영역 마스크 시드 4002 → 감은 눈 qwen 5002(고친 그림 위) · 눈썹 아래만 합성 · 반쯤 칸 = 감김. 원본 archive/art_source/envoy/"
+   "note": "2026-11-20 던전 정복 왕국 포상(A+B) 사자. ComfyUI Illustrious 시드 2026112002 → 뜬 눈: qwen 편집 + 눈 영역 마스크 시드 4002(날카로운 갈색 눈) → 감은 눈: qwen 5002의 U자 선을 지우고 뜬 눈 눈꺼풀 기울기를 따라 직접 그린 선(archive/art_source/envoy/drawclose_slant.py) · 반쯤 칸 = 감김"
   }
  }
 }
