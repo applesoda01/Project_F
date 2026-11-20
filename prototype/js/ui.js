@@ -831,18 +831,19 @@
   const gqReward = (k, t, n) => { const R = Gm.gqRangeK(s, k, t, n), b = Gm.gqBaseK(s, k, t, n); return Math.min(R[1], Math.max(R[0], Math.round(b * gqPct / 10) * 10)); };   // 기준 × 고른 % (10G 단위, 범위 안)
   const resTxt = m => { if (Gm.scoutOn(s, m)) { const v = Gm.resOf(s, m); if (v != null) return `<b class="res-b r${Gm.resBand(s, m)} sc" title="정찰한 곳 · 개체수">${Math.round(v)}</b>`; } const b = Gm.resBand(s, m); return b == null ? '' : `<b class="res-b r${b}">${['적음', '보통', '많음'][b]}</b>`; };   // 정찰하면 숫자
   const gqIcon = o => (o.kind === 'mat' || o.kind === 'hunt' || o.kind === 'scout') && MATS[o.m] ? matImg(MATS[o.m]) : `<b class="gq-ki">${GQ_NUM[o.kind] || ''}</b>`;
+  const gqMonImg = (k, id) => { const S = Gm.gqSrcK(s, k, id), e = S && ((QT[S.T.id] || S.T).enemies || [])[0], m = e && MONS[e.mon]; return m && m.img ? `<i class="gq-mpic" style="background-image:url(assets/expedition/${m.img})" title="${esc(e.name)}"></i>` : ''; };   // 2026-11-20 사용자: 사냥터 버튼은 대표 출몰 몬스터
   function gqTargets(k) {   // 종류마다 고를 대상: [{id, name, img, ok, why, extra}]
     const live = id => (s.gq || []).some(o => o.kind === k && o.m === id);
     const mats = Object.keys(MATS).filter(id => GR.indexOf(MATS[id].grade) <= s.grade).sort((a, b) => GR.indexOf(MATS[a].grade) - GR.indexOf(MATS[b].grade));
     if (k === 'mat') return mats.filter(id => (s.knownMats || {})[id]).map(id => { const ok = !live(id) && !!Gm.gqSrc(s, id); return { id, name: MATS[id].name, img: matImg(MATS[id]), ok, ing: live(id), why: live(id) ? '이미 의뢰 중' : ok ? '' : '지금 길드 등급 의뢰에서는 나오지 않습니다' }; });
-    if (k === 'hunt' || k === 'scout') return mats.filter(id => Gm.resOf(s, id) != null && Gm.resBand(s, id) != null && Gm.gqSrcK(s, k, id)).map(id => ({ id, name: Gm.gqPlaceName(s, k, id), img: matImg(MATS[id]), ok: !live(id), ing: live(id), why: live(id) ? '이미 의뢰 중' : '', extra: `<small>${esc(MATS[id].name)} 나옴</small> ${resTxt(id)}` }));   // 2026-11-20: 자원지 이름으로
+    if (k === 'hunt' || k === 'scout') return mats.filter(id => Gm.resOf(s, id) != null && Gm.resBand(s, id) != null && Gm.gqSrcK(s, k, id)).map(id => ({ id, name: Gm.gqPlaceName(s, k, id), img: gqMonImg(k, id) || matImg(MATS[id]), ok: !live(id), ing: live(id), why: live(id) ? '이미 의뢰 중' : '', extra: `<small>${esc(MATS[id].name)} 나옴</small> ${resTxt(id)}` }));   // 2026-11-20: 자원지 이름으로
     if (k === 'train') return s.advs.filter(a => a.alive).map(a => ({ id: a.id, name: a.name, img: `<span class="tr-f gq-face" style="${faceStyle(a, 38, 180, 19)}"></span>`, ok: !live(a.id), ing: live(a.id), why: live(a.id) ? '이미 의뢰 중' : '', extra: `<small>${GR[a.grade]}급 Lv${a.lv || 1}</small>` }));
     return null;   // 순찰 · 일손: 대상 없음
   }
   // 2026-11-20 사용자: 토벌 · 정찰 화면에도 일반 의뢰처럼 사냥터 정보 — 출현 몬스터 · 위험도 · 얻는 소재(확률)
   function gqSiteHtml(S, t) {
     const T = QT[S.T.id] || S.T, d = danger(T, S.g), sc = Gm.scoutOn(s, t), E = T.enemies || [];
-    let h = '<div class="gq-site">';
+    let h = `<div class="gq-site"><div class="gs-r"><b>개체수</b>${resTxt(t)}${sc ? '<small class="sc">정찰함</small>' : ''}</div>`;
     if (E.length) {
       h += `<div class="gs-r"><b>몬스터</b><span class="gs-mons">${E.map(e => { const m = MONS[e.mon] || {}; return `<span class="gs-mon" title="${esc(e.name)}${sc ? ` · 체력 ${e.hp} · 공격 ${e.atk}` : ''}"><i class="pic"${m.img ? ` style="background-image:url(assets/expedition/${m.img})"` : ''}></i>${esc(e.name)} ×${e.count}${e.boss ? ' <em class="ux-tag injured">보스</em>' : ''}${sc ? `<small>체력 ${e.hp} · 공격 ${e.atk}</small>` : ''}</span>`; }).join('')}</span>${d.n ? `<span class="gs-sk" title="위험도 · ${GR[S.g]}급 모험가 ${d.n}명${d.more ? ' 이상' : ''} 권장">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}<small>${d.n}명${d.more ? '+' : ''} 권장</small></span>` : ''}</div>`;
     }
@@ -884,11 +885,11 @@
       if (k === 'mat') {
         R += `<div class="od-row"><b>소재</b><span class="ic sm">${matImg(MATS[t])}</span>${esc(MATS[t].name)} <small>· 지금 창고 ${(s.mats || {})[t] || 0}개</small></div>`;
         R += `<div class="od-row"><b>개수</b><span class="od-step"><button data-gqn="-1" ${gqN <= 1 ? 'disabled' : ''}>−</button><b>${gqN}</b><button data-gqn="1" ${gqN >= 20 ? 'disabled' : ''}>+</button></span><small>1~20개</small></div>`;
-      } else if (k === 'hunt' || k === 'scout') R += `<div class="od-row"><b>${k === 'hunt' ? '사냥터' : '자원지'}</b><span class="ic sm">${matImg(MATS[t])}</span>${esc(Gm.gqPlaceName(s, k, t))} <small>· 개체수 ${resTxt(t)}</small></div>` + gqSiteHtml(S, t);
+      } else if (k === 'hunt' || k === 'scout') R += gqSiteHtml(S, t);   // 2026-11-20 사용자: 사냥터 이름 줄은 빼고 개체수는 정보 상자에
       else if (k === 'train') { const a = s.advs.find(x => x.id === t); R += `<div class="od-row"><b>모험가</b>${a ? esc(a.name) : ''} <small>· 이 모험가만 맡을 수 있음</small></div>`; }
       R += `<div class="od-row"><b>보상</b><span class="od-step gq-rw"><button data-gqr="-1" ${rw <= Rg[0] ? 'disabled' : ''}>−</button><b>${fmt(rw)}G</b><button data-gqr="1" ${rw >= Rg[1] ? 'disabled' : ''}>+</button></span><small>기준 ${fmt(base)}G의 ${base ? Math.round(rw / base * 100) : 0}% · ${fmt(Rg[0])}~${fmt(Rg[1])}G<br><em class="${hot ? 'gq-hot' : 'gq-cold'}">${hot ? '기준 이상 · 바로 맡겨짐' : '기준 아래 · 다른 의뢰 다음'}</em></small></div>`;
       R += `<div class="od-row"><b>기한</b><span>${WK.map(w => `<button class="od-mx${w === gqWk ? ' on' : ''}" data-gqw="${w}">${w}주</button>`).join(' ')}</span></div>`;
-      R += `<div class="od-tot">${k === 'mat' ? `1개당 약 <b>${fmt(Math.round(rw / n))}G</b> <small>· 시세 ${fmt(Gm.matPrice(s, t))}G</small><br>` : ''}<small>${esc(GQ_FX[k])}<br>게시판에 <b class="gq-t">${GR[S.g]}급 · ${esc(S.T.name)}</b> 틀로 올라갑니다<br>금고에서 ${fmt(rw)}G를 맡아 둡니다 · 남으면 돌려받음 · 금고 ${fmt(Math.floor(s.gold))}G</small></div>`;
+      if (k === 'mat') R += `<div class="od-tot">${k === 'mat' ? `1개당 약 <b>${fmt(Math.round(rw / n))}G</b> <small>· 시세 ${fmt(Gm.matPrice(s, t))}G</small><br>` : ''}<small>${esc(GQ_FX[k])}<br>게시판에 <b class="gq-t">${GR[S.g]}급 · ${esc(S.T.name)}</b> 틀로 올라갑니다<br>금고에서 ${fmt(rw)}G를 맡아 둡니다 · 남으면 돌려받음 · 금고 ${fmt(Math.floor(s.gold))}G</small></div>`;
       R += `<div class="od-go"><button class="od-btn go" data-gqplace="1" ${why ? 'disabled' : ''}>길드 의뢰 내기</button>${why ? `<small class="od-why">${esc(why)}</small>` : ''}</div>`;
     } else if (ready) R += `<div class="od-empty">${esc(Gm.gqWhy(s, k, t, n, 10, gqWk) || '지금은 낼 수 없습니다')}</div>`;
     if (!(k === 'hunt' || k === 'scout')) R += '<div class="od-note">수수료가 없어 모험가가 보상을 그대로 받습니다. 기한이 지나면 남은 돈을 돌려받습니다.</div>';   // 토벌 · 정찰은 사냥터 정보 자리 (2026-11-20)

@@ -995,3 +995,9 @@ p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 
 .gq-site{gap:2px;padding:4px 10px}
 .bk-gq .gq-pick.wide{max-height:86px}
 .bk-gq .od-tot{font-size:14px;padding:6px 12px;line-height:1.4}.bk-gq .od-tot b{font-size:16px}
+/* 2026-11-20 사용자 시안 피드백: 사냥터 고르기 칸 넓게 · 몬스터 그림 · 버튼은 쪽 아래로 */
+.bk-gq .gq-pick.wide{max-height:178px}
+.gq-mpic{display:inline-block;flex:none;width:44px;height:34px;background:no-repeat center bottom/contain;image-rendering:pixelated}
+.bk-gq .od-go{margin-top:auto;padding-bottom:6px}
+.bk-gq .gq-pick.wide{grid-template-columns:repeat(2,minmax(0,1fr));overflow-x:hidden;overflow-y:auto}
+.bk-gq .gq-pick.wide .od-m span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
