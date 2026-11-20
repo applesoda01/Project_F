@@ -164,7 +164,8 @@
   const SDSEARCH = { warrior_m: 1, warrior_f: 1, archer_m: 1, archer_f: 1, rogue_m: 1, rogue_f: 1, mage_m: 1, mage_f: 1, cleric_m: 1, cleric_f: 1 };
   const WORK_ICON = ['', '🌿', '🔍', '🛡️', '📜'];   // 비전투 수행 중 머리 위 아이콘: 사냥·채집 = 약초 · 조사 = 돋보기 · 호위·구호 = 방패 · 탐사 = 두루마리 (2026-11-16)
   // 몬스터 SD (2026-11-16): 서 있기 · 공격 반복 / 쓰러짐 한 번. TH = 미니 뷰에서의 키(px), 예전 도트 키의 약 1.2배
-  const MONSD = { mon_01: ['dog', 46], mon_02: ['thief', 64], mon_03: ['slime', 40], mon_04: ['wolf', 52], mon_05: ['wolf_alpha', 64], mon_06: ['goblin', 56], mon_07: ['boar', 54], mon_08: ['bandit', 70] };
+  // boss_goblin: 고블린 대장(던전 보스) — 움직임 시트가 생기기 전까지 고블린 시트를 1.3배로 [임시] (그림 expedition_sd/mon_goblin_boss_still.png는 정지 1장)
+  const MONSD = { boss_goblin: ['goblin', 74], mon_01: ['dog', 46], mon_02: ['thief', 64], mon_03: ['slime', 40], mon_04: ['wolf', 52], mon_05: ['wolf_alpha', 64], mon_06: ['goblin', 56], mon_07: ['boar', 54], mon_08: ['bandit', 70] };
   const monSheet = (k, act) => ({ im: sdi('assets/expedition_sd/mon_' + k + '_' + act + '.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: act === 'idle' ? 10 : 16 });
   function sdSheet(k, anim) {
     if (anim === 'fall') return { im: sdi('assets/expedition_sd/' + k + '_fall.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: 16, once: true };   // 쓰러짐: 한 번 재생 후 누운 채 유지
@@ -246,7 +247,7 @@
   }
   function drawScene(dt) {
     const v = view, e = entries().find(o => o.id === v.id); if (!e) { close(); return; }
-    const x = e.x, ok = x.ok != null ? x.ok : (x.fight ? x.fight.win : true), p = e.p, ph = phaseOf(p, !!x.fight);
+    const x = e.x, ok = x.dgP && !x.dgP.done ? true : x.ok != null ? x.ok : (x.fight ? x.fight.win : true), p = e.p, ph = phaseOf(p, !!x.fight);
     if (ph !== v.phase && v.phaseT >= 0.5 / Math.max(speed, 1) || v.phase === null) {
       const was = v.phase; v.phase = ph; v.phaseT = 0;
       if (was && v.combat && !v.fresh) { const up = upOf(v), a = up[Math.floor(Math.random() * up.length)];   // ③ 교전 시작 · 결과 한마디
@@ -373,6 +374,35 @@
   // ---------- 매 프레임 ----------
   // dt: 실제 초, weekFrac: 이번 주 진행(0~1), sp: 배속(0 = 일시정지)
   const known = new Map();   // 지난 프레임의 원정 (귀환 감지용)
+  // ---------- 던전 갈림길 · 계속/귀환 (2026-11-21 3단계 · 시안 dg_branch · dg_cont) ----------
+  //   플레이어가 보낸 던전 원정은 방마다 이어서 판정(game_core dgChoose). 질문 k번째는 진행도 DG_AT[k]에 미니 뷰를 열고 묻는다.
+  //   실제 시간 6초 안에 고르지 않으면 대장 성향대로 (사용자 결정 2026-11-21: 배속과 상관없이 6초) · 빛나는 쪽 = 대장이 고를 길
+  const DG_AT = [0.22, 0.44, 0.66], DG_MS = 6000;
+  let dgQ = null;   // { uid, k, kind, t0, lean }
+  function dgAsk(s) {
+    if (!Gm.dgPending) return; const P = Gm.dgPending(s);
+    if (dgQ && !P.some(p => p.uid === dgQ.uid && p.k === dgQ.k)) dgClear();   // 귀환 등으로 사라짐
+    if (dgQ) { const left = DG_MS - (performance.now() - dgQ.t0), bar = ev.querySelector('.dgAsk .tm u'); if (bar) bar.style.width = Math.max(0, left / DG_MS * 100) + '%'; const sm = ev.querySelector('.dgAsk .q small i'); if (sm) sm.textContent = Math.max(0, Math.ceil(left / 1000)); if (left <= 0) dgPick(dgQ.lean); return; }
+    const p = P[0]; if (!p) return; const x = s.active.find(z => z.uid === p.uid); if (!x) return;
+    const e = entries().find(o => o.x === x); if (!e || e.p < (DG_AT[p.k] != null ? DG_AT[p.k] : 0.7)) return;
+    if (sel !== x.q.id) { if (sel != null) close(); open(x.q.id); }
+    dgQ = { uid: p.uid, k: p.k, kind: p.kind, t0: performance.now(), lean: !!p.lean };
+    if (root.UI && root.UI.dgHold) root.UI.dgHold(true);   // 묻는 동안 시계 멈춤 — 1주 원정 안에 질문 3개가 다 나오도록
+    const lead = s.advs.find(a => a.id === x.party[0]), hp = p.hp;
+    const box = document.createElement('div'); box.className = 'dgAsk';
+    box.innerHTML = p.kind === 'path'
+      ? `<div class="q">갈림길 — 어느 길로?<small><i>6</i>초</small></div><div class="bt"><span class="rk ${p.lean ? 'lean' : ''}" data-v="1">좁은 통로 (위험)<em>적 강함 · 보상 +</em></span><span class="sf ${p.lean ? '' : 'lean'}" data-v="0">넓은 길 (안전)<em>적 약함</em></span></div><div class="tm"><u></u></div>`
+      : `<div class="q">대장이 있습니다 · 체력 ${hp}%<small><i>6</i>초</small></div><div class="bt"><span class="go ${p.lean ? 'lean' : ''}" data-v="1">계속<em>보스 · 보상 +</em></span><span class="bk ${p.lean ? '' : 'lean'}" data-v="0">귀환<em>얻은 것만 챙김</em></span></div><div class="tm"><u></u></div>`;
+    box.addEventListener('pointerdown', ev_ => ev_.stopPropagation()); box.addEventListener('pointerup', ev_ => ev_.stopPropagation());
+    box.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', ev_ => { ev_.stopPropagation(); dgPick(b.dataset.v === '1'); }));
+    ev.appendChild(box);
+  }
+  function dgClear() { if (dgQ && root.UI && root.UI.dgHold) root.UI.dgHold(false); dgQ = null; ev.querySelectorAll('.dgAsk').forEach(b => b.remove()); }
+  function dgPick(v) {
+    const s = getS(), q_ = dgQ; dgClear(); if (!q_) return; Gm.dgChoose(s, q_.uid, v);
+    const x = s.active.find(z => z.uid === q_.uid); if (x && sel === x.q.id) { const id = sel; close(); setTimeout(() => open(id), 220); }   // 새 방 싸움으로 미니 뷰를 다시 그림
+  }
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   X.update = function (dt, weekFrac, sp) {
     const s = getS(); frac = weekFrac; speed = sp; clock += dt;
     const hide = !!(root.Town && root.Town.active);   // 마을 화면에서는 숨김
@@ -386,6 +416,7 @@
     for (const [id, gh] of ghosts) if (clock - gh.doneAt > 2.2 / Math.max(1, sp)) { ghosts.delete(id); changed = true; if (sel === id) close(); }
     if (changed) render(); else if (Math.floor(clock * 4) !== Math.floor((clock - dt) * 4)) soft();
     if (view) drawScene(sp > 0 ? dt * Math.min(3, sp) : 0);
+    dgAsk(s);   // 2026-11-21 던전 갈림길 · 계속/귀환
   };
   root.Expedition = X;
 })(this);

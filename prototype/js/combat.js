@@ -206,11 +206,14 @@
           if (i >= 3) {   // 방 3 뒤 「계속 / 귀환」
             if (!Dc.cont || !d.rooms['4']) break;
             const hp = U.reduce((t, u) => t + (u.down ? 0 : u.hp), 0) / Math.max(1, U.reduce((t, u) => t + u.maxHp, 0));
-            const go = hp >= Dc.contHp && (opt.choose ? opt.choose('cont', { hp }) : DG.lean(lead, R) > 0);
+            let go = false;
+            if (hp >= Dc.contHp) { go = opt.choose ? opt.choose('cont', { hp }) : DG.lean(lead, R) > 0; if (go === undefined) return { rooms, units: U, cleared3, boss, risky, mats, rare, last, pending: { kind: 'cont', hp: Math.round(hp * 100) } }; }   // 2026-11-21 화면 단계: 아직 안 고름 → 여기서 멈춤
             rooms.push({ ask: 'cont', go: !!go, hp: Math.round(hp * 100) }); if (!go) break;
             room = '4'; if (Dc.push) curRisk = Math.min(2, curRisk + 1);
           } else if (i > 0 && d.rooms[room] && (d.rooms[room].risky || d.rooms[room].safe)) {
-            path = opt.choose && Dc.branch ? (opt.choose('path', { room }) ? 'risky' : 'safe') : DG.path(lead, R, Dc); rooms.push({ ask: 'path', room, path }); if (path === 'risky') risky++;
+            if (opt.choose && Dc.branch) { const c = opt.choose('path', { room }); if (c === undefined) return { rooms, units: U, cleared3, boss, risky, mats, rare, last, pending: { kind: 'path', room } }; path = c ? 'risky' : 'safe'; }
+            else path = DG.path(lead, R, Dc);
+            rooms.push({ ask: 'path', room, path }); if (path === 'risky') risky++;
           }
           const foes = DG.foes(d, room, path, foeMul(path)), r = DB && C ? fight(U, foes, d.g, R, curRisk, !!opt.log) : null; if (!r) break;
           last = { room, path, foes, r }; rooms.push({ room, path, result: r.result, log: r.log });

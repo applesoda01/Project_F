@@ -67,7 +67,8 @@
     '그레타': { key: 'npc_granny', w: 474, h: 640, eye: [185, 131, 127, 59] },
     '페드로': { key: 'npc_merchant', w: 499, h: 640, eye: [185, 120, 131, 71] },
     '헤르만': { key: 'npc_scholar', w: 499, h: 640, eye: [186, 101, 129, 65] },
-    '대장장이': { key: 'npc_smith', w: 500, h: 640, eye: [186, 105, 130, 78] }
+    '대장장이': { key: 'npc_smith', w: 500, h: 640, eye: [186, 105, 130, 78] },
+    '왕국 사자': { key: 'npc_envoy', w: 499, h: 640, eye: [171, 139, 113, 49] }   // 2026-11-20 던전 정복 왕국 포상
   };
   for (const n in root.NPC_PORTRAITS) { const P = root.NPC_PORTRAITS[n]; add(P.key + '_stand', 'npc/' + P.key + '_stand.webp', P.w, P.h, { optional: true }); add(P.key + '_blink', 'npc/' + P.key + '_blink.webp', P.eye[2] * 3, P.eye[3], { optional: true }); }
 

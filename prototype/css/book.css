@@ -856,3 +856,71 @@ p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 
 .kdish .rc.rum{color:#8a4a12;font-size:12px;line-height:1.35}
 .kdish .rc.rum em{display:inline-block;margin-right:4px;padding:0 4px;border-radius:3px;background:#e9c98a;color:#5a3a20;font:700 10px/1.5 var(--hf);font-style:normal}
 .kdish .rc.rum u{text-decoration:none;color:#b06a18;letter-spacing:1px;white-space:nowrap}
+
+/* ---------- 던전 (2026-11-21 3단계 · 시안 docs/design/mockups/dungeon_1120/dg_req) ---------- */
+.bk-rq .rq-dg{position:relative;display:flex;gap:14px;align-items:center;width:100%;margin:0 0 14px;padding:12px 16px;border-radius:12px;background:linear-gradient(180deg,#f3e9d6,#eadcc0);border:2px solid #8a5a2b;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5);cursor:pointer;text-align:left;font:inherit;color:inherit}
+.bk-rq .rq-dg.on{border-color:#c48a2a;box-shadow:0 0 0 3px rgba(212,160,60,.35),inset 0 0 0 2px rgba(255,255,255,.6)}
+.bk-rq .rq-dg.new{animation:dgPulse 1.6s ease-in-out 3}
+@keyframes dgPulse{50%{box-shadow:0 0 0 6px rgba(240,190,80,.55),inset 0 0 0 2px rgba(255,255,255,.6)}}
+.bk-rq .rq-dg.flash{animation:dgPulse 1s ease-in-out 4}
+.bk-rq .rq-dg img{width:74px;height:74px;flex:none}
+.bk-rq .rq-dg .tx{flex:1;min-width:0;display:block}
+.bk-rq .rq-dg .t1{display:flex;align-items:center;gap:8px;font:800 22px/1.2 var(--hf);color:#3b2412}
+.bk-rq .rq-dg .t1 .gv{font-style:normal;font:700 14px/1 var(--hf);color:#fff;background:#7a3f1c;border-radius:6px;padding:4px 7px}
+.bk-rq .rq-dg .t1 small{margin-left:auto;font:700 15px/1 var(--hf);color:#7a5a3a}
+.bk-rq .rq-dg .pb{position:relative;display:block;height:14px;margin:22px 0 6px;border-radius:7px;background:rgba(90,60,30,.18)}
+.bk-rq .rq-dg .pb u{display:block;height:100%;border-radius:7px;background:linear-gradient(90deg,#c9802c,#e7b04a)}
+.bk-rq .rq-dg .pb b{position:absolute;top:-4px;width:4px;height:22px;margin-left:-2px;background:#5a3a1a;border-radius:2px}
+.bk-rq .rq-dg .pb b i{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font:600 12px/1.2 var(--hf);font-style:normal;color:#6a4a2a;white-space:nowrap}
+.bk-rq .rq-dg .t2{display:block;font:500 15px/1.3 var(--hf);color:#6a4a2a;margin-top:4px}
+.bk-rq .rq-dg .t2 b{color:#a0461c}
+.bk-rq .rq-head .dgic{width:58px;height:58px;margin-right:10px;flex:none}
+.bk-rq .dgmap{display:flex;align-items:center;gap:4px;margin:4px 0 12px;padding:10px 8px;border-radius:10px;background:rgba(80,50,20,.07)}
+.bk-rq .dgmap .rm{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:44px;font:700 15px/1.2 var(--hf);color:#4a2e14}
+.bk-rq .dgmap .rm i{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#fff8ea;border:2.5px solid #8a5a2b;font-style:normal;font:800 18px/1 var(--hf)}
+.bk-rq .dgmap .rm.boss i{width:44px;height:44px;background:#f7d9cf;border-color:#a33b22;color:#a33b22}
+.bk-rq .dgmap .fk{display:flex;flex-direction:column;gap:4px;font:600 12px/1.2 var(--hf)}
+.bk-rq .dgmap .fk span{padding:2px 6px;border-radius:5px;white-space:nowrap}
+.bk-rq .dgmap .fk .rk{background:#f6dcd2;color:#9a3418;border:1px solid #d49a86}
+.bk-rq .dgmap .fk .sf{background:#dfeedd;color:#2f6a2c;border:1px solid #9cc49a}
+.bk-rq .dgmap .ln{flex:1;height:3px;min-width:8px;background:#b08a5a;border-radius:2px}
+.bk-rq .dgmap .cont{font:700 12px/1.2 var(--hf);color:#7a3f1c;padding:2px 6px;border:1px dashed #a0703a;border-radius:5px;white-space:nowrap}
+.bk-rq .rq-chip.dgok{background:#eaf3e2;border-color:#8fb57f;color:#2f5a26}
+.bk-rq .rq-chip.dgnext{background:#fff3d6;border-color:#d9a441;color:#7a4a10}
+.bk-rq .rq-chip.dglock{opacity:.6}
+/* 왕국 포상 편지 카드 (2026-11-21 · 시안 dg_royal_B) */
+#royLay{position:absolute;inset:0;z-index:61;display:grid;place-items:center;background:rgba(20,14,30,.45);opacity:0;transition:opacity .3s}
+#royLay.on{opacity:1}
+#royLay .rb{position:relative;width:760px;padding:84px 44px 30px;border-radius:14px;text-align:center;color:#3a2a14;background:radial-gradient(circle at 50% 0%,#fffaf0 0,#f6ead0 55%,#ead8b0 100%);border:3px solid #b08a3a;box-shadow:0 0 0 7px rgba(40,40,90,.45),0 0 0 9px #c9a24a,0 18px 40px rgba(0,0,0,.5);transform:scale(.92);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+#royLay.on .rb{transform:none}
+#royLay .seal{position:absolute;left:50%;top:-58px;width:116px;height:116px;margin-left:-58px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#d24a3a,#8a1e14 70%);box-shadow:0 4px 10px rgba(0,0,0,.4),inset 0 0 0 6px rgba(255,255,255,.12);display:grid;place-items:center}
+#royLay .seal svg{width:66px;height:66px}
+#royLay .k{font:800 16px/1 var(--hf);letter-spacing:.3em;color:#3a3a7a;margin-bottom:10px}
+#royLay h2{margin:0 0 8px;font:800 36px/1.25 "MaruBuri",serif;color:#2a1e0a}
+#royLay .lt{margin:0 auto 16px;max-width:560px;font:500 18px/1.6 "MaruBuri",serif;color:#4a3a1e}
+#royLay .sig{font:600 15px/1 "MaruBuri",serif;color:#6a5a3a;margin:-6px 0 16px;text-align:right;padding-right:70px}
+#royLay .sec{display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 0 12px}
+#royLay .sec>i{font:700 14px/1 var(--hf);font-style:normal;color:#6a5a3a;letter-spacing:.06em}
+#royLay .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+#royLay .chips span{padding:6px 12px;border-radius:999px;font:700 17px/1.2 var(--hf);background:#fffdf4;border:2px solid #c9b07a}
+#royLay .chips .gold{background:#fff1c8;border-color:#d9a441;color:#7a4a10}
+#royLay .chips .fame{background:#e8ecfb;border-color:#8a96d0;color:#2a3470}
+#royLay .chips .it{display:inline-flex;align-items:center;gap:6px}
+#royLay .chips .it img{width:30px;height:30px}
+#royLay .btn{display:inline-block;margin-top:6px;padding:10px 34px;border-radius:10px;background:linear-gradient(180deg,#e9c062,#c9952e);border:2px solid #8a5a14;font:800 20px/1 var(--hf);color:#3a2408;cursor:pointer}
+/* 미니 뷰 던전 갈림길 · 계속/귀환 (2026-11-21 · 시안 dg_branch · dg_cont) */
+#expView .dgAsk{position:absolute;left:6px;right:6px;top:2px;padding:8px 10px 9px;background:rgba(28,17,8,.9);border:2px solid #c9a05a;display:flex;flex-direction:column;gap:6px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,.4);z-index:3;cursor:default}
+#expView .dgAsk .q{display:flex;align-items:baseline;gap:8px;white-space:nowrap;overflow:hidden;font:800 16px/1.2 var(--hf);color:#fbe9c4;text-shadow:0 1px 2px #000}
+#expView .dgAsk .q small{margin-left:auto;font:600 13px/1 var(--hf);color:#e8cfa0}
+#expView .dgAsk .q small i{font-style:normal;color:#ffd27a}
+#expView .dgAsk .bt{display:flex;gap:8px}
+#expView .dgAsk .bt span{flex:1;min-width:0;padding:4px 6px;border-radius:8px;font:800 15px/1.2 var(--hf);text-align:center;cursor:pointer;border:2px solid}
+#expView .dgAsk .bt span:hover{filter:brightness(1.15)}
+#expView .dgAsk .bt span em{display:block;font-style:normal;font:500 12px/1.25 var(--hf);opacity:.9}
+#expView .dgAsk .bt .rk{background:#7d2a16;border-color:#e08a5a;color:#ffe9dc}
+#expView .dgAsk .bt .sf{background:#2c5a2a;border-color:#8fd08a;color:#eaffe6}
+#expView .dgAsk .bt .go{background:#7a4a10;border-color:#f0c060;color:#fff3d6}
+#expView .dgAsk .bt .bk{background:#3a3a48;border-color:#a8a8c8;color:#eef}
+#expView .dgAsk .bt .lean{box-shadow:0 0 0 2px #fff8,0 0 10px #ffd27a}
+#expView .dgAsk .tm{height:5px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}
+#expView .dgAsk .tm u{display:block;height:100%;width:100%;background:#f0c060}
