@@ -133,7 +133,7 @@
   const questEff = (s, q) => (Math.floor(q.reward * (q.x2 ? 2 : 1) * (1 - questFee(s, q)) + 1e-9) + orderBonus(s, q)) / (q.weeks || s.cfg.quest.weeks[q.g]);
   function lowBuySkip(s, q) { const T = QBYID[q.tid]; if (!T || s.cfg.econ.gqOn) return 0; const main = (T.rewards || []).reduce((b, r) => (!b || r.p > b.p ? r : b), null); if (!main) return 0; const p = matPol(s, main.m); if (p.mode !== 'buy') return 0; const r = polRate(s, main.m), b = s.cfg.econ.matBuyRate != null ? s.cfg.econ.matBuyRate : 0.7; return r < b - 1e-9 ? Math.min(1, (b - r) / 0.2 * (s.cfg.econ.lowBuyK != null ? s.cfg.econ.lowBuyK : 0.25)) : 0; }
   const ordHit = (s, q) => (s.cfg.econ.orderFirst || !s.cfg.econ.orderMode) && orderBonus(s, q) > 0 ? 1 : 0;   /* 2026-11-19 상시 발주는 늘 켜져 있어 '가장 먼저 맡음'을 끄고 발주 값(실수령)으로만 끌림 [임시] */   /* 2026-11-18 결정 26: 발주한 소재가 나오는 의뢰를 가장 먼저 맡음 */
-  const cheapHit = (s, q) => q.gq != null ? (q.gqHot ? 1 : 0) : questFee(s, q) < feeBase0(s) - 1e-9 ? 1 : 0;   /* 2026-11-20 길드 의뢰: 보상이 기준 이상이면 모든 모험가가 먼저 맡음, 기준 아래면 다른 의뢰 다음 */   /* 2026-11-20 길드 의뢰 카드는 수수료 0%지만 '먼저 맡음' 없이 보상(실수령)으로만 끌림 */
+  const cheapHit = (s, q) => q.esc ? 1 : q.gq != null ? (q.gqHot ? 1 : 0) : questFee(s, q) < feeBase0(s) - 1e-9 ? 1 : 0;   /* 2026-11-20 길드 의뢰: 보상이 기준 이상이면 모든 모험가가 먼저 맡음, 기준 아래면 다른 의뢰 다음 */   /* 2026-11-20 길드 의뢰 카드는 수수료 0%지만 '먼저 맡음' 없이 보상(실수령)으로만 끌림 */
   const ordFee = (s, q) => q.gq != null ? feeBase0(s) : questFee(s, q);   /* 2026-11-19 결정 42: 기본보다 싼 수수료(5%) 의뢰는 모든 모험가가 먼저 맡음 → 빨리 처리 */
   // 2026-11-19 결정 42: 의뢰 카드의 예상 처리 주 (같은 등급에서 먼저 맡힐 의뢰 수 ÷ 마을에 있는 모험가 수, 기본보다 비싸면 +1주, 최대 4)
   function questEta(s, q) { const idle = s.advs.filter(a => a.alive && a.state === 'town').length, fq = questFee(s, q), cq = cheapHit(s, q);
@@ -744,11 +744,11 @@
   const CAR_FOOD = () => { const S = new Set(); for (const d of DISH) if (!d.dungeon) for (const m of d.mats) S.add(m); return S; };   // 던전 요리 재료(마석 조각 등)는 빼고
   const CARS = [   // 2026-11-20 사용자: 상단 주인 대화 · 상단에게서 사기 (boss · talk)
     { id: 'farm', name: '농산 상단', boss: '마르타', g: 0, gap: [3, 6], likes: m => CAR_FOOD().has(m),
-      talk: { hi: ['어머, 여기가 소문난 모험가 길드구나! 마르타라고 해요. 밭에서 난 거랑 귀한 식재료 좀 가져왔어요.', '또 왔어요, 마스터! 지난번에 넘겨준 재료, 저쪽 마을에서 금방 팔렸지 뭐예요.', '마스터 보려고 일부러 길을 돌아왔다니까요. 이번엔 아껴 둔 물건도 있어요!'], bye: '그럼 또 올게요! 아마 {gap}주쯤 뒤일 거예요.' } },
+      talk: { hi: ['어머, 여기가 소문난 모험가 길드구나! 마르타라고 해요. 밭에서 난 거랑 귀한 식재료 좀 가져왔어요.', '또 왔어요, 마스터! 지난번에 넘겨준 재료, 저쪽 마을에서 금방 팔렸지 뭐예요.', '마스터 보려고 일부러 길을 돌아왔다니까요. 이번엔 아껴 둔 물건도 있어요!'], bye: '그럼 또 올게요! 아마 {gap}주쯤 뒤일 거예요.', esc: '그런데 마스터, 다음 마을 가는 길이 요즘 험하대요. 모험가 몇 분이 같이 가 주시면 사례는 넉넉히 할게요!' } },
     { id: 'smith', name: '대장장이 상단', boss: '브론', g: 1, gap: [5, 9], likes: m => /^mat_(mine|hunt|slay|guard)_/.test(m) || m === 'mat_x015' || m === 'mat_x001',
-      talk: { hi: ['…브론이다. 광석이나 가죽 있으면 산다. 쓸 만한 것도 좀 가져왔고.', '또 왔다. 지난번 물건, 괜찮았어.', '…자네 길드 물건이면 믿고 산다. 이번엔 좋은 걸 가져왔지.'], bye: '간다. {gap}주쯤 뒤에 보자.' } },
+      talk: { hi: ['…브론이다. 광석이나 가죽 있으면 산다. 쓸 만한 것도 좀 가져왔고.', '또 왔다. 지난번 물건, 괜찮았어.', '…자네 길드 물건이면 믿고 산다. 이번엔 좋은 걸 가져왔지.'], bye: '간다. {gap}주쯤 뒤에 보자.', esc: '…부탁이 하나 있네. 다음 마을 가는 길에 짐승 떼가 나온다더군. 모험가 몇 명 붙여 주면 값은 넉넉히 치르지.' } },
     { id: 'herb', name: '약재 상단', boss: '세라', g: 2, gap: [6, 10], likes: m => /^mat_study_/.test(m) || ['mat_x016', 'mat_x008'].includes(m),
-      talk: { hi: ['처음 뵙겠습니다. 약재를 다루는 세라예요. 약초와 마석을 찾고 있어요.', '다시 뵙네요. 이 길드 약초는 질이 좋아서 늘 기다려져요.', '마스터께만 보여 드리는 귀한 약재가 있어요. 천천히 보세요.'], bye: '몸 조심하세요. {gap}주쯤 뒤에 다시 들를게요.' } },
+      talk: { hi: ['처음 뵙겠습니다. 약재를 다루는 세라예요. 약초와 마석을 찾고 있어요.', '다시 뵙네요. 이 길드 약초는 질이 좋아서 늘 기다려져요.', '마스터께만 보여 드리는 귀한 약재가 있어요. 천천히 보세요.'], bye: '몸 조심하세요. {gap}주쯤 뒤에 다시 들를게요.', esc: '실은 부탁이 있어요. 귀한 약재를 싣고 가는 길이라… 다음 마을까지 호위해 주실 분이 있을까요?' } },
   ];
   const carGap = (s, c) => { const E = s.cfg.econ, G = (E.carGap || {})[c.id] || c.gap; return G[0] + Math.floor(s.R() * (G[1] - G[0] + 1)); };
   const carRelLv = (s, st) => { const T = s.cfg.econ.carRel || [200, 600]; return st.rel >= T[1] ? 3 : st.rel >= T[0] ? 2 : 1; };
@@ -759,8 +759,8 @@
     const E = s.cfg.econ, lv = carRelLv(s, st), k = (E.carKinds || 3) + (lv - 1), M = E.carMult || [1.1, 1.6], Q = E.carQty || [5, 15];
     const pool = Object.keys(MAT).filter(m => GR.indexOf(MAT[m].grade) <= s.grade && c.likes(m));
     const out = []; while (out.length < k && pool.length) { const i = Math.floor(s.R() * pool.length), m = pool.splice(i, 1)[0];
-      out.push({ m, mult: Math.round((M[0] + s.R() * (M[1] - M[0])) * 100) / 100, max: Q[0] + Math.floor(s.R() * (Q[1] - Q[0] + 1)) + (lv - 1) * (E.carQtyLv != null ? E.carQtyLv : 5), sold: 0 }); }
-    return out;
+      out.push({ m, mult: Math.round((M[0] + s.R() * (M[1] - M[0]) + (st.bonus || 0)) * 100) / 100, max: Q[0] + Math.floor(s.R() * (Q[1] - Q[0] + 1)) + (lv - 1) * (E.carQtyLv != null ? E.carQtyLv : 5), sold: 0 }); }
+    st.bonus = 0; return out;   // 호위 성공 보너스는 다음 주문서 한 번
   }
   const carPrice = (s, o) => Math.max(1, Math.round(matPrice(s, o.m) * o.mult));
   const carLastMult = (s, m) => { let b = 0; for (const c of carOpenList(s)) { const st = (s.car || {})[c.id]; if (st && st.last[m] > b) b = st.last[m]; } return b; };   // 그 소재를 사 간 적 있는 상단 중 가장 높았던 배수
@@ -784,7 +784,31 @@
     const g = p * n; s.gold -= g; w.sold += n; st.rel += g; s.mats[m] = (s.mats[m] || 0) + n; s.month.carBuy = (s.month.carBuy || 0) - g; s.month.carBuyN = (s.month.carBuyN || 0) + n;
     if (!s.knownMats[m]) s.knownMats[m] = true; carRelCheck(s, c, st); return { ok: true, n, g, p };
   }
-  const carTalk = (c, ev, lv) => ev === 'bye' ? c.talk.bye.replace('{gap}', `${c.gap[0]}~${c.gap[1]}`) : c.talk.hi[Math.max(0, Math.min(2, (lv || 1) - 1))];
+  // 2026-11-20 사용자: 상단 호위 의뢰 (시안 docs/design/mockups/caravan) — 관계 2단계 이상 상단이 머무는 동안 부탁(방문마다 escChance), 플레이어가 게시판에 올리면 보통 전투 의뢰처럼 맡음
+  //   보상은 상단이 냄(그 등급 의뢰 보상 × escPay) · 길드는 평소 수수료. 성공: 관계 +escRel · 다음 방문 1~2주 빨라짐 · 다음 주문서 값 +escBonus / 실패: 관계 −escRelFail · 다음 방문 +2주 / 거절 · 아무도 안 맡음: 변화 없음
+  function carEscOffer(s, c, st) {
+    const E = s.cfg.econ; if (st.escort && st.escort.state === 'posted') return; st.escort = null; if (!(E.escOn != null ? E.escOn : 1) || carRelLv(s, st) < 2) return;
+    const R = carHR(s.seed, s.week, CARS.indexOf(c) + 11); if (R() >= (E.escChance != null ? E.escChance : 0.5)) return;
+    const g = Math.min(s.grade, c.g), C = []; for (const k in TPL) if (+k.split('_')[1] === g) for (const t of TPL[k]) if (t.enemies && t.enemies.length) C.push(t); if (!C.length) return;
+    const T = C[Math.floor(R() * C.length)]; st.escort = { state: 'offer', tid: T.id, g, reward: Math.round(s.cfg.quest.reward[g] * (E.escPay || 1.2) / 10) * 10 };
+  }
+  function carEscort(s, cid, act) {
+    const c = CARS.find(x => x.id === cid), st = c && (s.car || {})[cid], o = st && st.escort; if (!o || o.state !== 'offer' || !st.here) return { ok: false, why: '받을 수 있는 호위 부탁이 없습니다' };
+    if (act === 'no') { o.state = 'refused'; log(s, `${c.boss}(${c.name})의 호위 부탁을 거절했습니다.`, 'town'); return { ok: true }; }
+    const q = makeQuest(s, o.g, o.tid); if (!q) return { ok: false, why: '게시판에 올릴 수 없습니다' };
+    Object.assign(q, { esc: cid, reward: o.reward, name: `상단 호위: ${c.name}`, weeks: s.cfg.econ.escWeeks || 2, x2: false }); s.board.push(q); o.state = 'posted'; o.qid = q.id;
+    log(s, `${c.name} 호위 의뢰를 게시판에 올렸습니다. 보상 ${o.reward}G (상단이 냄) · ${q.weeks}주.`, 'sys'); return { ok: true, q };
+  }
+  function carEscLeave(s, c, st) {   // 상단이 떠날 때: 호위 카드는 이번 주 출발까지 남겨 두고(상단과 함께 떠남), 다음 주에도 남아 있으면 거둠
+    const o = st.escort; if (!o) return; if (o.state === 'posted') { if (s.board.some(q => q.id === o.qid)) o.expire = s.week + (s.cfg.econ.escWait != null ? s.cfg.econ.escWait : 2); return; } st.escort = null; }
+  function carEscExpire(s, c, st) { const o = st.escort; if (!o || o.state !== 'posted' || o.expire == null || s.week < o.expire) return; const i = s.board.findIndex(q => q.id === o.qid); if (i >= 0) { s.board.splice(i, 1); log(s, `${c.name}이 떠나 아무도 맡지 않은 호위 의뢰를 거뒀습니다.`, 'expire'); } st.escort = null; }
+  function escAfter(s, q, ok) {
+    const c = CARS.find(x => x.id === q.esc), st = c && (s.car || {})[c.id]; if (!st) return; const E = s.cfg.econ;
+    if (ok) { st.rel += E.escRel != null ? E.escRel : 100; st.next = Math.max(s.week + 1, st.next - (1 + (carHR(s.seed, s.week, 7)() < 0.5 ? 1 : 0))); st.bonus = E.escBonus != null ? E.escBonus : 0.1; carRelCheck(s, c, st); log(s, `${c.name} 호위 성공! ${c.boss}: "덕분에 무사히 왔어요. 다음엔 더 일찍 들르고, 값도 더 쳐 드릴게요."`, 'success', { car: { id: c.id, ev: 'escOk' } }); }
+    else { st.rel = Math.max(0, st.rel - (E.escRelFail != null ? E.escRelFail : 50)); st.next += 2; log(s, `${c.name} 호위에 실패했습니다. 짐 일부를 잃은 ${c.boss}이(가) 실망했습니다. (관계 −${E.escRelFail != null ? E.escRelFail : 50})`, 'fail', { car: { id: c.id, ev: 'escNg' } }); }
+    if (st.escort && st.escort.qid === q.id) st.escort = null;
+  }
+  const carTalk = (c, ev, lv) => ev === 'esc' ? c.talk.esc : ev === 'bye' ? c.talk.bye.replace('{gap}', `${c.gap[0]}~${c.gap[1]}`) : c.talk.hi[Math.max(0, Math.min(2, (lv || 1) - 1))];
   function carSell(s, cid, m, n) {   // 길드가 창고 소재를 머무는 상단에 팖
     const c = CARS.find(x => x.id === cid), st = c && (s.car || {})[cid]; if (!st || !st.here) return { ok: false, why: '상단이 마을에 없습니다' };
     const o = st.order.find(x => x.m === m); if (!o) return { ok: false, why: '이 상단은 그 소재를 사지 않습니다' };
@@ -802,11 +826,11 @@
   }
   function carWeekly(s) {
     if (!carOn(s)) return; const E = s.cfg.econ, keep = E.consWeeks || 8;
-    for (const c of carOpenList(s)) { const st = carState(s, c);
-      if (st.here && s.week >= st.until) { st.here = false; for (const o of st.order) st.last[o.m] = o.mult; st.order = []; st.wares = []; st.next = s.week + carGap(s, c); log(s, `${c.name}이 떠났습니다.`, 'town', { car: { id: c.id, ev: 'bye' } }); }
+    for (const c of carOpenList(s)) { const st = carState(s, c); carEscExpire(s, c, st);
+      if (st.here && s.week >= st.until) { carEscLeave(s, c, st); st.here = false; for (const o of st.order) st.last[o.m] = o.mult; st.order = []; st.wares = []; st.next = s.week + carGap(s, c); log(s, `${c.name}이 떠났습니다.`, 'town', { car: { id: c.id, ev: 'bye' } }); }
       if (!st.here && s.week === st.next - (E.carNotice != null ? E.carNotice : 2)) log(s, `리나: "${c.name}이 ${E.carNotice != null ? E.carNotice : 2}주 뒤 들른답니다."`, 'town', { car: { id: c.id, ev: 'notice', n: E.carNotice != null ? E.carNotice : 2 } });   // 2026-11-20 사용자: 예고도 리나 대화로
-      if (!st.here && s.week >= st.next) { st.here = true; st.until = s.week + (E.carStay || 1); st.order = carMakeOrder(s, c, st); st.wares = carMakeWares(s, c, st);
-        log(s, `${c.name}이 마을에 들렀습니다. 주문서: ${st.order.map(o => `${MAT[o.m].name} ×${o.mult} (${o.max}개)`).join(' · ')}${st.wares.length ? ` · 파는 물건: ${st.wares.map(w => MAT[w.m].name).join(' · ')}` : ''}`, 'town', { car: { id: c.id, ev: 'hi', lv: carRelLv(s, st) } }); carConsSell(s, c, st); } }
+      if (!st.here && s.week >= st.next) { st.here = true; st.until = s.week + (E.carStay || 1); st.order = carMakeOrder(s, c, st); st.wares = carMakeWares(s, c, st); carEscOffer(s, c, st);
+        log(s, `${c.name}이 마을에 들렀습니다. 주문서: ${st.order.map(o => `${MAT[o.m].name} ×${o.mult} (${o.max}개)`).join(' · ')}${st.wares.length ? ` · 파는 물건: ${st.wares.map(w => MAT[w.m].name).join(' · ')}` : ''}`, 'town', { car: { id: c.id, ev: 'hi', lv: carRelLv(s, st), esc: !!st.escort } }); carConsSell(s, c, st); } }
     for (const e of (s.cons || []).slice()) if (s.week - e.w >= keep) { payParty(s, e.ids, matPrice(s, e.m) * e.n); mktAdd(s, e.m, e.n); s.cons.splice(s.cons.indexOf(e), 1); }   // 8주가 지나면 모험가가 찾아가 시장에 팖
   }
   function consWant(s, party, m) {   // 모험가 위탁 판단: 그 소재를 사 간 상단이 있고, 지난 상단 값 × 90%가 길드 매입 · 시장보다 10% 넘게 높고, 돈이 급하지 않을 때 [임시]
@@ -1363,7 +1387,8 @@
         for (const a of party) { gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate * (QKr() ? QKr().xpMul(s.cfg.quirk, a, rivalHere(s, a)) : 1)); if (a.contract && x.start >= a.contract.start && x.start <= a.contract.end) ctLog(a.contract, 'fail'); }
         log(s, x.late ? `${J(names(party), '이', '가')} 늦장을 부리다 ${qn(q)} 의뢰의 기한을 넘겼습니다. (명성 · 신뢰는 그대로)` : `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 실패했습니다.`, 'fail', { who: party.map(x => x.name) });
       }
-      if (q.gq != null) gqAfter(s, q, ok, party);   // 2026-11-20 길드 의뢰: 다시 게시 · 끝
+      if (q.gq != null) gqAfter(s, q, ok, party);
+      if (q.esc) escAfter(s, q, ok);   // 2026-11-20 상단 호위   // 2026-11-20 길드 의뢰: 다시 게시 · 끝
       for (const a of party) { a.state = 'town'; a.until = 0; }
       if (q.rq) reqReturn(s, x, ok, party);   // 리퀘스트(지명) 귀환: 보상 · 실패 처리
       if (F) for (const u of F.units) {   // 전투의 대가: 물약 소모, 쓰러진 사람은 사망 판정 → 살면 부상
@@ -2010,6 +2035,6 @@
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
   const api = { live: false, dgWhy, dgLaunch, dgPlan, dgCancel, dgOdds, dgCraftWhy, dgCraft, dgGive, dgItems, dgOn, dgDef, hintPeek, hintSaid, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
-  Object.assign(api, { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, isStaple, canMarket, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carBuy, carWarePrice, carTalk, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log });   // 2026-11-20 main 병합: 시장 · 길드 의뢰 · 상단 쪽 API
+  Object.assign(api, { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, isStaple, canMarket, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carBuy, carWarePrice, carTalk, carEscort, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log });   // 2026-11-20 main 병합: 시장 · 길드 의뢰 · 상단 쪽 API
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

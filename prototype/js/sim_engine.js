@@ -74,7 +74,7 @@
         upMargin: 5, upSell: 3,                    // 주점 업그레이드 마진 +G, 판매 창구 업그레이드 소재 +G
         drinkMargin: [2, 3, 4, 5, 6, 7, 8],        // 술 1잔 길드 마진 (2026-11-12, F·E 확정, D 이상 가안). 확률은 mealBuyRate
         mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02, mealMode: 1,
-        mealCook: 1, mealPrep: 4, mealKeep: 0, mealLeft: 2, mealSale: 0.5, freeAttach: 1, mealPK: 1.5, mealPMin: 0.1, mealPMax: 1.6, shopRate: 1.5, stapleGrade: -1, carFirstWeek: 0, mktSupplyPop: 0, autoRareRate: 0, matBaseOn: 0, matEffort: [0.5, 2], matRareK: 2,
+        mealCook: 1, mealPrep: 4, mealKeep: 0, mealLeft: 2, mealSale: 0.5, freeAttach: 1, mealPK: 1.5, mealPMin: 0.1, mealPMax: 1.6, shopRate: 1.5, stapleGrade: -1, escOn: 1, escWait: 2, escChance: 0.5, escPay: 1.2, escWeeks: 2, escRel: 100, escRelFail: 50, escBonus: 0.1, carFirstWeek: 0, mktSupplyPop: 0, autoRareRate: 0, matBaseOn: 0, matEffort: [0.5, 2], matRareK: 2,
         popOn: 1, popStart: 60, popTake: 5, popRegen: 0.05, popLow: 30, popHigh: 85, popLowBoard: 0.5, popLowDraw: 0.5, popLowJudge: 0.15, popHighTown: 2,   // 2026-11-19 V4 3단계 (결정 44)
         mktOn: 1, mktTarget: 20, mktTargetSpice: 15, mktK: 0.6, mktMin: 0.5, mktMax: 2, mktUse: 0.1, mktPop: 100, buyRateOpt: [0.5, 0.7, 0.9], storeCap: 30, lowBuyK: 0.25   // 2026-11-19 V4 2단계 (결정 40 · 43)   // 2026-11-19 V4 1단계 (결정 37 · 38 · 39): 식당 재료 소모 · 메뉴 가격 · 잡화 양념 (balance.csv와 같게)   // mealMode 1 = 요리 버프(능력치 +n, 발견 보너스 없음, 2026-11-19) · 0 = 예전 C안
       },
