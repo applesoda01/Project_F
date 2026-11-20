@@ -12,7 +12,7 @@
       late: { on: 1, base: -0.01, soft: 1 },   // 2026-11-18 결정 19 · 30: 늦장 실패
       qlv: { on: 1, need: 3, max: 3, foe: 0.15, pay: 0.2, var: 0.6, fresh: 4 },   // 2026-11-18 결정 35: 의뢰 레벨 [임시]
       quirk: { rate: 0.3, safeWeeks: 12, homeAt: 85, homeMul: 0.5, hotAtk: 5, hotRel: 1, hotFight: 0.2, hotFightAtk: 5, hotFightRel: 5, drunkHp: 15, drunkInj: 1, drunkSleep: 0.06, drunkDrink: 1, drunkAttach: 1, cowardFlee: 0.3, cowardStat: 3, cowardQuit: 0.2, bluffNom: 0.05, bluffNew: 2, bluffSneak: 0.1, bluffTh: 0.2, devotedNom: 0.05, devotedCover: 0.3, devotedInj: 1, selfishXp: 0.1, selfishAt: 0.5, selfishFlee: 0.1, selfishRel: 5, glutBuff: 1.5, glutMeal: 1, glutHunger: 0.1, glutHungerMul: 0.9, omenRare: 10, omenRain: 0.2, rivalXp: 0.1, rivalRush: 0.2 },   // 2026-11-20 야간: 버릇 9종 (data/quirks.csv · balance.csv quirk) [임시], 규칙은 combat.js QK
-      dungeon: { on: 1, branch: 1, cont: 1, push: 0, set: 1, rare: 1, recipe: 1, title: 1, keep: 1, openWeek: 12, weeks: 1, party: [2, 3], progOk: [25, 40, 55], progFail: 5, progRisky: 5, progBoss: 10, setAt: 50, foeRisky: 1, foeSafe: 0.8, foeKeep: 0.7, matRoom: 1, matRisky: 1, matBoss: 3, rareMat: 0.3, contHp: 0.5, autoTh: 0.6, autoMode: 0, auto: 0, autoGap: 3, autoWait: 1, setHp: 15, setAtk: 5, set3Vs: 0.25, set3Atk: 0.05, rareParty: 0.05, craftFee: 120, titleAttach: 5 },   // 2026-11-20 던전 (data/dungeons.csv · dungeon_items.csv · balance.csv dungeon) [임시], 규칙은 combat.js DG · game_core dg*
+      dungeon: { on: 1, branch: 1, cont: 1, push: 0, set: 1, rare: 1, recipe: 1, title: 1, keep: 1, openWeek: 12, weeks: 1, party: [2, 3], progOk: [25, 40, 55], progFail: 5, progRisky: 5, progBoss: 10, setAt: 50, foeRisky: 1, foeSafe: 0.8, foeKeep: 0.7, matRoom: 1, matRisky: 1, matBoss: 3, rareMat: 0.3, contHp: 0.5, autoTh: 0.6, autoMode: 0, clearFame: 25, clearGold: 500, royal: 1, auto: 0, autoGap: 3, autoWait: 1, setHp: 15, setAtk: 5, set3Vs: 0.25, set3Atk: 0.05, rareParty: 0.05, craftFee: 120, titleAttach: 5 },   // 2026-11-20 던전 (data/dungeons.csv · dungeon_items.csv · balance.csv dungeon) [임시], 규칙은 combat.js DG · game_core dg*
       quest: {
         ref: [15, 25, 35, 45, 60, 75, 90],        // 판정 기준치
         reqCount: [1, 1, 2, 2, 3, 3, 4],           // 요구 능력치 수
@@ -915,6 +915,7 @@
       if (DC.set && !D.setRecipe && p0 < DC.setAt && D.prog >= DC.setAt) { D.setRecipe = s.week; s.st.dgSet = s.week; }
       if (!D.clear && D.prog >= 100) {
         D.clear = s.week; s.st.dgClear = s.week;
+        if (DC.royal) { s.fame = Math.min(cfg.fame.cap, s.fame + DC.clearFame); s.gold += DC.clearGold; s.op += DC.clearGold; }   // 왕국 포상 (게임과 같음)
         const rare = d.items.find(it => it.rare); if (DC.rare && rare && !D.rare) { D.rare = { key: rare.key, holder: null, gone: null }; s.gearInv[rare.key] = 1; }
         const dd = DISH.find(z => z.dungeon === d.key); if (DC.recipe && dd && !s.dishes[dd.name]) { s.dishes[dd.name] = s.week; s.meals[dd.g]++; }
         if (DC.title) for (const a of party) a.attach = Math.min(100, a.attach + DC.titleAttach);
