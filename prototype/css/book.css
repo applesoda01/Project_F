@@ -917,3 +917,5 @@
 .gq-strip{flex-wrap:wrap}.gq-strip span{white-space:nowrap}.gq-strip>b{white-space:nowrap}
 /* 2026-11-20 매입가 골드 입력 */
 .gq-rate button[data-bgold]{min-width:26px;padding:0 4px}.gq-auto{margin-left:4px;font-size:11px;padding:0 5px}
+/* 2026-11-20 식당: 시장에서 사는 상시 재료 */
+.kmat .kmk{display:block;font-size:10px;font-style:normal;opacity:.75}

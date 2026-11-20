@@ -1747,11 +1747,11 @@
   });
   function mealsHtml() {
     const top = Math.max(1, s.grade), mats = s.mats || {}, known = s.knownMats || {};
-    kSel = kSel.filter(m => mats[m] > 0);
+    kSel = kSel.filter(m => mats[m] > 0 || Gm.canMarket(s, m));
     // 소재 보관함: 음식 소재만
     const food = Object.values(MATS).filter(m => m.line === 'food' && GR.indexOf(m.grade) <= top).sort((a, b) => GR.indexOf(a.grade) - GR.indexOf(b.grade));
-    const pantry = food.map(m => { const k = !!known[m.id], n = mats[m.id] || 0, used = kSel.filter(x => x === m.id).length;
-      return `<button class="kmat ${!k ? 'unk' : n - used <= 0 ? 'zero' : ''}" ${k && n - used > 0 ? `data-kmat="${m.id}"` : 'aria-disabled="true"'} data-mt="${m.id}"><span class="ux-slot${k ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${k || m.icon ? matImg(m) : ''}${k ? cntBadge(n - used) : ''}</span><em>${k ? esc(m.name) : '???'}</em></button>`; }).join('');
+    const pantry = food.map(m => { const k = !!known[m.id], n = mats[m.id] || 0, used = kSel.filter(x => x === m.id).length, mk = k && n <= 0 && Gm.canMarket(s, m.id), ok = k && (n - used > 0 || (mk && !used));   // 2026-11-20 결정 65: 창고에 없는 상시 재료는 시장에서 삼
+      return `<button class="kmat ${!k ? 'unk' : !ok && n - used <= 0 ? 'zero' : ''}" ${ok ? `data-kmat="${m.id}"` : 'aria-disabled="true"'} data-mt="${m.id}"${mk ? ` title="창고에 없음 — 요리하면 시장에서 ${Gm.shopPrice(s, m.id)}G에 삼"` : ''}><span class="ux-slot${k ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${k || m.icon ? matImg(m) : ''}${k && !mk ? cntBadge(n - used) : ''}</span><em>${k ? esc(m.name) : '???'}${mk ? `<small class="kmk">시장 ${Gm.shopPrice(s, m.id)}G</small>` : ''}</em></button>`; }).join('');
     // 조리대
     let slots = '';
     const shown = kAnim ? kAnim.sel : kSel;
