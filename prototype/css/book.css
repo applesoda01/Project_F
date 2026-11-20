@@ -1054,3 +1054,9 @@ p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 
 .bk-gq .gs-mat .ux-slot{width:44px;height:44px}.bk-gq .gs-mat .ux-slot img{width:36px;height:36px}.bk-gq .gs-mat{font-size:13px}
 .bk-gq .gq-pick.wide{max-height:200px}
 .bk-gq.bk2>.bk-r>.gq-site{flex:1 1 auto;justify-content:space-evenly;max-height:260px}
+/* 2026-11-20 떠돌이 상단: 주인 인사 · 사기 */
+.car-say{margin:2px 0 6px;padding:8px 12px;border-radius:10px;background:#fffaf0;border:1.5px solid #e0cba4;font-size:15px;line-height:1.5;color:#4a321c}
+.car-say b{display:block;font-size:13px;color:#8a5a12}
+.car-row.buy{background:rgba(47,106,82,.06)}
+.car-row.rare{background:rgba(126,74,160,.10);border-color:#7e4aa0}
+.car-rare{font-style:normal;font-size:11px;padding:0 6px;border-radius:999px;background:#7e4aa0;color:#fff;margin-left:4px}

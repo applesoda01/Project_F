@@ -508,7 +508,7 @@
     function sellTh(party) { const Tt = E.sellTh || [0.9, 0.85, 0.75], Aa = E.sellAttach || [60, 90], Cc = E.sellAttachCut || [0.05, 0.1]; const ps = (party || []).filter(Boolean); if (!ps.length) return 0;
       return ps.reduce((t, a) => t + (Tt[a.spend] != null ? Tt[a.spend] : 0.85) - ((a.attach || 0) >= Aa[1] ? Cc[1] : (a.attach || 0) >= Aa[0] ? Cc[0] : 0), 0) / ps.length; }
     // ---------- 2026-11-20 V4 결정 57~62: 떠돌이 상단 (게임 CARS ~ autoCar 와 같음, 시세 = matBase) ----------
-    const CAR_FOOD = new Set(); for (const d of DISH) for (const m of d.mats) CAR_FOOD.add(m);
+    const CAR_FOOD = new Set(); for (const d of DISH) if (!d.dungeon) for (const m of d.mats) CAR_FOOD.add(m);   // 게임과 같음: 던전 요리 재료 제외
     const CARS = [
       { id: 'farm', g: 0, gap: [3, 6], likes: m => CAR_FOOD.has(m) },
       { id: 'smith', g: 1, gap: [5, 9], likes: m => /^mat_(mine|hunt|slay|guard)_/.test(m) || m === 'mat_x015' || m === 'mat_x001' },

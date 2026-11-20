@@ -193,6 +193,7 @@
     const gups = logs.filter(L => L.gup).map(L => L.gup); if (gups.length) gupShow(gups);   // 2026-11-12 모험가 승급 축하 카드
     for (const L of logs) if (L.kind === 'arrive' && L.who && L.who[0]) { const a = s.advs.find(b => b.name === L.who[0] && b.alive); if (a) arrShow(a); }   // 2026-11-20 새 모험가 소개 카드 (버릇은 영입할 때 공개, 사용자 결정)
     for (const L of logs) {
+      if (L.car) { const c = Gm.CARS.find(x => x.id === L.car.id); if (c) UI.say(L.car.ev === 'hi' ? [{ name: '리나', face: 'smile', text: `마스터, ${c.name}이 왔어요! 경영 → 상단에서 사고팔 수 있어요.` }, { name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'hi', L.car.lv) }] : [{ name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'bye') }]); }   // 2026-11-20 사용자: 상단 방문 대화
       if (L.rq) {   // 리퀘스트: 의뢰 · 완료 · 실패 · 거절 대사 (data/quest_lines.csv). 외지인이 처음 오면 리나 한마디가 앞에 붙음
         const R0 = Gm.reqOf(s), fr = (Gm.QLINES[L.rq.key] || {}).first; let ls = [];
         if (L.rq.ev === 'req' && fr && !(R0.first = R0.first || {})[L.rq.key]) { R0.first[L.rq.key] = 1; ls = ls.concat(rqLinesOf(L.rq.key, 'first', L.rq.who)); }
@@ -930,7 +931,12 @@
     let R = '';
     if (!here.length) R += '<div class="od-h">주문서</div><div class="od-empty">지금 마을에 머무는 상단이 없습니다.</div>';
     for (const [c, st] of here) {
-      R += `<div class="od-h">${esc(c.name)} 주문서 <small>머무는 동안만</small></div>`;
+      R += `<div class="car-say"><b>${esc(c.boss)}</b> “${esc(Gm.carTalk(c, 'hi', Gm.carRelLv(s, st)))}”</div>`;   // 2026-11-20 사용자: 상단 주인 대화
+      R += `<div class="od-h">${esc(c.name)}에게서 사기 <small>우리 마을 시장에 없는 물건 · 한정</small></div>`;
+      for (const w of (st.wares || [])) { const m = MATS[w.m] || { name: w.m }, p = Gm.carWarePrice(s, w), rest = w.max - w.sold, can = Math.min(rest, Math.floor(s.gold / p), (s.cfg.econ.storeCap || 30) - ((s.mats || {})[w.m] || 0));
+        R += `<div class="car-row buy${w.rare ? ' rare' : ''}"><span class="ic sm">${matImg(m)}</span><span class="mp-n"><b>${esc(m.name)}${w.rare ? ' <em class="car-rare">희귀</em>' : ''} <em class="car-x">${GR[GR.indexOf(m.grade)] || ''}급</em></b><small>1개 <b>${fmt(p)}G</b> · 시세 ${fmt(Gm.matPrice(s, w.m))}G · 남은 수 ${rest} / ${w.max} · 창고 ${(s.mats || {})[w.m] || 0}</small></span><span class="car-btn"><button class="ux-btn sm" data-cb="${c.id}:${w.m}:1" ${can > 0 ? '' : 'disabled'}>1개</button><button class="ux-btn sm" data-cb="${c.id}:${w.m}:${Math.max(1, can)}" ${can > 0 ? '' : 'disabled'} title="${fmt(p * Math.max(0, can))}G">다 사기${can > 0 ? ` ${can}` : ''}</button></span></div>`; }
+      if (!(st.wares || []).length) R += '<div class="od-empty">이번에는 팔 물건이 없답니다.</div>';
+      R += `<div class="od-h">${esc(c.name)}에게 팔기 <small>주문서 · 머무는 동안만</small></div>`;
       for (const o of st.order) { const m = MATS[o.m] || { name: o.m }, p = Gm.carPrice(s, o), have = (s.mats || {})[o.m] || 0, rest = o.max - o.sold, can = Math.min(rest, have);
         R += `<div class="car-row"><span class="ic sm">${matImg(m)}</span><span class="mp-n"><b>${esc(m.name)} <em class="car-x">×${o.mult}</em></b><small>1개 <b>${fmt(p)}G</b> · 시세 ${fmt(Gm.matPrice(s, o.m))}G · 산 수 ${o.sold} / ${o.max} · 창고 ${have}</small></span><span class="car-btn"><button class="ux-btn sm" data-cs="${c.id}:${o.m}:1" ${can ? '' : 'disabled'}>1개</button><button class="ux-btn sm" data-cs="${c.id}:${o.m}:${can}" ${can ? '' : 'disabled'} title="주문 수량까지 · ${fmt(p * can)}G">다 팔기${can ? ` ${can}` : ''}</button></span></div>`; }
       if (!st.order.length) R += '<div class="od-empty">이번에는 살 물건이 없답니다.</div>';
@@ -944,6 +950,7 @@
     return `<div class="bk2 bk-od bk-gq bk-car"><section class="bk-l">${L}</section><section class="bk-r">${R}</section></div>`;
   }
   function carClick(e) {
+    { const b = e.target.closest('[data-cb]'); if (b) { if (b.disabled) return true; const [cid, m, n] = b.dataset.cb.split(':'), r = Gm.carBuy(s, cid, m, +n); toast(r.ok ? `${(MATS[m] || { name: m }).name} ${r.n}개를 ${fmt(r.g)}G에 샀습니다.` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); renderPopup(); return true; } }   // 2026-11-20 상단에게서 사기
     const el = e.target.closest('[data-cs]'); if (!el || el.disabled) return false;
     const [cid, m, n] = el.dataset.cs.split(':'), r = Gm.carSell(s, cid, m, +n);
     toast(r.ok ? `${(MATS[m] || { name: m }).name} ${r.n}개를 ${fmt(r.g)}G에 팔았습니다.` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); renderPopup(); return true;
@@ -1073,8 +1080,8 @@
   // ---------- 장부: 수입 · 지출 (지난달 | 이번 달) + 12개월 순이익 그래프 (docs/design/popup_ledger.md) ----------
   // 순이익 = 수입 − 지출(시설 건설비·기타). 관문 1의 "운영 순이익(m.net)"은 건설비를 빼고 계산하므로 따로 둠
   const LG_IN = [['fee', '의뢰 수수료'], ['resale', '소재 판매'], ['consign', '위탁 수수료'], ['car', '상단 판매'], ['meal', '식사 판매'], ['tavern', '주점 매출'], ['reqIn', '리퀘스트 보상'], ['subsidy', '왕국 보조금']];
-  const LG_OUT = [['build', '시설 건설비'], ['matBuy', '소재 매입'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['order', '길드 발주'], ['gq', '길드 의뢰'], ['shop', '시장 재료'], ['gift', '장비 선물'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
-  const LG_OPT = { car: 1, consign: 1, cpay: 1, csup: 1, order: 1, gq: 1, shop: 1, gift: 1, prep: 1 };   // shop: 식당이 잡화 상인에게서 산 양념 (2026-11-19 결정 38)   // order: 길드 발주 선지급 − 거둔 돈 (2026-11-18 E8-4)
+  const LG_OUT = [['build', '시설 건설비'], ['matBuy', '소재 매입'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['order', '길드 발주'], ['gq', '길드 의뢰'], ['carBuy', '상단 구매'], ['shop', '시장 재료'], ['gift', '장비 선물'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
+  const LG_OPT = { carBuy: 1, car: 1, consign: 1, cpay: 1, csup: 1, order: 1, gq: 1, shop: 1, gift: 1, prep: 1 };   // shop: 식당이 잡화 상인에게서 산 양념 (2026-11-19 결정 38)   // order: 길드 발주 선지급 − 거둔 돈 (2026-11-18 E8-4)
   const LG_EOM = { subsidy: 1 };   // 월말 결산 때 한꺼번에 들어오는 항목 (주점 매출은 2026-11-12부터 매주 술 1잔 단위라 제외)
   const lgIn = m => LG_IN.reduce((t, [k]) => t + (m[k] || 0), 0), lgOut = m => LG_OUT.reduce((t, [k]) => t + (m[k] || 0), 0), lgNet = m => lgIn(m) + lgOut(m);
   const gG = v => `${v < 0 ? '−' : ''}${fmt(Math.abs(Math.round(v)))}G`;
@@ -1096,6 +1103,7 @@
     if (k === 'reqIn') { const b = m.reqs || []; return b.length ? b.map(x => `${esc(x.n)} <b>${gG(x.g)}</b>`).join('<br>') : '없음'; }
     if (k === 'gift') return m.gift ? '대장간에서 모험가에게 장비를 선물한 값' : '없음';
     if (k === 'order') return m.order ? '상시 발주로 들어온 소재 값 (가져온 모험가에게 지급 · 리퀘스트 장 → 길드 발주)' : '없음';
+    if (k === 'carBuy') return m.carBuy ? `떠돌이 상단에게서 <b>${m.carBuyN || 0}개</b> 삼 (경영 장 → 상단)` : '없음';   // 2026-11-20
     if (k === 'car') return m.car ? `창고 소재 <b>${m.carN || 0}개</b>를 떠돌이 상단에 판매 (경영 장 → 상단)` : '없음';   // 2026-11-20
     if (k === 'gq') return m.gq ? `길드 의뢰로 들어온 소재 <b>${m.gqN || 0}개</b> 값 (맡아 둔 돈에서 가져온 모험가에게 지급 · 리퀘스트 장 → 길드 의뢰)` : '없음';   // 2026-11-20
     if (k === 'shop') return m.shop ? '식당이 요리를 만들 때 창고에 없는 상시 재료를 시장에서 산 값' : '없음';
