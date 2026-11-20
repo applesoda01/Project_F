@@ -484,16 +484,27 @@
     return H + 8;
   }
   D.bubbles = function (g) {
+    const pend = [];
     for (const ac of D.actors.values()) {
       const G = ac.gl; if (G) { ac.x += G.x; ac.y += G.y; }
       if (ac.emo) emote(g, ac);   // 감정 아이콘 (2026-11-18): 명찰(이름 · 레벨) 뒤에 깔리게 먼저 그림
       let up = plate(g, ac);   // 명찰이 있으면 말풍선은 그 위로
       up += serveBar(g, ac, up);   // 리나에게 응대받는 중이면 명찰 위에 노란 진행 막대
-      if (ac.bubble) bubble(g, ac.x, headY(ac) - up, ac.bubble.text, false, D.t - (ac.bubble.t0 == null ? D.t - 1 : ac.bubble.t0), ac.bubble.until - D.t);
+      if (ac.bubble) pend.push({ x: ac.x, y: headY(ac) - up, text: ac.bubble.text, age: D.t - (ac.bubble.t0 == null ? D.t - 1 : ac.bubble.t0), rem: ac.bubble.until - D.t });
       if (G) { ac.x -= G.x; ac.y -= G.y; }
+    }
+    // 2026-11-20 말풍선 겹침 (저녁 인수인계 2장 2번): 리나 말풍선을 먼저 자리 잡고, 모험가 말풍선은 아래(화면 앞)에 있는 것부터 겹치면 위로 올림 (최대 3칸)
+    const placed = [];
+    if (Lina.bubble) { const r = bubbleRect(g, Lina.x, Lina.feet - 150, Lina.bubble.text); placed.push(r); }
+    pend.sort((p, q) => q.y - p.y);
+    for (const b of pend) {
+      let lift = 0;
+      for (let k = 0; k < 3; k++) { const r = bubbleRect(g, b.x, b.y - lift, b.text), hit = placed.find(o => r.bx < o.bx + o.w + 4 && o.bx < r.bx + r.w + 4 && r.by < o.by + o.h + 4 && o.by < r.by + r.h + 4); if (!hit) break; lift += (r.by + r.h + 6) - hit.by; }
+      placed.push(bubbleRect(g, b.x, b.y - lift, b.text)); bubble(g, b.x, b.y - lift, b.text, false, b.age, b.rem);
     }
     if (Lina.bubble) bubble(g, Lina.x, Lina.feet - 150, Lina.bubble.text, true, Lina.t - (Lina.bubble.t0 == null ? Lina.t - 1 : Lina.bubble.t0), Lina.bubble.until - Lina.t);
   };
+  function bubbleRect(g, x, y, text) { g.save(); g.font = `700 26px "MaruBuri", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif`; const w = Math.max(72, Math.ceil(g.measureText(text).width) + 48), h = 54; g.restore(); return { bx: Math.max(12, Math.min(1908 - w, x - 34)), by: y - 22 - h, w, h }; }   // bubble()와 같은 크기 (S.fs 26 · px 24 · h 54 · tx 34 · th 22)
   // 말풍선 (2026.11 개편 · B안): 왼쪽 아래 꼬리가 달린 사각 말풍선. 갈색 테두리 + 밝은 종이색 바탕 + 굵은 글씨.
   // (x, y) = 꼬리 끝(캐릭터 머리 위). age: 뜬 지 몇 초(커지며 등장), remain: 사라질 때까지 남은 초(끝 0.25초는 투명해짐), left: 사용 안 함
   // 예전 모양(꼬리 없는 둥근 상자 + 금색 안쪽 선)은 bubbleOld 로 보관
