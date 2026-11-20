@@ -193,7 +193,8 @@
     const gups = logs.filter(L => L.gup).map(L => L.gup); if (gups.length) gupShow(gups);   // 2026-11-12 모험가 승급 축하 카드
     for (const L of logs) if (L.kind === 'arrive' && L.who && L.who[0]) { const a = s.advs.find(b => b.name === L.who[0] && b.alive); if (a) arrShow(a); }   // 2026-11-20 새 모험가 소개 카드 (버릇은 영입할 때 공개, 사용자 결정)
     for (const L of logs) {
-      if (L.car) { const c = Gm.CARS.find(x => x.id === L.car.id); if (c) UI.say(L.car.ev === 'hi' ? [{ name: '리나', face: 'smile', text: `마스터, ${c.name}이 왔어요! 경영 → 상단에서 사고팔 수 있어요.` }, { name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'hi', L.car.lv) }] : [{ name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'bye') }]); }   // 2026-11-20 사용자: 상단 방문 대화
+      if (L.car && L.car.ev === 'notice') { const c = Gm.CARS.find(x => x.id === L.car.id); if (c) UI.say([{ name: '리나', face: 'smile', text: `마스터, ${c.name}이 ${L.car.n || 2}주 뒤에 들른대요! 좋아하는 물건(${CAR_LIKE[c.id] || '여러 가지'})을 창고에 모아 두면 비싸게 팔 수 있어요.` }]); }
+      else if (L.car) { const c = Gm.CARS.find(x => x.id === L.car.id); if (c) UI.say(L.car.ev === 'hi' ? [{ name: '리나', face: 'smile', text: `마스터, ${c.name}이 왔어요! 경영 → 상단에서 사고팔 수 있어요.` }, { name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'hi', L.car.lv) }] : [{ name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'bye') }]); }   // 2026-11-20 사용자: 상단 방문 대화
       if (L.rq) {   // 리퀘스트: 의뢰 · 완료 · 실패 · 거절 대사 (data/quest_lines.csv). 외지인이 처음 오면 리나 한마디가 앞에 붙음
         const R0 = Gm.reqOf(s), fr = (Gm.QLINES[L.rq.key] || {}).first; let ls = [];
         if (L.rq.ev === 'req' && fr && !(R0.first = R0.first || {})[L.rq.key]) { R0.first[L.rq.key] = 1; ls = ls.concat(rqLinesOf(L.rq.key, 'first', L.rq.who)); }
@@ -563,7 +564,7 @@
     if (!n) return;   // 장부: '소재 판매' 줄 (game_core.sellMats)
     Gm.log(s, `소재 ${n}개를 팔아 ${g}G를 받았습니다.`, 'guild'); UI.hud && UI.hud(); }
   // 2026-11-19 시세 그래프 (V4 2단계): 한 소재의 최근 시세(G) 선 하나 + 기준가 점선. 주마다 마우스를 올리면 값. 색은 선 #00897b (검사 통과: 채도 · 대비), 글자는 잉크색
-  function priceChart(id, W, H, weeks) {
+  function priceChart(id, W, H, weeks, noBase) {   // noBase: 기준가 선 · 글자 없이 (2026-11-20 사용자: 기준가는 기획서에만)
     const L = weeks ? Gm.mktLogOf(s, id).slice(-weeks) : Gm.mktLogOf(s, id), base = Gm.matBase(id), wk = w => { const d = s.week - w; return d <= 1 ? '이번 주' : (d - 1) + '주 전'; };
     if (L.length < 2) return '<div class="pc-none">시세 기록이 2주 이상 쌓이면 그래프가 보입니다.</div>';
     const ps = L.map(x => x[1]), lo = Math.min(base, ...ps), hi = Math.max(base, ...ps), y0 = Math.max(0, Math.floor(lo - Math.max(0.5, (hi - lo) * 0.15))), y1 = Math.ceil(hi + Math.max(0.5, (hi - lo) * 0.15));
@@ -571,10 +572,10 @@
     const X = i => ml + (L.length === 1 ? iw : iw * i / (L.length - 1)), Y = v => mt + ih * (1 - (v - y0) / (y1 - y0 || 1));
     const line = L.map((x, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(x[1]).toFixed(1)}`).join(''), last = L[L.length - 1], lx = X(L.length - 1), ly = Y(last[1]);
     const step = iw / Math.max(1, L.length - 1);
-    const hits = L.map((x, i) => `<rect class="pc-hit" x="${(X(i) - step / 2).toFixed(1)}" y="${mt}" width="${step.toFixed(1)}" height="${ih}"><title>${wk(x[0])} · ${Math.round(x[1])}G (기준의 ${Math.round(x[1] / base * 100)}%)</title></rect><circle class="pc-dot" cx="${X(i).toFixed(1)}" cy="${Y(x[1]).toFixed(1)}" r="4"></circle>`).join('');
+    const hits = L.map((x, i) => `<rect class="pc-hit" x="${(X(i) - step / 2).toFixed(1)}" y="${mt}" width="${step.toFixed(1)}" height="${ih}"><title>${wk(x[0])} · ${Math.round(x[1])}G${noBase ? '' : ` (기준의 ${Math.round(x[1] / base * 100)}%)`}</title></rect><circle class="pc-dot" cx="${X(i).toFixed(1)}" cy="${Y(x[1]).toFixed(1)}" r="4"></circle>`).join('');
     return `<svg class="pc" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc((MATS[id] || {}).name || id)} 시세 기록: ${L.length}주, 지금 ${Math.round(last[1])}G, 기준 ${base}G">`
       + `<line class="pc-ax" x1="${ml}" y1="${mt + ih}" x2="${ml + iw}" y2="${mt + ih}"/>`
-      + `<line class="pc-base" x1="${ml}" y1="${Y(base).toFixed(1)}" x2="${ml + iw}" y2="${Y(base).toFixed(1)}"/><text class="pc-t" x="${ml + iw + 4}" y="${(Y(base) + 4).toFixed(1)}">기준 ${base}G</text>`
+      + (noBase ? '' : `<line class="pc-base" x1="${ml}" y1="${Y(base).toFixed(1)}" x2="${ml + iw}" y2="${Y(base).toFixed(1)}"/><text class="pc-t" x="${ml + iw + 4}" y="${(Y(base) + 4).toFixed(1)}">기준 ${base}G</text>`)
       + `<text class="pc-t" x="${ml - 4}" y="${mt + 4}" text-anchor="end">${y1}G</text><text class="pc-t" x="${ml - 4}" y="${mt + ih}" text-anchor="end">${y0}G</text>`
       + `<text class="pc-t" x="${ml}" y="${H - 4}">${wk(L[0][0])}</text><text class="pc-t" x="${ml + iw}" y="${H - 4}" text-anchor="end">이번 주</text>`
       + `<path class="pc-line" d="${line}"/><circle class="pc-end" cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4"/><text class="pc-v" x="${(lx + 7).toFixed(1)}" y="${(ly - 6).toFixed(1)}">${Math.round(last[1])}G</text>${hits}</svg>`;
@@ -969,7 +970,7 @@
     let L = `<div class="mt"><div class="ux-h">소재 관리 <small>팔기 · 사들이기 · 시세</small><details class="tr-help"><summary title="도움말" aria-label="도움말">?</summary><div class="tr-help-b">${help}</div></details></div>
       <div class="mt-flt">${[['all', `전체 ${known.length}`], ['food', '음식 소재'], ['etc', '그 밖의 소재']].map(([k, t]) => `<button class="${mtFlt === k ? 'on' : ''}" data-mtf="${k}">${t}</button>`).join('')}</div><div class="mt-list gq-mp">`;
     for (const id of list) { const m = MATS[id], n = mats[id] || 0, fixed = Gm.buyGoldOf(s, id) != null, bp = Gm.matBuyPrice(s, id), t = Gm.mktTrend(s, id);
-      L += `<button class="mt-row${id === mtSel ? ' on' : ''}" data-mtsel="${id}"><span class="mt-ic${n ? '' : ' zero'}" title="창고 ${n}/${cap}개">${matImg(m)}<b>${n}</b></span><span class="mt-nm"><b>${esc(m.name)}</b><small>시세 ${Gm.matPrice(s, id)}G ${t > 0 ? '<i class="up">▲</i>' : t < 0 ? '<i class="dn">▼</i>' : ''}${priceSpark(id)} · 시장 ${mM(id)}</small></span><span class="mt-bp${fixed ? '' : ' auto'}">매입가<b>${bp}G</b>${fixed ? '직접 정함' : '자동'}</span><span class="mt-h4">지난 4주<br>길드 <b>${h4(id, 'g')}</b> · 시장 ${h4(id, 'm')}</span></button>`; }
+      L += `<button class="mt-row${id === mtSel ? ' on' : ''}" data-mtsel="${id}"><span class="mt-ic${n ? '' : ' zero'}" title="창고 ${n}/${cap}개">${matImg(m)}<b>${n}</b></span><span class="mt-nm"><b>${esc(m.name)}</b><small>시세 ${Gm.matPrice(s, id)}G ${t > 0 ? '<i class="up">▲</i>' : t < 0 ? '<i class="dn">▼</i>' : ''}${priceSpark(id)} · 시장 ${mM(id)}</small></span><span class="mt-bp${fixed ? '' : ' auto'}">매입가<b>${bp}G</b>${fixed ? '직접 정함' : ''}</span></button>`; }   // 2026-11-20 사용자: '자동' · 지난 4주 길드 / 시장 문구 없앰
     if (!list.length) L += '<div class="tr-none">아직 아는 소재가 없습니다.</div>';
     const nf = known.filter(id => MATS[id].line !== 'food' && mats[id] > 0), sum = nf.reduce((t, id) => t + Gm.sellPreview(s, id, mats[id]), 0), M = s.month || {};
     L += `</div><div class="mt-bar"><span>이번 달 판매 <b>${fmt(Math.round(M.sell || 0))}G</b> · 매입 <b>${M.matBuyN || 0}개 ${fmt(Math.round(-(M.matBuy || 0)))}G</b></span><button class="ux-btn primary" data-snf="1" ${nf.length && shop ? '' : 'disabled'}>음식이 아닌 소재 모두 팔기 (${fmt(sum)}G)</button></div></div>`;
@@ -977,7 +978,7 @@
     if (mtSel) { const id = mtSel, m = MATS[id], n = mats[id] || 0, mp = Gm.matPrice(s, id), bp = Gm.matBuyPrice(s, id), mx = Gm.buyGoldMax(s, id), fixed = Gm.buyGoldOf(s, id) != null, food = m.line === 'food', st = Gm.isStaple(s, id), mm = mM(id), tg = mT(id);
       const logs = (s.buyLog || []).filter(b => b.m === id).slice(0, 3);
       R += `<div class="mt-top"><span class="big ux-slot" data-g="${GR.indexOf(m.grade)}">${matImg(m)}</span><div><div class="mt-tn">${badge(GR.indexOf(m.grade))}<b>${esc(m.name)}</b>${food ? `<span class="tg ${st ? 'st' : 'rare'}" title="${st ? '창고에 없으면 식당이 시장에서 삼' : '시장에 없음 — 모험가 매입으로만'}">${st ? '상시 재료' : '희귀 재료'}</span>` : ''}</div><p>${esc(m.desc || '')}</p></div></div>
-        <div class="mt-ch"><div class="mt-per">${[4, 12, 24, 48].map(w => `<button class="${buyChartW === w ? 'on' : ''}" data-bper="${w}">${w}주</button>`).join('')}<em>지금 ${mp}G ${trendTag(id)}</em></div>${priceChart(id, 480, 128, buyChartW)}
+        <div class="mt-ch"><div class="mt-per">${[4, 12, 24, 48].map(w => `<button class="${buyChartW === w ? 'on' : ''}" data-bper="${w}">${w}주</button>`).join('')}<em>지금 ${mp}G ${(t => t > 0 ? '<i class="mk-tr up">▲</i>' : t < 0 ? '<i class="mk-tr dn">▼</i>' : '')(Gm.mktTrend(s, id))}</em></div>${priceChart(id, 480, 128, buyChartW, true)}
           <div class="mt-stock" title="마을 상점들이 가진 양 — 적으면 시세가 오름">마을 시장 재고 <span class="bar"><i style="width:${Math.min(100, Math.round(mm / (tg * 1.5) * 100))}%"></i><u style="left:${Math.round(100 / 1.5)}%"></u></span><b>${mm}개</b><small>보통 ${tg}개${mm < tg * 0.5 ? ' · 모자람' : mm > tg * 1.2 ? ' · 넉넉함' : ''}</small></div></div>
         <div class="mt-two">
           <div class="mt-box"><h4>팔기 <small>창고 ${n} / ${cap}개</small></h4><div class="mt-kv"><span>1개 값</span><b>${Gm.matSellPrice(s, id)}G</b><span>전부 팔면</span><b>${n ? Gm.sellPreview(s, id, n) : 0}G</b></div><div class="mt-btns"><button class="ux-btn" data-sone="${id}" ${n && shop ? '' : 'disabled'}>1개 팔기</button><button class="ux-btn primary" data-sall="${id}" ${n && shop ? '' : 'disabled'}>전부 팔기</button></div><div class="mt-note">${shop ? `많이 팔수록 마을 재고가 늘어 값이 내려갑니다${food ? ' · 팔면 요리를 못 만들 수 있음' : ''}` : '판매 창구를 지으면 팔 수 있습니다'}</div></div>
@@ -1080,8 +1081,8 @@
   // ---------- 장부: 수입 · 지출 (지난달 | 이번 달) + 12개월 순이익 그래프 (docs/design/popup_ledger.md) ----------
   // 순이익 = 수입 − 지출(시설 건설비·기타). 관문 1의 "운영 순이익(m.net)"은 건설비를 빼고 계산하므로 따로 둠
   const LG_IN = [['fee', '의뢰 수수료'], ['resale', '소재 판매'], ['consign', '위탁 수수료'], ['car', '상단 판매'], ['meal', '식사 판매'], ['tavern', '주점 매출'], ['reqIn', '리퀘스트 보상'], ['subsidy', '왕국 보조금']];
-  const LG_OUT = [['build', '시설 건설비'], ['matBuy', '소재 매입'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['order', '길드 발주'], ['gq', '길드 의뢰'], ['carBuy', '상단 구매'], ['shop', '시장 재료'], ['gift', '장비 선물'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
-  const LG_OPT = { carBuy: 1, car: 1, consign: 1, cpay: 1, csup: 1, order: 1, gq: 1, shop: 1, gift: 1, prep: 1 };   // shop: 식당이 잡화 상인에게서 산 양념 (2026-11-19 결정 38)   // order: 길드 발주 선지급 − 거둔 돈 (2026-11-18 E8-4)
+  const LG_OUT = [['build', '시설 건설비'], ['matBuy', '소재 매입'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['order', '길드 발주'], ['gq', '길드 의뢰'], ['carBuy', '상단 구매'], ['shop', '식당 재료 (시장 구매)'], ['gift', '장비 선물'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
+  const LG_OPT = { carBuy: 1, car: 1, consign: 1, cpay: 1, csup: 1, order: 1, gq: 1, gift: 1, prep: 1 };   // shop: 식당이 잡화 상인에게서 산 양념 (2026-11-19 결정 38)   // order: 길드 발주 선지급 − 거둔 돈 (2026-11-18 E8-4)
   const LG_EOM = { subsidy: 1 };   // 월말 결산 때 한꺼번에 들어오는 항목 (주점 매출은 2026-11-12부터 매주 술 1잔 단위라 제외)
   const lgIn = m => LG_IN.reduce((t, [k]) => t + (m[k] || 0), 0), lgOut = m => LG_OUT.reduce((t, [k]) => t + (m[k] || 0), 0), lgNet = m => lgIn(m) + lgOut(m);
   const gG = v => `${v < 0 ? '−' : ''}${fmt(Math.abs(Math.round(v)))}G`;
@@ -1127,6 +1128,7 @@
       <div class="gd-row ${ok2 ? 'ok' : ''} ${ok1 ? '' : 'wait'}"><i>${ok2 ? '✔' : '2'}</i><span>메인 퀘스트 「다리를 지켜라」 달성</span><b></b><em class="gd-st">${st2}</em></div>
       <p class="gd-rw">승급하면: ${fmt(m.gold)}G · 명성 +${m.fame} · 모험가 관리소 해금 · ${GR[m.grade + 1]}급 의뢰</p></div>`;
   }
+  let lgSel = null;   // 2026-11-20 사용자: 왼쪽 항목을 누르면 오른쪽에 상세, 요약(12개월 그래프 · 승급)은 버튼으로
   function ledgerHtml() {
     const cur = s.month, prev = s.lastMonth; lgTips = [];
     const tipId = html => { lgTips.push(html); return lgTips.length - 1; };
@@ -1136,18 +1138,25 @@
       return `<td class="n ${eom ? 'eom' : v < 0 ? 'neg' : ''}" data-lt="${tipId(lgTip(k, m, isCur))}">${eom ? '월말' : v ? gG(v) : '0G'}</td>`;
     };
     let h = `<div class="lg-book"><table class="lg"><colgroup><col><col class="c"><col class="c"></colgroup>
-      <tr class="hd"><th></th><th class="n">지난달</th><th class="n">이번 달</th></tr>
+      <tr class="hd"><th><button class="lg-sum-btn${lgSel ? '' : ' on'}" data-lgk="">요약 보기</button></th><th class="n">지난달</th><th class="n">이번 달</th></tr>
       <tr class="sec in"><th colspan="3">수입</th></tr>`;
     const lgShow = k => !LG_OPT[k] || (prev && prev[k]) || cur[k];   // 2026-11-17: 쓸 때만 보이는 줄 (위탁 · 계약 · 침공 물약) — 장부가 책 한 쪽을 넘지 않게
-    for (const [k, n] of LG_IN) if (lgShow(k)) h += `<tr><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
+    for (const [k, n] of LG_IN) if (lgShow(k)) h += `<tr class="lg-k${lgSel === k ? ' on' : ''}" data-lgk="${k}"><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
     h += `<tr class="sum in"><td>수입 합계</td><td class="n">${prev ? gG(lgIn(prev)) : '—'}</td><td class="n">${gG(lgIn(cur))}</td></tr>
       <tr class="sec out"><th colspan="3">지출</th></tr>`;
-    for (const [k, n] of LG_OUT) if (lgShow(k)) h += `<tr><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
+    for (const [k, n] of LG_OUT) if (lgShow(k)) h += `<tr class="lg-k${lgSel === k ? ' on' : ''}" data-lgk="${k}"><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
     h += `<tr class="sum out"><td>지출 합계</td><td class="n neg">${prev ? gG(lgOut(prev)) : '—'}</td><td class="n neg">${gG(lgOut(cur))}</td></tr>
       <tr class="tot"><td>순이익</td><td class="n ${prev && lgNet(prev) < 0 ? 'neg' : 'pos'}">${prev ? gG(lgNet(prev)) : '—'}</td><td class="n ${lgNet(cur) < 0 ? 'neg' : 'pos'}">${gG(lgNet(cur))}</td></tr></table>`;
     // 그래프: 최근 12개월 순이익 (건설비 포함). 0 기준선 위 = 이익, 아래 = 손해
     const hist = s.history.slice(-12);
-    if (hist.length) {
+    if (lgSel) {   // 항목 상세 (오른쪽 쪽)
+      const nm = ([...LG_IN, ...LG_OUT].find(x => x[0] === lgSel) || [, lgSel])[1], isIn = LG_IN.some(x => x[0] === lgSel), rows = hist.map(m => [m, m[lgSel] || 0]), mx = Math.max(1, ...rows.map(r => Math.abs(r[1])), Math.abs(cur[lgSel] || 0));
+      h += `<section class="lg-chart lg-det"><div class="ux-h">${esc(nm)} <small>${isIn ? '수입' : '지출'}</small></div>`
+        + `<div class="ld-two"><div class="ld-box"><b>이번 달</b><em class="${(cur[lgSel] || 0) < 0 ? 'neg' : ''}">${gG(cur[lgSel] || 0)}</em><div class="ld-tx">${lgTip(lgSel, cur, true)}</div></div>`
+        + `<div class="ld-box"><b>지난달</b><em class="${prev && (prev[lgSel] || 0) < 0 ? 'neg' : ''}">${prev ? gG(prev[lgSel] || 0) : '—'}</em><div class="ld-tx">${prev ? lgTip(lgSel, prev, false) : '아직 지난달 기록이 없습니다'}</div></div></div>`
+        + (rows.length ? `<div class="ux-h" style="margin-top:10px">최근 ${rows.length}개월</div><div class="ld-hist">${rows.map(([m, v]) => `<div class="ld-r"><span>${Gm.dateLabel(m.week - 1).replace(/ \d+주$/, '').replace(/^\d+년차 /, '')}</span><i><u class="${v < 0 ? 'neg' : ''}" style="width:${Math.round(Math.abs(v) / mx * 100)}%"></u></i><b>${gG(v)}</b></div>`).join('')}</div>` : '')
+        + '</section>';
+    } else if (hist.length) {
       const nets = hist.map(lgNet), avg = nets.reduce((a, b) => a + b, 0) / nets.length, succ = hist.reduce((t, m) => t + m.success, 0), qn = hist.reduce((t, m) => t + m.quests, 0);
       const up = Math.max(0, ...nets), dn = Math.max(0, ...nets.map(v => -v)), pad = 18, span = Math.max(1, up + dn), zero = pad + up / span * (100 - pad * 2);   // 위아래 18%는 금액 글자 자리
       h += `<section class="lg-chart"><div class="ux-h">최근 ${hist.length}개월 순이익 <small>평균 ${gG(avg)} · 의뢰 성공률 ${qn ? Math.round(succ / qn * 100) : 0}%</small></div><div class="lg-bars" style="--z:${zero}%">`;
@@ -2123,6 +2132,7 @@
       if (!popup) return;
       { const mt = e.target.closest('[data-mtsel], [data-mtf]'); if (mt && popup === 'trade') { if (mt.dataset.mtsel) mtSel = mt.dataset.mtsel; else mtFlt = mt.dataset.mtf; renderPopup(); return; } }
       { const bc = e.target.closest('[data-bchart], [data-bper]'); if (bc && popup === 'trade') { if (bc.dataset.bchart) buyChart = buyChart === bc.dataset.bchart ? null : bc.dataset.bchart; else buyChartW = +bc.dataset.bper; renderPopup(); return; } }
+      { const lk = e.target.closest('[data-lgk]'); if (lk && popup === 'ledger') { lgSel = lk.dataset.lgk || null; renderPopup(); return; } }   // 2026-11-20 장부 항목 → 오른쪽 상세
       { const bg = e.target.closest('[data-bgold]'); if (bg && popup === 'trade' && Gm.gqOn(s)) { if (bg.disabled) return; const [id, k] = bg.dataset.bgold.split(':'), r = Gm.setBuyGold(s, id, k === 'auto' ? null : Math.max(1, Math.min(Gm.buyGoldMax(s, id), Gm.matBuyPrice(s, id) + +k))); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }
       { const br = e.target.closest('[data-brate]'); if (br && popup === 'trade' && Gm.gqOn(s)) { if (br.disabled) return; const [id, k] = br.dataset.brate.split(':'), st = s.cfg.econ.buyRateStep || 0.05, r = Gm.setBuyRate(s, id, Gm.polRate(s, id) + +k * st); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }   // 2026-11-20 결정 52: 소재별 매입가 ±5%
       { const mp = !Gm.gqOn(s) && e.target.closest('[data-mpol], [data-mrate]'); if (mp && popup === 'trade') { const [id, v] = (mp.dataset.mpol || mp.dataset.mrate).split(':'), p = Gm.matPol(s, id), r = mp.dataset.mpol ? Gm.setMatPol(s, id, v, null) : Gm.setMatPol(s, id, 'buy', +v); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }   // 2026-11-19 결정 43

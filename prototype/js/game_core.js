@@ -752,7 +752,7 @@
   ];
   const carGap = (s, c) => { const E = s.cfg.econ, G = (E.carGap || {})[c.id] || c.gap; return G[0] + Math.floor(s.R() * (G[1] - G[0] + 1)); };
   const carRelLv = (s, st) => { const T = s.cfg.econ.carRel || [200, 600]; return st.rel >= T[1] ? 3 : st.rel >= T[0] ? 2 : 1; };
-  function carState(s, c) { const C = s.car = s.car || {}; if (!C[c.id]) C[c.id] = { next: s.week + carGap(s, c), rel: 0, here: false, order: [], last: {} }; return C[c.id]; }
+  function carState(s, c) { const C = s.car = s.car || {}; if (!C[c.id]) C[c.id] = { next: Math.max(s.week, s.cfg.econ.carFirstWeek || 0) + carGap(s, c), rel: 0, here: false, order: [], last: {} }; return C[c.id]; }
   const carOpenList = s => CARS.filter(c => c.g <= s.grade);
   const carHere = s => carOpenList(s).filter(c => (s.car || {})[c.id] && s.car[c.id].here);
   function carMakeOrder(s, c, st) {
@@ -804,7 +804,7 @@
     if (!carOn(s)) return; const E = s.cfg.econ, keep = E.consWeeks || 8;
     for (const c of carOpenList(s)) { const st = carState(s, c);
       if (st.here && s.week >= st.until) { st.here = false; for (const o of st.order) st.last[o.m] = o.mult; st.order = []; st.wares = []; st.next = s.week + carGap(s, c); log(s, `${c.name}이 떠났습니다.`, 'town', { car: { id: c.id, ev: 'bye' } }); }
-      if (!st.here && s.week === st.next - (E.carNotice != null ? E.carNotice : 2)) log(s, `리나: "${c.name}이 ${E.carNotice != null ? E.carNotice : 2}주 뒤 들른답니다."`, 'town');
+      if (!st.here && s.week === st.next - (E.carNotice != null ? E.carNotice : 2)) log(s, `리나: "${c.name}이 ${E.carNotice != null ? E.carNotice : 2}주 뒤 들른답니다."`, 'town', { car: { id: c.id, ev: 'notice', n: E.carNotice != null ? E.carNotice : 2 } });   // 2026-11-20 사용자: 예고도 리나 대화로
       if (!st.here && s.week >= st.next) { st.here = true; st.until = s.week + (E.carStay || 1); st.order = carMakeOrder(s, c, st); st.wares = carMakeWares(s, c, st);
         log(s, `${c.name}이 마을에 들렀습니다. 주문서: ${st.order.map(o => `${MAT[o.m].name} ×${o.mult} (${o.max}개)`).join(' · ')}${st.wares.length ? ` · 파는 물건: ${st.wares.map(w => MAT[w.m].name).join(' · ')}` : ''}`, 'town', { car: { id: c.id, ev: 'hi', lv: carRelLv(s, st) } }); carConsSell(s, c, st); } }
     for (const e of (s.cons || []).slice()) if (s.week - e.w >= keep) { payParty(s, e.ids, matPrice(s, e.m) * e.n); mktAdd(s, e.m, e.n); s.cons.splice(s.cons.indexOf(e), 1); }   // 8주가 지나면 모험가가 찾아가 시장에 팖
