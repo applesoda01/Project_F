@@ -59,7 +59,11 @@
   };
 
   // ---------- 상태 표시 ----------
+  function carBadge() {   // 하단 경영 메뉴: 상단이 머무는 동안 '상단' 항목, 아직 안 열어 봤으면 빨간 점
+    const b = document.getElementById('mCarBtn'), mg = document.getElementById('mgBtn'); if (!b || !s) return; const here = Gm.carOn(s) ? Gm.carHere(s) : [], key = here.map(c => c.id + ':' + s.car[c.id].until).join(',');
+    b.hidden = !here.length; const red = !!key && key !== carSeen; b.classList.toggle('rdot', red); if (mg) mg.classList.toggle('rdot', red); }
   UI.hud = function () {
+    carBadge();
     { const sb = q('#mSellBtn'); if (sb) sb.classList.toggle('lock', !s.built['판매창구']); }   // 판매창구를 짓기 전에는 회색
     q('#hDate').textContent = Gm.dateLabel(s.week);
     q('#hGrade').style.backgroundImage = 'url(assets/ui/hud/badge_' + GR[s.grade] + '.png)'; hudTip(q('#hGrade'), '지금 길드는 ' + GR[s.grade] + '급이에요.\n' + (s.grade < 6 ? '길드의 등급이 상승하면, 최대로 활동할 수 있는 모험가가 늘어나요.\n' : '') + GUILD_UP[s.grade]);
@@ -194,7 +198,7 @@
     for (const L of logs) if (L.kind === 'arrive' && L.who && L.who[0]) { const a = s.advs.find(b => b.name === L.who[0] && b.alive); if (a) arrShow(a); }   // 2026-11-20 새 모험가 소개 카드 (버릇은 영입할 때 공개, 사용자 결정)
     for (const L of logs) {
       if (L.car && L.car.ev === 'notice') { const c = Gm.CARS.find(x => x.id === L.car.id); if (c) UI.say([{ name: '리나', face: 'smile', text: `마스터, ${c.name}이 ${L.car.n || 2}주 뒤에 들른대요! 좋아하는 물건(${CAR_LIKE[c.id] || '여러 가지'})을 창고에 모아 두면 비싸게 팔 수 있어요.` }]); }
-      else if (L.car) { const c = Gm.CARS.find(x => x.id === L.car.id); if (c) UI.say(L.car.ev === 'hi' ? [{ name: '리나', face: 'smile', text: `마스터, ${c.name}이 왔어요! 경영 → 상단에서 사고팔 수 있어요.` }, { name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'hi', L.car.lv) }].concat(L.car.esc ? [{ name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'esc') }] : []) : L.car.ev === 'escOk' || L.car.ev === 'escNg' ? [] : [{ name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'bye') }]); }   // 2026-11-20 사용자: 상단 방문 대화
+      else if (L.car) { const c = Gm.CARS.find(x => x.id === L.car.id); if (c && L.car.ev === 'hi') carOpenQ = true; if (c) UI.say(L.car.ev === 'hi' ? [{ name: '리나', face: 'smile', text: `마스터, ${c.name}이 왔어요! 경영 → 상단에서 사고팔 수 있어요.` }, { name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'hi', L.car.lv) }].concat(L.car.esc ? [{ name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'esc') }] : []) : L.car.ev === 'escOk' || L.car.ev === 'escNg' ? [] : [{ name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'bye') }]); }   // 2026-11-20 사용자: 상단 방문 대화
       if (L.rq) {   // 리퀘스트: 의뢰 · 완료 · 실패 · 거절 대사 (data/quest_lines.csv). 외지인이 처음 오면 리나 한마디가 앞에 붙음
         const R0 = Gm.reqOf(s), fr = (Gm.QLINES[L.rq.key] || {}).first; let ls = [];
         if (L.rq.ev === 'req' && fr && !(R0.first = R0.first || {})[L.rq.key]) { R0.first[L.rq.key] = 1; ls = ls.concat(rqLinesOf(L.rq.key, 'first', L.rq.who)); }
@@ -258,6 +262,7 @@
     pop.appendChild(el); setTimeout(() => el.classList.add('out'), 1250); setTimeout(() => el.remove(), 1700);
   }
   UI.rqStamp = rqStamp;   // 시험용
+  let carOpenQ = false, carSeen = '';   // 2026-11-20 사용자: 상단 도착 대화가 끝나면 상단 화면을 한 번 열고, 하단 경영 메뉴에 '상단' + 빨간 점
   const RQD_MS = 4500, rqdQ = []; let rqdEl = null, rqdTimer = 0, rqdOn = false;
   function rqdFace(key, who) {   // 의뢰인 얼굴: NPC 초상(눈 위치 기준으로 잘라 냄) 또는 모험가 SD 얼굴
     const d = Gm.NQ_BY[key]; if (!d) return '';
@@ -515,6 +520,7 @@
   UI.open = function (name) {
     if (name === 'sell' && Gm.gqOn(s)) name = 'trade';   // 2026-11-20: 소재 판매는 소재 관리에 합침
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
+    if (name === 'car' && s && Gm.carOn(s)) { carSeen = Gm.carHere(s).map(c => c.id + ':' + s.car[c.id].until).join(','); setTimeout(carBadge, 0); }
     const wasOpen = q('#popBack').classList.contains('open'), prev = popup;
     if (!bookHold) { bookHold = true; bookSp = curSp; hooks.setSpeed && hooks.setSpeed(0); document.body.classList.add('bookOn'); }   // 책을 펼치면 일시정지 + HUD 숨김 (2026-11-16)
     const go = () => {
@@ -985,8 +991,8 @@
         <div class="mt-ch"><div class="mt-per">${[4, 12, 24, 48].map(w => `<button class="${buyChartW === w ? 'on' : ''}" data-bper="${w}">${w}주</button>`).join('')}<em>지금 ${mp}G ${(t => t > 0 ? '<i class="mk-tr up">▲</i>' : t < 0 ? '<i class="mk-tr dn">▼</i>' : '')(Gm.mktTrend(s, id))}</em></div>${priceChart(id, 480, 128, buyChartW, true)}
           <div class="mt-stock" title="마을 상점들이 가진 양 — 적으면 시세가 오름">마을 시장 재고 <span class="bar"><i style="width:${Math.min(100, Math.round(mm / (tg * 1.5) * 100))}%"></i><u style="left:${Math.round(100 / 1.5)}%"></u></span><b>${mm}개</b><small>보통 ${tg}개${mm < tg * 0.5 ? ' · 모자람' : mm > tg * 1.2 ? ' · 넉넉함' : ''}</small></div></div>
         <div class="mt-two">
-          <div class="mt-box"><h4>소재 판매 <small>창고 ${n} / ${cap}개</small></h4><div class="mt-kv"><span>1개 값</span><b>${Gm.matSellPrice(s, id)}G</b><span>전부 팔면</span><b>${n ? Gm.sellPreview(s, id, n) : 0}G</b></div><div class="mt-btns"><button class="ux-btn" data-sone="${id}" ${n && shop ? '' : 'disabled'}>1개 팔기</button><button class="ux-btn primary" data-sall="${id}" ${n && shop ? '' : 'disabled'}>전부 팔기</button></div><div class="mt-note">${shop ? `많이 팔수록 마을 재고가 늘어 값이 내려갑니다${food ? ' · 팔면 요리를 못 만들 수 있음' : ''}` : '판매 창구를 지으면 팔 수 있습니다'}</div></div>
-          <div class="mt-box"><h4>소재 매입 <small>모험가에게서</small></h4><div class="mt-step"><button data-bgold="${id}:-5" ${bp <= 1 ? 'disabled' : ''}>−5</button><button data-bgold="${id}:-1" ${bp <= 1 ? 'disabled' : ''}>−</button><b>${bp}G</b><button data-bgold="${id}:1" ${bp >= mx ? 'disabled' : ''}>+</button><button data-bgold="${id}:5" ${bp >= mx ? 'disabled' : ''}>+5</button></div><div class="mt-auto">${fixed ? `직접 정함 · <button class="gq-auto" data-bgold="${id}:auto">자동으로</button>` : '자동 (시세를 따라감)'}</div><div class="mt-who">${['절약', '보통', '낭비'].map((nm, i) => { const y = bp >= mp * TH[i] - 1e-9; return `<span class="${y ? 'y' : ''}">${nm}<br>${y ? '길드에' : '시장에'}</span>`; }).join('')}</div><div class="mt-note">이 매입가면 누가 길드에 파는지 (애착이 높으면 조금 더 싸게도)</div></div>
+          <div class="mt-box"><h4>소재 판매 <details class="tr-help mt-q"><summary aria-label="도움말">?</summary><div class="tr-help-b">${shop ? `판매 창구에서 길드 창고의 소재를 마을 시장에 팝니다. 많이 팔수록 마을 재고가 늘어 값이 내려갑니다.${food ? ' 음식 소재는 팔면 요리를 못 만들 수 있습니다.' : ''}` : '판매 창구를 지으면 팔 수 있습니다.'}</div></details><small>창고 ${n} / ${cap}개</small></h4><div class="mt-kv"><span>1개 값</span><b>${Gm.matSellPrice(s, id)}G</b><span>전부 팔면</span><b>${n ? Gm.sellPreview(s, id, n) : 0}G</b></div><div class="mt-btns"><button class="ux-btn" data-sone="${id}" ${n && shop ? '' : 'disabled'}>1개 팔기</button><button class="ux-btn primary" data-sall="${id}" ${n && shop ? '' : 'disabled'}>전부 팔기</button></div></div>
+          <div class="mt-box"><h4>소재 매입 <details class="tr-help mt-q"><summary aria-label="도움말">?</summary><div class="tr-help-b">모험가가 주워 온 소재를 이 값에 사들입니다. 모험가는 이 매입가가 시세의 성향 기준(절약 ${Math.round(TH[0] * 100)} · 보통 ${Math.round(TH[1] * 100)} · 낭비 ${Math.round(TH[2] * 100)}%) 이상이면 길드에, 아니면 시장에 팝니다. 애착이 높으면 조금 더 싸게도 넘깁니다. 정하지 않으면 시세를 따라갑니다.</div></details><small>모험가에게서</small></h4><div class="mt-step"><button data-bgold="${id}:-5" ${bp <= 1 ? 'disabled' : ''}>−5</button><button data-bgold="${id}:-1" ${bp <= 1 ? 'disabled' : ''}>−</button><b>${bp}G</b><button data-bgold="${id}:1" ${bp >= mx ? 'disabled' : ''}>+</button><button data-bgold="${id}:5" ${bp >= mx ? 'disabled' : ''}>+5</button></div>${fixed ? `<div class="mt-auto">직접 정함 · <button class="gq-auto" data-bgold="${id}:auto">자동으로</button></div>` : ''}</div>
         </div>
         <div class="mt-log"><b>최근 매입</b>${logs.length ? logs.map(b => `<div><span>×${b.n} · ${b.w === s.week ? '이번 주' : (s.week - b.w) + '주 전'}</span><span>${fmt(b.g)}G</span></div>`).join('') : '<div><span>아직 없음</span></div>'}</div>`; }
     else R += '<div class="tr-none">소재를 고르세요.</div>';
@@ -2355,6 +2361,7 @@
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
     if (!Dlg.cur && Dlg.gap > 0) { if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
     if (rqdQ.length && !rqdOn && !Dlg.cur) rqdNext();   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
+    if (carOpenQ && !Dlg.cur && !Dlg.lines.length && !(Dlg.gap > 0) && !popup && !rqdOn) { carOpenQ = false; if (Gm.carHere(s).length) UI.open('car'); }   // 상단 도착 대화 뒤 상단 화면
     if (!Dlg.cur) return;
     blinkTick(dt);
     if (Dlg.wait > 0) { Dlg.wait -= dt; if (Dlg.wait <= 0) q('#dlg').classList.add('open'); root.Lina.chatting = true; return; }

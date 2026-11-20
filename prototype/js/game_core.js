@@ -743,11 +743,11 @@
   const carOn = s => !!s.cfg.econ.carOn;
   const CAR_FOOD = () => { const S = new Set(); for (const d of DISH) if (!d.dungeon) for (const m of d.mats) S.add(m); return S; };   // 던전 요리 재료(마석 조각 등)는 빼고
   const CARS = [   // 2026-11-20 사용자: 상단 주인 대화 · 상단에게서 사기 (boss · talk)
-    { id: 'farm', name: '농산 상단', boss: '마르타', g: 0, gap: [3, 6], likes: m => CAR_FOOD().has(m),
+    { id: 'farm', name: '농산 상단', boss: '마르타', g: 0, gap: [6, 10], likes: m => CAR_FOOD().has(m),
       talk: { hi: ['어머, 여기가 소문난 모험가 길드구나! 마르타라고 해요. 밭에서 난 거랑 귀한 식재료 좀 가져왔어요.', '또 왔어요, 마스터! 지난번에 넘겨준 재료, 저쪽 마을에서 금방 팔렸지 뭐예요.', '마스터 보려고 일부러 길을 돌아왔다니까요. 이번엔 아껴 둔 물건도 있어요!'], bye: '그럼 또 올게요! 아마 {gap}주쯤 뒤일 거예요.', esc: '그런데 마스터, 다음 마을 가는 길이 요즘 험하대요. 모험가 몇 분이 같이 가 주시면 사례는 넉넉히 할게요!' } },
-    { id: 'smith', name: '대장장이 상단', boss: '브론', g: 1, gap: [5, 9], likes: m => /^mat_(mine|hunt|slay|guard)_/.test(m) || m === 'mat_x015' || m === 'mat_x001',
+    { id: 'smith', name: '대장장이 상단', boss: '브론', g: 1, gap: [8, 12], likes: m => /^mat_(mine|hunt|slay|guard)_/.test(m) || m === 'mat_x015' || m === 'mat_x001',
       talk: { hi: ['…브론이다. 광석이나 가죽 있으면 산다. 쓸 만한 것도 좀 가져왔고.', '또 왔다. 지난번 물건, 괜찮았어.', '…자네 길드 물건이면 믿고 산다. 이번엔 좋은 걸 가져왔지.'], bye: '간다. {gap}주쯤 뒤에 보자.', esc: '…부탁이 하나 있네. 다음 마을 가는 길에 짐승 떼가 나온다더군. 모험가 몇 명 붙여 주면 값은 넉넉히 치르지.' } },
-    { id: 'herb', name: '약재 상단', boss: '세라', g: 2, gap: [6, 10], likes: m => /^mat_study_/.test(m) || ['mat_x016', 'mat_x008'].includes(m),
+    { id: 'herb', name: '약재 상단', boss: '세라', g: 2, gap: [10, 14], likes: m => /^mat_study_/.test(m) || ['mat_x016', 'mat_x008'].includes(m),
       talk: { hi: ['처음 뵙겠습니다. 약재를 다루는 세라예요. 약초와 마석을 찾고 있어요.', '다시 뵙네요. 이 길드 약초는 질이 좋아서 늘 기다려져요.', '마스터께만 보여 드리는 귀한 약재가 있어요. 천천히 보세요.'], bye: '몸 조심하세요. {gap}주쯤 뒤에 다시 들를게요.', esc: '실은 부탁이 있어요. 귀한 약재를 싣고 가는 길이라… 다음 마을까지 호위해 주실 분이 있을까요?' } },
   ];
   const carGap = (s, c) => { const E = s.cfg.econ, G = (E.carGap || {})[c.id] || c.gap; return G[0] + Math.floor(s.R() * (G[1] - G[0] + 1)); };

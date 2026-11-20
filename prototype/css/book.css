@@ -1090,3 +1090,11 @@ p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 
 .es-btns{display:flex;gap:6px;margin-top:8px}.es-btns .ux-btn{flex:1}
 .gq-tag.es{background:#b8862e}
 .bk-car .es-box{padding:7px 10px}.bk-car .es-kv{margin:4px 0}.bk-car .es-btns{margin-top:6px}
+/* 2026-11-20 사용자: 하락 표시 크기 · 물음표 도움말 · 상단 빨간 점 */
+.mt-nm i,.mt-per .mk-tr{font:700 10px/1 sans-serif;font-style:normal;vertical-align:1px}
+.mt-box h4 .mt-q{margin-left:4px;margin-right:auto}.mt-box h4 .mt-q summary{width:17px;height:17px;font:700 11px/17px sans-serif}
+.mt-box .tr-help-b{width:300px;font-size:12.5px;font-weight:400;right:auto;left:-40px}
+.mt-r{overflow:visible}.bk-mt.bk2>.bk-r{overflow:visible}
+#hudBR .rdot::after,#mgBtn.rdot::after{content:'';position:absolute;right:8px;top:4px;width:12px;height:12px;border-radius:50%;background:#d93a2b;box-shadow:0 0 0 2px #fff3dc}
+#mgBtn{position:relative}
+.mt-two .mt-box:last-child .tr-help-b{left:auto;right:-12px}
