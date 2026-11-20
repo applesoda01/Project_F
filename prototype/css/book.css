@@ -975,3 +975,23 @@ p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 
 /* 2026-11-20 오른쪽 책갈피: 책 페이지 높이 안에 들어가게 (많으면 조금씩 줄어듦) */
 #bookSub{height:calc(var(--bk-ry) + var(--bk-rh) - var(--bkm-y) - 24px)}
 #bookSub button{height:auto;flex:0 1 var(--bkm-h);min-height:64px}
+/* 2026-11-20 길드 의뢰 토벌 · 정찰: 사냥터 정보 */
+.gq-site{margin:2px 0 6px;padding:6px 10px;border-radius:8px;background:rgba(255,250,236,.65);border:1px solid rgba(122,74,40,.22);display:flex;flex-direction:column;gap:4px}
+.gs-r{display:flex;align-items:center;gap:8px;font-size:14px;flex-wrap:wrap}
+.gs-r>b:first-child{width:52px;flex:none;font-size:14px}
+.gs-r>small{color:#7a6650;font-size:13px}
+.gs-mons{display:flex;flex-wrap:wrap;gap:4px 12px}
+.gs-mon{display:inline-flex;align-items:center;gap:4px}
+.gs-mon .pic{display:inline-block;width:34px;height:26px;background:no-repeat center bottom/contain;image-rendering:pixelated}
+.gs-mon small{color:#7a6650;font-size:12px;margin-left:2px}
+.gs-sk{display:inline-flex;gap:2px}.gs-sk .sk{width:18px;height:18px}
+.gs-mats{display:flex;flex-wrap:wrap;gap:6px}
+.gs-mat{display:inline-flex;flex-direction:column;align-items:center;font-size:12px}
+.gs-mat .ux-slot{width:34px;height:34px}.gs-mat .ux-slot img{width:28px;height:28px}
+.gs-mat em{font-style:normal;color:#7a6650}.gs-mat.main em{color:#2f6a52;font-weight:700}
+.gs-note{font-size:12px;color:#7a6650;line-height:1.35}
+.gs-sk{display:inline-flex;align-items:center;gap:2px;margin-left:auto}.gs-sk small{font-size:12px;color:#7a6650;margin-left:4px}
+.gs-q{display:inline-block;width:15px;height:15px;border-radius:50%;background:#2f6a52;color:#fff;font:700 11px/15px sans-serif;text-align:center;font-style:normal;cursor:help}
+.gq-site{gap:2px;padding:4px 10px}
+.bk-gq .gq-pick.wide{max-height:86px}
+.bk-gq .od-tot{font-size:14px;padding:6px 12px;line-height:1.4}.bk-gq .od-tot b{font-size:16px}
