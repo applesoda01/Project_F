@@ -69,7 +69,7 @@
         upMargin: 5, upSell: 3,                    // 주점 업그레이드 마진 +G, 판매 창구 업그레이드 소재 +G
         drinkMargin: [2, 3, 4, 5, 6, 7, 8],        // 술 1잔 길드 마진 (2026-11-12, F·E 확정, D 이상 가안). 확률은 mealBuyRate
         mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02, mealMode: 1,
-        mealCook: 1, mealPrep: 4, mealKeep: 0, mealLeft: 2, mealSale: 0.5, freeAttach: 1, mealPK: 1.5, mealPMin: 0.1, mealPMax: 1.6, shopRate: 1.5,
+        mealCook: 1, mealPrep: 4, mealKeep: 0, mealLeft: 2, mealSale: 0.5, freeAttach: 1, mealPK: 1.5, mealPMin: 0.1, mealPMax: 1.6, shopRate: 1.5, stapleGrade: -1, matBaseOn: 0, matEffort: [0.5, 2], matRareK: 2,
         popOn: 1, popStart: 60, popTake: 5, popRegen: 0.05, popLow: 30, popHigh: 85, popLowBoard: 0.5, popLowDraw: 0.5, popLowJudge: 0.15, popHighTown: 2,   // 2026-11-19 V4 3단계 (결정 44)
         mktOn: 1, mktTarget: 20, mktTargetSpice: 15, mktK: 0.6, mktMin: 0.5, mktMax: 2, mktUse: 0.1, mktPop: 100, buyRateOpt: [0.5, 0.7, 0.9], storeCap: 30, lowBuyK: 0.25   // 2026-11-19 V4 2단계 (결정 40 · 43)   // 2026-11-19 V4 1단계 (결정 37 · 38 · 39): 식당 재료 소모 · 메뉴 가격 · 잡화 양념 (balance.csv와 같게)   // mealMode 1 = 요리 버프(능력치 +n, 발견 보너스 없음, 2026-11-19) · 0 = 예전 C안
       },
@@ -135,6 +135,21 @@
     const G = gameData(), m = {};
     if (G && G.content) for (const q of G.content.quests) if ((q.board || q.core) && q.type >= 0) { const k = q.type + '_' + 'FEDCBAS'.indexOf(q.grade); (m[k] = m[k] || [])[q.core ? 'unshift' : 'push'](q); }
     return m;
+  }
+  // 2026-11-20 결정 64: 소재 기준가 = 등급 기본값 × 수고(2.5 ÷ 주로 나오는 의뢰에서 한 번에 가져오는 수, matEffort 범위) × 희귀(30% 이상으로 나오는 의뢰가 없으면 matRareK). 게임 · 시뮬레이터가 같이 씀
+  function matBaseTable(econ) {
+    const G = gameData(), out = {}, E = econ || {}; if (!G || !G.content || !E.matBaseOn) return out;
+    const SP = E.matGradeP || [6, 9, 12, 30, 36, 48, 90], R = E.matEffort || [0.5, 2], rk = E.matRareK != null ? E.matRareK : 2, p0 = 2.5;
+    const Q = G.content.quests.filter(q => (q.board || q.core) && q.type >= 0);
+    for (const m of G.content.materials) {
+      if (m.price) { out[m.id] = m.price; continue; }
+      const b = SP[Math.max(0, 'FEDCBAS'.indexOf(m.grade))]; let best = null;
+      for (const t of Q) { const r = (t.rewards || []).find(x => x.m === m.id); if (!r || r.p < 30) continue; const sc = (r.role === '주' ? 1000 : 0) + r.p; if (!best || sc > best.sc) best = { t, sc }; }
+      if (!best) { out[m.id] = Math.max(1, Math.round(b * rk)); continue; }
+      const T = best.t, per = T.enemies && T.enemies.length ? T.enemies.reduce((a, e) => a + (e.count || 1), 0) : p0;
+      out[m.id] = Math.max(1, Math.round(b * Math.min(R[1], Math.max(R[0], p0 / per))));
+    }
+    return out;
   }
   function defaults() {
     const d = baseDefaults(), G = gameData();
@@ -403,7 +418,8 @@
     const resBand = m => { const v = resOf(m); if (v == null || RES_G[m] > s.grade) return null; return v < (E.popLow || 30) ? 0 : v > (E.popHigh || 80) ? 2 : 1; };   // 게임 resBand 와 같음
     const resTake = (m, n) => { if (resOf(m) == null) return; s.res[m] = Math.max(0, s.res[m] - (E.popTake != null ? E.popTake : 3) * n); };
     function resWeekly() { if (!E.popOn) return; const rg = E.popRegen != null ? E.popRegen : 0.12, hi = E.popHigh || 85; let worst = null; for (const m in RES_IDS) { if (RES_G[m] > s.grade) continue; const v = Math.max(1, resOf(m)); s.res[m] = Math.min(100, v + rg * v * (1 - v / 100)); if (RES_IDS[m] && s.res[m] > hi && (!worst || s.res[m] > s.res[worst])) worst = m; } if (worst && s.week % WPM === WPM - 1) s.popAdd -= (E.popHighTown != null ? E.popHighTown : 2); }   // 게임 resWeekly 와 같음
-    const matBase0 = id => { const m = SIM_MAT[id]; return m ? (m.price || SELL_P[Math.max(0, GRL.indexOf(m.grade))]) : 0; };
+    const BASEP = matBaseTable(E);   // 결정 64
+    const matBase0 = id => { if (BASEP[id] != null) return BASEP[id]; const m = SIM_MAT[id]; return m ? (m.price || SELL_P[Math.max(0, GRL.indexOf(m.grade))]) : 0; };
     // 2026-11-19 V4 2단계: 소재 시세 (게임 mktWeekly · matPrice 와 같음). 시뮬레이터는 소재 처리를 기본(매입 70%)으로만 씀
     const SPICE_N = ['소금', '향신료', '신선한 물', '밀가루'];
     const mT = id => SIM_MAT[id] && SPICE_N.includes(SIM_MAT[id].name) ? (E.mktTargetSpice || 15) : (E.mktTarget || 20);
@@ -455,9 +471,7 @@
       if (!E.gqOn) return; const low = E.gqAutoLow != null ? E.gqAutoLow : 4, n = E.gqAutoN || 6, pct = E.gqAutoPct || 1.2, wk = E.gqAutoWeeks || 4;
       if (E.gqAutoHunt && gqOpen()) for (const m in RES_IDS) { if ((s.gq || []).length >= gqMax()) return; if (!RES_IDS[m] || resBand(m) !== 2 || (s.gq || []).some(o => o.kind === 'hunt' && o.m === m) || !gqSrcK('hunt', m)) continue;   // 게임 autoGq: 개체수 '많음'인 사냥터는 토벌
         const Rg = gqRange(m, 1, 'hunt'), rw = Math.min(Rg[1], Math.max(Rg[0], Math.round(gqBaseK('hunt', m, 1) * pct / 10) * 10)); if (s.gold - rw >= (E.gqAutoKeep != null ? E.gqAutoKeep : 200)) gqPlace(m, 1, rw, wk, 'hunt'); }
-      for (const d of DISH) { if (!s.dishes[d.name] || d.g > s.grade) continue;
-        for (const m of d.mats) { if ((SPICE.has(m) && E.shopRate) || (s.mats[m] || 0) >= low || (s.gq || []).some(o => o.kind === 'mat' && o.m === m) || !gqSrc(m)) continue; if ((s.gq || []).length >= gqMax() || !gqOpen()) return;
-          const Rg = gqRange(m, n), rw = Math.min(Rg[1], Math.max(Rg[0], Math.round(gqBase(m, n) * pct / 10) * 10)); if (s.gold - rw < (E.gqAutoKeep != null ? E.gqAutoKeep : 200)) return; gqPlace(m, n, rw, wk); } }
+      // 결정 63: 소재 납품 없음 — 상시 재료는 식당이 시장에서 삼 (게임 autoGq 와 같음)
     }
     // 매입 개편 (결정 52 · 53, 게임 sellTh 와 같음): 파티 판매 기준 = 씀씀이별 기준 평균 − 애착 할인
     function sellTh(party) { const Tt = E.sellTh || [0.9, 0.85, 0.75], Aa = E.sellAttach || [60, 90], Cc = E.sellAttachCut || [0.05, 0.1]; const ps = (party || []).filter(Boolean); if (!ps.length) return 0;
@@ -516,6 +530,7 @@
     const priceK = (d, price) => Math.max(E.mealPMin != null ? E.mealPMin : 0.1, Math.min(E.mealPMax != null ? E.mealPMax : 1.6, 1 + (E.mealPK != null ? E.mealPK : 1.5) * (1 - price / (dishBase(d) || 1))));
     const stockOf = d => ((s.bowls || {})[d.name] || []).reduce((a, b) => a + b.n, 0);
     const shopPrice = id => Math.ceil(matBase(id) * (E.shopRate != null ? E.shopRate : 1.5) - 1e-9);
+    const STAPLE = id => SPICE.has(id) || (SIM_MAT[id] && DISH.some(d => d.mats.includes(id)) && GRL.indexOf(SIM_MAT[id].grade) <= (E.stapleGrade != null ? E.stapleGrade : -1));   // 결정 65: 상시 재료 (게임 isStaple 과 같음)
     function kitchenWeekly() {
       if (!E.mealCook) return; const B = s.bowls = s.bowls || {};
       for (const d of DISH) { if (!s.dishes[d.name]) continue;
@@ -523,9 +538,9 @@
         if (mu.left === 'free') { let waste = L0.filter(b => b.n > 0 && s.week - b.w > 1).reduce((a, b) => a + b.n, 0); const T2 = s.advs.filter(a => a.alive && a.busy === 0).sort((x, y) => x.attach - y.attach); let k = 0; while (waste > 0 && k < T2.length) { const a = T2[k++]; a.attach = Math.min(100, a.attach + (E.freeAttach != null ? E.freeAttach : 1)); waste--; } }   // 결정 47: 무료 식사
         while (have < mu.prep) {
           const RS = {}; if (s.rq) for (const r of s.rq.open) for (const [m, k] of Object.entries(needOf(r).mats || {})) RS[m] = (RS[m] || 0) + k;   // 게임 reqReserve 와 같음
-          const keep = m => (RS[m] || 0) + (E.mealKeep || 0), need = d.mats.filter(m => !((s.mats[m] || 0) - keep(m) >= 1)); if (need.some(m => !SPICE.has(m)) || (need.length && !E.shopRate)) break;
+          const keep = m => (RS[m] || 0) + (E.mealKeep || 0), need = d.mats.filter(m => !((s.mats[m] || 0) - keep(m) >= 1)); if (need.some(m => !STAPLE(m)) || (need.length && !E.shopRate) || need.some(m => E.mktOn && mM(m) < 1)) break;   // 결정 65: 희귀 재료가 없거나 시장에도 없으면 품절
           const cost = need.reduce((a, m) => a + shopPrice(m), 0); if (cost > s.gold) break;
-          for (const m of need) { const c = shopPrice(m); s.gold -= c; s.op -= c; s.st.shopPaid = (s.st.shopPaid || 0) + c; s.mats[m] = (s.mats[m] || 0) + 1; }
+          for (const m of need) { const c = shopPrice(m); s.gold -= c; s.op -= c; s.st.shopPaid = (s.st.shopPaid || 0) + c; s.mats[m] = (s.mats[m] || 0) + 1; mAdd(m, -1); }   // 시장에서 사면 시장 재고가 줄어 시세가 오름
           for (const m of d.mats) s.mats[m]--;
           const n = d.serv || 2; L.push({ n, w: s.week }); have += n;
         }
@@ -1074,6 +1089,6 @@
     return out;
   }
 
-  const api = { defaults, simulate, aggregate, BOTS, GR, ST, WPY };
+  const api = { defaults, matBaseTable, simulate, aggregate, BOTS, GR, ST, WPY };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildSim = api;
 })(this);

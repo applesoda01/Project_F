@@ -775,7 +775,7 @@
   }
   // 2026-11-20 길드 의뢰 (V4 결정 49~56): 길드가 금고로 게시판에 의뢰를 냄 — 왼쪽 = 걸어 둔 의뢰 · 끝난 의뢰 · 들어온 소재 / 오른쪽 = 새 길드 의뢰
   // 2026-11-20 (결정 57~62 라운드): 여섯 종류 모두 — ① 납품 ② 토벌 ③ 정찰 ④ 순찰 · 경비 ⑤ 마을 일손 ⑥ 훈련 원정
-  const GQ_ORDER = ['mat', 'hunt', 'scout', 'patrol', 'help', 'train'], GQ_NUM = { mat: '①', hunt: '②', scout: '③', patrol: '④', help: '⑤', train: '⑥' };
+  const GQ_ORDER = ['hunt', 'scout', 'patrol', 'help', 'train'], GQ_NUM = { mat: '·', hunt: '①', scout: '②', patrol: '③', help: '④', train: '⑤' };   // 2026-11-20 결정 63: 소재 납품은 매입가로 합침
   const GQ_SUB = { mat: '소재를 모아 오게 합니다', hunt: '사냥터 짐승을 줄입니다', scout: '자원지를 살펴봅니다', patrol: '침공에 대비합니다', help: '마을 일을 돕습니다', train: '신입을 키웁니다' };
   const GQ_FX = {   // 효과 설명 (오른쪽 미리 보기 · 게시판 상세)
     mat: '가져온 만큼 나눠 지급하고, 덜 채우면 남은 개수로 다시 게시합니다.',
@@ -786,7 +786,7 @@
     train: '지명한 모험가만 맡을 수 있습니다. 성공하면 그 모험가가 경험치를 더 얻고 애착 +3.',
   };
   const GQ_WHY = { done: '완료', end: '기한 끝', cancel: '거둠' };
-  let gqKind = 'mat', gqSel = {}, gqN = 6, gqPct = 1, gqWk = null, gqAsk = null;
+  let gqKind = 'hunt', gqSel = {}, gqN = 6, gqPct = 1, gqWk = null, gqAsk = null;
   const gqNOf = k => k === 'mat' ? gqN : 1;
   const gqReward = (k, t, n) => { const R = Gm.gqRangeK(s, k, t, n), b = Gm.gqBaseK(s, k, t, n); return Math.min(R[1], Math.max(R[0], Math.round(b * gqPct / 10) * 10)); };   // 기준 × 고른 % (10G 단위, 범위 안)
   const resTxt = m => { if (Gm.scoutOn(s, m)) { const v = Gm.resOf(s, m); if (v != null) return `<b class="res-b r${Gm.resBand(s, m)} sc" title="정찰한 곳 · 개체수">${Math.round(v)}</b>`; } const b = Gm.resBand(s, m); return b == null ? '' : `<b class="res-b r${b}">${['적음', '보통', '많음'][b]}</b>`; };   // 정찰하면 숫자
@@ -802,7 +802,7 @@
   function gqHtml() {
     const O = s.gq || [], max = Gm.gqMax(s), open = Gm.gqOpen(s), WK = Gm.gqWeekOpts(s), KD = Gm.GQ_KIND;
     if (gqWk == null || !WK.includes(gqWk)) gqWk = WK[Math.min(1, WK.length - 1)];
-    if (!Gm.gqKindOpen(s, gqKind)) gqKind = 'mat';
+    if (!Gm.gqKindOpen(s, gqKind)) gqKind = 'hunt';
     const who = ids => ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean), mn = id => (MATS[id] || { name: id }).name;
     let L = `<div class="od-h">길드 의뢰 <small>${O.length} / ${max}건</small></div>`;
     for (const o of O) { const left = o.end - s.week, onB = s.board.some(q => q.gq === o.id), mat = o.kind === 'mat';
@@ -986,7 +986,7 @@
   // ---------- 장부: 수입 · 지출 (지난달 | 이번 달) + 12개월 순이익 그래프 (docs/design/popup_ledger.md) ----------
   // 순이익 = 수입 − 지출(시설 건설비·기타). 관문 1의 "운영 순이익(m.net)"은 건설비를 빼고 계산하므로 따로 둠
   const LG_IN = [['fee', '의뢰 수수료'], ['resale', '소재 판매'], ['consign', '위탁 수수료'], ['car', '상단 판매'], ['meal', '식사 판매'], ['tavern', '주점 매출'], ['reqIn', '리퀘스트 보상'], ['subsidy', '왕국 보조금']];
-  const LG_OUT = [['build', '시설 건설비'], ['matBuy', '소재 매입'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['order', '길드 발주'], ['gq', '길드 의뢰'], ['shop', '잡화 양념'], ['gift', '장비 선물'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
+  const LG_OUT = [['build', '시설 건설비'], ['matBuy', '소재 매입'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['order', '길드 발주'], ['gq', '길드 의뢰'], ['shop', '시장 재료'], ['gift', '장비 선물'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
   const LG_OPT = { car: 1, consign: 1, cpay: 1, csup: 1, order: 1, gq: 1, shop: 1, gift: 1, prep: 1 };   // shop: 식당이 잡화 상인에게서 산 양념 (2026-11-19 결정 38)   // order: 길드 발주 선지급 − 거둔 돈 (2026-11-18 E8-4)
   const LG_EOM = { subsidy: 1 };   // 월말 결산 때 한꺼번에 들어오는 항목 (주점 매출은 2026-11-12부터 매주 술 1잔 단위라 제외)
   const lgIn = m => LG_IN.reduce((t, [k]) => t + (m[k] || 0), 0), lgOut = m => LG_OUT.reduce((t, [k]) => t + (m[k] || 0), 0), lgNet = m => lgIn(m) + lgOut(m);
@@ -1008,7 +1008,7 @@
     if (k === 'order') return m.order ? '상시 발주로 들어온 소재 값 (가져온 모험가에게 지급 · 리퀘스트 장 → 길드 발주)' : '없음';
     if (k === 'car') return m.car ? `창고 소재 <b>${m.carN || 0}개</b>를 떠돌이 상단에 판매 (경영 장 → 상단)` : '없음';   // 2026-11-20
     if (k === 'gq') return m.gq ? `길드 의뢰로 들어온 소재 <b>${m.gqN || 0}개</b> 값 (맡아 둔 돈에서 가져온 모험가에게 지급 · 리퀘스트 장 → 길드 의뢰)` : '없음';   // 2026-11-20
-    if (k === 'shop') return m.shop ? '식당이 요리를 만들 때 모자란 양념을 잡화 상인에게서 산 값' : '없음';
+    if (k === 'shop') return m.shop ? '식당이 요리를 만들 때 창고에 없는 상시 재료를 시장에서 산 값' : '없음';
     if (k === 'cpay') return m.cpay ? '계약 모험가 월 보수 (근무한 주만큼, 월말 지급)' : '없음';
     if (k === 'csup') return m.csup ? '계약 모험가 식사 · 물약 지원 (약정 한도 안 실제 사용액)' : '없음';
     if (k === 'prep') return m.prepN ? `정비 때 물약 <b>${m.prepN}개</b>` : '없음';
@@ -1777,8 +1777,8 @@
     function dishFront(d) { return `<div class="kdish" data-dt="${esc(d.name)}"><span class="pic"><img src="assets/${d.icon}" alt=""></span><div><b>${d.name}</b><div class="rc">${d.mats.map(m => `<span class="ux-slot" data-mt="${m}" data-g="${GR.indexOf((MATS[m] || {}).grade)}">${matImg(MATS[m] || {})}</span>`).join('<span class="plus">+</span>')}<span class="kfx">${esc(d.effect)}</span></div>${s.cfg.econ.mealCook && s.dishes[d.name] ? kMenuRow(d) : ''}</div></div>`; }
     // 2026-11-19 V4 1단계 (결정 37 · 39): 재고 그릇 · 1그릇 원가 · 가격(1G 단위) · 마진 · 한 주 준비량
     function kMenuRow(d) { const mu = Gm.menuOf(s, d), b = Gm.dishBase(s, d), cost = Gm.dishCost(s, d), st = Gm.stockOf(s, d), k = Gm.priceK(s, d, mu.price), mg = mu.price - cost;
-      const shop = !!s.cfg.econ.shopRate, RS = Gm.reqReserve(s), kp = m => (RS[m] || 0) + (s.cfg.econ.mealKeep || 0), free = m => ((s.mats || {})[m] || 0) - kp(m), spice = shop ? d.mats.filter(m => Gm.SPICE.has(m) && free(m) < 1) : [], lack = d.mats.filter(m => (!shop || !Gm.SPICE.has(m)) && free(m) < 1), none = lack.filter(m => !((s.mats || {})[m] > 0)), held = lack.filter(m => (s.mats || {})[m] > 0);   // 2026-11-19: 정말 없음 / 납품용으로 남겨 둠 구분   // 결정 46: 잡화 상인이 없으면 양념도 '재료 없음' (상시 발주로)
-      return `<div class="kmr"><span class="kst${st ? '' : ' out'}">${st ? `재고 <b>${st}</b>그릇` : '품절'}</span><span>재료 1세트 = <b>${d.serv}</b>그릇 · 1그릇 원가 <b>${(Math.round(cost * 10) / 10)}G</b></span>${lack.length ? `${none.length ? `<span class="kwarn">재료 없음: ${none.map(m => esc((MATS[m] || {}).name || m)).join(' · ')} <small>(리퀘스트 → 길드 발주로 모으기)</small></span>` : ''}${held.length ? `<span class="kwarn">${held.map(m => `${esc((MATS[m] || {}).name || m)} ${(s.mats || {})[m]}개 있지만 리퀘스트 납품용으로 남겨 둠`).join(' · ')}</span>` : ''}` : spice.length ? `<span class="kshop">양념은 잡화 상인에게서 ${spice.map(m => `${esc((MATS[m] || {}).name || m)} ${Gm.shopPrice(s, m)}G`).join(' · ')}</span>` : ''}</div>`
+      const shop = !!s.cfg.econ.shopRate, RS = Gm.reqReserve(s), kp = m => (RS[m] || 0) + (s.cfg.econ.mealKeep || 0), free = m => ((s.mats || {})[m] || 0) - kp(m), spice = shop ? d.mats.filter(m => Gm.isStaple(s, m) && free(m) < 1) : [], lack = d.mats.filter(m => (!shop || !Gm.isStaple(s, m)) && free(m) < 1), none = lack.filter(m => !((s.mats || {})[m] > 0)), held = lack.filter(m => (s.mats || {})[m] > 0);   // 2026-11-19: 정말 없음 / 납품용으로 남겨 둠 구분   // 결정 46: 잡화 상인이 없으면 양념도 '재료 없음' (상시 발주로)
+      return `<div class="kmr"><span class="kst${st ? '' : ' out'}">${st ? `재고 <b>${st}</b>그릇` : '품절'}</span><span>재료 1세트 = <b>${d.serv}</b>그릇 · 1그릇 원가 <b>${(Math.round(cost * 10) / 10)}G</b></span>${lack.length ? `${none.length ? `<span class="kwarn">재료 없음: ${none.map(m => esc((MATS[m] || {}).name || m)).join(' · ')} <small>(희귀 재료 — 매입가를 올리거나 토벌 의뢰로 모으기)</small></span>` : ''}${held.length ? `<span class="kwarn">${held.map(m => `${esc((MATS[m] || {}).name || m)} ${(s.mats || {})[m]}개 있지만 리퀘스트 납품용으로 남겨 둠`).join(' · ')}</span>` : ''}` : spice.length ? `<span class="kshop">창고에 없어 시장에서 삼: ${spice.map(m => `${esc((MATS[m] || {}).name || m)} ${Gm.shopPrice(s, m)}G`).join(' · ')}</span>` : ''}</div>`
         + `<div class="kmr"><span class="kpr">가격 <button data-kpr="${esc(d.name)}:-5">−5</button><button data-kpr="${esc(d.name)}:-1">−1</button><b>${mu.price}G</b><button data-kpr="${esc(d.name)}:1">+1</button><button data-kpr="${esc(d.name)}:5">+5</button>${mu.price !== b ? `<button class="rs" data-kpr="${esc(d.name)}:base" title="기준가로">기준 ${b}G</button>` : ''}</span><span>마진 <b class="${mg < 0 ? 'ux-minus' : 'ux-plus'}">${Math.round(mg * 10) / 10}G</b> · 손님 ×${(Math.round(k * 100) / 100)}</span><span class="kpp">한 주 준비 <button data-kpp="${esc(d.name)}:-1" ${mu.prep <= 0 ? 'disabled' : ''}>−</button><b>${mu.prep}</b><button data-kpp="${esc(d.name)}:1" ${mu.prep >= 10 ? 'disabled' : ''}>+</button>그릇</span></div>`
         + `<div class="kmr"><span class="kleft">남은 그릇 <button class="${mu.left === 'sale' ? 'on' : ''}" data-kleft="${esc(d.name)}:sale" title="지난주에 만든 그릇이 남았으면 반값으로 팝니다">마감 할인</button><button class="${mu.left === 'free' ? 'on' : ''}" data-kleft="${esc(d.name)}:free" title="버릴 그릇을 마을에 남은 모험가에게 무료로 대접합니다 (애착 +${s.cfg.econ.freeAttach != null ? s.cfg.econ.freeAttach : 1})">무료 식사</button></span>${Gm.oldBowl(s, d) && mu.left === 'sale' ? `<span class="ksale">지금 마감 할인 ${Gm.salePrice(s, d)}G</span>` : ''}</div>`; }   // 결정 47
     return `<div class="kitchen"><div class="kpan"><div class="ux-h">소재 보관함 <small>음식 소재</small></div><div class="kpantry">${pantry}</div></div>

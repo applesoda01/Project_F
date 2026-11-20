@@ -502,7 +502,8 @@
   // ---------- 소재와 요리 조합 (docs/design/cooking.md) ----------
   // 2026-11-17 경제 개편 V2 결정 12 (4단계): 소재는 주운 모험가 것 → 귀환 때 길드가 판매가의 70%(버림)로 자동 매입, 돈은 파티에게. 금고가 모자라면 위탁(팔리면 수수료 10%만 길드) [임시]
   const SELL_P = [6, 9, 12, 30, 36, 48, 90];
-  const matBase = id => { const m = MAT[id]; return m ? (m.price || SELL_P[Math.max(0, GR.indexOf(m.grade))]) : 0; };
+  const BASEP = root.GuildSim && root.GuildSim.matBaseTable ? root.GuildSim.matBaseTable(root.GuildSim.defaults().econ) : {};   // 2026-11-20 결정 64: 위험(등급) × 수고(한 번에 가져오는 수) × 희귀 — sim_engine matBaseTable
+  const matBase = id => { if (BASEP[id] != null) return BASEP[id]; const m = MAT[id]; return m ? (m.price || SELL_P[Math.max(0, GR.indexOf(m.grade))]) : 0; };
   // ---------- V4 2단계 (결정 40 · 43): 소재 시세 · 소재 처리(매입 / 위탁 / 안 받음) ----------
   // 마을 시장 재고 M: 매주 바깥 공급(목표 × 10% + 시작 인구 ÷ 100)이 들어오고 마을 소비(M × 10% + 지금 인구 ÷ 100)로 줄어듦 → 아무도 안 건드리면 목표에 머묾.
   // 의뢰에서 가져온 소재 · 길드가 판 소재는 M에 더해짐 → 많이 잡으면 값이 내려가고, 마을이 커지면 조금 오름. 시세 배수 = 1 + K × (목표 − M) ÷ 목표, 0.5 ~ 2.0 [임시]
@@ -596,7 +597,7 @@
   const gqOn = s => !!s.cfg.econ.gqOn;
   const gqMax = s => { const E = s.cfg.econ, M = E.gqMax || [2, 3, 4, 5, 6, 7, 8]; return (M[s.grade] != null ? M[s.grade] : M[M.length - 1]) + (upg(s, '게시판') ? (E.gqUpBoard != null ? E.gqUpBoard : 1) : 0); };
   const GQ_KIND = {
-    mat: { name: '소재 납품', open: () => true },
+    mat: { name: '소재 납품', open: () => false, lock: '매입가로 합쳤습니다 (결정 63)', off: true },   // 2026-11-20 결정 63: 낼 수 없음 (예전 저장의 진행 중 의뢰만 처리)
     hunt: { name: '토벌', open: () => true },
     scout: { name: '정찰', open: () => true },
     patrol: { name: '순찰 · 경비', open: s => mainOf(s).state !== 'none', lock: 'F급 메인 퀘스트(침공) 전갈이 오면 열립니다' },
@@ -691,9 +692,7 @@
     const E = s.cfg.econ, low = E.gqAutoLow != null ? E.gqAutoLow : 4, n = E.gqAutoN || 6, pct = E.gqAutoPct || 1.2, wk = E.gqAutoWeeks || 4, keep = E.gqAutoKeep != null ? E.gqAutoKeep : 200;
     if (!gqOpen(s)) return; const full = () => (s.gq || []).length >= gqMax(s), rw = (k, m, nn) => { const R = gqRangeK(s, k, m, nn); return Math.min(R[1], Math.max(R[0], Math.round(gqBaseK(s, k, m, nn) * pct / 10) * 10)); };
     if (E.gqAutoHunt) for (const m in RES_IDS) { if (full()) return; if (!RES_IDS[m] || resBand(s, m) !== 2 || (s.gq || []).some(o => o.kind === 'hunt' && o.m === m) || !gqSrcK(s, 'hunt', m)) continue; const r = rw('hunt', m, 1); if (s.gold - r >= keep) gqPlace(s, 'hunt', m, 1, r, wk); }
-    for (const d of DISH) { if (!s.dishes[d.name] || d.g > s.grade) continue;
-      for (const m of d.mats) { if ((SPICE.has(m) && E.shopRate) || (s.mats[m] || 0) >= low || (s.gq || []).some(o => o.kind === 'mat' && o.m === m) || !gqSrc(s, m)) continue; if (full()) return;
-        const r = rw('mat', m, n); if (s.gold - r < keep) return; gqPlace(s, 'mat', m, n, r, wk); } }
+    // 결정 63: 소재 납품 없음 — 상시 재료는 식당이 시장에서 삼 (결정 65)
   }
   // 매입 개편 (결정 52 · 53): 소재마다 매입가(시세 × 50~120%) 하나, 모험가가 '길드 매입가 ≥ 시세 × 판매 기준'이면 길드에, 아니면 시장에 직접 팖
   function sellTh(s, party) { const E = s.cfg.econ, T = E.sellTh || [0.9, 0.85, 0.75], A = E.sellAttach || [60, 90], C = E.sellAttachCut || [0.05, 0.1]; const ps = (party || []).filter(Boolean); if (!ps.length) return 0;
@@ -902,6 +901,8 @@
   const SPICE_NAMES = ['소금', '향신료', '신선한 물', '밀가루'];
   const SPICE = new Set(Object.keys(MAT).filter(id => SPICE_NAMES.includes(MAT[id].name)));
   const mealCookOn = s => !!s.cfg.econ.mealCook;
+  const DISH_MAT = new Set(DISH.flatMap(d => d.mats));
+  const isStaple = (s, id) => SPICE.has(id) || (DISH_MAT.has(id) && !!MAT[id] && GR.indexOf(MAT[id].grade) <= (s.cfg.econ.stapleGrade != null ? s.cfg.econ.stapleGrade : -1));   // 2026-11-20 결정 65: 상시 재료(양념 · F급 식재료)는 창고에 없으면 식당이 시장에서 시세로 삼, 희귀 재료는 모험가 매입만
   const dishBase = (s, d) => Math.round(s.cfg.quest.reward[d.g] * s.cfg.econ.mealPriceRate);   // 기준가 (F 25G)
   const shopPrice = (s, id) => Math.ceil(matPrice(s, id) * (s.cfg.econ.shopRate != null ? s.cfg.econ.shopRate : 1.5) - 1e-9);
   function menuOf(s, d) { const M = s.menu = s.menu || {}; if (!M[d.name]) M[d.name] = { price: dishBase(s, d), prep: s.cfg.econ.mealPrep != null ? s.cfg.econ.mealPrep : 4 }; if (!M[d.name].left) M[d.name].left = s.cfg.econ.mealLeft === 2 ? 'free' : 'sale'; return M[d.name]; }   // left (결정 47): 남은 그릇 = sale 마감 할인 · free 모험가 무료 식사
@@ -933,9 +934,9 @@
       const mu = menuOf(s, d); let have = L.reduce((a, b) => a + b.n, 0); const KS = s.kShort = s.kShort || {}; KS[d.name] = false;   // kShort: 이번 주 재료 · 금고가 모자라 준비량을 못 채움 (품절 원인 구분용)
       while (have < mu.prep) {
         const RS = reqReserve(s), keep = m => (RS[m] || 0) + (s.cfg.econ.mealKeep || 0), need = d.mats.filter(m => !(s.mats[m] > keep(m) - 0 && s.mats[m] - keep(m) >= 1));   // 2026-11-19: 받아 둔 납품 리퀘스트에 필요한 만큼만 남겨 둠 (+ mealKeep)
-        if (need.some(m => !SPICE.has(m)) || (need.length && !s.cfg.econ.shopRate)) { s.month.soldOut = (s.month.soldOut || 0) + 1; KS[d.name] = true; break; }   // 재료가 없으면 품절 (결정 46: shopRate 0 = 잡화 상인 없음, 양념도 상시 발주로)
+        if (need.some(m => !isStaple(s, m)) || (need.length && !s.cfg.econ.shopRate) || need.some(m => mktOn(s) && mktM(s, m) < 1)) { s.month.soldOut = (s.month.soldOut || 0) + 1; KS[d.name] = true; break; }   // 결정 65: 희귀 재료가 없거나, 시장에도 없으면 품절   // 재료가 없으면 품절 (결정 46: shopRate 0 = 잡화 상인 없음, 양념도 상시 발주로)
         const cost = need.reduce((a, m) => a + shopPrice(s, m), 0); if (cost > s.gold) { KS[d.name] = true; break; }
-        for (const m of need) { const c = shopPrice(s, m); s.gold -= c; s.month.shop = (s.month.shop || 0) - c; s.mats[m] = (s.mats[m] || 0) + 1; }
+        for (const m of need) { const c = shopPrice(s, m); s.gold -= c; s.month.shop = (s.month.shop || 0) - c; s.mats[m] = (s.mats[m] || 0) + 1; mktAdd(s, m, -1); }   // 시장에서 사면 시장 재고가 줄어 시세가 오름
         for (const m of d.mats) s.mats[m]--;
         const n = d.serv || 2; L.push({ n, w: s.week }); have += n; s.month.cooked = (s.month.cooked || 0) + n;
       }
@@ -1678,6 +1679,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, isStaple, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
