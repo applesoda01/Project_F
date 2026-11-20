@@ -795,7 +795,7 @@
     const live = id => (s.gq || []).some(o => o.kind === k && o.m === id);
     const mats = Object.keys(MATS).filter(id => GR.indexOf(MATS[id].grade) <= s.grade).sort((a, b) => GR.indexOf(MATS[a].grade) - GR.indexOf(MATS[b].grade));
     if (k === 'mat') return mats.filter(id => (s.knownMats || {})[id]).map(id => { const ok = !live(id) && !!Gm.gqSrc(s, id); return { id, name: MATS[id].name, img: matImg(MATS[id]), ok, ing: live(id), why: live(id) ? '이미 의뢰 중' : ok ? '' : '지금 길드 등급 의뢰에서는 나오지 않습니다' }; });
-    if (k === 'hunt' || k === 'scout') return mats.filter(id => Gm.resOf(s, id) != null && Gm.resBand(s, id) != null && Gm.gqSrcK(s, k, id)).map(id => ({ id, name: MATS[id].name, img: matImg(MATS[id]), ok: !live(id), ing: live(id), why: live(id) ? '이미 의뢰 중' : '', extra: resTxt(id) }));
+    if (k === 'hunt' || k === 'scout') return mats.filter(id => Gm.resOf(s, id) != null && Gm.resBand(s, id) != null && Gm.gqSrcK(s, k, id)).map(id => ({ id, name: Gm.gqPlaceName(s, k, id), img: matImg(MATS[id]), ok: !live(id), ing: live(id), why: live(id) ? '이미 의뢰 중' : '', extra: `<small>${esc(MATS[id].name)} 나옴</small> ${resTxt(id)}` }));   // 2026-11-20: 자원지 이름으로
     if (k === 'train') return s.advs.filter(a => a.alive).map(a => ({ id: a.id, name: a.name, img: `<span class="tr-f gq-face" style="${faceStyle(a, 38, 180, 19)}"></span>`, ok: !live(a.id), ing: live(a.id), why: live(a.id) ? '이미 의뢰 중' : '', extra: `<small>${GR[a.grade]}급 Lv${a.lv || 1}</small>` }));
     return null;   // 순찰 · 일손: 대상 없음
   }
@@ -833,7 +833,7 @@
       if (k === 'mat') {
         R += `<div class="od-row"><b>소재</b><span class="ic sm">${matImg(MATS[t])}</span>${esc(MATS[t].name)} <small>· 지금 창고 ${(s.mats || {})[t] || 0}개</small></div>`;
         R += `<div class="od-row"><b>개수</b><span class="od-step"><button data-gqn="-1" ${gqN <= 1 ? 'disabled' : ''}>−</button><b>${gqN}</b><button data-gqn="1" ${gqN >= 20 ? 'disabled' : ''}>+</button></span><small>1~20개</small></div>`;
-      } else if (k === 'hunt' || k === 'scout') R += `<div class="od-row"><b>${k === 'hunt' ? '사냥터' : '자원지'}</b><span class="ic sm">${matImg(MATS[t])}</span>${esc(MATS[t].name)} 나오는 곳 <small>· 개체수 ${resTxt(t)}</small></div>`;
+      } else if (k === 'hunt' || k === 'scout') R += `<div class="od-row"><b>${k === 'hunt' ? '사냥터' : '자원지'}</b><span class="ic sm">${matImg(MATS[t])}</span>${esc(Gm.gqPlaceName(s, k, t))} <small>· ${esc(MATS[t].name)} 나옴 · 개체수 ${resTxt(t)}</small></div>`;
       else if (k === 'train') { const a = s.advs.find(x => x.id === t); R += `<div class="od-row"><b>모험가</b>${a ? esc(a.name) : ''} <small>· 이 모험가만 맡을 수 있음</small></div>`; }
       R += `<div class="od-row"><b>보상</b><span class="od-step gq-rw"><button data-gqr="-1" ${rw <= Rg[0] ? 'disabled' : ''}>−</button><b>${fmt(rw)}G</b><button data-gqr="1" ${rw >= Rg[1] ? 'disabled' : ''}>+</button></span><small>기준 ${fmt(base)}G의 ${base ? Math.round(rw / base * 100) : 0}% · ${fmt(Rg[0])}~${fmt(Rg[1])}G<br><em class="${hot ? 'gq-hot' : 'gq-cold'}">${hot ? '기준 이상 · 바로 맡겨짐' : '기준 아래 · 다른 의뢰 다음'}</em></small></div>`;
       R += `<div class="od-row"><b>기한</b><span>${WK.map(w => `<button class="od-mx${w === gqWk ? ' on' : ''}" data-gqw="${w}">${w}주</button>`).join(' ')}</span></div>`;
