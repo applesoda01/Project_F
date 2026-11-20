@@ -546,7 +546,7 @@
   function mktWeekly(s) {
     if (!mktOn(s)) return; const E = s.cfg.econ, use = E.mktUse != null ? E.mktUse : 0.1, pd = E.mktPop || 100, p0 = s.cfg.town.startPop || 150;
     const H = s.mktH = s.mktH || {};
-    for (const id in MAT) { const T = mktTarget(s, id), M = mktM(s, id); s.mkt[id] = Math.max(0, M + T * use + p0 / pd - M * use - (s.pop || p0) / pd);
+    for (const id in MAT) { const T = mktTarget(s, id), M = mktM(s, id); s.mkt[id] = Math.max(0, M + T * use + (E.mktSupplyPop ? (s.pop || p0) : p0) / pd - M * use - (s.pop || p0) / pd);
       if (s.knownMats && s.knownMats[id]) { const h = H[id] = H[id] || []; h.push(Math.round(mktMult(s, id) * 100)); if (h.length > 5) h.shift();
         const G = (s.mktLog = s.mktLog || {})[id] = s.mktLog[id] || []; G.push([s.week, Math.round(matBase(id) * mktMult(s, id) * 10) / 10]);   /* 그래프는 반올림 전 값(0.1G)으로 — 6G 소재도 움직임이 보이게 */ if (G.length > 48) G.shift(); } }   // 화살표: 4주 전과 비교 · 2026-11-19 시세 기록(그래프용, 최근 48주 [주, 값])
   }

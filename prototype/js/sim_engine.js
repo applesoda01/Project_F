@@ -74,7 +74,7 @@
         upMargin: 5, upSell: 3,                    // 주점 업그레이드 마진 +G, 판매 창구 업그레이드 소재 +G
         drinkMargin: [2, 3, 4, 5, 6, 7, 8],        // 술 1잔 길드 마진 (2026-11-12, F·E 확정, D 이상 가안). 확률은 mealBuyRate
         mealBonus: [0.03, 0.04, 0.045, 0.05, 0.06, 0.05, 0.07], mealUnlockChance: 0.5, mealPerDish: 0.02, mealMode: 1,
-        mealCook: 1, mealPrep: 4, mealKeep: 0, mealLeft: 2, mealSale: 0.5, freeAttach: 1, mealPK: 1.5, mealPMin: 0.1, mealPMax: 1.6, shopRate: 1.5, stapleGrade: -1, autoRareRate: 0, matBaseOn: 0, matEffort: [0.5, 2], matRareK: 2,
+        mealCook: 1, mealPrep: 4, mealKeep: 0, mealLeft: 2, mealSale: 0.5, freeAttach: 1, mealPK: 1.5, mealPMin: 0.1, mealPMax: 1.6, shopRate: 1.5, stapleGrade: -1, mktSupplyPop: 0, autoRareRate: 0, matBaseOn: 0, matEffort: [0.5, 2], matRareK: 2,
         popOn: 1, popStart: 60, popTake: 5, popRegen: 0.05, popLow: 30, popHigh: 85, popLowBoard: 0.5, popLowDraw: 0.5, popLowJudge: 0.15, popHighTown: 2,   // 2026-11-19 V4 3단계 (결정 44)
         mktOn: 1, mktTarget: 20, mktTargetSpice: 15, mktK: 0.6, mktMin: 0.5, mktMax: 2, mktUse: 0.1, mktPop: 100, buyRateOpt: [0.5, 0.7, 0.9], storeCap: 30, lowBuyK: 0.25   // 2026-11-19 V4 2단계 (결정 40 · 43)   // 2026-11-19 V4 1단계 (결정 37 · 38 · 39): 식당 재료 소모 · 메뉴 가격 · 잡화 양념 (balance.csv와 같게)   // mealMode 1 = 요리 버프(능력치 +n, 발견 보너스 없음, 2026-11-19) · 0 = 예전 C안
       },
@@ -456,7 +456,7 @@
     const mMult = id => { if (!E.mktOn) return 1; const T = mT(id); return Math.max(E.mktMin || 0.5, Math.min(E.mktMax || 2, 1 + (E.mktK != null ? E.mktK : 0.6) * (T - mM(id)) / T)); };
     const matBase = id => Math.max(1, Math.round(matBase0(id) * mMult(id)));   // 시뮬레이터 안의 모든 소재 값 = 시세
     const mAdd = (id, n) => { if (E.mktOn && SIM_MAT[id]) { mM(id); s.mkt[id] += n; } };
-    function mktWeekly() { if (!E.mktOn) return; const use = E.mktUse != null ? E.mktUse : 0.1, pd = E.mktPop || 100, p0 = T.startPop || 150; for (const id in SIM_MAT) { const t = mT(id), M = mM(id); s.mkt[id] = Math.max(0, M + t * use + p0 / pd - M * use - (s.pop || p0) / pd); } }
+    function mktWeekly() { if (!E.mktOn) return; const use = E.mktUse != null ? E.mktUse : 0.1, pd = E.mktPop || 100, p0 = T.startPop || 150; for (const id in SIM_MAT) { const t = mT(id), M = mM(id); s.mkt[id] = Math.max(0, M + t * use + (E.mktSupplyPop ? (s.pop || p0) : p0) / pd - M * use - (s.pop || p0) / pd); } }
     // 2026-11-19 V4 1단계 (게임 game_core.js 와 같은 규칙): 상시 발주 · 식당 재료 소모 · 잡화 양념
     const SPICE = new Set(Object.keys(SIM_MAT).filter(id => ['소금', '향신료', '신선한 물', '밀가루'].includes(SIM_MAT[id].name)));
     const oMult = o => o.mult, oPrice = o => Math.floor(matBase(o.m) * oMult(o) + 1e-9);
