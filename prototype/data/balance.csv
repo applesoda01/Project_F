@@ -76,6 +76,9 @@ econ,drawMode,1,소재 뽑기: 1이면 몬스터 1마리 · 탐색 포인트 1�
 econ,drawPts,2|3,몬스터 없는 의뢰의 탐색 포인트 수 최소|최대 [임시] (V2 결정 27)
 econ,effectCost,0.1|0.2|0.35,
 econ,mealPriceRate,0.25,
+econ,mealPriceMode,1,메뉴 기준가 방식 (2026-11-20 사용자: 원가에 맞춤): 1 = 재료 원가(기준가 ÷ 그릇) × mealCostK + 등급 가산 · 0 = 의뢰 보상 × mealPriceRate [임시]
+econ,mealCostK,2,메뉴 기준가 = 1그릇 재료 원가 × 이 값 + 등급 가산 [임시]
+econ,mealGradeAdd,5|15|25|40|50|70|100,메뉴 기준가 등급 가산 (F|E|D|C|B|A|S) [임시]
 econ,mealMargin,0.6,
 econ,mealBuyRate,0.3|0.6|0.9,
 econ,mealBonus,0.03|0.04|0.045|0.05|0.06|0.05|0.07,

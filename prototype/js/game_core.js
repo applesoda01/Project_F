@@ -1075,7 +1075,7 @@
   const mealCookOn = s => !!s.cfg.econ.mealCook;
   const DISH_MAT = new Set(DISH.flatMap(d => d.mats));
   const isStaple = (s, id) => SPICE.has(id) || (DISH_MAT.has(id) && !!MAT[id] && GR.indexOf(MAT[id].grade) <= (s.cfg.econ.stapleGrade != null ? s.cfg.econ.stapleGrade : -1));   // 2026-11-20 결정 65: 상시 재료(양념 · F급 식재료)는 창고에 없으면 식당이 시장에서 시세로 삼, 희귀 재료는 모험가 매입만
-  const dishBase = (s, d) => Math.round(s.cfg.quest.reward[d.g] * s.cfg.econ.mealPriceRate);   // 기준가 (F 25G)
+  const dishBase = (s, d) => { const E = s.cfg.econ; if (E.mealPriceMode === 1 && d.mats.length) { const c = d.mats.reduce((a, m) => a + matBase(m), 0) / (d.serv || 2), A = E.mealGradeAdd || [5, 15, 25, 40, 50, 70, 100]; return Math.max(1, Math.round(c * (E.mealCostK || 2) + (A[d.g] || 0))); } return Math.round(s.cfg.quest.reward[d.g] * E.mealPriceRate); };   // 기준가: 2026-11-20 사용자 — 재료 원가(기준가 ÷ 그릇) × K + 등급 가산 (mealPriceMode 1) · 0 = 의뢰 보상 × 비율(F 25G)
   const shopPrice = (s, id) => Math.ceil(matPrice(s, id) * (s.cfg.econ.shopRate != null ? s.cfg.econ.shopRate : 1.5) - 1e-9);
   function menuOf(s, d) { const M = s.menu = s.menu || {}; if (!M[d.name]) M[d.name] = { price: dishBase(s, d), prep: s.cfg.econ.mealPrep != null ? s.cfg.econ.mealPrep : 4 }; if (!M[d.name].left) M[d.name].left = s.cfg.econ.mealLeft === 2 ? 'free' : 'sale'; return M[d.name]; }   // left (결정 47): 남은 그릇 = sale 마감 할인 · free 모험가 무료 식사
   const oldBowl = (s, d) => ((s.bowls || {})[d.name] || []).some(b => b.n > 0 && b.w < s.week);   // 지난주에 만든 그릇이 남아 있음 (이번 주에 안 팔리면 버림)
