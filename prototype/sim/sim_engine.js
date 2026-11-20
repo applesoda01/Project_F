@@ -38,7 +38,8 @@
         lvCap: [30, 40, 50],
         trainPerWeek: 0.10,                        // 훈련장·도서관 주간 훈련량
         statCap: 100,
-        gradeStat: [0, 3, 4, 5, 6, 8, 10]          // 2026-11-12 승급 시 능력치 5개에 각각 (balance.csv와 같게)
+        gradeStat: [0, 3, 4, 5, 6, 8, 10],         // 2026-11-12 승급 시 능력치 5개에 각각 (balance.csv와 같게)
+        gradeLv: [0, 4, 10, 18, 26, 35, 45], gradeAch: [0, 4, 5, 7, 7, 10, 10]   // 2026-11-20 사용자 결정 B: 승급 조건을 balance.csv로 (E급 Lv5 · 실적 5 → Lv4 · 실적 4)
       },
       adv: {
         arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,       // arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)
@@ -361,7 +362,7 @@
     }
     function gradeBonus(a, n) { const gb = (G.gradeStat || [])[n] || 0; for (let i = 0; i < 5; i++) a.stats[i] = Math.min(G.statCap, a.stats[i] + gb); }   // 2026-11-12 승급 보너스
     function tryGradeUp(a) {
-      const lvReq = [0, 5, 10, 18, 26, 35, 45], achReq = [0, 5, 5, 7, 7, 10, 10];
+      const lvReq = G.gradeLv || [0, 4, 10, 18, 26, 35, 45], achReq = G.gradeAch || [0, 4, 5, 7, 7, 10, 10];   // 2026-11-20 balance.csv growth.gradeLv · gradeAch (게임과 같음)
       const n = a.grade + 1;
       if (n > 6 || n > s.grade + 1 || n === 6) return; // S급은 길드 S 승급 순간에만. 2026-11-12: 상한 = 길드 등급 + 1 (게임과 같음)
       if (a.lv >= lvReq[n] && a.ach >= achReq[n]) { gradeBonus(a, n); a.grade = n; a.ach = 0; }
@@ -634,6 +635,7 @@
     }
 
     function raidStep() {
+      if (s.grade === 0 && COMBAT && !(cfg.run && cfg.run.noMain)) return;   // 2026-11-20: F급(1년 차)에는 게임에 습격이 없음 — 침공(메인 퀘스트)만 (game_core.js와 같게). 예전엔 시뮬레이터만 습격 방어 보상금을 써서 관문 1 차이가 벌어짐
       if (s.week < s.nextRaid) return;
       s.nextRaid = s.week + P.raidMonths[popStage()] * WPM;
       if (s.invasionCooldown > s.week) return;

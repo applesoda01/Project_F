@@ -23,6 +23,8 @@ growth,lvCap,30|40|50,
 growth,trainPerWeek,0.1,훈련장·도서관 주간 훈련량
 growth,statCap,100,
 growth,gradeStat,0|3|4|5|6|8|10,승급하면 능력치 5개에 각각 더함 (F·E·D·C·B·A·S급으로 오를 때. 2026-11-12)
+growth,gradeLv,0|4|10|18|26|35|45,모험가 승급 레벨 조건 (F·E·D·C·B·A·S급으로 오를 때). 2026-11-20 사용자 결정 B: E급 Lv5 → 4 (레벨 곡선 160 × Lv로 성장이 늦어져 입단 → E급 중앙 31주 → 19주) [임시]
+growth,gradeAch,0|4|5|7|7|10|10,모험가 승급 실적 조건 (자기 등급 + 1 이상 의뢰 성공 횟수, 길드 등급과 같으면 같은 등급도). 2026-11-20 사용자 결정 B: E급 5 → 4 [임시]
 adv,arrivalPerMonth,0.8,"arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)"
 adv,arrivalPerGrade,0.1,
 adv,startCount,2,

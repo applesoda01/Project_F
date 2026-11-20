@@ -310,7 +310,7 @@
     }
   }
   function tryGradeUp(s, a) {
-    const lvReq = [0, 5, 10, 18, 26, 35, 45], achReq = [0, 5, 5, 7, 7, 10, 10]; const n = a.grade + 1;
+    const lvReq = s.cfg.growth.gradeLv || [0, 4, 10, 18, 26, 35, 45], achReq = s.cfg.growth.gradeAch || [0, 4, 5, 7, 7, 10, 10]; const n = a.grade + 1;   // 2026-11-20 사용자 결정 B: balance.csv growth.gradeLv · gradeAch (E급 Lv4 · 실적 4)
     if (n > 6 || n > s.grade + 1 || n === 6) return;   // 2026-11-12: 모험가 등급 상한 = 길드 등급 + 1 (1년 차 F급 길드에서도 E급 승급)
     if (a.lv >= lvReq[n] && a.ach >= achReq[n]) {
       const gb = (s.cfg.growth.gradeStat || [])[n] || 0, cap = s.cfg.growth.statCap;   // 2026-11-12: 승급 보너스 = 능력치 5개에 각각 고정값

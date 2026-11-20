@@ -1127,7 +1127,7 @@
       }
     } else if (k === 'injured') h += `<div class="row">회복까지 <b>${w}주</b>${a.injuredFrom ? ` · <span class="ux-muted">${esc(a.injuredFrom)}에서 다침</span>` : ''}</div>`;
     else if (k === 'town') {
-      const lvReq = [0, 5, 10, 18, 26, 35, 45], achReq = [0, 5, 5, 7, 7, 10, 10], n = a.grade + 1;
+      const GW = (s.cfg && s.cfg.growth) || {}, lvReq = GW.gradeLv || [0, 4, 10, 18, 26, 35, 45], achReq = GW.gradeAch || [0, 4, 5, 7, 7, 10, 10], n = a.grade + 1;   // 2026-11-20 balance.csv 승급 조건 (게임 규칙과 같은 값)
       h += `<div class="row">의뢰를 고르는 중</div>`;
       if (n <= 5) h += `<div class="row ux-muted">${GR[n]}급 승급까지: Lv ${Math.min(a.lv, lvReq[n])}/${lvReq[n]} · 업적 ${Math.min(a.ach, achReq[n])}/${achReq[n]}</div>`;
     } else {
