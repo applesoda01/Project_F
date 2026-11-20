@@ -120,14 +120,15 @@
   // 2026-11-18 결정 25: 발주 소재가 나오는 의뢰는 '주우면 받는 발주 값 × 나올 확률'만큼 실수령을 더 크게 봄
   const orderBonus = (s, q) => { const O = s.orders, T = QBYID[q.tid]; if (!O || !O.length || !T) return 0; let b = 0; for (const r of T.rewards || []) { const o = r.p >= 30 && O.find(x => x.m === r.m && orderLive(s, x)); if (o) b += orderPriceOf(s, o) * r.p / 100;   /* 양념(희귀) 발주는 모든 F급 의뢰에 붙으므로 의뢰 고르기에는 넣지 않음 */ } return b; };
   const questEff = (s, q) => (Math.floor(q.reward * (q.x2 ? 2 : 1) * (1 - questFee(s, q)) + 1e-9) + orderBonus(s, q)) / (q.weeks || s.cfg.quest.weeks[q.g]);
-  function lowBuySkip(s, q) { const T = QBYID[q.tid]; if (!T) return 0; const main = (T.rewards || []).reduce((b, r) => (!b || r.p > b.p ? r : b), null); if (!main) return 0; const p = matPol(s, main.m); if (p.mode !== 'buy') return 0; const r = polRate(s, main.m), b = s.cfg.econ.matBuyRate != null ? s.cfg.econ.matBuyRate : 0.7; return r < b - 1e-9 ? Math.min(1, (b - r) / 0.2 * (s.cfg.econ.lowBuyK != null ? s.cfg.econ.lowBuyK : 0.25)) : 0; }
+  function lowBuySkip(s, q) { const T = QBYID[q.tid]; if (!T || s.cfg.econ.gqOn) return 0; const main = (T.rewards || []).reduce((b, r) => (!b || r.p > b.p ? r : b), null); if (!main) return 0; const p = matPol(s, main.m); if (p.mode !== 'buy') return 0; const r = polRate(s, main.m), b = s.cfg.econ.matBuyRate != null ? s.cfg.econ.matBuyRate : 0.7; return r < b - 1e-9 ? Math.min(1, (b - r) / 0.2 * (s.cfg.econ.lowBuyK != null ? s.cfg.econ.lowBuyK : 0.25)) : 0; }
   const ordHit = (s, q) => (s.cfg.econ.orderFirst || !s.cfg.econ.orderMode) && orderBonus(s, q) > 0 ? 1 : 0;   /* 2026-11-19 상시 발주는 늘 켜져 있어 '가장 먼저 맡음'을 끄고 발주 값(실수령)으로만 끌림 [임시] */   /* 2026-11-18 결정 26: 발주한 소재가 나오는 의뢰를 가장 먼저 맡음 */
-  const cheapHit = (s, q) => questFee(s, q) < feeBase0(s) - 1e-9 ? 1 : 0;   /* 2026-11-19 결정 42: 기본보다 싼 수수료(5%) 의뢰는 모든 모험가가 먼저 맡음 → 빨리 처리 */
+  const cheapHit = (s, q) => q.gq != null ? (q.gqHot ? 1 : 0) : questFee(s, q) < feeBase0(s) - 1e-9 ? 1 : 0;   /* 2026-11-20 길드 의뢰: 보상이 기준 이상이면 모든 모험가가 먼저 맡음, 기준 아래면 다른 의뢰 다음 */   /* 2026-11-20 길드 의뢰 카드는 수수료 0%지만 '먼저 맡음' 없이 보상(실수령)으로만 끌림 */
+  const ordFee = (s, q) => q.gq != null ? feeBase0(s) : questFee(s, q);   /* 2026-11-19 결정 42: 기본보다 싼 수수료(5%) 의뢰는 모든 모험가가 먼저 맡음 → 빨리 처리 */
   // 2026-11-19 결정 42: 의뢰 카드의 예상 처리 주 (같은 등급에서 먼저 맡힐 의뢰 수 ÷ 마을에 있는 모험가 수, 기본보다 비싸면 +1주, 최대 4)
   function questEta(s, q) { const idle = s.advs.filter(a => a.alive && a.state === 'town').length, fq = questFee(s, q), cq = cheapHit(s, q);
     const ahead = s.board.filter(x => x !== q && x.g === q.g && (cheapHit(s, x) > cq || (cheapHit(s, x) === cq && (questFee(s, x) < fq - 1e-9 || (Math.abs(questFee(s, x) - fq) < 1e-9 && x.posted < q.posted))))).length;
     return Math.min(4, 1 + Math.floor(ahead / Math.max(1, idle)) + (fq > feeBase0(s) + 1e-9 ? 1 : 0)); }
-  const pickOrder = (s, a) => needsMoney(s, a) ? (x, y) => (ordHit(s, y) - ordHit(s, x)) || (cheapHit(s, y) - cheapHit(s, x)) || (questEff(s, y) - questEff(s, x)) || (y.g - x.g) : (x, y) => (ordHit(s, y) - ordHit(s, x)) || (cheapHit(s, y) - cheapHit(s, x)) || (y.g - x.g) || (questFee(s, x) - questFee(s, y));
+  const pickOrder = (s, a) => needsMoney(s, a) ? (x, y) => (ordHit(s, y) - ordHit(s, x)) || (cheapHit(s, y) - cheapHit(s, x)) || (questEff(s, y) - questEff(s, x)) || (y.g - x.g) : (x, y) => (ordHit(s, y) - ordHit(s, x)) || (cheapHit(s, y) - cheapHit(s, x)) || (y.g - x.g) || (ordFee(s, x) - ordFee(s, y));
   // 게시판 칸 배분: 버튼 4단계의 비중. 칸 수 = 최대 칸 × 비중 ÷ 합 (최대 나머지 방식으로 합을 정확히 맞춤)
   const FILTER_W = [0, 1, 2, 4], FILTER_NAME = ['없음', '적게', '보통', '우선'];
   const filterLevel = w => w >= 4 ? 3 : w >= 2 ? 2 : w >= 1 ? 1 : 0;
@@ -264,11 +265,11 @@
     const DF = ((Q.diff || [])[g] || 1) * (QL ? 1 + QL.foe * (lv - 1) : 1);   // 난이도 배수 (2026-11-16): 판정 기준치와 적 체력 · 공격력에 곱함 · 의뢰 레벨 배수
     const R0 = (T ? T.ref : Q.ref[g]) * n * (0.85 + s.R() * 0.30) * DF * (T && resLow(s, baseMatOf(T)) ? 1 + (s.cfg.econ.popLowJudge != null ? s.cfg.econ.popLowJudge : 0.15) : 1);   // 결정 44: 개체수가 적으면 흔적 찾기가 어려움(판정 기준 +15%)
     const q = { id: s.nextId++, g, type: T && T.type >= 0 ? T.type : type, req: T && T.stats && T.stats.length ? T.stats.slice() : req, r: R0 / n, reward: (T ? T.reward : Q.reward[g]) * (QL ? 1 + QL.pay * (lv - 1) : 1), posted: s.week };
-    if (LV) { q.lv = lv; if (LV.fresh > 0) q.fz = true; }
+    if (LV) { q.lv = lv; if (LV.fresh > 0 && !(T && scoutOn(s, baseMatOf(T)))) q.fz = true; }   // 정찰한 곳은 정보 오차 없음
     if (T) Object.assign(q, { tid: T.id, name: T.name, weeks: T.weeks, fameS: T.fameS, fameF: T.fameF, trustS: T.trustS, trustF: T.trustF, death: T.death });
     if (COMBAT && T && T.enemies && T.enemies.length) {
       // 개체 차이: 실제 적은 게시 정보보다 강하거나 약할 수 있음(±enemyVar). 모험가는 게시 정보(seen)로 판단, 정보실이 있으면 실제에 가까워짐
-      const f0 = 1 + (s.R() * 2 - 1) * (q.fz ? QL.var : (CB.C.enemyVar || 0)), f = f0 * DF, look = Math.min(1, 0.25 * effN(s, '정보실'));
+      const f0 = 1 + (s.R() * 2 - 1) * (q.fz ? QL.var : (CB.C.enemyVar || 0)), f = f0 * DF, look = T && scoutOn(s, baseMatOf(T)) ? 1 : Math.min(1, 0.25 * effN(s, '정보실'));
       q.enemies = []; q.seen = []; q.foe = f0 * ((Q.diff || [])[g] || 1);   // 강약 표시(▲▼)는 개체 차이만 (의뢰 레벨 배수 제외)
       for (const e of T.enemies) for (let k = 0; k < e.count; k++) {
         q.enemies.push({ hp: e.hp * f, atk: e.atk * f, def: e.def || 0, name: e.name, mon: e.mon, boss: !!e.boss });
@@ -448,13 +449,14 @@
   function expireQuests(s) {
     const W = expireWeeks(s), dt = s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1;
     for (let i = s.board.length - 1; i >= 0; i--) {
-      const q = s.board[i]; if (s.week - q.posted < W) continue;
+      const q = s.board[i]; if (q.gq != null || s.week - q.posted < W) continue;   // 길드 의뢰 카드는 gqWeekly
       s.board.splice(i, 1); s.trust = Math.max(0, s.trust - dt); s.month.expired = (s.month.expired || 0) + 1;
       log(s, `${qn(q)} 의뢰가 기한(${W}주)이 지나 게시판에서 사라졌습니다. 신뢰도 −${dt}.`, 'expire');
     }
   }
   function withdrawQuest(s, qid) {
     const i = s.board.findIndex(q => q.id === qid); if (i < 0) return false;
+    if (s.board[i].gq != null) return gqCancel(s, s.board[i].gq).ok;   // 길드 의뢰는 위약금 없이 거둠
     const q = s.board[i]; const cost = Math.round(q.reward * 0.10);
     s.board.splice(i, 1); s.gold -= cost; s.month.other -= cost; (s.month.wd = s.month.wd || []).push({ g: q.g, type: q.type, name: q.name || '', cost }); s.trust = Math.max(0, s.trust - 2);
     log(s, `${qn(q)} 의뢰를 게시판에서 뗐습니다. 등록비·위약금 ${cost}G, 신뢰도 −2.`, 'withdraw');
@@ -521,7 +523,7 @@
   // 소재 처리: 소재마다 매입(시세 × 50 · 70 · 90%) / 위탁(길드가 대신 팔고 수수료) / 안 받음(모험가가 직접 판매) — 결정 43
   const POL_DEF = { mode: 'buy', rate: null };
   const matPol = (s, id) => (s.matPol || {})[id] || POL_DEF;
-  const polRate = (s, id) => { const p = matPol(s, id); return p.rate != null ? p.rate : (s.cfg.econ.matBuyRate != null ? s.cfg.econ.matBuyRate : 0.7); };
+  const polRate = (s, id) => { if (s.cfg.econ.gqOn) { const r = (s.buyRate || {})[id]; return r != null ? r : (s.cfg.econ.matBuyRate != null ? s.cfg.econ.matBuyRate : 0.85); } const p = matPol(s, id); return p.rate != null ? p.rate : (s.cfg.econ.matBuyRate != null ? s.cfg.econ.matBuyRate : 0.7); };   // 2026-11-20 결정 52: 소재별 매입가 하나
   function setMatPol(s, id, mode, rate) {
     if (!MAT[id]) return { ok: false, why: '없는 소재입니다' }; if (!['buy', 'consign', 'none'].includes(mode)) return { ok: false, why: '처리 방식이 없습니다' };
     const R = s.cfg.econ.buyRateOpt || [0.5, 0.7, 0.9]; if (rate != null && !R.some(x => Math.abs(x - rate) < 1e-9)) return { ok: false, why: '매입가 비율이 선택지에 없습니다' };
@@ -537,6 +539,7 @@
     let k = q.enemies && q.enemies.length ? q.enemies.length : P[0] + Math.floor(s.R() * (P[1] - P[0] + 1));
     if (resLow(s, baseMatOf(T))) k = Math.max(1, Math.floor(k * (s.cfg.econ.popLowDraw != null ? s.cfg.econ.popLowDraw : 0.5)));   // 결정 44: 개체수가 적으면 뽑기 수 절반
     if ((q.lv || 1) > 1 && QLV(s)) { const kk = k * (1 + QLV(s).pay * (q.lv - 1)); k = Math.floor(kk) + (s.R() < kk - Math.floor(kk) ? 1 : 0); }   // 의뢰 레벨: 소재 개수 +pay
+    { const G = q.gq != null && (s.gq || []).find(o => o.id === q.gq); if (G && G.kind === 'mat') { const out = []; for (let i = 0; i < k; i++) out.push({ m: G.m, p: 100 }); return out.concat(rare.filter(r => r.m !== G.m)); } }   // 2026-11-20 길드 의뢰 ① 소재 납품: 그 소재만 모아 옴
     const tot = main.reduce((a, r) => a + r.p, 0), om = main.find(r => liveOrders(s).some(o => o.m === r.m)), oo = om && (s.orders || []).find(o => o.m === om.m), ob = oo ? (s.cfg.econ.orderMode ? orderBiasOf(s, oo) : 1) : 0, out = [];
     for (let i = 0; i < k && main.length; i++) {
       if (om && (ob >= 1 || s.R() < ob)) { out.push({ m: om.m, p: 100 }); continue; }   // 2026-11-19 상시 발주: 뽑기마다 쏠림 비율(30 · 50 · 70%)만큼만 발주 소재 — 늘 켜져 있어 다른 소재(고철 등)가 끊기지 않게 [임시] (예전 결정 27은 전부)
@@ -546,15 +549,23 @@
   }
   function dropMats(s, q, party) {
     const T = QBYID[q.tid]; if (!T) return;
+    if (q.gqk === 'scout' || q.gqk === 'patrol' || q.gqk === 'help') return;   // 비전투 길드 의뢰는 소재 없음
     const ids = (party || []).map(a => a.id); let paid = 0;
     for (const r of drawList(s, q, T)) {
       if (s.R() * 100 >= r.p) continue;
       { const o = (s.orders || []).find(x => x.m === r.m && orderLive(s, x));   // 2026-11-19 결정 41: 상시 발주 — 창고가 목표 아래인 소재는 그때 금고에서 1개 값을 파티에게 주고 창고로 (선지급 없음)
         if (o && ids.length) { const op = orderPriceOf(s, o); s.gold -= op; s.month.order = (s.month.order || 0) - op; o.got = (o.got || 0) + 1; s.mats[r.m] = (s.mats[r.m] || 0) + 1; payParty(s, ids, op); buyNote(s, r.m, ids, op, 1, true); if (!s.knownMats[r.m]) s.knownMats[r.m] = true;
           continue; } }
+      { const G = q.gq != null && (s.gq || []).find(o => o.id === q.gq);   // 2026-11-20 길드 의뢰 ①: 약속한 소재는 매입 판단 없이 길드 창고로, 1개씩 나눠 지급(맡아 둔 돈에서)
+        if (G && G.kind === 'mat' && G.m === r.m && G.got < G.n && ids.length) { const pay = gqPayFor(G, 1); G.got++; G.hold -= pay; s.month.gq = (s.month.gq || 0) - pay; s.month.gqN = (s.month.gqN || 0) + 1; s.mats[r.m] = (s.mats[r.m] || 0) + 1; payParty(s, ids, pay); buyNote(s, r.m, ids, pay, 1, true); resTake(s, r.m, 1); if (!s.knownMats[r.m]) s.knownMats[r.m] = true; continue; } }
       mktAdd(s, r.m, 1);   // 2026-11-19 V4 2단계: 의뢰에서 나온 소재는 시장 공급으로 셈
       resTake(s, r.m, 1);  // V4 3단계: 그 자원지 개체수 −3
       const pol = matPol(s, r.m), cap = s.cfg.econ.storeCap || 30;
+      if (gqOn(s) && ids.length && consWant(s, party, r.m)) { consAdd(s, ids, r.m); sellNote(s, r.m, 'c'); if (!s.knownMats[r.m]) s.knownMats[r.m] = true; continue; }   // 2026-11-20 결정 62: 상단 위탁 (길드가 맡아 두었다가 상단에 팖)
+      if (gqOn(s) && ids.length) { const bp = matBuyPrice(s, r.m), mp = matPrice(s, r.m), th = sellTh(s, party);   // 2026-11-20 결정 52 · 53: 모험가가 길드 매입가와 시장을 비교 — 금고 부족 · 창고 가득이면 시장
+        if (polRate(s, r.m) >= th - 1e-9 && s.gold >= bp && (s.mats[r.m] || 0) < cap) { s.mats[r.m] = (s.mats[r.m] || 0) + 1; if (bp) { s.gold -= bp; paid += bp; s.month.matBuy = (s.month.matBuy || 0) - bp; s.month.matBuyN = (s.month.matBuyN || 0) + 1; buyNote(s, r.m, ids, bp, 1); } sellNote(s, r.m, true); }
+        else { payParty(s, ids, mp); s.month.mktSellN = (s.month.mktSellN || 0) + 1; sellNote(s, r.m, false); }
+        if (!s.knownMats[r.m]) { s.knownMats[r.m] = true; const m = MAT[r.m]; if (m) log(s, `처음 보는 소재를 얻었습니다: ${m.name}`, 'unlock'); } continue; }
       if (ids.length && pol.mode === 'none') { payParty(s, ids, matPrice(s, r.m)); if (!s.knownMats[r.m]) { s.knownMats[r.m] = true; const m = MAT[r.m]; if (m) log(s, `처음 보는 소재를 얻었습니다: ${m.name}`, 'unlock'); } continue; }   // 안 받음: 모험가가 시장에 직접 팖
       const bp = matBuyPrice(s, r.m);
       if (ids.length && (pol.mode === 'consign' || (s.mats[r.m] || 0) >= cap)) { s.consign = s.consign || []; const key = ids.join(','), e = s.consign.find(x => x.m === r.m && x.ids.join(',') === key); if (e) e.n++; else s.consign.push({ m: r.m, ids: ids.slice(), n: 1 }); }   // 위탁 · 창고 상한
@@ -576,6 +587,173 @@
   const orderBiasOf = (s, o) => { const E = s.cfg.econ, i = orderMultOpts(s).findIndex(x => Math.abs(x - o.mult) < 1e-9); return E.orderBiasOpt && i >= 0 ? E.orderBiasOpt[i] : (E.orderBias || 0); };
   const orderLive = (s, o) => o.target != null && (s.mats[o.m] || 0) < o.target && s.gold >= orderPriceOf(s, o);
   const liveOrders = s => (s.orders || []).filter(o => orderLive(s, o));
+  // ---------- V4 결정 49~56 (2026-11-20): 길드 의뢰 — 길드가 금고로 게시판에 의뢰를 냄 (상시 발주 대체) ----------
+  // 거는 순간 보상을 금고에서 맡아 두고(hold), 끝나면 지급, 기한이 지나면 남은 돈을 돌려받음. 수수료 · 명성 · 신뢰 · 보조금 실적 없음
+  // ① 소재 납품(mat): 소재 · 개수 · 가져온 만큼 나눠 지급, 덜 채우면 남은 개수로 다시 게시 / ② 토벌(hunt): 사냥터 전투, 이기면 개체수 −처치 수 × gqHuntTake / ③ 정찰(scout): 1주 비전투(민첩 · 지력), 성공하면 4주 동안 그 자원지 개체수 숫자 공개 · 적 정보 오차 없음
+  // 해금형 (결정 56): ④ 순찰 · 경비(patrol, 침공 전갈 뒤) 8주 동안 침공 첫 차례 적 −10% / ⑤ 마을 일손(help, 인구 200) 인구 +5 · 신뢰 +1 / ⑥ 훈련 원정(train, 모험가 관리소) 지명한 모험가 경험치 + 애착
+  const gqOn = s => !!s.cfg.econ.gqOn;
+  const gqMax = s => { const E = s.cfg.econ, M = E.gqMax || [2, 3, 4, 5, 6, 7, 8]; return (M[s.grade] != null ? M[s.grade] : M[M.length - 1]) + (upg(s, '게시판') ? (E.gqUpBoard != null ? E.gqUpBoard : 1) : 0); };
+  const GQ_KIND = {
+    mat: { name: '소재 납품', open: () => true },
+    hunt: { name: '토벌', open: () => true },
+    scout: { name: '정찰', open: () => true },
+    patrol: { name: '순찰 · 경비', open: s => mainOf(s).state !== 'none', lock: 'F급 메인 퀘스트(침공) 전갈이 오면 열립니다' },
+    help: { name: '마을 일손', open: s => (s.pop || 0) >= (s.cfg.econ.gqHelpPop || 200), lock: '마을 인구 200이 되면 열립니다' },
+    train: { name: '훈련 원정', open: s => !!s.built['관리소'], lock: '모험가 관리소를 지으면 열립니다' },
+  };
+  const gqKindOpen = (s, k) => !!GQ_KIND[k] && GQ_KIND[k].open(s);
+  function tplLow(s, ok) { let best = null, bg = 99, bk = -1; for (const k in TPL) { const g = +k.split('_')[1]; if (g > s.grade) continue; for (const t of TPL[k]) { const v = ok(t); if (v === false || v == null) continue; if (g < bg || (g === bg && v > bk)) { best = t; bg = g; bk = v; } } } return best ? { T: best, g: bg } : null; }
+  function gqSrcK(s, kind, m) {   // 그 길드 의뢰가 쓰는 의뢰 틀 (가장 낮은 등급)
+    if (kind === 'mat') return tplLow(s, t => { const r = (t.rewards || []).find(x => x.m === m && (x.p >= 30 || (SPICE.has(m) && x.p > 0))); return r ? r.p : null; });
+    if (kind === 'hunt') return tplLow(s, t => t.enemies && t.enemies.length && baseMatOf(t) === m ? 1 : null);
+    if (kind === 'scout') return tplLow(s, t => baseMatOf(t) === m ? 1 : null);
+    if (kind === 'train') return tplLow(s, t => t.enemies && t.enemies.length ? -(t.ref || 0) : null);
+    return tplLow(s, t => !(t.enemies && t.enemies.length) ? 1 : null);   // 순찰 · 일손: 비전투 틀을 빌림
+  }
+  const gqSrc = (s, m) => gqSrcK(s, 'mat', m);
+  const gqPer = T => T && T.enemies && T.enemies.length ? T.enemies.reduce((a, e) => a + (e.count || 1), 0) : 2.5;   // 한 번에 가져오는 수 (어림)
+  const gqUnitBase = (s, m) => { const S = gqSrc(s, m); return S ? Math.max(1, Math.round(S.T.reward / gqPer(S.T))) : 0; };   // 1개 기준 = 그 의뢰 보상 ÷ 한 번에 가져오는 수 [임시]
+  function gqBaseK(s, kind, m, n) { const S = gqSrcK(s, kind, m); if (!S) return 0; if (kind === 'mat') return gqUnitBase(s, m) * n; if (kind === 'hunt') return S.T.reward;
+    const K = s.cfg.econ.gqBaseK || { scout: 0.5, patrol: 0.8, help: 0.6, train: 1 }; return Math.round(s.cfg.quest.reward[S.g] * (K[kind] != null ? K[kind] : 1)); }
+  const gqBase = (s, m, n) => gqBaseK(s, 'mat', m, n);
+  const gqPct = s => s.cfg.econ.gqPct || [0.5, 3];
+  const gqWeekOpts = s => s.cfg.econ.gqWeeks || [2, 4, 6];
+  const gqRangeK = (s, kind, m, n) => { const b = gqBaseK(s, kind, m, n), P = gqPct(s); return [Math.max(10, Math.ceil(b * P[0] / 10 - 1e-9) * 10), Math.max(10, Math.floor(b * P[1] / 10 + 1e-9) * 10)]; };
+  const gqRange = (s, m, n) => gqRangeK(s, 'mat', m, n);
+  const gqPayFor = (o, k) => Math.floor(o.reward * (o.got + k) / o.n + 1e-9) - Math.floor(o.reward * o.got / o.n + 1e-9);   // 정수로 나눠 지급 (합 = 보상)
+  const gqOpen = s => !s.cfg.econ.gqOffice || !!s.built['집무실'];
+  const gqLabel = o => o.kind === 'mat' ? `${(MAT[o.m] || {}).name || o.m} ${o.n}개 납품` : o.kind === 'hunt' || o.kind === 'scout' ? `${(MAT[o.m] || {}).name || o.m} 나오는 곳 ${GQ_KIND[o.kind].name}` : o.kind === 'train' ? `훈련 원정 (${(o.adv && o.adv.name) || '모험가'})` : GQ_KIND[o.kind].name;
+  const scoutOn = (s, m) => ((s.scout || {})[m] || -1) >= s.week;
+  function gqWhy(s, kind, m, n, reward, weeks) {
+    if (!gqOn(s)) return '길드 의뢰가 꺼져 있습니다';
+    if (!gqOpen(s)) return '집무실을 지으면 길드 의뢰를 낼 수 있습니다';
+    if ((s.gq || []).length >= gqMax(s)) return `길드 의뢰는 동시에 ${gqMax(s)}건까지입니다`;
+    if (!GQ_KIND[kind]) return '없는 종류입니다'; if (!gqKindOpen(s, kind)) return GQ_KIND[kind].lock || '아직 열리지 않은 종류입니다';
+    if (kind === 'mat' || kind === 'hunt' || kind === 'scout') { if (!MAT[m]) return kind === 'mat' ? '소재를 고르세요' : '자원지를 고르세요'; }
+    if (kind === 'hunt' && !RES_IDS[m]) return '몬스터가 나오는 사냥터가 아닙니다';
+    if (kind === 'train') { const a = s.advs.find(x => x.id === m); if (!a || !a.alive) return '훈련할 모험가를 고르세요'; }
+    if ((s.gq || []).some(o => o.kind === kind && (kind === 'patrol' || kind === 'help' || o.m === m))) return '이미 같은 길드 의뢰가 있습니다';
+    if (!gqSrcK(s, kind, m)) return kind === 'mat' ? '지금 길드 등급 의뢰에서는 나오지 않는 소재입니다' : '지금 길드 등급으로는 갈 수 없는 곳입니다';
+    if (kind === 'mat' ? !Number.isInteger(n) || n < 1 || n > 20 : n !== 1) return '개수는 1~20개입니다';
+    const R = gqRangeK(s, kind, m, n); if (!(reward >= R[0] && reward <= R[1]) || reward % 10) return `보상은 ${R[0]}~${R[1]}G (10G 단위)입니다`;
+    if (!gqWeekOpts(s).includes(weeks)) return '기한이 선택지에 없습니다';
+    if (s.gold < reward) return '금고가 모자랍니다';
+    return null;
+  }
+  const GQ_REQ = { scout: [1, 2], patrol: [0, 1], help: [0, 4] };   // 비전투 길드 의뢰 판정 능력치: 정찰 민첩 · 지력 / 순찰 힘 · 민첩 / 일손 힘 · 기교
+  function gqPost(s, o) {   // 게시판에 카드 1장 (게시판이 가득 차도 올림 — 대신 새 의뢰가 덜 들어옴)
+    const q = makeQuest(s, o.g, o.tid), left = o.n - o.got, k = o.kind === 'mat' ? Math.min(left, Math.max(1, Math.round(gqPer(QBYID[o.tid])))) : 1;
+    Object.assign(q, { gq: o.id, gqk: o.kind, gqHot: !!o.hot, self: true, fee: 0, x2: false, fameS: 0, fameF: 0, trustS: 0, trustF: 0, reward: o.kind === 'mat' ? gqPayFor(o, k) : o.hold });
+    if (GQ_REQ[o.kind]) { q.enemies = null; q.seen = null; q.req = GQ_REQ[o.kind].slice(); q.weeks = 1; q.name = `길드 의뢰: ${GQ_KIND[o.kind].name}`; delete q.lv; delete q.fz; }
+    if (o.kind === 'train') { q.only = o.m; q.name = `길드 의뢰: 훈련 원정`; }
+    s.board.push(q); o.qid = q.id; return q;
+  }
+  function gqPlace(s, kind, m, n, reward, weeks) {
+    if (kind !== 'mat') n = 1; if (kind === 'patrol' || kind === 'help') m = null;
+    const why = gqWhy(s, kind, m, n, reward, weeks); if (why) return { ok: false, why };
+    const S = gqSrcK(s, kind, m), o = { id: s.uidNext++, kind, m, n, got: 0, reward, hold: reward, hot: reward >= gqBaseK(s, kind, m, n), end: s.week + weeks, g: S.g, tid: S.T.id, w: s.week };
+    if (kind === 'train') { const a = s.advs.find(x => x.id === m); o.adv = { id: a.id, name: a.name }; }
+    s.gold -= reward; (s.gq = s.gq || []).push(o); gqPost(s, o);
+    log(s, `길드 의뢰를 냈습니다: ${gqLabel(o)} · 보상 ${reward}G · ${weeks}주 (금고에서 맡아 둠)`, 'sys');
+    return { ok: true, o };
+  }
+  function gqClose(s, o, why) { if (o.hold > 0) s.gold += o.hold; (s.gqDone = s.gqDone || []).unshift({ m: o.m, kind: o.kind, n: o.n, got: o.got, paid: o.reward - o.hold, back: o.hold, w: s.week, why, label: gqLabel(o) }); if (s.gqDone.length > 12) s.gqDone.length = 12; o.hold = 0; s.gq = (s.gq || []).filter(x => x !== o); }
+  function gqCancel(s, id) {
+    const o = (s.gq || []).find(x => x.id === id); if (!o) return { ok: false, why: '길드 의뢰가 없습니다' };
+    const i = s.board.findIndex(q => q.gq === id); if (i < 0) return { ok: false, why: '모험가가 맡아 떠나 있어 지금은 거둘 수 없습니다' };
+    s.board.splice(i, 1); const back = o.hold; gqClose(s, o, 'cancel'); log(s, `길드 의뢰(${gqLabel(o)})를 거뒀습니다. 남은 ${back}G를 돌려받았습니다.`, 'sys'); return { ok: true, back };
+  }
+  function gqEnd(s, o) { const b = o.hold; gqClose(s, o, 'end'); log(s, `길드 의뢰(${gqLabel(o)})가 기한이 지나 ${o.kind === 'mat' ? `${o.got}/${o.n}개로 ` : ''}끝났습니다. 남은 ${b}G를 돌려받았습니다.`, 'expire'); }
+  function gqWin(s, o, q, party) {   // 소재 납품 외: 성공하면 보상 전부 지급 + 효과
+    const E = s.cfg.econ, ids = party.map(a => a.id), pay = o.hold; o.hold = 0; o.got = 1; s.month.gq = (s.month.gq || 0) - pay; s.month.gqN = (s.month.gqN || 0) + 1; payParty(s, ids, pay);
+    if (o.kind === 'hunt') { const kill = (q.enemies || []).length || 1; if (resOf(s, o.m) != null) s.res[o.m] = Math.max(0, s.res[o.m] - kill * (E.gqHuntTake != null ? E.gqHuntTake : 5)); log(s, `토벌 성공: ${(MAT[o.m] || {}).name || ''} 나오는 사냥터의 짐승이 줄었습니다.`, 'success'); }
+    if (o.kind === 'scout') { (s.scout = s.scout || {})[o.m] = s.week + (E.gqScoutWeeks || 4); log(s, `정찰 성공: ${(MAT[o.m] || {}).name || ''} 나오는 곳의 개체수와 적 정보를 ${E.gqScoutWeeks || 4}주 동안 정확히 압니다.`, 'success'); }
+    if (o.kind === 'patrol') { s.patrolUntil = s.week + (E.gqPatrolWeeks || 8); log(s, `순찰 성공: ${E.gqPatrolWeeks || 8}주 안에 침공이 오면 첫 차례 적이 약해집니다.`, 'success'); }
+    if (o.kind === 'help') { s.month.popAdd = (s.month.popAdd || 0) + (E.gqHelpPop2 || 5); s.trust = Math.min(100, s.trust + 1); log(s, `마을 일손 성공: 마을이 조금 더 늘어납니다. 신뢰도 +1.`, 'success'); }
+    if (o.kind === 'train') { const a = s.advs.find(x => x.id === o.m); if (a && party.includes(a)) { const G = s.cfg.growth; gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * (E.gqTrainXp != null ? E.gqTrainXp : 1)); a.attach = Math.min(100, a.attach + (E.gqTrainAttach != null ? E.gqTrainAttach : 3)); log(s, `훈련 원정 성공: ${a.name}이(가) 선배들에게 많이 배웠습니다.`, 'success'); } }
+  }
+  function gqAfter(s, q, ok, party) {   // 귀환 뒤: 다 찼으면 끝, 기한 안이면 다시 게시, 기한이 지났으면 남은 돈을 돌려받음
+    const o = (s.gq || []).find(x => x.id === q.gq); if (!o) return;
+    if (o.kind !== 'mat' && ok) { gqWin(s, o, q, party || []); gqClose(s, o, 'done'); return; }
+    if (o.kind === 'mat' && o.got >= o.n) { gqClose(s, o, 'done'); log(s, `길드 의뢰 완료: ${MAT[o.m].name} ${o.n}개가 모두 들어왔습니다.`, 'success'); }
+    else if (s.week < o.end) gqPost(s, o);
+    else gqEnd(s, o);
+  }
+  function gqWeekly(s) { for (const o of (s.gq || []).slice()) if (s.week >= o.end) { const i = s.board.findIndex(q => q.gq === o.id); if (i < 0) continue; s.board.splice(i, 1); gqEnd(s, o); } }
+  // 자동 플레이(관문 1 · 측정용): 메뉴 요리 재료가 창고 gqAutoLow 아래면 소재 납품(개수 gqAutoN · 보상 기준 × gqAutoPct · gqAutoWeeks주), 금고에 gqAutoKeep은 남김 · 개체수 '많음'인 사냥터는 토벌
+  function autoGq(s) {
+    const E = s.cfg.econ, low = E.gqAutoLow != null ? E.gqAutoLow : 4, n = E.gqAutoN || 6, pct = E.gqAutoPct || 1.2, wk = E.gqAutoWeeks || 4, keep = E.gqAutoKeep != null ? E.gqAutoKeep : 200;
+    if (!gqOpen(s)) return; const full = () => (s.gq || []).length >= gqMax(s), rw = (k, m, nn) => { const R = gqRangeK(s, k, m, nn); return Math.min(R[1], Math.max(R[0], Math.round(gqBaseK(s, k, m, nn) * pct / 10) * 10)); };
+    if (E.gqAutoHunt) for (const m in RES_IDS) { if (full()) return; if (!RES_IDS[m] || resBand(s, m) !== 2 || (s.gq || []).some(o => o.kind === 'hunt' && o.m === m) || !gqSrcK(s, 'hunt', m)) continue; const r = rw('hunt', m, 1); if (s.gold - r >= keep) gqPlace(s, 'hunt', m, 1, r, wk); }
+    for (const d of DISH) { if (!s.dishes[d.name] || d.g > s.grade) continue;
+      for (const m of d.mats) { if ((SPICE.has(m) && E.shopRate) || (s.mats[m] || 0) >= low || (s.gq || []).some(o => o.kind === 'mat' && o.m === m) || !gqSrc(s, m)) continue; if (full()) return;
+        const r = rw('mat', m, n); if (s.gold - r < keep) return; gqPlace(s, 'mat', m, n, r, wk); } }
+  }
+  // 매입 개편 (결정 52 · 53): 소재마다 매입가(시세 × 50~120%) 하나, 모험가가 '길드 매입가 ≥ 시세 × 판매 기준'이면 길드에, 아니면 시장에 직접 팖
+  function sellTh(s, party) { const E = s.cfg.econ, T = E.sellTh || [0.9, 0.85, 0.75], A = E.sellAttach || [60, 90], C = E.sellAttachCut || [0.05, 0.1]; const ps = (party || []).filter(Boolean); if (!ps.length) return 0;
+    return ps.reduce((t, a) => t + (T[a.spend] != null ? T[a.spend] : 0.85) - ((a.attach || 0) >= A[1] ? C[1] : (a.attach || 0) >= A[0] ? C[0] : 0), 0) / ps.length; }
+  function setBuyRate(s, id, rate) { const E = s.cfg.econ, lo = E.buyRateMin != null ? E.buyRateMin : 0.5, hi = E.buyRateMax != null ? E.buyRateMax : 1.2, st = E.buyRateStep || 0.05;
+    if (!MAT[id]) return { ok: false, why: '없는 소재입니다' }; rate = Math.round(rate / st) * st; if (rate < lo - 1e-9 || rate > hi + 1e-9) return { ok: false, why: `매입가는 시세의 ${Math.round(lo * 100)}~${Math.round(hi * 100)}%입니다` };
+    (s.buyRate = s.buyRate || {})[id] = Math.round(rate * 100) / 100; return { ok: true }; }
+  function sellNote(s, m, toGuild) { const H = (s.sellHist = s.sellHist || {})[m] = s.sellHist[m] || []; let e = H[H.length - 1]; if (!e || e.w !== s.week) { e = { w: s.week, g: 0, m: 0 }; H.push(e); } e[toGuild === 'c' ? 'c' : toGuild ? 'g' : 'm'] = (e[toGuild === 'c' ? 'c' : toGuild ? 'g' : 'm'] || 0) + 1; while (H.length && H[0].w <= s.week - 4) H.shift(); }
+  // ---------- V4 결정 57~62 (2026-11-20): 떠돌이 상단 — 위탁에 거래 상대를 세움 ----------
+  // 여러 상단이 불규칙하게 들러 1주 머묾 · 오는 시기만 2주 전 예고 · 주문서 = 취향 소재 3종(관계 단계마다 +1) · 값 = 우리 시세 × 1.1~1.6 · 종류마다 5~15개(관계 단계마다 +5)
+  // 상단에 판 소재는 마을 밖으로 나가 우리 시세를 내리지 않음. 길드는 창고 소재를 팔고, 모험가는 소재를 길드에 맡겨(위탁) 상단 값에 팖(수수료 10%)
+  const carOn = s => !!s.cfg.econ.carOn;
+  const CAR_FOOD = () => { const S = new Set(); for (const d of DISH) for (const m of d.mats) S.add(m); return S; };
+  const CARS = [
+    { id: 'farm', name: '농산 상단', g: 0, gap: [3, 6], likes: m => CAR_FOOD().has(m) },
+    { id: 'smith', name: '대장장이 상단', g: 1, gap: [5, 9], likes: m => /^mat_(mine|hunt|slay|guard)_/.test(m) || m === 'mat_x015' || m === 'mat_x001' },
+    { id: 'herb', name: '약재 상단', g: 2, gap: [6, 10], likes: m => /^mat_study_/.test(m) || ['mat_x016', 'mat_x008'].includes(m) },
+  ];
+  const carGap = (s, c) => { const E = s.cfg.econ, G = (E.carGap || {})[c.id] || c.gap; return G[0] + Math.floor(s.R() * (G[1] - G[0] + 1)); };
+  const carRelLv = (s, st) => { const T = s.cfg.econ.carRel || [200, 600]; return st.rel >= T[1] ? 3 : st.rel >= T[0] ? 2 : 1; };
+  function carState(s, c) { const C = s.car = s.car || {}; if (!C[c.id]) C[c.id] = { next: s.week + carGap(s, c), rel: 0, here: false, order: [], last: {} }; return C[c.id]; }
+  const carOpenList = s => CARS.filter(c => c.g <= s.grade);
+  const carHere = s => carOpenList(s).filter(c => (s.car || {})[c.id] && s.car[c.id].here);
+  function carMakeOrder(s, c, st) {
+    const E = s.cfg.econ, lv = carRelLv(s, st), k = (E.carKinds || 3) + (lv - 1), M = E.carMult || [1.1, 1.6], Q = E.carQty || [5, 15];
+    const pool = Object.keys(MAT).filter(m => GR.indexOf(MAT[m].grade) <= s.grade && c.likes(m));
+    const out = []; while (out.length < k && pool.length) { const i = Math.floor(s.R() * pool.length), m = pool.splice(i, 1)[0];
+      out.push({ m, mult: Math.round((M[0] + s.R() * (M[1] - M[0])) * 100) / 100, max: Q[0] + Math.floor(s.R() * (Q[1] - Q[0] + 1)) + (lv - 1) * (E.carQtyLv != null ? E.carQtyLv : 5), sold: 0 }); }
+    return out;
+  }
+  const carPrice = (s, o) => Math.max(1, Math.round(matPrice(s, o.m) * o.mult));
+  const carLastMult = (s, m) => { let b = 0; for (const c of carOpenList(s)) { const st = (s.car || {})[c.id]; if (st && st.last[m] > b) b = st.last[m]; } return b; };   // 그 소재를 사 간 적 있는 상단 중 가장 높았던 배수
+  const consN = (s, m) => (s.cons || []).filter(e => e.m === m).reduce((t, e) => t + e.n, 0);
+  function carSell(s, cid, m, n) {   // 길드가 창고 소재를 머무는 상단에 팖
+    const c = CARS.find(x => x.id === cid), st = c && (s.car || {})[cid]; if (!st || !st.here) return { ok: false, why: '상단이 마을에 없습니다' };
+    const o = st.order.find(x => x.m === m); if (!o) return { ok: false, why: '이 상단은 그 소재를 사지 않습니다' };
+    n = Math.min(n, o.max - o.sold, s.mats[m] || 0); if (n <= 0) return { ok: false, why: o.sold >= o.max ? '주문 수량을 다 채웠습니다' : '창고에 없습니다' };
+    const p = carPrice(s, o), g = p * n; s.mats[m] -= n; o.sold += n; st.rel += g; s.gold += g; s.month.car = (s.month.car || 0) + g; s.month.carN = (s.month.carN || 0) + n;
+    carRelCheck(s, c, st); return { ok: true, n, g, p };
+  }
+  function carRelCheck(s, c, st) { const lv = carRelLv(s, st); if (lv > (st.lv || 1)) { st.lv = lv; log(s, `${c.name}과 사이가 가까워졌습니다 (관계 ${lv}단계). 다음부터 주문이 늘어납니다.`, 'unlock'); } }
+  function carConsSell(s, c, st) {   // 상단이 오면 맡아 둔 위탁 소재를 주문서대로 팖: 모험가에게 판매가 − 수수료, 길드는 수수료
+    for (const e of (s.cons || []).slice()) { const o = st.order.find(x => x.m === e.m); if (!o || o.sold >= o.max) continue;
+      const k = Math.min(e.n, o.max - o.sold), sale = carPrice(s, o) * k, fee = consignFeeOf(s, sale); o.sold += k; st.rel += sale; e.n -= k;
+      payParty(s, e.ids, sale - fee); s.gold += fee; s.month.consign = (s.month.consign || 0) + fee; s.month.consignN = (s.month.consignN || 0) + k;
+      if (e.n <= 0) s.cons.splice(s.cons.indexOf(e), 1); }
+    carRelCheck(s, c, st);
+  }
+  function carWeekly(s) {
+    if (!carOn(s)) return; const E = s.cfg.econ, keep = E.consWeeks || 8;
+    for (const c of carOpenList(s)) { const st = carState(s, c);
+      if (st.here && s.week >= st.until) { st.here = false; for (const o of st.order) st.last[o.m] = o.mult; st.order = []; st.next = s.week + carGap(s, c); log(s, `${c.name}이 떠났습니다.`, 'town'); }
+      if (!st.here && s.week === st.next - (E.carNotice != null ? E.carNotice : 2)) log(s, `리나: "${c.name}이 ${E.carNotice != null ? E.carNotice : 2}주 뒤 들른답니다."`, 'town');
+      if (!st.here && s.week >= st.next) { st.here = true; st.until = s.week + (E.carStay || 1); st.order = carMakeOrder(s, c, st);
+        log(s, `${c.name}이 마을에 들렀습니다. 주문서: ${st.order.map(o => `${MAT[o.m].name} ×${o.mult} (${o.max}개)`).join(' · ')}`, 'town'); carConsSell(s, c, st); } }
+    for (const e of (s.cons || []).slice()) if (s.week - e.w >= keep) { payParty(s, e.ids, matPrice(s, e.m) * e.n); mktAdd(s, e.m, e.n); s.cons.splice(s.cons.indexOf(e), 1); }   // 8주가 지나면 모험가가 찾아가 시장에 팖
+  }
+  function consWant(s, party, m) {   // 모험가 위탁 판단: 그 소재를 사 간 상단이 있고, 지난 상단 값 × 90%가 길드 매입 · 시장보다 10% 넘게 높고, 돈이 급하지 않을 때 [임시]
+    if (!carOn(s)) return false; const lm = carLastMult(s, m); if (!lm) return false; const mp = matPrice(s, m), alt = Math.max(mp, matBuyPrice(s, m));
+    if (mp * lm * 0.9 < alt * (s.cfg.econ.consEdge != null ? 1 + s.cfg.econ.consEdge : 1.1)) return false;
+    return (party || []).every(a => a && !needsMoney(s, a)) && (s.mats[m] || 0) + consN(s, m) < (s.cfg.econ.storeCap || 30);
+  }
+  function consAdd(s, ids, m) { const L = s.cons = s.cons || [], key = ids.join(','), e = L.find(x => x.m === m && x.ids.join(',') === key && x.w === s.week); if (e) e.n++; else L.push({ m, ids: ids.slice(), n: 1, w: s.week }); }
+  // 자동 플레이: 상단이 머무는 동안 메뉴 재료는 팔지 않고(식당용), 나머지 창고 소재를 리퀘스트 필요량만 남기고 주문서대로 팖
+  function autoCar(s) { if (!carOn(s)) return; const RS = reqReserve(s), low = s.cfg.econ.gqAutoLow != null ? s.cfg.econ.gqAutoLow : 4, menu = new Set(); for (const d of DISH) if (s.dishes[d.name]) for (const m of d.mats) menu.add(m);
+    for (const c of carHere(s)) for (const o of s.car[c.id].order) { if (menu.has(o.m)) continue; const keep = (RS[o.m] || 0) + (menu.has(o.m) ? low : 0), n = (s.mats[o.m] || 0) - keep; if (n > 0) carSell(s, c.id, o.m, n); } }
   // ---------- 튜토리얼 도우미 (2026-11-18, docs/design/튜토리얼.md) ----------
   function tutPost(s, tid) { const q = makeQuest(s, 0, tid); tutEase(q); s.board.push(q); return q; }   // 정해진 의뢰를 게시판에 올림
   // 2026-11-19 첫 의뢰 쉽게: 원래 멧돼지 2마리면 Lv1 전사 혼자 300판 중 300판 짐 → 1마리 · 체력 50% · 공격 70% [임시] (300판: 첫 판에 무사히 이김 275판, 다시 굴려도 못 이긴 판 0)
@@ -654,6 +832,7 @@
     return { ok: true, back: 0 };
   }
   // 자동 플레이(관문 1 · 측정용): 메뉴에 올린 요리의 주재료(양념 제외)를 목표 재고 econ.orderTarget · 기본 배수로 상시 발주 (빈 자리만큼)
+  function autoPrep(s) { const A = s.soldAvg = s.soldAvg || {}, W = s.soldW || {}; for (const d of DISH) if (s.dishes[d.name]) { A[d.name] = (A[d.name] || 0) * 0.7 + (W[d.name] || 0) * 0.3; menuOf(s, d).prep = Math.max(1, Math.min(10, Math.ceil(A[d.name]) + 1)); } s.soldW = {}; }   // 자동 플레이 준비량 (autoOrders 와 같음)
   function autoOrders(s) {
     const E = s.cfg.econ, max = E.orderMax != null ? E.orderMax : 3, t = E.orderTarget || 6;
     { const A = s.soldAvg = s.soldAvg || {}, W = s.soldW || {}; for (const d of DISH) if (s.dishes[d.name]) { A[d.name] = (A[d.name] || 0) * 0.7 + (W[d.name] || 0) * 0.3; menuOf(s, d).prep = Math.max(1, Math.min(10, Math.ceil(A[d.name]) + 1)); } s.soldW = {}; }   // 자동 플레이: 준비량 = 최근 판매(지수 평균) + 1그릇
@@ -708,7 +887,7 @@
     if (mode === 'reset') { s.dishes = {}; syncMeals(s); return; }
     for (const id in MAT) { const m = MAT[id]; if (m.line === 'food' && GR.indexOf(m.grade) <= 1) { s.mats[id] = (s.mats[id] || 0) + 3; s.knownMats[id] = true; } }
   }
-  function autoCook(s) { for (const d of DISH) if (!s.dishes[d.name] && d.g <= s.grade && d.mats.every(m => s.mats[m] > 0)) cook(s, d.mats); if (s.cfg.econ.mealCook && s.cfg.econ.orderMode) autoOrders(s); }   // 2026-11-19: 자동 플레이는 식당 재료도 상시 발주
+  function autoCook(s) { for (const d of DISH) if (!s.dishes[d.name] && d.g <= s.grade && d.mats.every(m => s.mats[m] > 0)) cook(s, d.mats); if (s.cfg.econ.mealCook && s.cfg.econ.orderMode) autoOrders(s); else if (s.cfg.econ.mealCook && gqOn(s)) { autoPrep(s); autoGq(s); } autoCar(s); }   // 2026-11-19: 자동 플레이는 식당 재료도 상시 발주
   // ---------- 식당 운영 (2026-11-19 V4 1단계 · 결정 37 · 38 · 39, econ.mealCook) ----------
   // 메뉴: 요리마다 가격(1G 단위) · 한 주 준비량. 매주 출발 전에 준비량만큼 재료 1세트씩 써서 그릇을 만들고(세트당 그릇 = meals.csv), 양념이 모자라면 잡화 상인에게서 삼.
   // 그릇은 만든 주와 그다음 주까지 팔고 그 뒤 버림. 모험가는 가격 계수만큼 더 · 덜 사 먹음
@@ -768,7 +947,7 @@
       const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
       const hi = Math.min(s.grade, a.grade + range[1]), lo = Math.min(hi, Math.max(0, a.grade + range[0]));   // 2026-11-12: 길드보다 1등급 높은 모험가도 길드 최고 등급 의뢰는 고름
       const th = s.cfg.adv.departTh[a.risk];
-      const cands = s.board.filter(q => q.g >= lo && q.g <= hi && !cPastEnd(s, a, q.weeks || s.cfg.quest.weeks[q.g])).sort(pickOrder(s, a));   // 결정 9: 계약 끝을 넘는 의뢰는 고르지 않음
+      const cands = s.board.filter(q => (q.only == null || q.only === a.id) && q.g >= lo && q.g <= hi && !cPastEnd(s, a, q.weeks || s.cfg.quest.weeks[q.g])).sort(pickOrder(s, a));   // 결정 9: 계약 끝을 넘는 의뢰는 고르지 않음
       const needy = needsMoney(s, a), base0 = feeBase0(s), K = s.cfg.econ.restK || 0;   // 2026-11-19: 기본 = feeBase (선택지 첫 칸이 5%가 됨)
       for (const q of cands) {
         if (needy && lowBuySkip(s, q) > 0 && s.R() < lowBuySkip(s, q)) continue;   // 2026-11-19 결정 43: 매입가를 낮춘 소재가 나오는 의뢰는 돈이 필요한 모험가가 거름 (50% → 25%)
@@ -847,9 +1026,9 @@
       if (ok) {
         if (!q.self) s.subHalf = (s.subHalf || 0) + q.reward;   // 반기 보조금 실적: 외부 의뢰의 기본 보상(×2 전), 원정 번호당 한 번(정산 1회 보장), 길드 자가 발주 제외 (V2 결정 13)
         s.stats.done++; s.month.success++; s.month.popAdd = (s.month.popAdd || 0) + (s.cfg.town.perSuccess[q.g] || 0);   // 의뢰 성공 → 인구 (2026-11-13)
-        const RW = q.reward * (q.x2 ? 2 : 1), DV = s.cfg.deco;   // ×2 의뢰는 골드만 2배 (명성·경험치는 그대로)
+        const RW = q.gq != null ? 0 : q.reward * (q.x2 ? 2 : 1), DV = s.cfg.deco;   // 길드 의뢰: 보상은 납품마다 (dropMats)   // ×2 의뢰는 골드만 2배 (명성·경험치는 그대로)
         const sp = econSplit(RW, x.rates && x.rates.length === party.length ? x.rates : party.map(m => rateOf(s, m, q)));   // 출발 때 수수료로 정산 (귀환 전 정책 변경 무시), 예전 저장은 지금 요율
-        const fee = sp.guild + (hasDeco(s, 'bench') ? DV.gold : 0), resale = RW * E.resaleRate;   // 벤치 +5G는 중계 수입에 더함 · 소재 자동 차익은 4단계(E4-3)에서 정리
+        const fee = sp.guild + (hasDeco(s, 'bench') && q.gq == null ? DV.gold : 0), resale = RW * E.resaleRate;   // 벤치 +5G는 중계 수입에 더함 · 소재 자동 차익은 4단계(E4-3)에서 정리
         s.gold += fee + resale; s.month.fee += fee; s.month.resale += resale;
         party.forEach((a, i) => { a.wallet += sp.net[i]; (a.earn = a.earn || []).push({ w: s.week, b: sp.base[i] }); a.earn = a.earn.filter(e => e.w > s.week - (s.cfg.contract ? s.cfg.contract.look : 8)); });   // earn: 최근 기준액 기록 (계약 수락 판단, 결정 5)
         for (const a of party) {
@@ -871,6 +1050,7 @@
         for (const a of party) gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate);
         log(s, x.late ? `${J(names(party), '이', '가')} 늦장을 부리다 ${qn(q)} 의뢰의 기한을 넘겼습니다. (명성 · 신뢰는 그대로)` : `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 실패했습니다.`, 'fail', { who: party.map(x => x.name) });
       }
+      if (q.gq != null) gqAfter(s, q, ok, party);   // 2026-11-20 길드 의뢰: 다시 게시 · 끝
       for (const a of party) { a.state = 'town'; a.until = 0; }
       if (q.rq) reqReturn(s, x, ok, party);   // 리퀘스트(지명) 귀환: 보상 · 실패 처리
       if (F) for (const u of F.units) {   // 전투의 대가: 물약 소모, 쓰러진 사람은 사망 판정 → 살면 부상
@@ -992,7 +1172,7 @@
     }
     if (s.smithLog.length > 30) s.smithLog.length = 30;
     proposeClasses(s);
-    const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other + (s.month.reqIn || 0) + (s.month.scout || 0) + (s.month.prep || 0) + (s.month.cpay || 0) + (s.month.csup || 0) + (s.month.matBuy || 0) + (s.month.consign || 0) + (s.month.order || 0) + (s.month.gift || 0) + (s.month.shop || 0);   // 4단계: 소재 매입(음수) · 위탁 수수료   // 2026-11-17 V2: 계약 보수 · 지원(음수)   // 2026-11-16: 리퀘스트 보상(납품 금화) · 지명 섭외비 포함
+    const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other + (s.month.reqIn || 0) + (s.month.scout || 0) + (s.month.prep || 0) + (s.month.cpay || 0) + (s.month.csup || 0) + (s.month.matBuy || 0) + (s.month.consign || 0) + (s.month.order || 0) + (s.month.gq || 0) + (s.month.car || 0) + (s.month.gift || 0) + (s.month.shop || 0);   // 4단계: 소재 매입(음수) · 위탁 수수료   // 2026-11-17 V2: 계약 보수 · 지원(음수)   // 2026-11-16: 리퀘스트 보상(납품 금화) · 지명 섭외비 포함
     s.month.net = net; s.month.grade = s.grade; s.month.feeRate = feeRate(s);
     s.lastMonth = s.month; s.history.push(Object.assign({ week: s.week }, s.month));
     log(s, `${dateLabel(s.week)} 결산: 운영 순이익 ${Math.round(net)}G (의뢰 ${s.month.quests}건, 성공 ${s.month.success}건)`, 'ledger', { net: Math.round(net), nq: s.month.quests, nok: s.month.success });
@@ -1333,6 +1513,7 @@
   //   wantLog면 화면용 구간 segs: fight(다리 앞 · 성 앞) · castle(성으로 밀림) · fall(성이 무너짐)
   function mainWaveFight(s, U, w, R, st, wantLog) {
     const C = MAIN_CFG, segs = []; let foes = mainFoes(C.waves[w]), at = 'bridge';
+    if (w === 0 && (s.patrolUntil || -1) >= s.week) foes = foes.map(e => Object.assign({}, e, { hp: e.hp * 0.9, atk: e.atk * 0.9 }));   // 2026-11-20 길드 의뢰 ④ 순찰: 첫 차례 적 −10%
     for (;;) {
       const live = U.filter(u => !u.down && u.hp > 0);
       const seg = wantLog ? { kind: 'fight', at, wave: w, units: live.map(u => ({ id: u.a.id, hp: u.hp, maxHp: u.maxHp, core: u.core, pots: u.pots || 0 })), foes: foes.map(e => Object.assign({}, e)) } : null;
@@ -1457,7 +1638,7 @@
 
   function stepWeek(s) {
     if (s.main && s.main.state === 'live') return;   // 침공을 보는 동안 시간은 멈춤
-    expireQuests(s);
+    expireQuests(s); gqWeekly(s); carWeekly(s);
     generateQuests(s);   // 2026-11-12: 매주 게시 (예전에는 매달 초에만 = 월 유입의 1/4만 들어왔음)
     returns(s);
     mainWeekly(s);    // 메인 퀘스트(침공): 등장 · 침공 판정
@@ -1489,6 +1670,6 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, scoutOn, sellTh, setBuyRate, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

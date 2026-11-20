@@ -42,6 +42,10 @@ const T = {
   nomkt: c => { c.econ.mktOn = 0; },
   nopop: c => { c.econ.popOn = 0; },
   noorder: c => { c.econ.orderMode = 0; },
+  nooffice: c => { c.econ.gqOffice = 0; },   // 2026-11-20 길드 의뢰: 집무실 없이
+  gq05: c => { c.econ.gqAutoPct = 0.5; },
+  gq2: c => { c.econ.gqAutoPct = 2; },
+  nogq: c => { c.econ.gqOn = 0; },
   sale: c => { c.econ.mealLeft = 1; },
   nosale: c => { c.econ.mealSale = 1; },
 };
