@@ -245,6 +245,7 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
 .pill2{padding:3px 12px;border-radius:10px;font-weight:700}.pill2.ok{background:#e3f1df;color:#2f7d3e}.pill2.bad{background:#fbe2df;color:#b03a2e}
 /* 리나 대화창 */
 #dlg{position:absolute;left:150px;bottom:24px;transform:translateY(20px);width:1655px;height:220px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;cursor:pointer}
+#dlg,#dlg *{-webkit-user-select:none;user-select:none;-webkit-user-drag:none}   /* 2026-11-19 사용자: 대사창 글자 · 그림을 끌어서 고르거나 끌어 옮기지 못하게 */
 #dlg.open{opacity:1;transform:none;pointer-events:auto}
 .stage-ui #dlg:not(.open),.stage-ui #dlg:not(.open) *,.stage-ui .toast{pointer-events:none}
 #dlgFace,#dlgStand{position:absolute;left:2px;bottom:31px;height:654px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.25))}
@@ -338,6 +339,11 @@ body:not(.dev) #devToggle,body:not(.dev) #dev,body:not(.dev) #titleSkip,body:not
 #hudBR,#hudTR{transition:transform .9s cubic-bezier(.4,0,.2,1) .3s,opacity .7s ease .3s}
 .dlgOn:not(:has(#townUi.on)) #hudBR,.dlgOn:not(:has(#townUi.on)) #hudTR{transform:translateY(200px);opacity:0;pointer-events:none;transition-delay:0s}
 .dlgOn:not(:has(#townUi.on)) #hudBR *,.dlgOn:not(:has(#townUi.on)) #hudTR *{pointer-events:none}
+/* 2026-11-19 사용자: 대사 장면(리퀘스트 · 튜토리얼 등 아래 대화창)에서는 HUD를 모두 숨김 — 위 HUD · 원정 현황은 위로, 목표 칸은 왼쪽으로 */
+#hudTL{transition:transform .9s cubic-bezier(.4,0,.2,1) .3s,opacity .7s ease .3s}
+#hudExp{transition:opacity .3s ease .3s,transform .9s cubic-bezier(.4,0,.2,1) .3s}
+.dlgOn:not(:has(#townUi.on)) #hudTL,.dlgOn:not(:has(#townUi.on)) #hudExp{transform:translateY(-760px);opacity:0;pointer-events:none;transition-delay:0s}
+.dlgOn:not(:has(#townUi.on)) #goalBox{transform:translateX(-480px);opacity:0;pointer-events:none}
 /* 원정 현황 패널(hudExp)·미니 뷰(expView) — expedition.js, docs/design/expedition_panel.md */
 #hudExp{position:absolute;right:16px;top:96px;width:360px;max-height:704px;display:flex;flex-direction:column;opacity:.5;transition:opacity .3s ease .3s;z-index:3;
  background:linear-gradient(180deg,#3a2617,#2a1b10);border:2px solid #6b4a2b;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.45),inset 0 0 0 2px rgba(230,201,138,.18);font-family:"MaruBuri","Malgun Gothic",serif}
@@ -380,7 +386,7 @@ body:not(.dev) #devToggle,body:not(.dev) #dev,body:not(.dev) #titleSkip,body:not
 <div id="loading"><div class="ld-box"><h1>이세계 모험가 길드</h1><p class="ld-sub">2차 프로토타입</p><div class="ld-bar"><i id="loadBar"></i></div><span id="loadMsg"></span><p class="ld-tip">처음 열 때는 그림을 받느라 시간이 조금 걸립니다.<br>두 번째부터는 금방 열립니다.</p></div></div>
 <template id="uiTpl">
   <div id="hudTL"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><span id="hGrade"></span><span class="dt"><span class="date" id="hDate"></span><div class="weekbar"><i id="hWeekBar"></i></div><div class="wkrow"><img id="hTime" alt="" draggable="false" src="assets/ui/hud/time_sun.png" data-k="sun"></div></span><span class="sep"></span><span class="stat"><img src="assets/ui/hud/icon_coin.png" alt=""><span><span class="lb">금고</span><span class="val"><b id="hGold"></b><small> G</small></span></span></span><span class="sep"></span><span class="stat" id="hTrustBox" title=""><img id="hTrustFace" class="tface" src="assets/ui/hud/trust/trust_2.png" alt=""><span><span class="lb">신뢰도</span><span class="val"><b id="hTrust"></b></span><span class="tbar"><i id="hTrustBar"></i></span></span></span><span class="sep"></span><span class="stat" id="hFameBox" title=""><img src="assets/ui/hud/icon_star.png" alt=""><span><span class="lb">명성</span><span class="val"><b id="hFame"></b></span><span class="fbar" id="hFameBarW"><i id="hFameBar"></i></span></span></span><span class="sep"></span><span class="stat" id="hAdvBox" title=""><img src="assets/ui/hud/icon_adventurer.png" alt=""><span><span class="lb">모험가</span><span class="val"><b id="hAdv"></b><small class="cap" id="hAdvCap"></small></span></span></span></div></div>
-  <div id="hudTR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><button class="btn" id="ppBtn" title="일시정지·재생 (스페이스)"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg></button><span class="more"><button class="chip on" data-speed="1"><b>1×</b></button><button class="chip" data-speed="2"><b>2×</b></button><button class="chip" data-speed="4"><b>4×</b></button></span></div></div>
+  <div id="hudTR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><button class="btn" id="ppBtn" title="일시정지·재생 (스페이스)"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg></button><span class="more"><button class="chip on" data-speed="1" title="1배속 (1)"><b>1×</b></button><button class="chip" data-speed="2" title="2배속 (2)"><b>2×</b></button><button class="chip" data-speed="4" title="4배속 (3)"><b>4×</b></button></span></div></div>
   <div id="goalBox" title="리퀘스트 장 열기"></div>
   <div id="toasts"></div>
   <div id="logBox"><div class="lr" title="끌어서 높이 조절 · 더블클릭: 기본 6줄"></div><div class="ll"></div><div class="lg" title="끌어서 이동 · 더블클릭: 원위치">기록 · 끌어서 이동</div></div>
@@ -432,6 +438,7 @@ body:not(.dev) #devToggle,body:not(.dev) #dev,body:not(.dev) #titleSkip,body:not
 <script src="js/town_season.js"></script>
 <script src="js/town.js"></script>
 <script src="js/smithy.js"></script>
+<script src="js/potshop.js"></script>
 <script src="js/invasion.js"></script>
 <script src="js/tutorial.js"></script>
 <script src="js/main.js"></script>

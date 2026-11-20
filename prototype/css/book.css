@@ -385,6 +385,8 @@
 .bk-av .av-career .career li{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:6px 2px;border-bottom:1px dashed rgba(110,72,36,.22)}
 .bk-av .av-career .career .w{color:var(--ux-wood);font-size:13px}
 .bk-av .av-career .career li.none{display:block;color:var(--ux-muted)}
+/* 2026-11-19 경력 줄 「♥ ○○와 단짝이 됨」 (시안 11 B안) */
+.career li.pal{background:rgba(201,150,62,.12)}.career li.pal .ht{color:#b0532a;margin-right:2px}
 /* 장비 · 물약 · 스킬 칸 (2026-11-13 A+D): 두꺼운 테두리·빗금 대신 잉크 모서리 꺾쇠, 빈 칸 = 옅은 물건 윤곽 (윤곽 그림 = Gemini 손그림, assets/ui/book/slot/) */
 .bk-av .av-eq .ux-slot,.bk-av .av-sk .ux-slot{--c:rgba(110,72,36,.38);--cl:12px;border:0;box-shadow:none;border-radius:0;
   background:linear-gradient(var(--c),var(--c)) top left/var(--cl) 2px no-repeat,linear-gradient(var(--c),var(--c)) top left/2px var(--cl) no-repeat,
@@ -674,6 +676,14 @@
 .bk-rq .rq-chip img{width:22px;height:22px;object-fit:contain}.bk-rq .rq-chip b{font-weight:700}.bk-rq .rq-chip small{font-size:12px;color:var(--ux-muted)}
 .bk-rq .rq-chip.gold{border-color:#c9963e;background:#fff3cf}.bk-rq .rq-chip.key{border-color:#2f7f7a;background:#e6f3ee}.bk-rq .rq-chip.lack{border-color:#c2705c;background:#fbeae4;color:#8a2f1c}
 .bk-rq .rq-chip.star{border-color:#b38a26}.bk-rq .rq-chip.enemy{border-color:#b98a7a;color:#7a2f1c}
+/* 2026-11-19 요구 칩: 못 채움 = 붉은 글씨 · 채움 = 파란 글씨 · 보내기를 눌렀는데 못 채웠으면 흔들림 */
+.bk-rq .rq-chip.need.no{color:#ca2618;border-color:#df6150;border-width:1.5px;background:#fff0ee;font-weight:700}
+.bk-rq .rq-chip.need.ok{color:#1f5fa8;border-color:#8fb3dc;background:#eef4fb;font-weight:700}
+.bk-rq .rq-chip.need.ok::before{content:'✔';font-size:12px}
+.bk-rq .rq-chip.shake{animation:rqShake .5s ease-in-out}
+@keyframes rqShake{0%,100%{transform:translateX(0)}15%{transform:translateX(-7px)}30%{transform:translateX(6px)}45%{transform:translateX(-5px)}60%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+.bk-rq .rq-msg.warn{color:#ca2618;font-weight:700;animation:rqShake .5s ease-in-out}
+.bk-rq .ux-btn.soft-off{filter:saturate(.35) brightness(1.05);opacity:.75}
 .bk-rq .rq-act{display:flex;align-items:center;gap:10px;min-height:38px}
 .bk-rq .rq-act .rq-no{margin-left:0;opacity:.85}.bk-rq .rq-msg{font:400 14px var(--hf);color:#7a5032;min-width:0}.bk-rq .rq-note{font:400 14px var(--hf);color:var(--ux-wood)}
 .bk-rq .rq-party{display:flex;align-items:center;gap:6px;min-height:38px;font:400 14px var(--hf);color:var(--ux-wood)}
@@ -689,6 +699,10 @@
 .bk-rq .rq-nom .who{display:flex;align-items:center;gap:8px;min-width:0}.bk-rq .rq-nom .who b{display:block;font:700 16px/1.2 var(--hf)}.bk-rq .rq-nom .who em{font-style:normal;font-size:12px;color:var(--ux-wood)}
 .bk-rq .rq-nom .ux-face{flex:none;width:34px;height:34px;border-radius:50%;background-color:#efe2cf;background-repeat:no-repeat;border:1.5px solid rgba(110,72,36,.5)}
 .bk-rq .rq-nom .star{font-style:normal;color:#c9963e;margin-right:3px}.bk-rq .rq-nom .ch{font-weight:700}.bk-rq .rq-nom .stx{font-size:13px}
+.bk-rq .rq-nom .ct-tag{display:inline-flex;align-items:center;gap:3px;height:15px;margin-left:6px;padding:0 5px;border-radius:4px;background:#2c4a7a;color:#fff;font:700 11px/15px var(--hf);vertical-align:1px}
+.bk-rq .rq-nom .ct-tag i{display:inline-block;width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.3)}.bk-rq .rq-nom .ct-tag i.on{background:#ffd76a}
+.bk-rq .rq-nom .ct-tag.used{background:#8a97ad}
+.bk-rq .rq-nom .ch.ct{color:#2c4a7a}
 .bk-rq .rq-nom .ok{color:#3f7a3a}.bk-rq .rq-nom .ng{color:#b5452f}
 #bookMarks [data-ch].alert::after{content:"";position:absolute;right:6px;top:4px;width:12px;height:12px;border-radius:50%;background:#e2503a;border:2px solid #fff3d6}
 #dlg{z-index:10}   /* 2026-11-16: 책이 펼쳐져 있어도 리퀘스트 대사가 보이게 (책 #popBack z-index 9와 같은 층, 뒤에 놓여 위에 그려짐) */
@@ -935,3 +949,29 @@
 .mp-per button.on{background:#2f6a52;color:#fff;border-color:#2f6a52}
 .mp-per small{margin-left:6px;color:#7a6650}
 .gq-am{font-weight:400;color:#7a6650;font-size:12px}
+
+/* 2026-11-19 요리 버프 아이콘: 명부 이름 옆 */
+.buff-ico{width:22px;height:22px;object-fit:contain;vertical-align:-5px;margin-left:4px;padding:1px;border-radius:50%;background:#fff3cf;box-shadow:0 0 0 1.5px #d9a64a}
+.ux-face .buff-ico.pt{position:absolute;left:-7px;top:-7px;width:20px;height:20px;margin:0;vertical-align:0}   /* 명부 줄: 초상 왼쪽 위 모서리 (이름 칸이 좁아 이름 옆에 두면 F 배지와 겹침) */
+.ux-portrait .buff-ico.ptd{position:absolute;right:2px;top:2px;width:26px;height:26px;margin:0;vertical-align:0;z-index:2}   /* 명부 상세: 초상 안쪽 오른쪽 위 (사용자 지정 2026-11-19) */
+/* 2026-11-19 승산 칩 (전투 리퀘스트 · 메인 퀘스트): 여유 · 팽팽 · 위험 */
+.rq-pow{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font:400 15px var(--hf);color:var(--ux-wood)}
+.rq-pow b{font-size:16px;padding:1px 10px;border-radius:999px;border:1.5px solid currentColor;line-height:1.4}
+.rq-pow i{font-style:normal;font-size:12px;letter-spacing:1px}
+.rq-pow.ok b,.rq-pow.ok i{color:#3f7a3a}.rq-pow.mid b,.rq-pow.mid i{color:#b07a16}.rq-pow.bad b,.rq-pow.bad i{color:#b5452f}
+p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 글 안에서는 줄 끝에 붙임 */
+/* 2026-11-20 버릇 (사용자 확정 시안: 명부 줄 한 글자 B · 상세 칭호 옆 배지 C · 마우스 설명) */
+.qk1{display:inline-flex;align-items:center;justify-content:center;width:1.25em;height:1.25em;margin-left:4px;border-radius:50%;font:700 .72em/1 var(--hf);font-style:normal;color:#fff;background:#7e4aa0;vertical-align:.15em;box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.bk-av .qkb{position:relative;display:inline-flex;align-items:center;margin-left:6px;padding:0 8px;height:1.55em;border-radius:999px;font:700 12px/1 var(--hf);color:#fff;background:#7e4aa0;box-shadow:0 1px 0 rgba(0,0,0,.25);vertical-align:middle;cursor:help}
+.bk-av .qkb .tip{display:none;position:absolute;left:0;top:calc(100% + 6px);z-index:7;width:250px;padding:7px 10px;border-radius:6px;background:#fffaf0;border:1px solid rgba(91,45,116,.45);box-shadow:0 3px 8px rgba(60,36,16,.25);font:400 13px/1.45 var(--bf,inherit);font-style:normal;color:#4a2e18;letter-spacing:0;white-space:normal;text-align:left}
+.bk-av .qkb:hover .tip{display:block}
+.qk-h{display:block;margin-bottom:2px;font-weight:700;color:#5b2d74}
+.qk-row{color:#4a2e18;font-size:.95em;line-height:1.45}
+/* 2026-11-20 식당 A안: 모르는 요리 칸에 들은 소문 + 단계 점 */
+.kdish .rc.rum{color:#8a4a12;font-size:12px;line-height:1.35}
+.kdish .rc.rum em{display:inline-block;margin-right:4px;padding:0 4px;border-radius:3px;background:#e9c98a;color:#5a3a20;font:700 10px/1.5 var(--hf);font-style:normal}
+.kdish .rc.rum u{text-decoration:none;color:#b06a18;letter-spacing:1px;white-space:nowrap}
+
+/* 2026-11-20 오른쪽 책갈피: 책 페이지 높이 안에 들어가게 (많으면 조금씩 줄어듦) */
+#bookSub{height:calc(var(--bk-ry) + var(--bk-rh) - var(--bkm-y) - 24px)}
+#bookSub button{height:auto;flex:0 1 var(--bkm-h);min-height:64px}

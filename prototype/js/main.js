@@ -37,7 +37,8 @@
     if (s.grade > g0) UI.gradeUp(s.grade);
     if (s.week % Gm.WPM === 0) save(true);
   }
-  function setSpeed(v) { speed = v; UI.setSpeed(v); }
+  let lastSp = 1;   // 스페이스로 다시 재생할 때 돌아갈 배속
+  function setSpeed(v) { speed = v; if (v > 0) lastSp = v; UI.setSpeed(v); }
   function save(quiet) { try { localStorage.setItem(SAVE_KEY_NOW(), Gm.serialize(s)); localStorage.setItem(stampKey(slot), String(Date.now())); } catch (e) { if (!quiet) UI.toast('이 환경에서는 저장할 수 없습니다.', 'warn'); } }
   function swap(ns, msg) { s = ns; UI.setState(s); Lobby.Board.reset(); Director.reset(s); Expedition.reset(); UI.hud(); UI.close(); UI.logClear(); if (msg) UI.say(msg); }
   function load() {
@@ -94,7 +95,13 @@
   q('#dTemp').onclick = () => { location.search = Assets.forceTemp ? '' : '?temp=1'; };
   q('#dTemp').textContent = Assets.forceTemp ? '실제 리소스 보기' : '임시 그래픽 보기';
   document.addEventListener('keydown', e => {
-    if (e.code === 'Space' && !/INPUT|TEXTAREA|BUTTON/.test(document.activeElement.tagName) && !document.querySelector('#dlg.open, #placeLay.on, #popBack.open')) { e.preventDefault(); setSpeed(speed ? 0 : 1); }
+    // 2026-11-19 사용자: 스페이스 = 대사 넘기기(대사 중, ui.js) · 일시정지/재생(쓰던 배속으로) / 1 · 2 · 3 = 1 · 2 · 4배속. 글 입력 칸에서는 안 먹음
+    const tag = document.activeElement ? document.activeElement.tagName : '';
+    if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.ctrlKey || e.metaKey || e.altKey) return;
+    const block = document.querySelector('#placeLay.on, #popBack.open, #slotPick.on'), talk = UI.dlgBusy && UI.dlgBusy();
+    if (e.code === 'Space') { e.preventDefault(); if (e.repeat || talk || block) return; setSpeed(speed ? 0 : lastSp); return; }   // 눌린 단추가 스페이스로 다시 눌리지 않게 막음
+    const k = { Digit1: 1, Digit2: 2, Digit3: 4, Numpad1: 1, Numpad2: 2, Numpad3: 4 }[e.code];
+    if (k && !block) { e.preventDefault(); setSpeed(k); }
   });
 
   // ---------- 시작 화면: 저장 슬롯 고르기 (2026.11) ----------
@@ -165,7 +172,8 @@
       slotPick(done, mode, () => titleThenPick(done));
       await fadeTo(false, ms);
     };
-    const onMsg = e => { const d = e.data; if (!d || d.collegium !== 'title') return; leave(d.act === 'load' ? 'load' : 'new', 600); };
+    const onMsg = e => { const d = e.data; if (!d || d.collegium !== 'title') return; if (d.act === 'touch') { if (window.Snd && window.Snd.unlock) window.Snd.unlock(); return; }   // 2026-11-19 타이틀 안을 처음 누르면 소리를 풀어 타이틀 곡이 나오게
+      leave(d.act === 'load' ? 'load' : 'new', 600); };
     window.addEventListener('message', onMsg);
     if (skip) skip.onclick = () => leave(has ? 'load' : 'new', 150);   // 개발자 전용 SKIP: 저장 기록이 있으면 바로 이어하기 칸 고르기 (2026-11-16)
     fr.onload = () => { try { fr.contentWindow.focus(); } catch (er) { /* 무시 */ } };
@@ -195,9 +203,12 @@
   function frame(now) {
     const dt = Math.min(0.1, (now - last) / 1000); last = now; T += dt;
     if (started) s.playSec = (s.playSec || 0) + dt;   // 플레이 시간(초): 일시정지 중에도 흐름, 저장에 함께 기록됨
-    if (speed > 0) { acc += dt * 1000 * speed; let n = 0; while (acc >= WEEK_MS) { acc -= WEEK_MS; step(); n++; } if (n) UI.hud(); }
+    // 2026-11-19 사용자 결정: 아래 대화창(리퀘스트 · 리나 · 침공 등)이 떠 있는 동안 게임 시계를 멈춤. 배속 버튼은 그대로, 대화가 끝나면 쓰던 배속으로 다시 흐름
+    // 2026-11-19 사용자 결정(책 V2 7장 대조): 마을 화면에 들어가 있는 동안도 시계 멈춤 — 침공 중(Invasion.on)에는 흐름
+    const run = (UI.dlgBusy && UI.dlgBusy()) || (Town.active && !(window.Invasion && Invasion.on)) ? 0 : speed;
+    if (run > 0) { acc += dt * 1000 * run; let n = 0; while (acc >= WEEK_MS) { acc -= WEEK_MS; step(); n++; } if (n) UI.hud(); }
     UI.weekBar(acc / WEEK_MS);
-    Expedition.update(dt, acc / WEEK_MS, speed);
+    Expedition.update(dt, acc / WEEK_MS, run);
     // 화면 속 동작 빠르기: 배속이 오르면 함께 빨라지되 최대 3배 (일시정지면 멈춤 — 기본 튜토리얼 동안은 멈춰 있어도 모험가가 걸어 들어오고 나감)
     const as = speed === 0 && !Tutorial.active() ? 0 : Math.min(3, Math.max(1, speed * 0.6)), adt = dt * as;
     if (window.Invasion) Invasion.check(s);

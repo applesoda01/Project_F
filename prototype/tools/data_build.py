@@ -20,7 +20,9 @@ STATS = ['힘', '민첩', '지력', '정신', '기교']
 FACES = ['smile', 'serious', 'laugh', 'worried', 'awkward', 'surprised']
 EVENTS = ['accept', 'depart', 'success', 'fail', 'levelup', 'gradeup', 'meal', 'drink', 'first', 'chat',
           'iv_start', 'iv_wave', 'iv_boss', 'iv_down', 'iv_rest', 'iv_castle', 'iv_win', 'iv_lose',   # iv_ = 침공 (2026-11-17)
-          'hurry']   # hurry = 주가 넘어가 서둘러 자리로 갈 때 (2026-11-19)
+          'hurry',   # hurry = 주가 넘어가 서둘러 자리로 갈 때 (2026-11-19)
+          'qk_quarrel', 'qk_oversleep', 'qk_cowardQuit', 'qk_cowardFlee', 'qk_sneak', 'qk_cover', 'qk_selfFlee', 'qk_hunger', 'qk_omenWait', 'qk_rush',
+          'hint_1', 'hint_2', 'hint_3a', 'hint_3b']   # hint_ = 소문 조합 힌트 (2026-11-20 야간, {fx} {m1} {m2} {dish} {n})   # qk_ = 버릇이 터질 때 (2026-11-20 야간, 기록 kind 'quirk' · qev)
 TONES = ['bold', 'careful', 'friendly', 'loner', 'plain']
 LINA_EVENTS = ['lina_meal', 'lina_drink', 'lina_depart', 'lina_first', 'lina_success', 'lina_fail', 'lina_ledger', 'lina_unlock', 'lina_idle',
                'lina_iv_start', 'lina_iv_win', 'lina_iv_lose']
@@ -99,6 +101,45 @@ for ln, r in read('meals.csv', ['등급', '요리', '재료', '효과', '그릇'
         except ValueError: err('meals.csv', ln, f"그릇 '{r['그릇']}' 은 1 이상의 정수여야 합니다")
         if serv < 1: err('meals.csv', ln, '그릇은 1 이상이어야 합니다')
     meals.append({'grade': r['등급'], 'name': r['요리'], 'ingredient': r['재료'], 'effect': r['효과'], 'serv': serv})
+# 버릇 (2026-11-20 야간 · docs/design/proposal_quirks_v1.md): 글 · 아이콘 · 막는 성향. 수치는 balance.csv quirk 구분
+QUIRK_KEYS = ['hot', 'drunk', 'coward', 'bluff', 'devoted', 'selfish', 'glutton', 'omen', 'rival']   # 규칙 코드(combat.js QK)가 아는 키
+quirks = []
+if os.path.exists(os.path.join(DATA, 'quirks.csv')):
+    for ln, r in read('quirks.csv', ['키', '이름', '장점', '리스크', '피하는 방법', '막는 성향', '아이콘', '설명']):
+        if r['키'] not in QUIRK_KEYS: err('quirks.csv', ln, f"키 '{r['키']}' 를 모릅니다 (새 버릇은 프로그래머가 규칙과 함께 추가합니다: {' '.join(QUIRK_KEYS)})"); continue
+        if not r['이름']: err('quirks.csv', ln, '이름이 비었습니다')
+        blk = None
+        if r['막는 성향']:
+            m = re.match(r'^(risk|spend|social):([012])$', r['막는 성향'].strip())
+            if not m: err('quirks.csv', ln, "막는 성향은 비움 또는 risk:0~2 · spend:0~2 · social:0~2 여야 합니다"); continue
+            blk = [m.group(1), int(m.group(2))]
+        quirks.append({'key': r['키'], 'name': r['이름'], 'good': r['장점'], 'bad': r['리스크'], 'avoid': r['피하는 방법'], 'block': blk, 'icon': r['아이콘'], 'desc': (r.get('설명') or '').strip()})   # desc = 화면 마우스 설명 (숫자 없이, 2026-11-20 사용자 확정)
+    if len({q['key'] for q in quirks}) != len(quirks): err('quirks.csv', '-', '같은 키가 두 번 나옵니다')
+# 던전 (2026-11-20 · docs/design/proposal_dungeon_v1.md): 방 · 길 · 적 / 특별 장비 · 요리 · 보스 몬스터. 수치 스위치는 balance.csv dungeon
+dungeons = {}
+if os.path.exists(os.path.join(DATA, 'dungeons.csv')):
+    for ln, r in read('dungeons.csv', ['던전', '이름', '등급', '방', '길', '적', '메모']):
+        k = r['던전']; d = dungeons.setdefault(k, {'key': k, 'name': r['이름'], 'g': GRADES.index(r['등급']) if r['등급'] in GRADES else 0, 'rooms': {}, 'mobs': {}, 'items': [], 'dish': None})
+        if r['길'] not in ('기본', '위험', '안전'): err('dungeons.csv', ln, '길은 기본 · 위험 · 안전 중 하나'); continue
+        foes = []
+        for part in r['적'].split('|'):
+            if ':' not in part: err('dungeons.csv', ln, f"적 '{part}' 은 몬스터키:수 형식"); continue
+            m, c = part.split(':', 1); foes.append({'m': m.strip(), 'n': int(c)})
+        d['rooms'].setdefault(r['방'], {})[{'기본': 'base', '위험': 'risky', '안전': 'safe'}[r['길']]] = foes
+if os.path.exists(os.path.join(DATA, 'dungeon_items.csv')):
+    for ln, r in read('dungeon_items.csv', ['종류', '키', '이름', '던전', '칸', '등급', '공격', '체력', '방어', '세트', '재료', '그림', '설명']):
+        d = dungeons.get(r['던전'])
+        if not d: err('dungeon_items.csv', ln, f"던전 '{r['던전']}' 이 dungeons.csv에 없습니다"); continue
+        rec = [{'m': p.split(':')[0].strip(), 'n': int(p.split(':')[1])} for p in r['재료'].split('|') if ':' in p]
+        g = GRADES.index(r['등급']) if r['등급'] in GRADES else 0
+        f = lambda v: num(v) if v else 0
+        if r['종류'] == '몬스터': d['mobs'][r['키']] = {'id': r['키'], 'name': r['이름'], 'atk': f(r['공격']), 'hp': f(r['체력']), 'def': f(r['방어']), 'boss': True, 'img': r['그림']}
+        elif r['종류'] == '장비':
+            slot = {'무기': 0, '방어구': 1, '장신구': 2}.get(r['칸'])
+            if slot is None: err('dungeon_items.csv', ln, '칸은 무기 · 방어구 · 장신구'); continue
+            d['items'].append({'key': r['키'], 'name': r['이름'], 'slot': slot, 'g': g, 'atk': f(r['공격']), 'hp': f(r['체력']), 'def': f(r['방어']), 'set': r['세트'] or None, 'rare': not r['세트'], 'recipe': rec, 'icon': r['그림'], 'desc': r['설명']})
+        elif r['종류'] == '요리': d['dish'] = {'key': r['키'], 'name': r['이름'], 'g': g, 'recipe': rec, 'icon': r['그림'], 'desc': r['설명']}
+        else: err('dungeon_items.csv', ln, '종류는 몬스터 · 장비 · 요리')
 skills = []
 for ln, r in read('skills.csv', ['계열', '단계', '직업', '스킬', '종류', '효과']):
     if r['계열'] not in STATS: err('skills.csv', ln, f"계열 '{r['계열']}' 은 {' '.join(STATS)} 중 하나여야 합니다")
@@ -474,7 +515,7 @@ if errors:
     print(f'오류 {len(errors)}건 — 파일을 만들지 않았습니다.')
     for e in errors: print('  -', e)
     sys.exit(1)
-data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial, 'talkMem': talk_mem, 'talkJoke': talk_joke}
+data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial, 'talkMem': talk_mem, 'talkJoke': talk_joke, 'quirks': quirks, 'dungeons': dungeons}
 if content is not None: data['content'] = content       # 편집기 데이터가 없으면 넣지 않음 (게임은 balance 값만 씀)
 # 로비 배치 칸 (2026-11-12, tools/lobby_grid_editor.html 로 칠한 값). 없으면 게임은 모든 바닥 칸을 놓기 가능으로 봄
 _lg = os.path.join(DATA, 'lobby_grid.json')

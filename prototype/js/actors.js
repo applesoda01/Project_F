@@ -121,7 +121,7 @@
   // 리나 응대 시간 (2026-11-12): 출발·귀환·식사·술 주문 모두 1.5초 (첫 방문 인사는 1.6초 그대로). 접수대 업그레이드 −0.5초는 구현 예정
   const SERVE = 1.5;
   // ---------- 주간 변화 → 대본 (M2-7) ----------
-  D.snap = function (s) {
+  D.snap = function (s) { D.s = s;
     return { active: new Map(s.active.map(x => [x.q.id, x])), board: new Set(s.board.map(q => q.id)),
       adv: new Map(s.advs.map(a => [a.id, { state: a.state, alive: a.alive, done: a.done, grade: a.grade }])), log: s.log[0] };
   };
@@ -220,10 +220,11 @@
       if (L.kind === 'grow' && L.text.includes('의 레벨이')) { const a = s.advs.find(b => L.text.startsWith(b.name + '의')); const ac = a && D.actors.get(a.id); if (ac && !ac.bubble) say(ac, Speech.line(a, 'levelup'), 2.2); }
       if (L.kind === 'ledger' && root.UI && !root.UI.autoReport) Lina.say(Speech.lina('lina_ledger'), 2.4);
       if (L.kind === 'unlock') Lina.say(Speech.lina('lina_unlock'), 2.4);
+      if (L.kind === 'quirk' && L.qev && L.who) { const a = s.advs.find(b => b.name === L.who[0]); const ac = a && D.actors.get(a.id); if (ac && !ac.bubble) say(ac, Speech.line(a, 'qk_' + L.qev), 2.6); }   // 2026-11-20 버릇이 터질 때 한마디 (사용자 결정: 말풍선 + 기록)
     }
   };
   // 처음 화면: 마을에 있는 모험가를 바로 앉혀 둔다
-  D.init = function (s) {
+  D.init = function (s) { D.s = s;
     for (const a of s.advs) if (a.alive && a.state === 'town') {
       const ac = actor(a, INSIDE); const st = freeSeat(ac);
       if (st) { const sp0 = standPos(ac, st); ac.seat = st; ac.x = sp0.x; ac.y = sp0.y; ac.pose = 'sit'; ac.lab = '휴식 중'; startSit(ac, st, 'idle'); } else settle(ac);
@@ -435,6 +436,7 @@
   };
   D.nameplate = NP;
   const headY = ac => ac.y - (ac.pose === 'sit' ? 135 : 141);   // 서 있을 때 명찰이 머리에 더 붙도록 150 → 141
+  const BUFFI = {}; const buffImg = src => { if (!BUFFI[src]) { const im = new Image(); im.src = 'assets/' + src; BUFFI[src] = im; } return BUFFI[src]; };
   function plate(g, ac) {
     const a = ac.a; if (!a || a.alive === false) return 0;
     const GRs = (root.GuildGame && root.GuildGame.GR) || ['F', 'E', 'D', 'C', 'B', 'A', 'S'], L = GRs[a.grade] || 'F', im = badgeImg(L);
@@ -456,6 +458,8 @@
     if (!dark) g.strokeText(nm, tx1, ty + NP.ndy); g.fillStyle = dark ? '#3a2616' : NP.nameColor; g.fillText(nm, tx1, ty + NP.ndy);
     g.font = `700 ${NP.lfs}px ${FF}`;
     if (!dark) g.strokeText(lv, tx2, ty + NP.ldy); g.fillStyle = dark ? '#9a6228' : NP.lvColor; g.fillText(lv, tx2, ty + NP.ldy);
+    { const B = root.GuildGame && GuildGame.mealBuffOf && root.Director && D.s ? GuildGame.mealBuffOf(D.s, a) : null;   // 2026-11-19 요리 버프 (이번 원정 동안): 명찰 왼쪽 바깥 동그란 요리 그림
+      if (B && B.icon) { const im = buffImg(B.icon); if (im.complete && im.naturalWidth) { const r = 13, cx = x0 - r - 3, cy = y0 + H / 2; g.save(); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fillStyle = '#fff3cf'; g.fill(); g.lineWidth = 2; g.strokeStyle = '#d9a64a'; g.stroke(); g.clip(); g.drawImage(im, cx - r + 2, cy - r + 2, r * 2 - 4, r * 2 - 4); g.restore(); } } }
     let extra = 0;
     if (ac.lab) {   // 상태 문구 (2026-11-12): 명찰 바로 위 작은 글씨
       g.font = `700 14px ${FF}`; g.textAlign = 'center'; g.lineWidth = 3.5; g.strokeStyle = NP.outline;
@@ -480,16 +484,27 @@
     return H + 8;
   }
   D.bubbles = function (g) {
+    const pend = [];
     for (const ac of D.actors.values()) {
       const G = ac.gl; if (G) { ac.x += G.x; ac.y += G.y; }
       if (ac.emo) emote(g, ac);   // 감정 아이콘 (2026-11-18): 명찰(이름 · 레벨) 뒤에 깔리게 먼저 그림
       let up = plate(g, ac);   // 명찰이 있으면 말풍선은 그 위로
       up += serveBar(g, ac, up);   // 리나에게 응대받는 중이면 명찰 위에 노란 진행 막대
-      if (ac.bubble) bubble(g, ac.x, headY(ac) - up, ac.bubble.text, false, D.t - (ac.bubble.t0 == null ? D.t - 1 : ac.bubble.t0), ac.bubble.until - D.t);
+      if (ac.bubble) pend.push({ x: ac.x, y: headY(ac) - up, text: ac.bubble.text, age: D.t - (ac.bubble.t0 == null ? D.t - 1 : ac.bubble.t0), rem: ac.bubble.until - D.t });
       if (G) { ac.x -= G.x; ac.y -= G.y; }
+    }
+    // 2026-11-20 말풍선 겹침 (저녁 인수인계 2장 2번): 리나 말풍선을 먼저 자리 잡고, 모험가 말풍선은 아래(화면 앞)에 있는 것부터 겹치면 위로 올림 (최대 3칸)
+    const placed = [];
+    if (Lina.bubble) { const r = bubbleRect(g, Lina.x, Lina.feet - 150, Lina.bubble.text); placed.push(r); }
+    pend.sort((p, q) => q.y - p.y);
+    for (const b of pend) {
+      let lift = 0;
+      for (let k = 0; k < 3; k++) { const r = bubbleRect(g, b.x, b.y - lift, b.text), hit = placed.find(o => r.bx < o.bx + o.w + 4 && o.bx < r.bx + r.w + 4 && r.by < o.by + o.h + 4 && o.by < r.by + r.h + 4); if (!hit) break; lift += (r.by + r.h + 6) - hit.by; }
+      placed.push(bubbleRect(g, b.x, b.y - lift, b.text)); bubble(g, b.x, b.y - lift, b.text, false, b.age, b.rem);
     }
     if (Lina.bubble) bubble(g, Lina.x, Lina.feet - 150, Lina.bubble.text, true, Lina.t - (Lina.bubble.t0 == null ? Lina.t - 1 : Lina.bubble.t0), Lina.bubble.until - Lina.t);
   };
+  function bubbleRect(g, x, y, text) { g.save(); g.font = `700 26px "MaruBuri", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif`; const w = Math.max(72, Math.ceil(g.measureText(text).width) + 48), h = 54; g.restore(); return { bx: Math.max(12, Math.min(1908 - w, x - 34)), by: y - 22 - h, w, h }; }   // bubble()와 같은 크기 (S.fs 26 · px 24 · h 54 · tx 34 · th 22)
   // 말풍선 (2026.11 개편 · B안): 왼쪽 아래 꼬리가 달린 사각 말풍선. 갈색 테두리 + 밝은 종이색 바탕 + 굵은 글씨.
   // (x, y) = 꼬리 끝(캐릭터 머리 위). age: 뜬 지 몇 초(커지며 등장), remain: 사라질 때까지 남은 초(끝 0.25초는 투명해짐), left: 사용 안 함
   // 예전 모양(꼬리 없는 둥근 상자 + 금색 안쪽 선)은 bubbleOld 로 보관

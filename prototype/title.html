@@ -378,6 +378,7 @@ function updateParty(dt,v){const gap=+$('pgap').value;$('pgapv').textContent=gap
  if(lead)chX=lead.wx-camX;
  if(chX>=399){partyT-=dt;if(partyT<=0){partyT=7+Math.random()*8;partyEvent();}}}
 window.__titleParty=()=>partyEvent(); // 확인용
+window.__titleCam=()=>camX; // 2026-11-19 타이틀 배경(하늘 · 원경) 시차용 카메라 x (도트)
 function drawPixel(dt){
  const v=+$('runv').value;$('runvv').textContent=v;
  // 등장: 캐릭터가 왼쪽 밖에서 들어와 화면 가운데(400)에 닿으면 그때부터 카메라가 따라감
@@ -480,6 +481,56 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt*spd*(r
 $('lay').onchange=layout;layout();
 requestAnimationFrame(frame);
 })();
+</script>
+<script>
+// 타이틀 배경 (2026-11-19 사용자: "힘찬 분위기" · 시안 12 C 해돋이 아침) — 그림은 제미나이 생성 → Claude 정리(assets/title_bg/)
+// 도트 캔버스 800×450 한 장에 뒤 → 앞: 하늘(띠 그라데이션) · 햇살 · 해 · 구름 · 먼 산 · 성채(+깃발) · 언덕 · 새. 땅 · 캐릭터 캔버스보다 뒤
+(function () {
+  const st = document.querySelector('.stage'); if (!st) return;
+  st.style.background = '#2b6fd6';
+  const cv = document.createElement('canvas'); cv.width = 800; cv.height = 450; cv.setAttribute('aria-hidden', 'true');
+  cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges';
+  st.insertBefore(cv, st.firstChild); const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
+  const N = ['sun', 'cloud_a', 'cloud_b', 'cloud_c', 'cloud_d', 'far_mountains', 'near_hills', 'castle', 'flag_0', 'flag_1', 'flag_2', 'flag_3', 'bird_0', 'bird_1'], I = {};
+  for (const n of N) { I[n] = new Image(); I[n].src = 'assets/title_bg/' + n + '.png'; }
+  const ok = n => I[n].complete && I[n].naturalWidth;
+  // 하늘: 4도트 띠로 끊은 그라데이션 (도트 느낌)
+  const SKY = [[0, [43, 111, 214]], [0.45, [90, 166, 239]], [0.72, [255, 213, 154]], [0.86, [255, 180, 106]]];
+  const sky = document.createElement('canvas'); sky.width = 800; sky.height = 450; { const s = sky.getContext('2d');
+    for (let y = 0; y < 450; y += 4) { const t = y / 450; let i = 0; while (i < SKY.length - 2 && t > SKY[i + 1][0]) i++; const [t0, c0] = SKY[i], [t1, c1] = SKY[i + 1], k = Math.max(0, Math.min(1, (t - t0) / (t1 - t0)));
+      s.fillStyle = `rgb(${c0.map((v, j) => Math.round(v + (c1[j] - v) * k)).join(',')})`; s.fillRect(0, y, 800, 4); } }
+  const SUN = { x: 610, y: 236 }, CLOUDS = [['cloud_a', 40, 60, 1], ['cloud_b', 330, 34, 0.8], ['cloud_c', 560, 120, 1.2], ['cloud_d', 760, 84, 0.9], ['cloud_c', 980, 30, 1.1]];
+  const MT_Y = 214, HL_Y = 280, CASTLE_AT = 820, CASTLE_Y = 182, POLES = (window.TITLE_BG_POLES || [[10, 28], [42, 0], [75, 28]]);
+  let t = 0, last = performance.now(), birdT = 3, flock = [];
+  const cam = () => window.__titleCam ? window.__titleCam() : t * 120;   // 위 스크립트의 카메라 x (도트)
+  const wrap = (x, w) => ((x % w) + w) % w;
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt; const cx = cam();
+    g.drawImage(sky, 0, 0);
+    // 햇살 줄기: 해에서 뻗는 밝은 쐐기, 천천히 숨 쉼
+    g.save(); g.globalAlpha = 0.10 + 0.05 * Math.sin(t * 1.6); g.fillStyle = '#fff6c8';
+    for (let i = 0; i < 12; i++) { const a = Math.PI * (0.06 + i * 0.075) + Math.sin(t * 0.2) * 0.02; g.beginPath(); g.moveTo(SUN.x, SUN.y); g.lineTo(SUN.x + Math.cos(Math.PI + a) * 900, SUN.y - Math.sin(a) * 900); g.lineTo(SUN.x + Math.cos(Math.PI + a + 0.035) * 900, SUN.y - Math.sin(a + 0.035) * 900); g.closePath(); g.fill(); }
+    g.restore();
+    if (ok('sun')) g.drawImage(I.sun, SUN.x - 36, SUN.y - 36);
+    for (const [n, x0, y, sp] of CLOUDS) if (ok(n)) { const w = 1100, x = wrap(x0 - t * 8 * sp - cx * 0.04 * sp, w) - 220; g.drawImage(I[n], Math.round(x), y); }
+    if (ok('far_mountains')) { const w = I.far_mountains.width, x = -wrap(cx * 0.08, w); for (let k = 0; k < 2; k++) g.drawImage(I.far_mountains, Math.round(x + k * w), MT_Y); }
+    if (ok('near_hills')) { const w = I.near_hills.width, x = -wrap(cx * 0.25, w);
+      for (let k = 0; k < 2; k++) { const bx = Math.round(x + k * w);
+        if (ok('castle')) { const ccx = bx + CASTLE_AT; if (ccx > -120 && ccx < 820) { g.drawImage(I.castle, ccx, CASTLE_Y); const fi = 'flag_' + (Math.floor(t * 8) % 4); if (ok(fi)) for (const [px, py] of POLES) g.drawImage(I[fi], ccx + px, CASTLE_Y + py); } }
+        g.drawImage(I.near_hills, bx, HL_Y); } }
+    // 새: 10~16초마다 3~5마리가 오른쪽으로 날아감
+    birdT -= dt; if (birdT <= 0) { birdT = 10 + Math.random() * 6; const n = 3 + Math.floor(Math.random() * 3), y0 = 70 + Math.random() * 80; flock = []; for (let i = 0; i < n; i++) flock.push({ x: -30 - i * 26 - Math.random() * 10, y: y0 + (i % 2) * 12 + Math.random() * 6, ph: Math.random() }); }
+    for (const b of flock) { b.x += 70 * dt; const fi = 'bird_' + (Math.floor((t + b.ph) * 6) % 2); if (ok(fi)) g.drawImage(I[fi], Math.round(b.x), Math.round(b.y + Math.sin((t + b.ph) * 3) * 2)); }
+    // 로고 뒤 옅은 그늘 (은색 로고가 밝은 하늘에 묻히지 않게)
+    const rg = g.createRadialGradient(400, 150, 20, 400, 150, 300); rg.addColorStop(0, 'rgba(11,26,58,.42)'); rg.addColorStop(0.6, 'rgba(11,26,58,.18)'); rg.addColorStop(1, 'rgba(11,26,58,0)'); g.fillStyle = rg; g.fillRect(0, 0, 800, 330);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  const pr = document.getElementById('press'); if (pr) pr.setAttribute('filter', 'drop-shadow(0 2px 3px rgba(5,10,25,.85))');
+})();
+
+// 2026-11-19: 처음 누르면 바깥(게임 창)에 알려 소리를 풂 — 브라우저는 누르기 전에는 소리를 막고, iframe 안 클릭은 바깥에서 알 수 없음
+['pointerdown','keydown'].forEach(ev=>addEventListener(ev,()=>{try{parent.postMessage({collegium:'title',act:'touch'},'*');}catch(e){}},true));
 </script>
 
 </body>

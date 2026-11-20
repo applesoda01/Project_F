@@ -7,8 +7,8 @@
   const Gm = root.GuildGame, GR = Gm.GR;
   const fmt = n => Math.round(n).toLocaleString();
   // 2026-11-16 상단 HUD 오버 설명: 브라우저 기본 풍선(title) 대신 모험가 성향 쪽지와 같은 크림색 카드
-  // 길드 승급 조건 (design_v0.1.md 승급 표). F → E만 게임에 있음(리퀘스트 8번 + 침공, 2026-11-16 결정) — 나머지는 아직이라 문구 끝에 밝힘 (working_rules 7: 구현 전 효과는 표시)
-  const GUILD_UP = ['리퀘스트를 8번 들어주면 영주의 부탁(침공)이 와요.\n침공을 막으면 E급으로 올라가요.', '보스급 의뢰 3건을 해내고 모험가 관리소를 지은 뒤,\n침공을 막으면 D급으로 올라가요.', '보스급 의뢰 3건을 해내고 훈련장을 지은 뒤,\n침공을 막으면 C급으로 올라가요.', '보스급 의뢰 4건을 해내고 의무실을 지은 뒤,\n침공을 막으면 B급으로 올라가요.',
+  // 길드 승급 조건 (design_v0.1.md 승급 표). F → E만 게임에 있음(리퀘스트 10번 + 침공, 2026-11-16 결정 · 11-19 8 → 10번) — 나머지는 아직이라 문구 끝에 밝힘 (working_rules 7: 구현 전 효과는 표시)
+  const GUILD_UP = ['리퀘스트를 10번 들어주면 영주의 부탁(침공)이 와요.\n침공을 막으면 E급으로 올라가요.', '보스급 의뢰 3건을 해내고 모험가 관리소를 지은 뒤,\n침공을 막으면 D급으로 올라가요.', '보스급 의뢰 3건을 해내고 훈련장을 지은 뒤,\n침공을 막으면 C급으로 올라가요.', '보스급 의뢰 4건을 해내고 의무실을 지은 뒤,\n침공을 막으면 B급으로 올라가요.',
     '보스급 의뢰 4건을 해내고 해체장을 지은 뒤,\n침공을 막으면 A급으로 올라가요.', '보스급 의뢰 5건, 명예의 전당, S급 후보 2명을 갖추고\n침공을 막으면 S급으로 올라가요.'].map((t, i) => i === 0 ? t : t + '\n(이 승급은 아직 게임에 적용되지 않았어요)').concat(['가장 높은 등급이에요.']);
   const TRUST_TXT = ['들어오는 의뢰가 크게 줄고, 보상과 경험치도 줄어요.', '들어오는 의뢰가 줄고, 보상과 경험치가 조금 줄어요.', '들어오는 의뢰와 보상·경험치 모두 평소와 같아요.', '들어오는 의뢰가 늘고, 보상과 경험치가 조금 늘어요.', '들어오는 의뢰가 크게 늘고, 보상과 경험치도 늘어요.'];   // 2026-11-16 14:06 존댓말로
   function hudTip(el, txt) { if (!el) return; el.removeAttribute('title'); el.classList.add('has-htip'); let t = el.querySelector(':scope > .htip'); if (!t) { t = document.createElement('i'); t.className = 'htip'; el.appendChild(t); } if (t.textContent !== txt) t.textContent = txt; }
@@ -25,7 +25,7 @@
     q('#ppBtn').onclick = () => hooks.setSpeed(curSp > 0 ? 0 : lastSp);
     // 기능 버튼 → 팝업
     stage.ui.querySelectorAll('[data-pop]').forEach(b => b.onclick = () => UI.open(b.dataset.pop));
-    { const gb = q('#goalBox'); if (gb) gb.onclick = () => UI.open('req'); }   // 목표 안내판 → 리퀘스트 장
+    { const gb = q('#goalBox'); if (gb) gb.onclick = () => { if (root.Tutorial && root.Tutorial.active && root.Tutorial.active()) return; UI.open('req'); }; }   // 목표 안내판 → 리퀘스트 장
     lbInit();
     q('#popClose').onclick = UI.close;
     q('#popBack').onclick = e => { if (e.target.id === 'popBack') UI.closeFx(); };
@@ -44,7 +44,7 @@
     q('#dlg').onclick = UI.advance;
     root.addEventListener('keydown', e => {
       if (e.key === 'Escape') { if (popup) UI.closeFx(); }
-      if ((e.key === ' ' || e.key === 'Enter') && Dlg.open && !popup) { e.preventDefault(); UI.advance(); }
+      if ((e.key === ' ' || e.key === 'Enter') && Dlg.open && !popup) { e.preventDefault(); if (!e.repeat) UI.advance(); }   // 꾹 누르고 있어도 한 줄씩
     });
     UI.autoReport = root.Snd ? !!root.Snd.opt.report : true;
     pmEls();   // 로비 롤오버·물건 메뉴·배치 모드 요소를 처음부터 붙임 (2026-11-12)
@@ -155,7 +155,7 @@
   }
   // 2026-11-12 채팅 로그 개선: 시스템 기록 앞에 종류 꼬리표, 대화 줄에 얼굴 · 이름 · 직업 Lv (이름·얼굴을 누르면 모험가 정보)
   const LOG_TAG = { depart: ['출발', 't-go'], success: ['성공', 't-ok'], fail: ['실패', 't-bad'], injury: ['부상', 't-bad'], death: ['사망', 't-bad'], arrive: ['도착', 't-new'], leave: ['떠남', 't-gray'],
-    req: ['부탁', 't-new'], main: ['메인', 't-gold'], ledger: ['결산', 't-gold'], build: ['건설', 't-gray'], unlock: ['발견', 't-gold'], grow: ['성장', 't-ok'], promo: ['전직', 't-new'], expire: ['기한', 't-gray'], withdraw: ['취소', 't-gray'] };
+    req: ['부탁', 't-new'], main: ['메인', 't-gold'], ledger: ['결산', 't-gold'], build: ['건설', 't-gray'], unlock: ['발견', 't-gold'], grow: ['성장', 't-ok'], promo: ['전직', 't-new'], expire: ['기한', 't-gray'], withdraw: ['취소', 't-gray'], quirk: ['버릇', 't-new'] };
   UI.logLine = function (text, kind) { // 시스템 기록
     const el = document.createElement('div'); el.className = 'ln k-' + (kind || 'info');
     const tg = LOG_TAG[kind]; if (tg) { const i = document.createElement('i'); i.className = 'tag ' + tg[1]; i.textContent = tg[0]; el.append(i); }
@@ -189,7 +189,9 @@
   UI.toast = toast;
   UI.faceStyle = (...a) => faceStyle(...a);   // 대장간 창 등 다른 창에서 얼굴 그림을 씀
   UI.onLogs = function (logs) { // 새 기록들 (오래된 것부터)
+    ctWatch();   // 2026-11-19 계약 갱신 알림 · 결산 카드 (테스트 의견 10 ⑤ ⑥)
     const gups = logs.filter(L => L.gup).map(L => L.gup); if (gups.length) gupShow(gups);   // 2026-11-12 모험가 승급 축하 카드
+    for (const L of logs) if (L.kind === 'arrive' && L.who && L.who[0]) { const a = s.advs.find(b => b.name === L.who[0] && b.alive); if (a) arrShow(a); }   // 2026-11-20 새 모험가 소개 카드 (버릇은 영입할 때 공개, 사용자 결정)
     for (const L of logs) {
       if (L.rq) {   // 리퀘스트: 의뢰 · 완료 · 실패 · 거절 대사 (data/quest_lines.csv). 외지인이 처음 오면 리나 한마디가 앞에 붙음
         const R0 = Gm.reqOf(s), fr = (Gm.QLINES[L.rq.key] || {}).first; let ls = [];
@@ -212,6 +214,18 @@
   const gupQ = []; let gupEl = null, gupTimer = 0;
   const GUP_MS = 3500;   // 2026-11-16: 승급 카드는 [확인] 없이 3.5초 뒤 저절로 닫힘 (누르면 바로 다음으로)
   const STAT_NM = ['힘', '민첩', '지력', '정신', '기교'];
+  // 새 모험가 소개 카드 (2026-11-20 사용자 시안 확정 mk_quirk_arrive): 위쪽 가운데, 6초 뒤 또는 누르면 닫힘 · 시계는 멈추지 않음 · 여럿이면 차례로
+  let arrEl = null, arrTimer = 0; const arrQ = [], ARR_MS = 6000;
+  function arrShow(a) { if (arrQ.includes(a)) return; arrQ.push(a); if (!arrEl || !arrEl.classList.contains('on')) arrNext(); }
+  function arrNext() {
+    clearTimeout(arrTimer); const a = arrQ.shift(); if (!a) { if (arrEl) arrEl.classList.remove('on'); return; }
+    if (!arrEl) { arrEl = document.createElement('div'); arrEl.id = 'arrCard'; stage.ui.appendChild(arrEl); arrEl.addEventListener('pointerdown', () => arrNext()); }
+    const q = qkOf(a), RS = Gm.RISK || ['신중', '보통', '무모'], SP = Gm.SPEND || ['절약', '보통', '낭비'], SO = Gm.SOCIAL || ['독불장군', '보통', '사교적'];
+    arrEl.innerHTML = `<span class="arr-face" style="${faceStyle(a, 80, 300, 40)}"></span><h4>새 모험가가 찾아왔어요 <small>${esc(a.cls)} ${esc(a.name)} · Lv ${a.lv}</small></h4>`
+      + `<div class="arr-tr">모험심 ${RS[a.risk]} · 소비 ${SP[a.spend]} · 사교 ${SO[a.social]}</div>`
+      + (q ? `<div class="arr-qk"><em>버릇 「${esc(q.name)}」</em>${esc(q.desc || '')}</div>` : '') + `<i class="arr-bar" style="animation-duration:${ARR_MS}ms"></i>`;
+    arrEl.classList.remove('on'); void arrEl.offsetWidth; arrEl.classList.add('on'); arrTimer = setTimeout(arrNext, ARR_MS);
+  }
   function gupShow(list) { gupQ.push(list); if (!gupEl || !gupEl.classList.contains('on')) gupNext(); }
   function gupNext() {
     clearTimeout(gupTimer); const list = gupQ.shift(); if (!list) { if (gupEl) gupEl.classList.remove('on'); return; }
@@ -342,7 +356,7 @@
   let rqSel = null, rqMsg = '';
   const RQ_TYPE = { hunt: '전투', search: '탐색', deliver: '납품', donate: '돈 내기', install: '설치 요청', town: '마을 건물' }, RQ_GIVER = { adventurer: '모험가', resident: '마을 사람', outsider: '외지인' };
   const RQ_STATE = { queued: '다음 주 출발', active: '원정 중' };   // queued인데 예약자가 아직 밖이면 '모이면 출발' (stTxt)
-  const rqMat = (id, n, have) => { const m = MATS[id] || { name: id }; return `<span class="rq-chip ${have != null && have < n ? 'lack' : ''}">${m.icon ? `<img src="assets/${m.icon}" alt="">` : ''}${esc(m.name)} ${have != null ? `<b>${Math.min(have, 999)}</b>/` : '×'}${n}</span>`; };
+  const rqMat = (id, n, have) => { const m = MATS[id] || { name: id }; return `<span class="rq-chip ${have != null ? (have < n ? 'need no' : 'need ok') : ''}">${m.icon ? `<img src="assets/${m.icon}" alt="">` : ''}${esc(m.name)} ${have != null ? `<b>${Math.min(have, 999)}</b>/` : '×'}${n}</span>`; };
   function rqRewards(v) {
     const d = v.d, rw = d.rw, o = [];
     if (rw.gold) o.push(`<span class="rq-chip gold">${v.nominated ? '보수 ' : ''}${fmt(rw.gold)}G</span>`);
@@ -363,6 +377,7 @@
   // 목표 안내판 (2026-11-16 동료 피드백 "초반에 뭘 해야 할지 모르겠음" → 가안: 늘 보이는 작은 판). 누르면 리퀘스트 장
   function goalShow() {
     const box = q('#goalBox'); if (!box || !Gm.mainView) return;
+    if (root.Tutorial && root.Tutorial.active && root.Tutorial.active()) { if (root.Tutorial.goalPaint) root.Tutorial.goalPaint(); return; }   // 기본 튜토리얼 동안은 튜토리얼 목표 (tutorial.js goalPaint)
     const m = Gm.mainView(s), R = s.req ? s.req.open : [], cnt = st => R.filter(r => r.state === st).length;
     const nNew = R.filter(r => r.isNew).length, nOpen = cnt('open'), nGo = R.length - nOpen;
     let k = '다음 목표', t = '', bar = null, d = '', dc = '', main = false;
@@ -404,7 +419,7 @@
     const waves = m.waves.map(w => `${esc(w.name)} ${w.boss ? '(보스)' : '×' + w.n}`).join(' → ');
     let body = '';
     if (m.state === 'offer') { const p = Math.round(Gm.mainPredict(s, 20) * 100);
-      body = `<p>몬스터가 마을 왼쪽 다리로 쳐들어옵니다. 모두 막아 내면 <b>E급으로 승급</b>합니다.</p><p class="mw">${waves}</p><p>받으면 <b>${m.lead}주 뒤</b> 침공 · 침공 ${m.block}주 전부터 의뢰 출발 금지 · 지금 전력 <b>${m.defenders}명</b> · 예상 승률 <b class="${p >= 60 ? 'ok' : p >= 40 ? 'mid' : 'bad'}">${p}%</b></p><p class="ms">성공: ${fmt(m.gold)}G · 명성 +${m.fame} · 모험가 관리소 해금 / 실패: 인구 −${m.popLoss}% · 신뢰도 −${m.trustLoss}, ${m.retry}주 뒤 재도전</p><button class="ux-btn ux-btn-primary" data-rqact="main">받기</button>${m.last && !m.last.win ? `<span class="ms">지난 도전: ${m.last.wave + 1 > m.waves.length - 1 ? '보스' : (m.last.wave + 1) + '차'}에서 패배 (${m.tries}번째)</span>` : ''}`; }
+      body = `<p>몬스터가 마을 왼쪽 다리로 쳐들어옵니다. 모두 막아 내면 <b>E급으로 승급</b>합니다.</p><p class="mw">${waves}</p><p>받으면 <b>${m.lead}주 뒤</b> 침공 · 침공 ${m.block}주 전부터 의뢰 출발 금지 · 지금 전력 <b>${m.defenders}명</b> · ${powTag(p / 100)}</p><p class="ms">성공: ${fmt(m.gold)}G · 명성 +${m.fame} · 모험가 관리소 해금 / 실패: 인구 −${m.popLoss}% · 신뢰도 −${m.trustLoss}, ${m.retry}주 뒤 재도전</p><button class="ux-btn ux-btn-primary" data-rqact="main">받기</button>${m.last && !m.last.win ? `<span class="ms">지난 도전: ${m.last.wave + 1 > m.waves.length - 1 ? '보스' : (m.last.wave + 1) + '차'}에서 패배 (${m.tries}번째)</span>` : ''}`; }
     else if (m.state === 'set') body = `<p><b>침공까지 ${m.left}주</b>${m.blocked ? ' · <b class="bad">의뢰 출발 금지</b> (모험가가 마을에서 대비합니다)' : ` · 침공 ${m.block}주 전부터 의뢰 출발이 막힙니다`}</p><p class="mw">${waves}</p>`;
     else body = `<p>영주의 성이 무너졌습니다. <b>${m.cool}주 뒤</b> 다시 도전할 수 있습니다.</p>`;
     return `<div class="rq-main"><i class="gv">메인</i><b>다리를 지켜라</b>${body}</div>`;
@@ -426,35 +441,59 @@
     if (v.lock) Rr += `<div class="rq-lock">${esc(v.lock)}${/집무실/.test(v.lock) ? ` <button class="ux-btn sm" data-rqact="office" ${s.gold < Gm.facCost(s, '집무실') ? 'disabled' : ''}>집무실 짓기 <b>${fmt(Gm.facCost(s, '집무실'))}G</b></button>` : ''}</div>`;
     // 요구
     let need = '';
-    if (v.need.gold) need += `<span class="rq-chip gold ${s.gold < v.need.gold ? 'lack' : ''}">${fmt(v.need.gold)}G <small>(금고 ${fmt(s.gold)}G)</small></span>`;
+    // 2026-11-19 사용자: 요구 칩은 처음부터 붉은 글씨(need) → 채우면 파란 글씨(ok) · 못 채운 채 보내기 · 내기를 누르면 못 채운 칩이 좌우로 흔들림
+    const nq = ok => `need ${ok ? 'ok' : 'no'}`;
+    if (v.need.gold) need += `<span class="rq-chip gold ${nq(s.gold >= v.need.gold)}">${fmt(v.need.gold)}G <small>(금고 ${fmt(s.gold)}G)</small></span>`;
     for (const [m, k] of Object.entries(v.need.mats)) need += rqMat(m, k, s.mats[m] || 0);
-    if (d.type === 'install') need += `<span class="rq-chip ${v.goalOk ? '' : 'lack'}">테이블 1세트 놓기 (시설 장 → 설비)</span>`;
-    if (v.nominated) { const pt = d.party[0] === d.party[1] ? d.party[0] + '명' : d.party[0] + '~' + d.party[1] + '명';
-      need += `<span class="rq-chip">지명 ${pt} · ${d.weeks}주</span>` + (d.req ? `<span class="rq-chip star">★ ${d.req[0] === -1 ? esc(v.giver) + ' 본인' : (d.req[0] === -2 ? '주력 능력치' : Gm.STATS[d.req[0]]) + ' ' + d.req[1] + ' 이상'} 1명</span>` : '') + d.foes.map(f => `<span class="rq-chip enemy">${esc(f.name)}${f.count > 1 ? ' ×' + f.count : ''}${f.boss ? ' (우두머리)' : ''}</span>`).join(''); }
+    if (d.type === 'install') need += `<span class="rq-chip ${nq(v.goalOk)}">테이블 1세트 놓기 (시설 장 → 설비)</span>`;
+    if (v.nominated) { const PR = Gm.reqPartyRange(s, r.id) || d.party, pt = PR[0] === PR[1] ? PR[0] + '명' : PR[0] + '~' + PR[1] + '명';
+      const pp = Gm.reqPartyOf(s, r);
+      need += `<span class="rq-chip ${nq(pp.length >= PR[0])}">지명 ${pt} · ${d.weeks}주</span>` + (d.req ? `<span class="rq-chip star ${nq(pp.some(a => Gm.reqMeets(s, r, a)))}">★ ${d.req[0] === -1 ? esc(v.giver) + ' 본인' : (d.req[0] === -2 ? '주력 능력치' : Gm.STATS[d.req[0]]) + ' ' + d.req[1] + ' 이상'} 1명</span>` : '') + d.foes.map(f => `<span class="rq-chip enemy">${esc(f.name)}${f.count > 1 ? ' ×' + f.count : ''}${f.boss ? ' (우두머리)' : ''}</span>`).join(''); }
     Rr += `<div class="rq-sec"><i>요구</i><div>${need}</div></div><div class="rq-sec"><i>보상</i><div>${rqRewards(v)}</div></div>`;
     // 행동
     if (!v.nominated) {
       const lab = d.type === 'install' ? '' : v.need.gold ? `돈 내기 <b>${fmt(v.need.gold)}G</b>` : '납품하기';
-      Rr += `<div class="rq-act">${lab ? `<button class="ux-btn primary" data-rqact="give" ${v.lock || !v.canPay ? 'disabled' : ''}>${lab}</button>` : '<span class="rq-note">설비를 놓으면 바로 완료됩니다.</span>'}<span class="rq-msg">${esc(rqMsg)}</span></div>`;
+      Rr += `<div class="rq-act">${lab ? `<button class="ux-btn primary ${v.lock || !v.canPay ? 'soft-off' : ''}" data-rqact="give" ${v.lock ? 'disabled' : ''}>${lab}</button>` : '<span class="rq-note">설비를 놓으면 바로 완료됩니다.</span>'}<span class="rq-msg">${esc(rqMsg)}</span></div>`;
     } else {
       const party = Gm.reqPartyOf(s, r), P = Gm.reqPredict(s, r.id), why = r.state === 'open' ? Gm.reqSendWhy(s, r) : null, rows = Gm.reqNomList(s, r.id);
-      const pTxt = P == null ? '' : `<span class="rq-p ${P >= 0.7 ? 'ok' : P >= 0.4 ? 'mid' : 'bad'}">예상 성공률 <b>${Math.round(P * 100)}%</b></span>`;
-      Rr += `<div class="rq-party"><span class="pl">파티 ${party.length} / ${d.party[1]}</span>${party.map(a => `<span class="pm" style="${faceStyle(a, 34, 178, 17)}" title="${esc(a.name)}"></span>`).join('') || '<em>아래에서 모험가를 눌러 부탁하세요 (부탁할 때마다 섭외비가 나갑니다)</em>'}${pTxt}</div>`;
-      Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary" data-rqact="send" ${why ? 'disabled' : ''}>보내기 <small>(${Gm.reqWaitOf(s, r).length ? '모두 돌아오면 출발' : '다음 주 출발'})</small></button>` : r.state === 'queued' ? `<button class="ux-btn" data-rqact="unsend">출발 취소</button>${Gm.reqWaitOf(s, r).length ? `<span class="rq-note">예약: ${esc(josa(Gm.reqWaitOf(s, r).map(a => a.name).join(' · '), '이', '가'))} 돌아오는 주에 바로 출발해요. 그동안 파티원은 게시판 의뢰를 받지 않아요.</span>` : ''}` : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}<span class="rq-msg">${esc(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</span></div>`;
+      const pTxt = P == null ? '' : Gm.reqIsCombat(s, r.id) ? powTag(P) : `<span class="rq-p ${P >= 0.7 ? 'ok' : P >= 0.4 ? 'mid' : 'bad'}">예상 성공률 <b>${Math.round(P * 100)}%</b></span>`;   // 전투 = 승산 칩, 비전투 = 확률
+      Rr += `<div class="rq-party"><span class="pl">파티 ${party.length} / ${(Gm.reqPartyRange(s, r.id) || d.party)[1]}</span>${party.map(a => `<span class="pm" style="${faceStyle(a, 34, 178, 17)}" title="${esc(a.name)}"></span>`).join('') || '<em>아래에서 모험가를 눌러 부탁하세요 (부탁할 때마다 섭외비가 나갑니다)</em>'}${pTxt}</div>`;
+      Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary ${why ? 'soft-off' : ''}" data-rqact="send">보내기 <small>(${Gm.reqWaitOf(s, r).length ? '모두 돌아오면 출발' : '다음 주 출발'})</small></button>` : r.state === 'queued' ? `<button class="ux-btn" data-rqact="unsend">출발 취소</button>${Gm.reqWaitOf(s, r).length ? `<span class="rq-note">예약: ${esc(josa(Gm.reqWaitOf(s, r).map(a => a.name).join(' · '), '이', '가'))} 돌아오는 주에 바로 출발해요. 그동안 파티원은 게시판 의뢰를 받지 않아요.</span>` : ''}` : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}<span class="rq-msg">${esc(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</span></div>`;
       if (r.state !== 'active') {
         Rr += `<div class="rq-nom ${r.state !== 'open' || v.lock ? 'off' : ''}"><div class="nh"><span>모험가</span><span>${d.req && d.req[0] >= 0 ? Gm.STATS[d.req[0]] : rows[0] && rows[0].stat != null ? '주력' : ''}</span><span>애착</span><span>수락</span><span>섭외비</span><span>상태</span></div>`;
         for (const x of rows) { const a = s.advs.find(z => z.id === x.id);
           const st = x.inParty ? (x.busy ? `<b class="ok">✔ 예약 (${x.busy})</b>` : '<b class="ok">✔ 함께 감</b>') : x.other ? `<b class="ng" title="「${esc(x.other)}」에 가기로 함">다른 리퀘스트</b>` : x.busy ? `${x.busy} · 예약 가능` : x.refused ? '<b class="ng">✖ 이번 주 거절</b>' : x.back ? '이번 주 귀환' : x.away ? '마을 밖' : '길드에 있음';
-          Rr += `<button class="nr ${x.inParty ? 'in' : ''} ${x.refused || (x.other && !x.inParty) ? 'no' : ''}" data-rqnom="${x.id}"><span class="who"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span><b>${esc(x.name)}</b><em>${esc(x.cls)} Lv ${x.lv}</em></span></span><span class="sv">${d.req ? (x.meets ? '<i class="star">★</i>' : '') : ''}${x.stat != null ? x.stat : ''}</span><span>${x.attach}</span><span class="ch">${x.owner ? '본인' : x.chance + '%'}</span><span class="fee ${!x.inParty && x.fee > s.gold ? 'lack' : ''}">${x.inParty || !x.fee ? '—' : x.fee + 'G'}</span><span class="stx">${st}</span></button>`; }
+          Rr += `<button class="nr ${x.inParty ? 'in' : ''} ${x.refused || (x.other && !x.inParty) ? 'no' : ''}" data-rqnom="${x.id}"><span class="who"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span><b>${esc(x.name)}</b><em>${esc(x.cls)} Lv ${x.lv}${ctTag(a)}</em></span></span><span class="sv">${d.req ? (x.meets ? '<i class="star">★</i>' : '') : ''}${x.stat != null ? x.stat : ''}</span><span>${x.attach}</span><span class="ch ${!x.owner && Gm.cActive(s, a) && Gm.cCallsLeft(s, a) > 0 ? 'ct' : ''}">${x.owner ? '본인' : x.chance + '%'}</span><span class="fee ${!x.inParty && x.fee > s.gold ? 'lack' : ''}">${x.inParty || !x.fee ? '—' : x.fee + 'G'}</span><span class="stx">${st}</span></button>`; }
         Rr += '</div>';
       }
     }
     return `<div class="bk2 bk-rq"><section class="bk-l">${L}</section><section class="bk-r">${Rr}</section></div>`;
   }
+  // 2026-11-19 계약 표시 (사용자: 디자인은 Claude 에게 · 칸 크기가 바뀌지 않게) — 직업 · Lv 줄 끝에 작은 남색 꼬리표, 점 = 남은 '거절 없는 지명' (4주 2번)
+  function powTag(P) {   // 2026-11-19 사용자 확정: 전투는 확률이 아니라 실제 전투로 결과가 남 → % 대신 승산 칩 (모의 전투 30번 이긴 비율, 경계 70 · 40% [임시])
+    const k = P >= 0.7 ? 0 : P >= 0.4 ? 1 : 2, nm = ['여유', '팽팽', '위험'][k], cl = ['ok', 'mid', 'bad'][k], d = ['●●●', '●●○', '●○○'][k];
+    return `<span class="rq-pow ${cl}" title="모의 전투 30번 중 약 ${Math.round(P * 30)}번 이김">승산 <b>${nm}</b><i>${d}</i></span>`;
+  }
+  function buffIco(a, pt) {   // 2026-11-19 요리 버프 아이콘 (이번 원정 동안)
+    const b = Gm.mealBuffOf && Gm.mealBuffOf(s, a); if (!b) return '';
+    return `<img class="buff-ico${pt === 2 ? ' ptd' : pt ? ' pt' : ''}" src="assets/${b.icon}" alt="" title="${esc(b.name)} — ${esc(b.effect)} (이번 의뢰 동안)">`;
+  }
+  function ctTag(a) {
+    if (!Gm.cActive(s, a)) return ''; const left = Math.max(0, Gm.cCallsLeft(s, a)), max = (s.cfg.contract && s.cfg.contract.callMax) || 2;
+    return `<span class="ct-tag ${left ? '' : 'used'}" title="계약 모험가 · 거절 없는 지명 ${left}/${max}번 남음 (4주마다 다시 참)">계약${Array.from({ length: max }, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('')}</span>`;
+  }
+  function rqShake(why) {   // 못 채운 요구 칩이 좌우로 흔들림 + 이유 (2026-11-19)
+    const box = document.querySelector('.bk-rq .bk-r'); if (!box) return;
+    const m = box.querySelector('.rq-msg'); if (m) { m.textContent = why; m.classList.remove('warn'); void m.offsetWidth; m.classList.add('warn'); }
+    box.querySelectorAll('.rq-chip.need.no').forEach(c => { c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); });
+    if (root.Audio && root.Audio.sfx) try { root.Audio.sfx('warn'); } catch (e) {}
+  }
   function rqAct(act) {
     if (act === 'main') { Gm.mainAccept(s); hooks.changed && hooks.changed(); renderPopup(); return; }
     const v = Gm.reqView(s).find(x => x.r.id === rqSel); if (!v) return;
     const top = s.log[0]; rqMsg = '';
+    if (act === 'give' && !v.canPay) { rqShake('아직 준비가 부족합니다.'); return; }
+    if (act === 'send' && v.r.state === 'open' && Gm.reqSendWhy(s, v.r)) { rqShake(Gm.reqSendWhy(s, v.r)); return; }
     if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; else rqStamp('수락', `「${v.name}」`); }   // 2026-11-17 사용자: 도장은 밤 원본(초록 '수락' + 「이름」)으로
     else if (act === 'refuse') Gm.reqRefuse(s, v.r.id);
     else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = Gm.reqWaitOf(s, v.r).length ? '' : '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; rqStamp('수락', `「${v.name}」 · ${Gm.reqWaitOf(s, v.r).length ? '모이면 출발' : '다음 주 출발'}`); } }
@@ -488,9 +527,10 @@
     go();
     if (root.BookFX && !wasOpen) root.BookFX.openCover();
   };
+  UI.chapterOf = name => (chapterOf(name) || {}).id || null;   // 2026-11-19 튜토리얼: 책이 열려 있을 때 메뉴 단추 대신 밝힐 책갈피
   UI.popupName = () => popup;   // 2026-11-18 튜토리얼: 지금 펼친 장
   UI.repop = () => { if (popup) renderPopup(); };   // 지금 장을 다시 그림 (튜토리얼이 재료를 준 뒤 등)
-  UI.dlgBusy = () => !!(Dlg.cur || Dlg.lines.length);
+  UI.dlgBusy = () => !!(Dlg.cur || Dlg.lines.length || Dlg.gap > 0);
   UI.closeFx = function () { if (root.BookFX && popup) root.BookFX.closeCover(() => UI.close()); else UI.close(); };   // 책끈 · Esc · 바깥 누르기 = 표지 덮으며 닫기
   let bookHold = false, bookSp = 1;   // 책이 펼쳐진 동안 시간 정지: 닫으면 펼치기 전 속도로
   UI.close = function () { if (bookHold) { bookHold = false; document.body.classList.remove('bookOn'); hooks.setSpeed && hooks.setSpeed(bookSp); } mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
@@ -589,7 +629,7 @@
         return `<div class="cdx-c ${on ? '' : 'off'}"><span class="ux-slot ${on ? '' : 'unk'} job" data-g="${c.st - 1}" ${on ? `data-jt="${esc(c.name)}"` : ''}>${c.icon ? `<i class="jface" style="${faceStyle({ core: c.line[0], id: 1 }, 70, 320, 36)}"></i>` : `<b class="jl">${on ? esc(c.name.slice(0, 1)) : ''}</b>`}</span><em>${on ? esc(c.name) : '???'}</em></div>`; }).join('');
         return `<div class="cdx-sub">${t}</div><div class="cdx-grid">${cs}</div>`; }).join('');
     }
-    else if (codexTab === 3) byGrade(Gm.DISH.map(d => ({ name: d.name, grade: GR[d.g], icon: d.icon })), d => ({ on: !!s.dishes[d.name], inner: img(d.icon), attr: `data-dt="${esc(d.name)}"` }));
+    else if (codexTab === 3) byGrade(Gm.DISH.filter(d => !d.dungeon || s.dishes[d.name]).map(d => ({ name: d.name, grade: GR[d.g], icon: d.icon })), d => ({ on: !!s.dishes[d.name], inner: img(d.icon), attr: `data-dt="${esc(d.name)}"` }));
     else byGrade((C.items || []).filter(i => i.kind === 'gear'), it => ({ on: GR.indexOf(it.grade) <= maxGear, inner: img(it.icon), attr: `data-gt="${it.id}"` }));
     const body = codexTab === 2 ? jobHtml : (subTitle || '') + rows.map(([g, cs]) => `<div class="cdx-row">${badge(g)}<div class="cdx-grid">${cs.join('')}</div></div>`).join('') + (extra || '');
     return `<div class="cdx">${tabs}<div class="cdx-head"><b>${CODEX_TABS[codexTab]} 도감</b><span class="ux-muted">${got} / ${n} 발견</span><span class="ux-bar"><i style="width:${n ? got / n * 100 : 0}%"></i></span></div><div class="cdx-list">${body}</div></div>`;
@@ -655,7 +695,7 @@
       const sk = d.n ? `<span class="skulls" title="위험도">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}</span>` : '';
       const foe = d.n ? (intel ? (fb === 'up' ? '<i class="foe up" title="강한 무리">▲</i>' : fb === 'down' ? '<i class="foe down" title="약한 무리">▼</i>' : '') : '<i class="foe unk" title="정보실이 있으면 알 수 있음">?</i>') : '';
       cards += `<div class="qcard age${ageOf(q)}${q.x2 ? ' x2' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q)}${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}${q.gq != null ? '<span class="gq-tag">길드 의뢰</span>' : ''}</div>
-        <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><button class="ux-btn danger sm" data-wd="${q.id}">${q.gq != null ? '거두기' : '취소'}</button></div>
+        <div class="r2">${sk}${foe}${q.party ? `<em class="qparty" title="파티 의뢰 — 적이 많아 ${q.party}명 이상이 함께 가야 이길 만해요">파티 ${q.party}+</em>` : ''}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><button class="ux-btn danger sm" data-wd="${q.id}">${q.gq != null ? '거두기' : '취소'}</button></div>
         <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
     }
     if (!s.board.length) cards = '<div class="ux-empty qb-none">게시된 의뢰가 없습니다. 의뢰는 매주 들어옵니다.</div>';
@@ -699,7 +739,7 @@
       const om = T && (s.orders || []).length ? (T.rewards || []).find(r => r.p >= 30 && s.orders.some(o => o.m === r.m && Gm.orderLive(s, o))) : null;   // 2026-11-18 V2 6단계: 발주 소재가 나오는 의뢰 (2026-11-19: 켜진 상시 발주만)
       const G = gqOf(q);   // 2026-11-20 길드 의뢰 카드: 수수료 대신 '길드 의뢰' 띠, 기한 = 길드 의뢰 기한
       L += `<div class="qcard bk age${ageOf(q)}${q.x2 ? ' x2' : ''}${q.id === qSel ? ' sel' : ''}${om ? ' od-hit' : ''}${G ? ' gqb' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q)}${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}${G ? `<span class="gq-tag" title="길드가 낸 의뢰 · ${esc(Gm.gqLabel(G))}${G.kind === 'mat' ? ` ${G.got}/${G.n}개` : ''}${G.hot ? ' · 바로 맡겨짐' : ''}">길드 의뢰</span>` : (() => { const f = Math.round(Gm.questFee(s, q) * 100); return `<span class="mk5-chip ${f >= 20 ? 'hi' : f >= 15 ? 'mid' : f < 10 ? 'lo' : ''}" title="길드가 떼는 수수료${q.fee != null ? ' (이 의뢰만 따로 정함)' : ''}">수수료 ${f}%</span>`; })()}${om ? `<span class="od-chip" title="발주 · ${esc((MATS[om.m] || { name: '' }).name)}">발주</span>` : ''}</div>
-        <div class="r2">${sk}${foe}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span>${(() => { const n = Gm.questEta(s, q); return `<span class="mk5-eta" title="지금 게시판 · 마을 모험가 수로 본 예상 처리 (어림)">처리 ~${n >= 4 ? '4주+' : n + '주'}</span>`; })()}<span class="dlw${qWkLeft(q) <= 1 ? ' low' : ''}">${qWkLeft(q)}주</span></div>
+        <div class="r2">${sk}${foe}${q.party ? `<em class="qparty" title="파티 의뢰 — 적이 많아 ${q.party}명 이상이 함께 가야 이길 만해요">파티 ${q.party}+</em>` : ''}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span>${(() => { const n = Gm.questEta(s, q); return `<span class="mk5-eta" title="지금 게시판 · 마을 모험가 수로 본 예상 처리 (어림)">처리 ~${n >= 4 ? '4주+' : n + '주'}</span>`; })()}<span class="dlw${qWkLeft(q) <= 1 ? ' low' : ''}">${qWkLeft(q)}주</span></div>
         <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
     }
     for (let k = s.board.length; k < Math.min(cap, 14); k++) L += '<div class="bkq-slot"></div>';   // 빈 칸 = 점선 자리 (한 쪽에 보이는 14칸까지)
@@ -1265,8 +1305,8 @@
     const promo = new Set((s.proposals || []).map(p => p.id));
     let h = `<div class="bk2 bk-av ${root.BOOK_ATT || 'att-b'}"><section class="bk-l"><div class="ux-h">모험가 명부 <small>${list.length} / ${Gm.advCap(s)}명</small></div><div class="av-list ${root.BOOK_ADV_LIST || 'st-d'}">`;
     for (const a of list) { const pc = pty.get(a.id) && pty.get(a.id).col, on = sampleOn(a), t = ttlName(on);
-      h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${pc ? 'pty' : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"${pc ? ` style="--pc:${pc}"` : ''}><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}</span>
-      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}${a.contract ? `<em class="ct-tag" title="계약 모험가 · ${a.contract.end + 1}주까지 (체결 주 ~ 체결 주 + 기간 − 1)">계약</em>` : ''}</span><span class="sub">${a.contract ? `계약 ${Math.max(0, Math.min(a.contract.weeks, s.week - a.contract.start + 1))}/${a.contract.weeks}주` : `${a.cls} · ${ST_SHORT[stOf(a)]}${stOf(a) === 'injured' ? ' ' + Math.max(0, a.until - s.week) + '주' : ''}`}${relIcons(a)}</span></span><i class="ux-grade av-gr" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)" title="${GR[a.grade]}급"></i>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
+      h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${pc ? 'pty' : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"${pc ? ` style="--pc:${pc}"` : ''}><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}${buffIco(a, 1)}</span>
+      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}${qkOf(a) ? `<i class="qk1">${esc(qkOf(a).name[0])}</i>` : ''}${a.contract ? `<em class="ct-tag" title="계약 모험가 · ${a.contract.end + 1}주까지 (체결 주 ~ 체결 주 + 기간 − 1)">계약</em>` : ''}</span><span class="sub">${a.contract ? `계약 ${Math.max(0, Math.min(a.contract.weeks, s.week - a.contract.start + 1))}/${a.contract.weeks}주<i class="ct-bar ${a.contract.end - s.week <= 1 ? 'end' : ''}" title="${a.contract.end - s.week <= 1 ? '곧 끝남 — 계약 제안에서 갱신할 수 있어요' : '계약 진행'}"><i style="width:${Math.round(Math.max(0, Math.min(1, (s.week - a.contract.start + 1) / a.contract.weeks)) * 100)}%"></i></i>` : `${a.cls} · ${ST_SHORT[stOf(a)]}${stOf(a) === 'injured' ? ' ' + Math.max(0, a.until - s.week) + '주' : ''}`}${relIcons(a)}</span></span><i class="ux-grade av-gr" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)" title="${GR[a.grade]}급"></i>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
     const a = s.advs.find(x => x.id === openAdv);
     return h + `</div></section><section class="bk-r av-main">${a ? advDetail(a) : '<div class="ux-empty">모험가가 없습니다.</div>'}</section><div class="qtip avtip" id="avTip"></div></div>`;
   }
@@ -1279,17 +1319,21 @@
     if (openAdv == null || !list.some(a => a.id === openAdv)) openAdv = list[0] && list[0].id;
     const promo = new Set((s.proposals || []).map(p => p.id));
     let h = '<div class="av"><div class="av-list">';
-    for (const a of list) { const pc = pty.get(a.id) && pty.get(a.id).col; h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${pc ? 'pty' : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"${pc ? ` style="--pc:${pc}"` : ''}><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}</span>
+    for (const a of list) { const pc = pty.get(a.id) && pty.get(a.id).col; h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${pc ? 'pty' : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"${pc ? ` style="--pc:${pc}"` : ''}><span class="ux-face" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}${buffIco(a, 1)}</span>
       <span><span class="nm">${a.name}</span><span class="sub">${a.cls} · ${ST_TXT[stOf(a)]}</span></span><span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
     const a = s.advs.find(x => x.id === openAdv);
     return h + '</div><div class="av-main">' + (a ? advDetail(a) : '<div class="ux-empty">모험가가 없습니다.</div>') + '</div><div class="qtip avtip" id="avTip"></div></div>';
   }
   // 목록 줄 마우스 오버: 지금 이 모험가의 상황 (상태별) + 공통 한 줄
   let avHover = null, avTimer = 0;
+  // 2026-11-20 버릇 화면 (사용자 확정: 명부 줄 = 이름 옆 한 글자 · 상세 = 칭호 옆 배지 · 마우스 설명 = 뭉뚱그린 한 줄 · data/quirks.csv 설명 칸)
+  const qkOf = a => a && a.quirk ? ((window.GAME_DATA && window.GAME_DATA.quirks) || []).find(q => q.key === a.quirk) || null : null;
+  const qkTip = q => `<b class="qk-h">버릇 · ${esc(q.name)}</b>${esc(q.desc || '')}`;
   function advTipHtml(a) {
     const k = stOf(a), w = Math.max(0, a.until - s.week), promo = (s.proposals || []).find(p => p.id === a.id);
     let h = `<div class="t1"><span class="ux-face" style="${faceStyle(a, 36, 190, 18)};width:40px;height:40px"></span><b>${a.name}</b><span class="ux-muted">${a.cls} Lv ${a.lv}</span></div>`;
     h += `<div class="st ${k}">● ${ST_TXT[k]}</div>`;
+    { const q = qkOf(a); if (q) h += `<div class="row qk-row">${qkTip(q)}</div>`; }
     if (k === 'quest') {
       const x = s.active.find(e => e.party.includes(a.id));
       if (x) {
@@ -1299,7 +1343,7 @@
       }
     } else if (k === 'injured') h += `<div class="row">회복까지 <b>${w}주</b>${a.injuredFrom ? ` · <span class="ux-muted">${esc(a.injuredFrom)}에서 다침</span>` : ''}</div>`;
     else if (k === 'town') {
-      const lvReq = [0, 5, 10, 18, 26, 35, 45], achReq = [0, 5, 5, 7, 7, 10, 10], n = a.grade + 1;
+      const GW = (s.cfg && s.cfg.growth) || {}, lvReq = GW.gradeLv || [0, 4, 10, 18, 26, 35, 45], achReq = GW.gradeAch || [0, 4, 5, 7, 7, 10, 10], n = a.grade + 1;   // 2026-11-20 balance.csv 승급 조건 (게임 규칙과 같은 값)
       h += `<div class="row">의뢰를 고르는 중</div>`;
       if (n <= 5) h += `<div class="row ux-muted">${GR[n]}급 승급까지: Lv ${Math.min(a.lv, lvReq[n])}/${lvReq[n]} · 업적 ${Math.min(a.ach, achReq[n])}/${achReq[n]}</div>`;
     } else {
@@ -1337,12 +1381,13 @@
   function titleDD(a) {
     const got = sampleTitles(a), on = sampleOn(a);
     const opt = (k, nm, fx) => `<button class="tdo${k === on ? ' on' : ''}" data-tpick="${k}"><b>${nm}</b><em>${fx}</em></button>`;
-    return `<div class="av-ttl"><button class="av-tbtn" data-tsel="1" title="칭호 바꾸기"><span>${ttlName(on)}</span><i>▾</i></button><div class="av-tdd">`
+    const q = qkOf(a);
+    return `<div class="av-ttl"><button class="av-tbtn" data-tsel="1" title="칭호 바꾸기"><span>${ttlName(on)}</span><i>▾</i></button>${q ? `<span class="qkb">${esc(q.name)}<i class="tip">${qkTip(q)}</i></span>` : ''}<div class="av-tdd">`
       + opt(-1, '신입', '기본 칭호 · 효과 없음') + got.map(k => opt(k, TITLE_CAT[k][0], TITLE_CAT[k][2])).join('')
       + `<div class="tdh">아직 못 얻은 칭호</div>` + TITLE_CAT.map((_, k) => k).filter(k => !got.includes(k)).map(k => `<div class="tdo lock"><b>${TITLE_CAT[k][0]}</b><em>${TITLE_CAT[k][1]}</em></div>`).join('') + '</div></div>';
   }
   function advCareerPage(a) {   // 책: 오른쪽 책갈피 "경력" — 선택한 모험가의 경력 전체
-    return `<div class="av-career"><div class="av-ch"><div class="ux-portrait xs"><i style="${faceStyle(a, 56, 140, 32)}"></i></div><div><b>${a.name}</b><span>${STAGE[a.stage]} ${a.cls}</span></div><em>의뢰 성공 <b>${a.done}</b>회</em></div><ul class="career">${a.career.slice().reverse().map(c => `<li><span class="w">${Gm.dateLabel(c.week)}</span>${c.text}</li>`).join('') || '<li class="none">아직 기록이 없습니다.</li>'}</ul></div>`;
+    return `<div class="av-career"><div class="av-ch"><div class="ux-portrait xs"><i style="${faceStyle(a, 56, 140, 32)}"></i></div><div><b>${a.name}</b><span>${STAGE[a.stage]} ${a.cls}</span></div><em>의뢰 성공 <b>${a.done}</b>회</em></div><ul class="career">${a.career.slice().reverse().map(c => `<li${c.pal ? ' class="pal"' : ''}><span class="w">${Gm.dateLabel(c.week)}</span>${c.pal ? '<span>' + c.text.replace('♥', '<b class="ht">♥</b>') + '</span>' : c.text}</li>`).join('') || '<li class="none">아직 기록이 없습니다.</li>'}</ul></div>`;
   }
   function advDetail(a) {
     if (document.getElementById('pop').classList.contains('book') && advView === 'career') return advCareerPage(a);
@@ -1351,7 +1396,7 @@
     const path = a.cls1 === a.cls ? a.cls : `${a.cls1} → ${a.cls}`;
     const BK = document.getElementById('pop').classList.contains('book');   // 책 펼침판: 애착·다음 장비 빼고 막대 안에 수치
     // 머리
-    let h = `${BK ? `<div class="av-sealw" aria-hidden="true"><div class="av-seal"><b>${GR[a.grade]}</b></div></div>` : ''}<div class="av-head">${BK ? '<div class="pcol">' : ''}<div class="ux-portrait sm"><i style="${faceStyle(a, 104, 260, 60)}"></i></div>${BK ? `<b class="plv">Lv ${a.lv}</b></div>` : ''}<div class="who">${document.getElementById('pop').classList.contains('book') ? titleDD(a) : ''}
+    let h = `${BK ? `<div class="av-sealw" aria-hidden="true"><div class="av-seal"><b>${GR[a.grade]}</b></div></div>` : ''}<div class="av-head">${BK ? '<div class="pcol">' : ''}<div class="ux-portrait sm"><i style="${faceStyle(a, 104, 260, 60)}"></i>${buffIco(a, 2)}</div>${BK ? `<b class="plv">Lv ${a.lv}</b></div>` : ''}<div class="who">${document.getElementById('pop').classList.contains('book') ? titleDD(a) : ''}
       <div class="nm"><span class="anm">${a.name}</span> <i class="ux-grade" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)"></i><span class="cls">${STAGE[a.stage]} ${path}</span><i class="br"></i>${stTag(a)}${BK ? `<i class="br br2"></i><span class="av-trt"><span><em>모험심</em>${Gm.RISK[a.risk]}<i class="tip">${TRAIT_TXT.risk[a.risk]}</i></span><span><em>소비</em>${Gm.SPEND[a.spend]}<i class="tip">${TRAIT_TXT.spend[a.spend]}</i></span><span><em>사교</em>${Gm.SOCIAL[a.social]}<i class="tip">${TRAIT_TXT.social[a.social]}</i></span></span>` : ''}${(() => { const AT = [0, 30, 60, 90, 100], t = Gm.attachTier(a), lo = AT[t], hi = AT[t + 1] || 100, pct = t >= 3 ? 100 : Math.min(100, (a.attach - lo) / (hi - lo) * 100); return `<span class="av-att" title="애착 ${ATT_NAME[t]} (${Math.round(a.attach)})"><span class="att-a">♥ ${Math.round(a.attach)}</span><span class="att-b"><em>${['방랑자', '새내기', '동반자', '토박이'][t]}</em><i class="trk"><i style="width:${pct}%"></i></i></span></span>`; })()}<span class="gold av-wal" title="모험가 소지금 (식사·물약·장비 구매에 씀)"><em class="wl">소지금</em><i></i>${fmt(Math.round(a.wallet || 0))}G</span></div>
       ${(() => { const CBH = root.GuildCombat ? root.GuildCombat.make(root.GAME_DATA) : null; if (!(CBH && CBH.ok)) return ''; const u = CBH.unit(a, i => Gm.finalStat(s, a, i), Gm.eqOf(a), 0); const hp = Math.round(u.maxHp), mp = Math.round(u.maxMp); const iw = a.state === 'injured' ? Math.max(0, a.until - s.week) : 0, itot = Math.max(iw, a.injuredAt != null ? a.until - a.injuredAt : iw + 1), ipc = iw ? Math.max(8, Math.round((itot - iw) / Math.max(1, itot) * 100)) : 100;   // 부상 표시 (2026-11-16 결정 · 11-17 구현): 부상이면 체력 막대를 회복한 만큼만 채우고 '부상 N주'
       if (BK) return `<div class="hm"><div class="vb hp${iw ? ' inj' : ''}"><span class="k">체력</span><i class="trk"><i${iw ? ` style="width:${ipc}%"` : ''}></i><em class="bv">${iw ? `부상 ${iw}주` : `${fmt(hp)}/${fmt(hp)}`}</em></i></div><div class="vb mp"><span class="k">마력</span><i class="trk"><i></i><em class="bv">${fmt(mp)}/${fmt(mp)}</em></i></div><div class="vb ex"><span class="k">경험치</span><i class="trk"><i style="width:${xp}%"></i><em class="bv">${a.lv >= cap ? '상한' : fmt(Math.floor(a.xp)) + '/' + fmt(Math.round(need))}</em></i></div></div>`; return `<div class="hm"><div class="vb hp"><span class="k">체력</span><i class="trk"><i></i></i><b>${hp}</b></div><div class="vb mp"><span class="k">마력</span><i class="trk"><i></i></i><b>${mp}</b></div></div>`; })()}
@@ -1441,7 +1486,7 @@
         <div class="ux-h">달성한 칭호 <small>칭호 규칙은 준비 중</small></div><div class="tchips"><span class="tchip${on < 0 ? ' on' : ''}" title="처음부터 (기본 칭호)"><b>신입</b><em>효과 없음</em></span>${got.map(k => chip(k, true)).join('')}</div>
         <div class="ux-h">아직 못 얻은 칭호</div><div class="tchips">${TITLE_CAT.map((_, k) => k).filter(k => !got.includes(k)).map(k => chip(k, false)).join('')}</div></div>`;
     }
-    else if (advTab === 'career') h += `<div class="av-tb${advFlip ? ' flip' : ''}"><div class="ux-h">경력 <small>의뢰 성공 ${a.done}회</small></div><ul class="career">${a.career.slice().reverse().map(c => `<li><span class="w">${Gm.dateLabel(c.week)}</span>${c.text}</li>`).join('')}</ul></div>`;
+    else if (advTab === 'career') h += `<div class="av-tb${advFlip ? ' flip' : ''}"><div class="ux-h">경력 <small>의뢰 성공 ${a.done}회</small></div><ul class="career">${a.career.slice().reverse().map(c => `<li${c.pal ? ' class="pal"' : ''}><span class="w">${Gm.dateLabel(c.week)}</span>${c.pal ? '<span>' + c.text.replace('♥', '<b class="ht">♥</b>') + '</span>' : c.text}</li>`).join('')}</ul></div>`;
     advFlip = false;
     return h + '</div>';
   }
@@ -1475,7 +1520,7 @@
     const p = ps.find(x => x.id === promoSel), a = s.advs.find(x => x.id === p.id);
     const tier = Gm.attachTier(a), chance = Math.min(1, [0.40, 0.65, 0.90, 1.00][tier] * (p.to === 2 ? 1.2 : 0.9) + (Gm.upg(s, '관리소') ? (s.cfg.promo.upAccept || 0.1) : 0));   // game_core decidePromotion 과 같은 식
     // 머리
-    let h = `<div class="pm-top"><div class="pm-head"><div class="ux-portrait sm"><i style="${faceStyle(a, 104, 260, 60)}"></i></div><div class="who">
+    let h = `<div class="pm-top"><div class="pm-head"><div class="ux-portrait sm"><i style="${faceStyle(a, 104, 260, 60)}"></i>${buffIco(a, 2)}</div><div class="who">
       <div class="nm">${a.name} ${badge(a.grade)}<span class="cls">${STAGE[a.stage]} ${a.cls} · Lv ${a.lv}</span><span class="ux-tag town">${p.to}차 전직 제안</span></div>
       <div class="pm-bar"><em>애착</em><div class="ux-bar"><i style="width:${Math.min(100, a.attach)}%"></i></div><span><b>${Math.round(a.attach)}</b> ${ATT_NAME[tier]}</span></div>
       <div class="pm-bar"><em>수락 확률</em><div class="ux-bar blue"><i style="width:${chance * 100}%"></i></div><span><b>약 ${Math.round(chance * 100)}%</b></span></div></div></div>`;
@@ -1564,7 +1609,7 @@
     주점: '출발 전 식사로 능력치가 오르고, 식사 수입이 들어옵니다.', 판매창구: '의뢰에서 얻은 소재를 되팔아 수입을 얻습니다.',
     관리소: '2차 전직을 할 수 있게 됩니다.', 의무실: '부상 회복이 빨라지고, 사망 확률이 줄어듭니다.',
     집무실: '리퀘스트에 모험가를 지명해 보내고, 계약 모험가와 계약합니다.',   // 2026-11-19 옛 문구("메인·서브 퀘스트는 아직 게임에 없음") 바로잡음 훈련장: '힘·민첩·기교를 훈련합니다. D → C 승급 조건.', 창고: '소재를 보관합니다.',
-    추모실: '떠난 모험가와 가문의 기록을 남깁니다.', 정보실: '예상 성공률이 정확해집니다.', 도서관: '지력·정신을 훈련합니다.',
+    추모실: '떠난 모험가와 가문의 기록을 남깁니다.', 정보실: '예상 성공률 · 승산이 정확해집니다.', 도서관: '지력·정신을 훈련합니다.',
     해체장: '원재료를 가공해 상위 레시피를 엽니다. B → A 승급 조건.', 휴게실: '모험가의 애착이 더 빨리 오릅니다.', '명예의 전당': '명성이 오르고 3차 직업 모험가를 기록합니다. A → S 승급 조건.'
   };
   const FAC_READY = { 게시판: 1, 접수대: 1, 주점: 1, 판매창구: 1, 관리소: 1, 의무실: 1, 집무실: 1 };   // 집무실: 2026-11-12 F급으로 지을 수 있게 (지명 기능은 퀘스트 구현 때)
@@ -1766,12 +1811,13 @@
     let menu = '';
     for (let g = 0; g <= top; g++) {
       const hid = d => (kAnim && kAnim.r.dish && kAnim.r.dish.name === d.name) || kHide === d.name;   // 연출 중에는 새 요리를 아직 숨김
-      const ds = Gm.DISH.filter(d => d.g === g), got = ds.filter(d => s.dishes[d.name] && !hid(d)).length; if (!ds.length) continue;
+      const ds = Gm.DISH.filter(d => d.g === g && (!d.dungeon || s.dishes[d.name])), got = ds.filter(d => s.dishes[d.name] && !hid(d)).length; if (!ds.length) continue;
       const bump = kFlip && ds.some(d => d.name === kFlip);
       menu += `<div class="kgrade">${badge(g)}<b>${GR[g]}급 요리</b><span class="ux-muted">${got} / ${ds.length} 발견</span>${got && !s.cfg.econ.mealMode ? `<span class="ux-tag town ${bump ? 'bump' : ''}">식사 효과 +${Math.round(perDish * got * 10) / 10}%</span>` : ''}</div><div class="kmenu">`;
       for (const d of ds) {
         const on = !!s.dishes[d.name] && !hid(d);
-        const back = `<div class="kdish off"><span class="pic unk">${d.icon ? `<img src="assets/${d.icon}" alt="">` : ''}</span><div><b>???</b><div class="rc ux-muted">아직 모르는 요리</div></div></div>`;
+        const hs = (s.hints || {})[d.name] || 0, hl = hs ? (s.hintLog || []).find(h => h.dish === d.name && h.stage === hs) : null;   // 2026-11-20 식당 A안: 들은 소문 + 단계 점
+        const back = `<div class="kdish off"><span class="pic unk">${d.icon ? `<img src="assets/${d.icon}" alt="">` : ''}</span><div><b>???</b>${hl ? `<div class="rc rum" title="모험가들이 수다 중에 흘린 소문 (${hs}/3)"><em>소문</em>${esc(hl.text)} <u>${'●'.repeat(hs)}${'○'.repeat(3 - hs)}</u></div>` : `<div class="rc ux-muted">아직 모르는 요리</div>`}</div></div>`;
         if (on && kFlip === d.name) menu += `<div class="kflip"><div class="kin"><div class="kface">${dishFront(d)}</div><div class="kface bk">${back}</div></div></div>`;   // 뒤집히며 공개
         else menu += on ? dishFront(d) : back;
       }
@@ -1791,7 +1837,7 @@
   // 길드 기록: 월 단위 카드(머리 = 그 달 결산) · 종류 아이콘 · 필터. 'sys'(버튼 반응)·'debug'는 기록에서 숨김
   const LK = {   // 종류 → [아이콘 글자, 이름, 필터 묶음]
     success: ['✓', '의뢰 성공', 'q'], fail: ['✕', '의뢰 실패', 'q'], withdraw: ['⊘', '의뢰 철회', 'q'], expire: ['⌛', '의뢰 만료', 'q'], depart: ['➜', '출발', 'q'],
-    death: ['☠', '사망', 'a'], injury: ['✚', '부상', 'a'], leave: ['↩', '떠남', 'a'], arrive: ['☺', '새 모험가', 'a'], grow: ['▲', '성장', 'a'], promo: ['★', '전직', 'a'],
+    death: ['☠', '사망', 'a'], injury: ['✚', '부상', 'a'], leave: ['↩', '떠남', 'a'], arrive: ['☺', '새 모험가', 'a'], grow: ['▲', '성장', 'a'], promo: ['★', '전직', 'a'], quirk: ['♣', '버릇', 'a'],
     unlock: ['◆', '발견', 'g'], build: ['⌂', '건설', 'g'], guild: ['⚑', '길드', 'g'], info: ['•', '기록', 'g'], warn: ['!', '알림', 'g']
   };
   const LF = [['all', '전체'], ['q', '의뢰'], ['a', '모험가'], ['g', '길드'], ['imp', '중요']], LIMP = { death: 1, injury: 1, leave: 1 }, isImp = e => LIMP[e.kind] || (e.kind === 'promo' && (e.done || /전직했습니다/.test(e.text)));   // 중요 = 사망·부상·떠남·실제 전직 (제안·거절·보류 제외)
@@ -2086,16 +2132,79 @@
 
   // ---------- 리나 대화 (M2-11) ----------
   const DLG_WAIT = 1.0; // 하단 HUD가 다 내려간 뒤(초) 대사창이 나타난다
-  const Dlg = { open: false, lines: [], cur: null, shown: 0, t: 0, hold: 0, wait: 0 };
+  const Dlg = { open: false, lines: [], cur: null, shown: 0, t: 0, hold: 0, wait: 0, gap: 0 };
+  // 2026-11-19 사용자: 리퀘스트 대사가 이어서 오면 한 대화처럼 보임 → UI.say 한 번 = 한 장면. 앞 장면이 끝나면 대화창을 닫고 HUD가 돌아온 뒤(DLG_GAP초)
+  //   다음 장면을 다시 「HUD 빠짐 → 대화 → 대화 끝 → HUD 원위치」 순서로 시작. 장면 사이는 {brk} 줄로 표시
+  const DLG_GAP = 2.2;   // HUD가 원위치로 돌아오는 시간(지연 0.3 + 0.9초) + 약 1초 쉼
   // 대화 장면 (data/dialog.csv): 장면 이름과 {변수} 값으로 [{face, text}] 를 만든다
   UI.lines = function (id, vars) {
     const D = (root.GAME_DATA && root.GAME_DATA.dialog) || {};
     const josaFill = (k, sfx, v) => { if (!sfx) return v; const [a, b] = sfx.split('/'); const c = String(v).charCodeAt(String(v).length - 1); const bat = c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 !== 0; return v + (bat ? a : b); };   // {cls:이에요/예요} → 받침이면 앞, 없으면 뒤 (2026-11-16 대사 검수 D12 · T175)
     return (D[id] || []).map(l => ({ face: l.face, text: l.text.replace(/\{(\w+)(?::([^}]+))?\}/g, (m0, k, sfx) => vars && vars[k] != null ? josaFill(k, sfx, vars[k]) : m0) }));
   };
+  // ---------- 계약 흐름 (2026-11-19 사용자 결정 10 ② ⑤ ⑥ · 시안 docs/design/mockups/test_1119/4 · 5) ----------
+  //   ⑤ 끝나기 2주 전(갱신할 수 있게 되는 주) 리나가 기록창에 알림 · ⑥ 계약이 끝나거나 갱신되면 결산 카드 (게임 game_core.js 의 s.ctDone)
+  function ctWatch() {
+    if (!s) return;
+    for (const a of s.advs) { const c = a.contract; if (!a.alive || !c || c.next || s.week !== c.end - 1 || c.warned === c.end) continue;
+      c.warned = c.end; UI.chat('리나', `마스터, ${a.name} 씨 계약이 2주 뒤에 끝나요. 갱신하시려면 모험가 장 「계약 제안」에서 조건을 정해 주세요.`, 'lina'); }
+    const q_ = s.ctDone || []; if (!q_.length || document.querySelector('.ctEnd, .gupG') || UI.dlgBusy() || popup) return;   // 대화 · 창이 끝난 뒤 다음 주에 띄움
+    const r = q_.shift(), guild = r.fee - r.pay - r.sup, rec = r.done + r.fail;
+    const sp0 = curSp; hooks.setSpeed && hooks.setSpeed(0);
+    const m = document.createElement('div'); m.className = 'ctEnd gupG';
+    m.innerHTML = `<div class="gupG-card"><div class="sub">${r.weeks}주 계약이 ${r.how === 'renew' ? '끝나고 새 계약으로 이어져요' : '끝났어요'} (${r.start}주 ~ ${r.end}주)</div><h2 style="font-size:30px">${esc(r.name)} · 계약 결산</h2>
+      <div class="ctR"><span>함께 한 의뢰</span><span>성공 ${r.done} · 실패 ${r.fail} · 지명 ${r.nom}번</span><b>${rec}건</b></div>
+      <div class="ctR"><span>${esc(r.name)} 수입</span><span>의뢰 실수령 ${fmt(r.net)}G + 월 보수 ${fmt(r.pay)}G + 지원 ${fmt(r.sup)}G</span><b>${fmt(r.net + r.pay + r.sup)}G</b></div>
+      <div class="ctR"><span>길드 몫</span><span>계약 수수료 ${fmt(r.fee)}G − 보수 ${fmt(r.pay)}G − 지원 ${fmt(r.sup)}G</span><b class="${guild < 0 ? 'neg' : ''}">${guild >= 0 ? '+' : ''}${fmt(guild)}G</b></div>
+      ${r.att0 != null ? `<div class="ctR"><span>애착</span><span>${attStage(r.att0)} → ${attStage(r.att1)}</span><b>${r.att0} → ${r.att1}</b></div>` : ''}
+      <div class="lina"><i class="f"></i><span><b>리나</b> “${r.how === 'renew' ? `${esc(r.name)} 씨, 다음 계약도 잘 부탁해요!` : guild >= 0 ? `${esc(r.name)} 씨, 이번 계약 동안 정말 든든했어요.` : `${esc(r.name)} 씨 덕분에 의뢰는 잘 됐지만, 보수가 수수료보다 많았어요.`}”</span></div>
+      <button class="ux-btn primary" data-ct="ok">확인</button>${r.how === 'end' && s.advs.some(a => a.id === r.id && a.alive) ? ' <button class="ux-btn" data-ct="re">다시 계약 제안</button>' : ''}</div>`;
+    stage.ui.appendChild(m); requestAnimationFrame(() => m.classList.add('on'));
+    const close = () => { m.classList.remove('on'); setTimeout(() => m.remove(), 300); hooks.setSpeed && hooks.setSpeed(sp0 || 1); };
+    m.querySelector('[data-ct="ok"]').onclick = close;
+    const re = m.querySelector('[data-ct="re"]'); if (re) re.onclick = () => { close(); openAdv = r.id; UI.open('advs'); setTimeout(() => { openAdv = r.id; const t = document.querySelector('[data-sub="advs:contract"]'); if (t) t.click(); }, 50); };
+  }
+  const attStage = v => v >= 90 ? '토박이' : v >= 60 ? '동반자' : v >= 30 ? '새내기' : '방랑자';
+  { const st_ = document.createElement('style'); st_.textContent = `.ctEnd .ctR{display:grid;grid-template-columns:120px 1fr 92px;gap:8px;text-align:left;font-size:16px;padding:6px 4px;border-bottom:1px dashed rgba(122,74,40,.25)}.ctEnd .ctR b{text-align:right}.ctEnd .ctR b.neg{color:#b5302a}.ctEnd .ctR span:nth-child(2){color:#6b4a2e;font-size:14.5px}
+.bk-av .ct-bar{display:block;width:120px;height:5px;margin-top:3px;border-radius:3px;background:rgba(110,72,36,.2);overflow:hidden}.bk-av .ct-bar i{display:block;height:100%;background:#2f6a52}.bk-av .ct-bar.end i{background:#c9963e}`; document.head.appendChild(st_); }
+  // ---------- 길드 승급 카드 (2026-11-19 사용자 결정 17 · 시안 docs/design/mockups/test_1119/6_grade.png) ----------
+  //   침공 결과 창 「확인」 뒤 invasion.js가 부름. 배지 바뀜 · 리나 한마디 · 새로 열린 것 · 보상 → 「확인」을 누르면 배지가 왼쪽 위 등급 자리로 날아감. 그동안 시간 멈춤
+  //   팡파르: 게임에 효과음 파일이 아직 없어 넣지 않음 (효과음이 생기면 여기서 재생)
+  const GUP_LINA = ['', '해냈어요, 마스터! 이제 우리 길드도 어엿한 E급이에요!', '마스터, D급이래요! 마을 사람들이 우리 얘기만 해요!', 'C급… 이제 왕국에서도 우리 길드를 알아요!', 'B급이에요! 꿈만 같아요, 마스터.', 'A급… 마스터, 우리 정말 대단해요!', 'S급! 세상에서 제일 이름난 길드가 됐어요!'];
+  UI.gradeUp = function (g) {
+    if (!s || g < 1 || (s.gupShown || 0) >= g) return; s.gupShown = g; const old = g - 1, cap0 = Gm.advCap(Object.assign({}, s, { grade: old })), cap1 = Gm.advCap(s), R = (s.main && s.main.result) || {};
+    const facs = Object.keys(Gm.FAC_COST).filter(f => Gm.FAC_COST[f] === g).map(f => FAC_LABEL[f] || FACNAME[f] || f);
+    const list = [...facs.map(f => `<li><b>새로 열림</b> · ${esc(f)} 건설</li>`), cap1 > cap0 ? `<li><b>늘어남</b> · 모험가 정원 ${cap0} → ${cap1}명</li>` : '', `<li><b>새로 열림</b> · ${GR[g]}급 의뢰 · ${GR[g]}급 장비</li>`,
+      R.gold || R.fame ? `<li><b>보상</b> · ${R.gold ? fmt(R.gold) + 'G' : ''}${R.gold && R.fame ? ' · ' : ''}${R.fame ? '명성 +' + R.fame : ''}</li>` : ''].join('');
+    const sp0 = curSp; hooks.setSpeed && hooks.setSpeed(0);
+    const m = document.createElement('div'); m.className = 'gupG';
+    m.innerHTML = `<div class="gupG-card"><div class="sub">영주님이 길드를 인정했습니다</div><h2>${GR[g]}급 길드 승급!</h2>
+      <div class="bds"><i class="bd old" style="background-image:url(assets/ui/hud/badge_${GR[old]}.png)"></i><span class="ar">➜</span><i class="bd new" style="background-image:url(assets/ui/hud/badge_${GR[g]}.png)"></i></div>
+      <div class="lina"><i class="f"></i><span><b>리나</b> “${esc(GUP_LINA[g] || GUP_LINA[1])}”</span></div><ul>${list}</ul><button class="ux-btn primary" data-gup="ok">확인</button></div>`;
+    stage.ui.appendChild(m); requestAnimationFrame(() => m.classList.add('on'));
+    m.querySelector('[data-gup]').onclick = () => {
+      const bd = m.querySelector('.bd.new'), to = q('#hGrade'), ur = stage.ui.getBoundingClientRect(), k = ur.width / 1920 || 1;
+      if (bd && to) { const a = bd.getBoundingClientRect(), b = to.getBoundingClientRect(), fly = bd.cloneNode(); fly.className = 'gupG-fly'; fly.style.cssText += `;left:${(a.left - ur.left) / k}px;top:${(a.top - ur.top) / k}px;width:${a.width / k}px;height:${a.height / k}px`;
+        stage.ui.appendChild(fly); requestAnimationFrame(() => { fly.style.left = (b.left - ur.left) / k + 'px'; fly.style.top = (b.top - ur.top) / k + 'px'; fly.style.width = b.width / k + 'px'; fly.style.height = b.height / k + 'px'; });
+        setTimeout(() => { fly.remove(); to.classList.add('gupG-pop'); setTimeout(() => to.classList.remove('gupG-pop'), 700); UI.hud(); }, 750); }
+      m.classList.remove('on'); setTimeout(() => m.remove(), 300); hooks.setSpeed && hooks.setSpeed(sp0 || 1);
+    };
+  };
+  { const st_ = document.createElement('style'); st_.textContent = `.gupG{position:absolute;inset:0;z-index:45;background:rgba(18,10,4,.6);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}.gupG.on{opacity:1}
+.gupG-card{width:640px;background:#fbf3e2;border:3px solid #b8862e;border-radius:18px;padding:26px 34px;color:#3b2a1e;box-shadow:0 12px 40px rgba(0,0,0,.4);text-align:center;transform:scale(.9);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}.gupG.on .gupG-card{transform:none}
+.gupG-card h2{margin:6px 0 4px;font-size:36px;letter-spacing:2px}.gupG-card .sub{color:#8a6a4a;font-size:15px}
+.gupG-card .bds{display:flex;align-items:center;justify-content:center;gap:24px;margin:14px 0 6px}.gupG-card .bd{width:100px;height:100px;background:center/contain no-repeat}.gupG-card .bd.old{opacity:.4;transform:scale(.8)}
+.gupG-card .bd.new{filter:drop-shadow(0 0 14px #ffd75e);animation:gupGin .9s .3s both}.gupG-card .ar{font-size:30px;color:#b8862e}
+@keyframes gupGin{0%{transform:scale(0) rotate(-180deg);opacity:0}70%{transform:scale(1.2)}100%{transform:none;opacity:1}}
+.gupG-card .lina{display:flex;gap:12px;align-items:center;text-align:left;background:#fff;border-radius:12px;padding:10px 14px;margin:12px 0;font-size:16px}
+.gupG-card .lina .f{width:60px;height:60px;border-radius:50%;flex:none;border:2px solid #d9a066;background:url(assets/npc/lina_face_smile.png) -24px -22px/auto 130px no-repeat #f1d9c0}
+.gupG-card ul{text-align:left;margin:10px 0 14px;padding:0;list-style:none}.gupG-card li{padding:6px 10px;border-bottom:1px dashed rgba(122,74,40,.3);font-size:17px}.gupG-card li b{color:#2f6a52}
+.gupG-fly{position:absolute;z-index:46;background:center/contain no-repeat;transition:all .7s cubic-bezier(.5,0,.3,1)}.gupG-pop{animation:gupGpop .7s}@keyframes gupGpop{40%{transform:scale(1.5);filter:drop-shadow(0 0 10px #ffd75e)}}`; document.head.appendChild(st_); }
   UI.say = function (lines) { // [{face:'smile', text:'…'}, …]
+    if (!lines || !lines.length) return;
+    if (Dlg.cur || Dlg.lines.length || Dlg.gap > 0) Dlg.lines.push({ brk: true });   // 앞 장면이 아직 있으면 장면 나눔
     Dlg.lines.push(...lines);
-    if (!Dlg.open) next();
+    if (!Dlg.open && !(Dlg.gap > 0)) next();
   };
   // 리나 초상: 눈 뜬 상반신 + 얼굴 조각(뜸·반쯤·감김)을 캔버스에 겹쳐 그린다. 그림이 없으면 예전 lina_face_* 한 장으로 대신한다.
   const BLINK = { rows: ['smile', 'serious', 'laugh', 'worried', 'awkward', 'surprised'], x: 117, y: 116, w: 97, h: 93 };
@@ -2104,9 +2213,10 @@
   // 2026-11-16: 의뢰인 NPC 8명도 같은 방식 (root.NPC_PORTRAITS). Dlg.who = 'lina' 또는 NPC 이름
   const okImg = k => { const a = root.Assets.items; return !!(a[k] && a[k].ok); };
   const npcOf = name => { const P = root.NPC_PORTRAITS && root.NPC_PORTRAITS[name]; return P && okImg(P.key + '_stand') && okImg(P.key + '_blink') ? P : null; };
-  const standOK = () => Dlg.who && Dlg.who !== 'lina' ? !!npcOf(Dlg.who) : okImg('lina_stand') && okImg('lina_blink');
+  const standOK = () => Dlg.who && String(Dlg.who).startsWith('adv:') ? false : Dlg.who && Dlg.who !== 'lina' ? !!npcOf(Dlg.who) : okImg('lina_stand') && okImg('lina_blink');
   function drawStand() {
     const a = root.Assets.items, c = q('#dlgStand'), g = c.getContext('2d');
+    if (Dlg.who && String(Dlg.who).startsWith('adv:')) return;   // 모험가 상반신은 setAdv 가 그림
     if (Dlg.who && Dlg.who !== 'lina') {   // 의뢰인: 표정 1가지(눈 조각 1줄)
       const P = npcOf(Dlg.who); if (!P) return; const [x, y, w, h] = P.eye;
       if (c.width !== P.w || c.height !== P.h) { c.width = P.w; c.height = P.h; }
@@ -2117,6 +2227,16 @@
     const r = Math.max(0, BLINK.rows.indexOf(Dlg.expr));
     g.clearRect(0, 0, c.width, c.height); g.drawImage(a.lina_stand.img, 0, 0);
     g.drawImage(a.lina_blink.img, Dlg.bs * BLINK.w, r * BLINK.h, BLINK.w, BLINK.h, BLINK.x, BLINK.y, BLINK.w, BLINK.h);
+  }
+  // 2026-11-19 모험가 대사 일러스트 (사용자: C 상반신) — assets/chr/bust/{직업}_{f|m}.webp (높이 640, 원본 archive/art_source/illustrations, 배경 지움). 눈 깜빡임 없음
+  const BUST = {}, bustKey = a => ['warrior', 'archer', 'mage', 'cleric', 'rogue'][a.core] + '_' + (a.id % 2 ? 'm' : 'f');   // 성별 = 얼굴 그림(faceStyle)과 같은 규칙
+  const bustImg = a => { const k = bustKey(a); if (!BUST[k]) { const im = new Image(); im.src = 'assets/chr/bust/' + k + '.webp'; BUST[k] = im; } return BUST[k]; };
+  function setAdv(a) {
+    if (!a || a.core == null) return false; const im = bustImg(a);
+    const draw = () => { if (Dlg.who !== 'adv:' + a.id) return; const c = q('#dlgStand'), g = c.getContext('2d'); if (c.width !== im.naturalWidth || c.height !== im.naturalHeight) { c.width = im.naturalWidth; c.height = im.naturalHeight; } g.clearRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0); };
+    Dlg.who = 'adv:' + a.id; Dlg.expr = 'adv'; q('#dlgStand').hidden = false; q('#dlgFace').hidden = true;
+    if (im.complete && im.naturalWidth) draw(); else { q('#dlgStand').getContext('2d').clearRect(0, 0, 9999, 9999); im.onload = draw; }
+    return true;
   }
   function setNpc(name) {   // 의뢰인 초상으로 바꿈 (그림이 없으면 false)
     if (!npcOf(name)) return false;
@@ -2144,14 +2264,15 @@
   }
   function next() {
     let L = Dlg.lines.shift();
-    while (L && L.fn) { try { L.fn(); } catch (e) { console.error(e); } L = Dlg.lines.shift(); }   // 2026-11-18 튜토리얼: {fn} 줄 = 대사 사이에서 실행할 일 (대사창에는 안 나옴)
+    while (L && (L.fn || (L.brk && !Dlg.cur))) { if (L.fn) { try { L.fn(); } catch (e) { console.error(e); } } L = Dlg.lines.shift(); }   // 2026-11-18 튜토리얼: {fn} 줄 = 대사 사이에서 실행할 일 (대사창에는 안 나옴) · 장면 첫머리의 {brk}는 건너뜀
+    if (L && L.brk) { Dlg.gap = DLG_GAP; L = null; }   // 장면 끝: 대화창을 닫고 HUD가 돌아올 때까지 쉼 (남은 줄은 그대로)
     if (!L) { Dlg.open = false; Dlg.cur = null; Dlg.wait = 0; q('#dlg').classList.remove('open'); q('#logBox').classList.remove('hide'); stage.ui.classList.remove('dlgOn'); root.Lina.chatting = false; return; }
     Dlg.open = true; Dlg.cur = L; Dlg.shown = 0; Dlg.t = 0; Dlg.hold = 0;
     const first = !stage.ui.classList.contains('dlgOn');
     if (first) { Dlg.wait = DLG_WAIT; Dlg.t = 0; } else q('#dlg').classList.add('open');
     q('#logBox').classList.add('hide'); stage.ui.classList.add('dlgOn');
     const spk = L.name || '리나'; q('#dlgName').textContent = spk; UI.chat(spk, L.text, spk === '리나' ? 'lina' : null, L.adv || null);   // 2026-11-16: 리나가 아닌 화자(의뢰인 · 모험가)는 이름표만 (NPC 초상은 그림이 들어오면 연결)
-    const npc = spk !== '리나' && setNpc(spk);   // 의뢰인 8명은 초상 + 눈 깜빡임 (2026-11-16)
+    const npc = spk !== '리나' && (setNpc(spk) || setAdv(L.adv));   // 의뢰인 8명은 초상 + 눈 깜빡임 (2026-11-16) · 모험가는 상반신 일러스트 (2026-11-19)
     if (spk === '리나') setFace(L.face); else if (!npc) { Dlg.who = null; q('#dlgStand').hidden = true; q('#dlgFace').hidden = true; }
     q('#dlg').classList.toggle('noface', spk !== '리나' && !npc);
     q('#dlgText').textContent = ''; q('#dlgNext').hidden = true;
@@ -2162,6 +2283,7 @@
     else next();
   };
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
+    if (!Dlg.cur && Dlg.gap > 0) { if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
     if (rqdQ.length && !rqdOn && !Dlg.cur) rqdNext();   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
     if (!Dlg.cur) return;
     blinkTick(dt);
@@ -2182,7 +2304,8 @@
     else out.push(...UI.lines('monthly_normal', v));
     UI.say(out);
   };
-  UI.gradeUp = g => UI.say(UI.lines('gradeup', { grade: GR[g] }));
+  // 2026-11-19: 길드 승급은 위의 승급 카드(UI.gradeUp)로 바뀜. 예전 리나 대화(dialog.csv gradeup)는 카드 안 리나 한마디로 대신함
+  // UI.gradeUp = g => UI.say(UI.lines('gradeup', { grade: GR[g] }));
 
   root.UI = UI;
 })(this);

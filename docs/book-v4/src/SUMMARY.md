@@ -79,3 +79,4 @@
 - [부록 C. 결정 대기 목록](appendix/pending.md)
 - [부록 D. 원본 문서 지도](appendix/sources.md)
 - [부록 E. 아이디어](appendix/ideas.md)
+- [부록 E. 아이디어 메모 (2026-11-19)](appendix/ideas_2026-11-19.md)

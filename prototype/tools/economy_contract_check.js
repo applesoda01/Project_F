@@ -108,7 +108,7 @@ const CASES = [
     const g = newRun(7000, 4), R = Gm.reqOf(g), a = g.advs.find(x => x.alive);
     R.open.push({ id: 'chkN2', key: 'f_req_bat01', state: 'open', stage: 1, who: null, party: [], refused: {}, at: g.week, isNew: true, fails: 0 });
     // 지명은 다른 조건(★ 능력 등)으로도 막힐 수 있어, "금고 적자" 이유로 막혔는지를 본다. 지명은 집무실이 있어야 열림
-    const try3 = gold => { const h = reload(g); h.gold = gold; const b = Gm.build(h, '집무실'); h.built['집무실'] = true; const r = Gm.reqNominate(h, 'chkN2', a.id) || {};
+    const try3 = gold => { const h = reload(g); h.gold = gold; delete h.built['집무실']; const b = Gm.build(h, '집무실');   /* 2026-11-19 측정 판은 집무실이 있는 채로 시작 → 건설 시험을 위해 지움 */ h.built['집무실'] = true; const r = Gm.reqNominate(h, 'chkN2', a.id) || {};
       return [b, Gm.upgrade(h, '게시판'), !/적자/.test(r.why || '')]; };
     const neg = try3(-1), rich = try3(100000);
     return { ok: neg.every(x => x === false) && rich.every(x => x === true), detail: `-1G: ${neg.join(' · ')} / 100,000G: ${rich.join(' · ')} (집무실 건설 · 게시판 업그레이드 · 지명이 적자 이유로 안 막힘)` };
@@ -119,7 +119,7 @@ const CASES = [
     return { ok: /적자/.test(neg) && !/적자/.test(zero), detail: `-1G: "${neg}" / 0G: "${zero || '제안 가능'}"` };
   } },
   { id: 'K1', name: '계약 제안 실패 사례: 집무실 없음 · 범위 밖 · 정원 초과 · 중복 체결 · 같은 조건 같은 답', need: ['contractWhy', 'contractTermsWhy', 'contractEval', 'contractPropose'], src: 'E2-1 · 결정 2 · 4 · 5', run() {
-    const g = newRun(7000, 6), a = cand(g), why0 = Gm.contractWhy(g, a) || '';
+    const g = newRun(7000, 6), a = cand(g); delete g.built['집무실']; const why0 = Gm.contractWhy(g, a) || ''; g.built['집무실'] = true;   /* 측정 판은 집무실이 있는 채로 시작 → '집무실 없음'만 잠깐 지워서 봄 */
     const bad = [{ weeks: 10 }, { rate: 0.35 }, { pay: 7 }, { pay: 65 }, { sup: 35 }].map(t => Gm.contractTermsWhy(g, Object.assign(Gm.contractDefault(g), t)));
     const okT = Gm.contractTermsWhy(g, Gm.contractDefault(g));
     sign(g, a); const b = cand(g, a), whyFull = Gm.contractWhy(g, b) || '', whyDup = Gm.contractWhy(g, a) || '';
@@ -156,9 +156,9 @@ const CASES = [
     return { ok: ra === 0.25 && rb === Gm.questFee(g, q) && sum(Array.from(sp.net)) + sp.guild === 101,
       detail: `계약 ${Math.round(ra * 100)}% · 자유 ${Math.round(rb * 100)}% → 101G = 실수령 ${Array.from(sp.net).join(' · ')} + 길드 ${sp.guild}` };
   } },
-  { id: 'G1', name: 'V2 설정을 모두 예전 값으로 돌리면 관문 1 = 557G · 95.6% (11-18 560G · 95.5%)', need: [], src: 'E1-7 · 결정표 7장', run() {
-    const r = gate(c => { c.econ.feePerInfo = 0.02; c.econ.subsidyMode = 0; c.econ.resaleRate = 0.08; c.econ.matBuyRate = 0; c.econ.restK = 0; c.contract.slots = 0; c.adv.zeroFameVisit = 0; c.adv.founderMix = 0; c.econ.drawMode = 0; c.late.on = 0; if (c.qlv) c.qlv.on = 0; c.adv.fameStep = 5; c.adv.fameSkip = 0; c.adv.founderWarrior = 0; c.gear.pieceBuy = 0; c.gear.needSmith = 0; c.econ.mealMode = 0; c.econ.mealCook = 0; c.econ.orderMode = 0; c.econ.mktOn = 0; c.econ.popOn = 0; });   // 2026-11-19 대장간 전 구매 없음도 끔 · V4 1단계(식당 재료 소모 · 상시 발주)도 끔   // 2026-11-17 cd248c4: 의뢰 0건 판 대책 두 가지도 끔
-    return { ok: r.G === 557 && r.S === '95.6', detail: `게임 ${r.G}G · ${r.S}% (eb10e81 559G에서 −1G는 정수 배분 버림. 2026-11-18 대장간 리퀘스트 조건 완화(데이터)로 558 → 560G. 2026-11-19 한 모험가가 두 리퀘스트에 들어가지 않게 막아 560 → 557G. 끈 것: 정보실 +2%p 복원 · 매달 보조금 · 자동 차익 8% · 매입 0 · 거름 0 · 계약 정원 0 · 의뢰 0건 대책 2가지)` };
+  { id: 'G1', name: 'V2 설정을 모두 예전 값으로 돌리면 관문 1 = 551G · 95.2% (11-19 630G · 95.1%)', need: [], src: 'E1-7 · 결정표 7장', run() {
+    const r = gate(c => { c.econ.feePerInfo = 0.02; c.econ.subsidyMode = 0; c.econ.resaleRate = 0.08; c.econ.matBuyRate = 0; c.econ.restK = 0; c.contract.slots = 0; c.adv.zeroFameVisit = 0; c.adv.founderMix = 0; c.econ.drawMode = 0; c.late.on = 0; if (c.qlv) c.qlv.on = 0; c.adv.fameStep = 5; c.adv.fameSkip = 0; c.adv.founderWarrior = 0; c.gear.pieceBuy = 0; c.gear.needSmith = 0; c.econ.mealMode = 0; c.adv.relParty = 0; if (c.quirk) c.quirk.rate = 0; if (c.dungeon) c.dungeon.on = 0; Object.assign(c.econ, { feeOpt: [0.1, 0.15, 0.2], orderMax: 2, mealCook: 0, mktOn: 0, popOn: 0, gqOn: 0, carOn: 0, matBaseOn: 0, stapleGrade: -1, autoRareRate: 0 }); c.contract.minPay = [0, 0, 0, 0, 0, 0, 0]; c.contract.ratioMin = 0; /* 2026-11-20 main 병합: V4 시장 · 식당 · 길드 의뢰 · 상단도 끔 */ c.growth.gradeLv = [0, 5, 10, 18, 26, 35, 45]; c.growth.gradeAch = [0, 5, 5, 7, 7, 10, 10]; });   // 2026-11-20 버릇 · 던전도 끔 · 승급 조건도 예전 값(E급 Lv5 · 실적 5)   // 2026-11-19 대장간 전 구매 없음도 끔   // 2026-11-17 cd248c4: 의뢰 0건 판 대책 두 가지도 끔
+    return { ok: r.G === 551 && r.S === '95.2', detail: `게임 ${r.G}G · ${r.S}% (eb10e81 559G에서 −1G는 정수 배분 버림. 2026-11-18 대장간 리퀘스트 조건 완화(데이터)로 558 → 560G. 2026-11-19 한 모험가가 두 리퀘스트에 들어가지 않게 막아 560 → 557G. 2026-11-19 게시판에 같은 의뢰가 두 장 붙지 않게 막아 557 → 562G. 2026-11-19 리퀘스트 「들개 떼 우두머리」(2명 필수) 추가로 562 → 560G, 초반 보호 구간에 맞춰 들개 4 → 2로 560 → 553G. 레벨 곡선 160 × Lv · 침공 적 × 0.6으로 553 → 567G · 94.6%. 보호 구간 혼자 판 · 파티 판으로 567 → 619G · 95.2%. 측정 판 시작에 집무실(튜토리얼 상태)로 619 → 630G · 95.1%. 리퀘스트 10번 · 침공 적 × 0.8로 630 → 551G · 95.2%. 끈 것: 정보실 +2%p 복원 · 매달 보조금 · 자동 차익 8% · 매입 0 · 거름 0 · 계약 정원 0 · 의뢰 0건 대책 2가지)` };
   } },
   { id: 'G2', name: '지금 설정 관문 1 (기록용, 월 순이익 300~600G 안이면 통과)', need: [], src: '관문 1', run() {
     const r = gate(() => {});
