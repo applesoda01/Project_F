@@ -64,6 +64,15 @@
     for (const e of T.enemies || []) if (e.mon && !s.seenMons[e.mon]) { s.seenMons[e.mon] = s.week; log(s, `처음 보는 몬스터를 만났습니다: ${e.name || e.mon}`, 'unlock'); }
   }
   function log(s, text, kind, extra) { s.log.unshift(Object.assign({ week: s.week, text, kind: kind || 'info' }, extra || {})); if (s.log.length > 600) s.log.pop(); }   // 기록 600개 = 약 2년치 (길드 기록 팝업)
+  // 2026-11-22 야간 작업 4 (사용자 A안): 실패 기록에 간단한 원인 + 손실 (기록 글만, 규칙은 그대로)
+  function failWhy(F) {
+    if (!F || !F.enemies || !F.enemies.length) return '일을 끝내지 못하고 돌아왔습니다.';
+    if (F.units && F.units.length && F.units.every(u => u.down)) return '파티가 모두 쓰러졌습니다.';
+    const n = {}; for (const e of F.enemies) n[e.name] = (n[e.name] || 0) + 1;
+    const top = Object.keys(n).sort((a, b) => n[b] - n[a])[0], c = n[top];
+    return `${top}${c > 1 ? ` ${c}마리` : ''}${c > 1 ? '를' : J(top, '을', '를').slice(top.length)} 감당하지 못하고 물러났습니다.`;
+  }
+  const lossTxt = (dt, df) => { const L = []; dt = Math.round(dt); df = Math.round(df); if (dt > 0) L.push(`신뢰도 −${dt}`); if (df > 0) L.push(`명성 −${df}`); return L.length ? ' ' + L.join(' · ') : ''; };
   const effN = (s, f) => s.eff[f] || 0;
   // ---------- 버릇 (2026-11-20 야간 작업 · 규칙은 combat.js QK, 수치 balance.csv quirk, 글 data/quirks.csv) ----------
   const QKr = () => (CB && CB.QK) || null;
@@ -542,11 +551,13 @@
   // ---------- 튜토리얼 도우미 (2026-11-18, docs/design/튜토리얼.md) ----------
   function tutPost(s, tid) { for (let i = s.board.length - 1; i >= 0; i--) if (s.board[i].tid === tid) s.board.splice(i, 1); const q = makeQuest(s, 0, tid); tutEase(q); s.board.push(q); return q; }   // 같은 의뢰가 먼저 붙어 있으면 내리고 튜토리얼 의뢰로 바꿔 붙임 (2026-11-19)   // 정해진 의뢰를 게시판에 올림
   // 2026-11-19 첫 의뢰 쉽게: 원래 멧돼지 2마리면 Lv1 전사 혼자 300판 중 300판 짐 → 1마리 · 체력 50% · 공격 70% [임시] (300판: 첫 판에 무사히 이김 275판, 다시 굴려도 못 이긴 판 0)
-  function tutEase(q) { if (!q || !q.enemies || !q.enemies.length) return; q.enemies = [Object.assign({}, q.enemies[0], { hp: q.enemies[0].hp * 0.5, atk: q.enemies[0].atk * 0.7 })]; if (q.seen) q.seen = q.seen.slice(0, 1); }
+  function tutEase(q) { if (!q) return; q.tutorial = true; /* 2026-11-22 야간 작업 1 · 5: 첫 원정 짧게(tutLaunch) · 「연습」 표시용 */ if (!q.enemies || !q.enemies.length) return; q.enemies = [Object.assign({}, q.enemies[0], { hp: q.enemies[0].hp * 0.5, atk: q.enemies[0].atk * 0.7 })]; if (q.seen) q.seen = q.seen.slice(0, 1); }
   function tutLaunch(s, aid, qid) {   // 정해진 모험가를 정해진 의뢰로 바로 출발시킴 (강제)
     const a = s.advs.find(x => x.id === aid), q = s.board.find(x => x.id === qid); if (!a || !q || a.state !== 'town') return false;
     s.board.splice(s.board.indexOf(q), 1);
-    launchSure(s, q, [a]); return true;
+    launchSure(s, q, [a]);
+    { const x = s.active[s.active.length - 1]; if (x && q.tutorial) { x.start = s.week - 1; x.back = s.week; } }   // 2026-11-22 야간 작업 1: 주 넘김 차례상 back = 지금 주여야 다음 주 넘김에서 돌아옴 (전엔 2번째 주 넘김 = 약 65초)
+    return true;
   }
   // 첫 의뢰 · 튜토리얼 리퀘스트는 꼭 성공하고 다치지 않게: 결과가 나쁘면 출발을 되돌리고 다시 굴림 (40번 안에 안 되면 결과를 성공으로 고침)
   function launchSure(s, q, party) {
@@ -1047,9 +1058,10 @@
         if (hasDeco(s, 'locker')) { const T = QBYID[q.tid], b = T && (T.rewards || []).reduce((x, r) => (!x || r.p > x.p ? r : x), null); if (b) { s.mats[b.m] = (s.mats[b.m] || 0) + DV.mat; if (!s.knownMats[b.m]) { s.knownMats[b.m] = true; const m = MAT[b.m]; if (m) log(s, `처음 보는 소재를 얻었습니다: ${m.name}`, 'unlock'); } } }   // 사물함: 기본 소재 +1
         log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 성공했습니다.${q.x2 ? ' (×2 보상)' : ''} 길드 수입 ${Math.round(fee + resale)}G.`, 'success', { who: party.map(x => x.name) });
       } else {
+        const tr0 = s.trust, fa0 = s.fame || 0;
         s.stats.fail++; if (x.late) s.stats.late = (s.stats.late || 0) + 1; else { s.trust = Math.max(0, s.trust - (q.trustF != null ? q.trustF : s.cfg.quest.trustFail)); s.fame = Math.max(0, (s.fame || 0) - (q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g])); }   // 늦장 실패: 명성 · 신뢰 그대로 (결정 30)
         for (const a of party) { gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate * (QKr() ? QKr().xpMul(s.cfg.quirk, a, rivalHere(s, a)) : 1)); if (a.contract && x.start >= a.contract.start && x.start <= a.contract.end) ctLog(a.contract, 'fail'); }
-        log(s, x.late ? `${J(names(party), '이', '가')} 늦장을 부리다 ${qn(q)} 의뢰의 기한을 넘겼습니다. (명성 · 신뢰는 그대로)` : `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 실패했습니다.`, 'fail', { who: party.map(x => x.name) });
+        log(s, x.late ? `${J(names(party), '이', '가')} 늦장을 부리다 ${qn(q)} 의뢰의 기한을 넘겼습니다. (명성 · 신뢰도는 그대로)` : `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 실패했습니다. ${failWhy(x.fight)}${lossTxt(tr0 - s.trust, fa0 - (s.fame || 0))}`, 'fail', { who: party.map(x => x.name) });
       }
       for (const a of party) { a.state = 'town'; a.until = 0; }
       if (q.rq) reqReturn(s, x, ok, party);   // 리퀘스트(지명) 귀환: 보상 · 실패 처리
@@ -1356,7 +1368,7 @@
     const n = reqNeed(s, r);
     if (n.gold) { s.gold -= n.gold; s.month.build = (s.month.build || 0) - n.gold; (s.month.builds = s.month.builds || []).push({ f: '리퀘스트 「' + reqName(s, r) + '」', c: n.gold }); }   // 장부: 건설 · 설비 줄 (운영 순이익에는 넣지 않음)
     for (const [m, k] of Object.entries(n.mats)) s.mats[m] -= k;
-    if (d.type === 'town' && r.stage === 1) { r.stage = 2; reqLog(s, r, 'ok', `「${reqName(s, r)}」 첫 부탁을 들어주었습니다. 다음 부탁: ${d.cost.gold2}G`); return true; }
+    if (d.type === 'town' && r.stage === 1) { r.stage = 2; reqLog(s, r, 'ok', `「${reqName(s, r)}」 첫 단계를 들어주었습니다. 다음 단계: ${d.cost.gold2}G`); return true; }
     reqComplete(s, r, null); return true;
   }
   function reqRefuse(s, rid) {   // 마스터가 거절: 목록에서 빠지고 12주 뒤에 다시 올 수 있음
@@ -1478,7 +1490,7 @@
     const r = reqOf(s).open.find(y => y.id === x.q.rq); if (!r) return;
     if (ok) { reqComplete(s, r, party.filter(Boolean)); return; }
     r.state = 'open'; r.fails = (r.fails || 0) + 1; r.party = r.who != null ? [r.who] : []; delete r.qid;
-    reqLog(s, r, 'fail', `리퀘스트 「${reqName(s, r)}」에 실패했습니다. 다시 도전할 수 있습니다.`);
+    reqLog(s, r, 'fail', `리퀘스트 「${reqName(s, r)}」에 실패했습니다. ${failWhy(x && x.fight)} 다시 도전할 수 있습니다.`);   // 2026-11-22 야간 작업 4: 원인 한 줄
   }
   function reqWeekly(s) {
     const R = reqOf(s);
@@ -1644,7 +1656,7 @@
   }
   function mainWeekly(s) {   // 주 진행: 귀환 뒤, 출발 전
     if (!COMBAT || s.grade > 0) return; const M = mainOf(s);
-    if (M.state === 'none' && mainReady(s)) { M.state = 'offer'; M.offered = s.week; log(s, `부탁을 ${MAIN_CFG.need}번 들어준 길드에 영주의 전갈이 왔습니다: 메인 퀘스트 「다리를 지켜라」. 리퀘스트 장에서 받을 수 있습니다.`, 'main'); }
+    if (M.state === 'none' && mainReady(s)) { M.state = 'offer'; M.offered = s.week; log(s, `리퀘스트를 ${MAIN_CFG.need}번 들어준 길드에 영주의 전갈이 왔습니다: 메인 퀘스트 「다리를 지켜라」. 리퀘스트 장에서 받을 수 있습니다.`, 'main'); }
     else if (M.state === 'cool' && s.week >= M.cool) { M.state = 'offer'; log(s, '메인 퀘스트 「다리를 지켜라」에 다시 도전할 수 있습니다.', 'main'); }
     else if (M.state === 'set' && s.week >= M.at) { if (api.live) mainStart(s); else mainRun(s); }
   }
