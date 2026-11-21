@@ -85,10 +85,10 @@
       add(`chr_${c}_${sex}_${dir}`, `chr/chr_${c}_${sex}_${dir}.png`, 136, 250, { ax: 0.5, ay: 1, color: CCOL[i] });
   });
 
-  // 걷기 시트 (선택): chr_<직업>_<성별>_walk.png — 3072×512, 셀 128, 24프레임 × 4행(아래·왼쪽·오른쪽·위), 30fps, 발밑 y=122.
+  // 걷기 시트 (선택): chr_<직업>_<성별>_walk.webp (2026-11-22 무손실 WebP로 바꿈, 화소 같음 · 원본 PNG는 archive/art_source/png_before_webp/chr/) — 3072×512, 셀 128, 24프레임 × 4행(아래·왼쪽·오른쪽·위), 30fps, 발밑 y=122.
   // 파일이 없으면 임시 그래픽을 만들지 않고, 정지 SD 그림을 통통 튀게 움직이는 방식으로 대신한다.
   const WALK = { cell: 128, cols: 24, rows: ['down', 'left', 'right', 'up'], fps: 30, pivotY: 122, charH: 108, stepPx: 29 };
-  CLS.forEach(c => { for (const sex of ['f', 'm']) add(`chr_${c}_${sex}_walk`, `chr/chr_${c}_${sex}_walk.png`, 3072, 512, { optional: true, lazy: true, sheet: WALK }); });   // lazy: 10장 45MB라 타이틀 뒤에 따로 받음 (마을 화면 주민용, 받기 전에는 정면 그림으로 대신, 2026-11-16)
+  CLS.forEach(c => { for (const sex of ['f', 'm']) add(`chr_${c}_${sex}_walk`, `chr/chr_${c}_${sex}_walk.webp`, 3072, 512, { optional: true, lazy: true, sheet: WALK }); });   // lazy: 10장 45MB라 타이틀 뒤에 따로 받음 (마을 화면 주민용, 받기 전에는 정면 그림으로 대신, 2026-11-16)
 
 
   root.ASSET_MANIFEST = { base: 'assets/', items: M, CLS, WALK };
