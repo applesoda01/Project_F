@@ -163,7 +163,7 @@
     const s = S(); if (!s) return;
     if (e.target === box || e.target.closest('[data-sx]')) { PotShop.close(); return; }
     const t = e.target.closest('[data-st]'); if (t) { tab = t.dataset.st; say = null; render(); return; }
-    const ck = e.target.closest('[data-ck]'); if (ck) { cKind = +ck.dataset.ck; cSel = null; render(); return; }
+    // 2026-11-22 야간 작업 10: 대장간에서 옮겨 온 「종류 칸」 클릭 줄 삭제 — 물약 상점엔 그 칸이 없고 cKind가 선언되지 않아 눌리면 오류가 날 줄이었음
     const cg = e.target.closest('[data-cgr]'); if (cg) { cGrade = +cg.dataset.cgr; cSel = null; render(); return; }
     const cs = e.target.closest('[data-csel]'); if (cs) { cSel = cs.dataset.csel; render(); return; }
     const c = e.target.closest('[data-cf]'); if (c && !c.disabled) { const r = G().potBrew(s, c.dataset.cf); if (r.ok) { say = pick(LINES.made); if (root.UI) { root.UI.toast(`${r.item}을 달였습니다. (공임 ${r.fee}G)`, 'unlock'); root.UI.hud(); } } else if (root.UI) root.UI.toast(r.why, 'warn'); render(); return; }

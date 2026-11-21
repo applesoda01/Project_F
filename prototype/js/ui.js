@@ -521,7 +521,7 @@
     const D = s.dg, d = DGI_(), C = s.cfg.dungeon; D.seen = true;
     const rooms = d.rooms, fk = r => rooms[r] && (rooms[r].risky || rooms[r].safe) ? `<div class="ln"></div><div class="fk"><span class="rk">위험</span><span class="sf">안전</span></div>` : '<div class="ln"></div>';
     let R = `<div class="rq-head"><img class="dgic" src="assets/icons/dungeon_goblin.png" alt=""><div><b>${esc(d.name)}</b><span>${GR[d.g]}급 던전 · ${D.open}주에 발견${D.clear ? ` · ${D.clear}주에 정복` : ''}</span></div></div>`;
-    R += `<div class="rq-say"><p>방 3개를 지나며 갈림길을 두 번 만납니다. 방 3 뒤에 <b>계속</b>을 고르면 고블린 대장이 기다립니다. 지면 그 자리에서 돌아옵니다. 갈림길은 원정 중 미니 뷰에서 고르고, 안 고르면 대장 성향대로 갑니다.</p></div>`;
+    R += `<div class="rq-say"><p>방 3개를 지나며 갈림길을 두 번 만납니다. 방 3 뒤에 <b class="kw">계속</b>을 고르면 고블린 대장이 기다립니다. 지면 그 자리에서 돌아옵니다. 갈림길은 원정 중 미니 뷰에서 고르고, 안 고르면 대장 성향대로 갑니다.</p></div>`;
     R += `<div class="dgmap"><div class="rm"><i>1</i>입구</div>${fk('2')}<div class="ln"></div><div class="rm"><i>2</i>통로</div>${fk('3')}<div class="ln"></div><div class="rm"><i>3</i>소굴</div><div class="ln"></div>${C.cont ? '<span class="cont">계속 / 귀환</span><div class="ln"></div><div class="rm boss"><i>☠</i>대장</div>' : ''}</div>`;
     const ok = C.progOk;
     R += `<div class="rq-sec"><i>정복</i><div><span class="rq-chip">승산 여유 +${ok[0]}% · 팽팽 +${ok[1]}% · 위험 +${ok[2]}%</span><span class="rq-chip">위험한 길 +${C.progRisky}%</span>${C.cont ? `<span class="rq-chip">보스 +${C.progBoss}%</span>` : ''}<span class="rq-chip">실패 +${C.progFail}%</span></div></div>`;

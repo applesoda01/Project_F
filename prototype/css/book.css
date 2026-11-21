@@ -667,7 +667,7 @@
 .bk-rq .rq-head{display:flex;align-items:center;gap:12px;padding:2px 2px 8px;border-bottom:1.5px solid rgba(110,72,36,.3)}
 .bk-rq .rq-head b{display:block;font:700 24px/1.2 var(--hf);color:var(--ux-ink)}.bk-rq .rq-head span{font-size:14px;color:var(--ux-wood)}
 .bk-rq .rq-say{padding:8px 14px;background:rgba(255,250,238,.6);border-left:4px solid rgba(110,72,36,.35);font:400 15px/1.55 var(--hf);color:var(--ux-ink)}
-.bk-rq .rq-say p{margin:2px 0}.bk-rq .rq-say p b{margin-right:8px;color:var(--ux-wood)}
+.bk-rq .rq-say p{margin:2px 0}.bk-rq .rq-say p b{margin-right:8px;color:var(--ux-wood)}.bk-rq .rq-say p b.kw{margin-right:0}   /* 2026-11-22 야간 작업 10: 본문 속 강조(「계속」)는 화자 이름 간격을 쓰지 않음 */
 .bk-rq .rq-lock{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:6px;background:rgba(138,115,90,.16);font:700 15px var(--hf);color:#6b4a2a}
 .bk-rq .rq-sec{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;align-items:start}
 .bk-rq .rq-sec>i{font:700 14px/28px var(--hf);font-style:normal;color:var(--ux-wood)}
