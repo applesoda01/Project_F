@@ -30,3 +30,13 @@ Anime style, dark fantasy, cinematic anime opening shot. Keep the exact art styl
 
 - 결과 영상을 이 대화에 올려 주면, LTX 결과와 나란히 붙인 비교 영상을 만듦
 - 비교 기준: ① 그림체 유지 ② 활 동작 ③ 카메라 원근감 ④ 녹거나 깨지는 부분
+
+## 결과 (2026-11-22)
+
+- 무료 계정에서는 Seedance 2.0 · 2.5 · 모든 해상도가 업그레이드 필요 → **Seedance 1.0 Fast**(720P · 5초 · 25크레딧)로 1개 생성
+- 일일 무료 120크레딧 (한국 계정, 자정 충전 확인)
+- 생성 약 1분, 1248×704 · 60fps, 우측 하단 워터마크
+- 비교: `mockups/opening_v2/cmp_op03_ltx_vs_seedance.mp4` (A LTX 2번 · B Seedance)
+  - Seedance: 카메라가 밀고 들어가는 원근감이 확실하고 그림체 유지 양호. 활을 당긴 뒤 약 3초에 마왕 가슴에 빛이 터졌다 사라짐
+  - LTX: 동작은 비슷하게 성공, 카메라 움직임은 더 약함
+- 워터마크와 상업 이용 조건 때문에 본 작업에 쓰려면 유료 플랜 약관 확인 필요
