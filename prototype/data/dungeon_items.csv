@@ -1,7 +1,7 @@
 ﻿종류,키,이름,던전,칸,등급,공격,체력,방어,세트,재료,그림,설명
 몬스터,boss_goblin,고블린 대장,goblin_cave,,E,70,900,20,,,expedition_sd/mon_goblin_boss_still.png,고블린 굴의 우두머리. 방 4에서만 나옴 [임시]
-장비,rare_goblin,고블린 왕의 인장,goblin_cave,장신구,E,8,20,0,,,icons/gear_rare_goblin.png,길드에 하나뿐 · 팔 수 없음 · 만들 수 없음 · 장착한 모험가가 죽거나 떠나면 사라짐. 착용하면 파티 전원 공격 +5% (사용자 결정 ⓑ)
-장비,set_goblin_1,굴 사냥꾼 단검,goblin_cave,무기,E,6,0,0,goblin,mat_mine_E:3|mat_study_E:1,icons/gear_set_goblin_1.png,굴 사냥꾼 세트
-장비,set_goblin_2,굴 사냥꾼 가죽 갑옷,goblin_cave,방어구,E,0,25,4,goblin,mat_mine_E:3|mat_study_E:1,icons/gear_set_goblin_2.png,굴 사냥꾼 세트
-장비,set_goblin_3,굴 사냥꾼 부적,goblin_cave,장신구,E,2,10,0,goblin,mat_study_E:2|mat_mine_E:1,icons/gear_set_goblin_3.png,굴 사냥꾼 세트
-요리,dish_goblin,마석 버섯 볶음,goblin_cave,,E,,,,,mat_study_E:1|mat_x004:1,icons/food_02.png,모든 능력치 +3 · 던전 클리어로 얻는 조합법 (소문 힌트에 안 나옴)
+장비,rare_goblin,왕초의 금이빨 목걸이,goblin_cave,장신구,E,8,20,0,,,icons/gear_rare_goblin.png,길드에 하나뿐 · 팔 수 없음 · 만들 수 없음 · 장착한 모험가가 죽거나 떠나면 사라짐. 착용하면 파티 전원 공격 +5% (사용자 결정 ⓑ)
+장비,set_goblin_1,사냥꾼의 칼,goblin_cave,무기,E,6,0,0,goblin,mat_mine_E:3|mat_study_E:1,icons/gear_set_goblin_1.png,고블린 사냥꾼 세트
+장비,set_goblin_2,사냥꾼의 가죽옷,goblin_cave,방어구,E,0,25,4,goblin,mat_mine_E:3|mat_study_E:1,icons/gear_set_goblin_2.png,고블린 사냥꾼 세트
+장비,set_goblin_3,사냥꾼의 부적,goblin_cave,장신구,E,2,10,0,goblin,mat_study_E:2|mat_mine_E:1,icons/gear_set_goblin_3.png,고블린 사냥꾼 세트
+요리,dish_goblin,고블린도 탐낸 볶음,goblin_cave,,E,,,,,mat_study_E:1|mat_x004:1,icons/food_02.png,모든 능력치 +3 · 던전 클리어로 얻는 조합법 (소문 힌트에 안 나옴)

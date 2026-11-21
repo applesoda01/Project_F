@@ -158,7 +158,7 @@
   function dgCraftHtml(s) {
     const Gm = G(), C = s.cfg.dungeon, L = dgSet(s); if (!cSel || !L.some(i => i.key === cSel)) cSel = (L[0] || {}).key;
     let h = '<div class="cxWrap"><div class="cxGrid">';
-    h += `<div class="cxSet">굴 사냥꾼 세트 <small>${esc((Gm.dgDef(s) || {}).name || '던전')} · 정복 ${C.setAt}%에 조합법${s.dg && s.dg.setRecipe ? ' ✔' : ` (지금 ${s.dg ? s.dg.prog : 0}%)`}</small></div>`;
+    h += `<div class="cxSet">고블린 사냥꾼 세트 <small>${esc((Gm.dgDef(s) || {}).name || '던전')} · 정복 ${C.setAt}%에 조합법${s.dg && s.dg.setRecipe ? ' ✔' : ` (지금 ${s.dg ? s.dg.prog : 0}%)`}</small></div>`;
     for (const it of L) { const own = (s.gearInv || {})[it.key] || 0, ok = !Gm.dgCraftWhy(s, it.key);
       h += `<div class="cxIt ${it.key === cSel ? 'sel' : ''} ${ok ? 'ok' : 'no'}" data-csel="${it.key}"><i class="dgS">세트</i><img src="assets/${it.icon}" alt=""><b>${esc(it.name)}</b><i>${KN[it.slot]} · 아무 직업</i>${own ? `<em>${own}</em>` : ''}</div>`; }
     h += '</div>';
@@ -196,7 +196,7 @@
     const DI = Gm.dgItems ? Gm.dgItems(s) : [], R0 = s.dg && s.dg.rare;
     for (const it of DI) { const n = (s.gearInv || {})[it.key] || 0, holder = it.rare && R0 && R0.holder != null ? s.advs.find(a => a.id === R0.holder && a.alive) : null; if (!n && !holder) continue;
       const opts = al.map(a => `<option value="${a.id}" ${gSel === a.id ? 'selected' : ''}>${esc(a.name)} · ${CLS[a.core]} Lv ${a.lv}${a.sp && a.sp[it.slot] === it.key ? ' (착용 중)' : ''}</option>`).join('');
-      h += `<div class="gxRare ${it.rare ? '' : 'set'}"><img src="assets/${it.icon}" alt=""><div class="tx"><b>${esc(it.name)} <small>${it.rare ? '길드에 하나뿐' : '굴 사냥꾼 세트'}</small></b><em>${KN[it.slot]} · ${stTxt(it)}${it.rare ? ` · 함께 간 파티 공격 +${Math.round(s.cfg.dungeon.rareParty * 100)}%<br><u>주인이 죽거나 길드를 떠나면 사라집니다</u>` : ''}${holder ? `<br>지금 주인: <b>${esc(holder.name)}</b>` : ''}</em></div>`
+      h += `<div class="gxRare ${it.rare ? '' : 'set'}"><img src="assets/${it.icon}" alt=""><div class="tx"><b>${esc(it.name)} <small>${it.rare ? '길드에 하나뿐' : '고블린 사냥꾼 세트'}</small></b><em>${KN[it.slot]} · ${stTxt(it)}${it.rare ? ` · 함께 간 파티 공격 +${Math.round(s.cfg.dungeon.rareParty * 100)}%<br><u>주인이 죽거나 길드를 떠나면 사라집니다</u>` : ''}${holder ? `<br>지금 주인: <b>${esc(holder.name)}</b>` : ''}</em></div>`
         + (n ? `<select data-dgsel="${it.key}">${opts}</select><span class="go" data-dgg="${it.key}">주기</span>` : '') + '</div>'; }
     h += '<div class="gxList">';
     for (const a of al) {

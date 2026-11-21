@@ -493,7 +493,7 @@
     m.innerHTML = `<div class="rb"><div class="seal"><svg viewBox="0 0 64 64"><path d="M10 46 L14 20 L24 32 L32 14 L40 32 L50 20 L54 46 Z" fill="#f3d27a" stroke="#6a3a0a" stroke-width="3" stroke-linejoin="round"/><rect x="10" y="46" width="44" height="7" rx="2" fill="#f3d27a" stroke="#6a3a0a" stroke-width="3"/></svg></div>
       <div class="k">왕국의 치하</div><h2>「${esc(d.name)}」 정복</h2><div class="lt">마을을 괴롭히던 ${esc(d.name)}을 정복한 길드의 노고를 치하하며, 그 공을 왕국 곳곳에 알리노라.</div><div class="sig">— 국왕의 이름으로</div>
       <div class="sec"><i>왕국 포상</i><div class="chips"><span class="gold">포상금 +${fmt(C.clearGold)}G</span><span class="fame">명성 +${C.clearFame}</span></div></div>
-      <div class="sec"><i>정복 보상</i><div class="chips">${rare && C.rare ? `<span class="it"><img src="assets/icons/gear_rare_goblin.png" alt="">${esc(rare.name)}</span>` : ''}${dish && C.recipe ? `<span class="it"><img src="assets/${esc(dish.icon || 'icons/food_02.png')}" alt="">요리 조합법</span>` : ''}${C.title && nT ? `<span>칭호 「굴의 정복자」 ${nT}명</span>` : ''}</div></div>
+      <div class="sec"><i>정복 보상</i><div class="chips">${rare && C.rare ? `<span class="it"><img src="assets/icons/gear_rare_goblin.png" alt="">${esc(rare.name)}</span>` : ''}${dish && C.recipe ? `<span class="it"><img src="assets/${esc(dish.icon || 'icons/food_02.png')}" alt="">요리 「${esc(dish.name)}」</span>` : ''}${C.title && nT ? `<span>칭호 「고블린 소탕꾼」 ${nT}명</span>` : ''}</div></div>
       <span class="btn" data-roy="ok">받기</span></div>`;
     stage.ui.appendChild(m); requestAnimationFrame(() => m.classList.add('on'));
     m.querySelector('[data-roy]').onclick = () => { m.classList.remove('on'); setTimeout(() => m.remove(), 300); dgResume(); UI.hud && UI.hud(); };
@@ -520,8 +520,8 @@
     const ok = C.progOk;
     R += `<div class="rq-sec"><i>정복</i><div><span class="rq-chip">승산 여유 +${ok[0]}% · 팽팽 +${ok[1]}% · 위험 +${ok[2]}%</span><span class="rq-chip">위험한 길 +${C.progRisky}%</span>${C.cont ? `<span class="rq-chip">보스 +${C.progBoss}%</span>` : ''}<span class="rq-chip">실패 +${C.progFail}%</span></div></div>`;
     const lk = c => c ? 'dglock' : '', nextSet = C.set && !D.setRecipe, gotSet = C.set && D.setRecipe;
-    R += `<div class="rq-sec"><i>보상</i><div><span class="rq-chip">매번: ${esc((MATS.mat_mine_E || {}).name || '광석')} · ${esc((MATS.mat_study_E || {}).name || '마석')}(가끔)</span>${C.set ? `<span class="rq-chip ${gotSet ? 'dgok' : nextSet ? 'dgnext' : ''}">${C.setAt}% 굴 사냥꾼 세트 조합법${gotSet ? ' ✔' : ''}</span>` : ''}`
-      + `${C.rare ? `<span class="rq-chip ${D.clear ? 'dgok' : lk(nextSet)} ${!nextSet && !D.clear ? 'dgnext' : ''}">100% 고블린 왕의 인장 (하나뿐)${D.clear ? ' ✔' : ''}</span>` : ''}${C.recipe ? `<span class="rq-chip ${D.clear ? 'dgok' : 'dglock'}">요리 조합법</span>` : ''}${C.title ? `<span class="rq-chip ${D.clear ? 'dgok' : 'dglock'}">칭호 「굴의 정복자」</span>` : ''}${C.royal ? `<span class="rq-chip gold ${D.clear ? 'dgok' : 'dglock'}">왕국 포상 ${fmt(C.clearGold)}G · 명성 +${C.clearFame}</span>` : ''}</div></div>`;
+    R += `<div class="rq-sec"><i>보상</i><div><span class="rq-chip">매번: ${esc((MATS.mat_mine_E || {}).name || '광석')} · ${esc((MATS.mat_study_E || {}).name || '마석')}(가끔)</span>${C.set ? `<span class="rq-chip ${gotSet ? 'dgok' : nextSet ? 'dgnext' : ''}">${C.setAt}% 고블린 사냥꾼 세트 조합법${gotSet ? ' ✔' : ''}</span>` : ''}`
+      + `${C.rare ? `<span class="rq-chip ${D.clear ? 'dgok' : lk(nextSet)} ${!nextSet && !D.clear ? 'dgnext' : ''}">100% 왕초의 금이빨 목걸이 (하나뿐)${D.clear ? ' ✔' : ''}</span>` : ''}${C.recipe ? `<span class="rq-chip ${D.clear ? 'dgok' : 'dglock'}">요리 조합법</span>` : ''}${C.title ? `<span class="rq-chip ${D.clear ? 'dgok' : 'dglock'}">칭호 「고블린 소탕꾼」</span>` : ''}${C.royal ? `<span class="rq-chip gold ${D.clear ? 'dgok' : 'dglock'}">왕국 포상 ${fmt(C.clearGold)}G · 명성 +${C.clearFame}</span>` : ''}</div></div>`;
     // 파티 · 행동
     const act = s.active.find(x => x.dgRun || x.dgP), plan = D.plan, done = D.clear && !C.keep;
     if (plan) dgSel = plan.party.slice();

@@ -954,13 +954,13 @@
     const far = R.boss ? '보스까지' : R.cleared3 ? '방 3까지' : `방 ${Math.max(1, R.rooms.filter(r => r.result === 'win').length + 1)}에서 귀환`;
     log(s, `${J(names(party.filter(Boolean)), '이', '가')} 「${d.name}」에서 돌아왔습니다 — ${far}${R.risky ? ` · 위험한 길 ${R.risky}번` : ''}${D.clear ? '' : ` · 정복 +${R.gain}% (${D.prog}%)`}${R.mats || R.rare ? ` · 소재 ${matName(M1)} ${R.mats}${R.rare ? ` · ${matName(M2)} ${R.rare}` : ''}` : ''}.`, ok ? 'success' : 'fail', { who: party.filter(Boolean).map(a => a.name) });
     D.runs.unshift({ w: x.start, party: x.party, rooms: R.rooms.filter(r => !r.ask).length, boss: R.boss, gain: R.gain, ok, p: x.rate, risky: R.risky, res: (R.rooms.filter(r => r.result).slice(-1)[0] || {}).result }); if (D.runs.length > 20) D.runs.length = 20;
-    if (Dc.set && !D.setRecipe && p0 < Dc.setAt && D.prog >= Dc.setAt) { D.setRecipe = s.week; log(s, `「${d.name}」 정복 ${Dc.setAt}% — 대장간에서 굴 사냥꾼 세트를 만들 수 있게 되었습니다.`, 'dungeon'); }
+    if (Dc.set && !D.setRecipe && p0 < Dc.setAt && D.prog >= Dc.setAt) { D.setRecipe = s.week; log(s, `「${d.name}」 정복 ${Dc.setAt}% — 대장간에서 고블린 사냥꾼 세트를 만들 수 있게 되었습니다.`, 'dungeon'); }
     if (!D.clear && D.prog >= 100) {
       D.clear = s.week; log(s, `「${d.name}」을 정복했습니다!`, 'dungeon', { dgClear: d.key });
       if (Dc.royal) { s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + Dc.clearFame); s.gold += Dc.clearGold; s.month.royal = (s.month.royal || 0) + Dc.clearGold; D.royal = s.week; log(s, `왕국에서 「${d.name}」 정복의 노고를 치하하며 포상금 ${Dc.clearGold}G를 보내왔습니다. 길드의 이름이 널리 퍼집니다. (명성 +${Dc.clearFame})`, 'dungeon', { dgRoyal: d.key }); }   // 2026-11-20 사용자: 100% 달성 때 왕국이 치하 (연출은 2단계 시안)
       const rare = d.items.find(it => it.rare); if (Dc.rare && rare && !D.rare) { D.rare = { key: rare.key, holder: null, gone: null }; s.gearInv = s.gearInv || {}; s.gearInv[rare.key] = 1; log(s, `보물 「${rare.name}」을 손에 넣었습니다. 길드에 하나뿐인 장신구입니다.`, 'dungeon'); }
       const dd = DISH.find(z => z.dungeon === d.key); if (Dc.recipe && dd && !s.dishes[dd.name]) { s.dishes[dd.name] = s.week; syncMeals(s); for (const m of dd.mats) s.knownMats[m] = true; log(s, `던전에서 요리 조합법을 얻었습니다: ${dd.name}`, 'unlock'); }
-      if (Dc.title) for (const a of party) if (a && a.alive) { (a.dgTitles = a.dgTitles || []).push(d.key); a.attach = Math.min(100, a.attach + Dc.titleAttach); (a.career = a.career || []).push({ week: s.week, text: `「${d.name}」 정복 — 칭호 「굴의 정복자」` }); }
+      if (Dc.title) for (const a of party) if (a && a.alive) { (a.dgTitles = a.dgTitles || []).push(d.key); a.attach = Math.min(100, a.attach + Dc.titleAttach); (a.career = a.career || []).push({ week: s.week, text: `「${d.name}」 정복 — 칭호 「고블린 소탕꾼」` }); }
     }
   }
   // 세트 장비 만들기 · 특별 장비 주기 (화면은 시안 확정 뒤 — 지금은 자동 진행 · 측정용으로 씀)
