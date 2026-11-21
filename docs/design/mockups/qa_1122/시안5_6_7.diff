@@ -1,4 +1,4 @@
---- qa/js/expedition.js	2026-11-22 02:21:51.781494437 +0900
+--- qa/js/expedition.js	2026-11-22 02:29:31.649900030 +0900
 +++ mock/js/expedition.js	2026-11-22 02:23:19.306314674 +0900
 @@ -91,7 +91,7 @@
      E.sort((a, b) => (a.done ? -1 : 0) - (b.done ? -1 : 0) || a.x.back - b.x.back).forEach(e => {
@@ -18,7 +18,7 @@
        };
        r.onmouseleave = () => { tip.style.display = 'none'; };
        list.appendChild(r);
---- qa/js/ui.js	2026-11-22 02:21:51.781535597 +0900
+--- qa/js/ui.js	2026-11-22 02:29:31.649930834 +0900
 +++ mock/js/ui.js	2026-11-22 02:28:21.986456592 +0900
 @@ -631,7 +631,7 @@
    UI.dlgBusy = () => !!(Dlg.cur || Dlg.lines.length || Dlg.gap > 0);
@@ -58,3 +58,14 @@
      root.Lina.chatting = Dlg.shown < Dlg.cur.text.length;
      if (Dlg.shown < Dlg.cur.text.length) {
        Dlg.t += dt; const n = Math.min(Dlg.cur.text.length, Math.floor(Dlg.t * 28));
+--- qa/js/tutorial.js	2026-11-22 02:29:31.649693793 +0900
++++ mock/js/tutorial.js	2026-11-22 02:38:25.152370840 +0900
+@@ -130,7 +130,7 @@
+     board: { glow: () => root.UI.popupName() === 'board' ? `.qcard[data-q="${getS().tut.qid}"]` : '[data-pop="board"]', hint: () => root.UI.popupName() === 'board' ? '「오늘 저녁 삼겹살」을 눌러 보내 주세요' : '아래 「의뢰」를 눌러 게시판을 여세요' },
+     mini: { dim: false, glow: () => '#hudExp', hint: () => '오른쪽 원정 목록의 줄을 눌러 보세요', test: () => !!document.querySelector('#expView.on') || WAIT.away.test(), done() { getS().tut.ph = 'away'; awayTalk(); } },
+     away: { test: () => { const s = getS(), t = s.tut, a = s.advs.find(x => x.id === t.wid); return !a || (a.state !== 'quest' && !s.active.some(x => x.party.includes(t.wid))); }, done() { getS().tut.ph = 'wait'; after(3.5, () => go('FT0004')); } },
+-    table: { glow: () => root.UI.popupName() === 'fac' ? '[data-place="table"]' : '[data-pop="fac"]', hint: () => '「시설」에서 테이블 세트를 놓아 주세요', test: () => getS().place.items.some(i => i.id === 'table'), done() { getS().tut.ph = 'wait'; after(1.5, () => go('FT0005')); } },
++    table: { glow: () => document.querySelector('#placeLay.on') ? null : root.UI.popupName() === 'fac' ? '[data-place="table"]' : '[data-pop="fac"]', hint: () => document.querySelector('#placeLay.on') ? '바닥의 초록 칸을 눌러 테이블 세트를 놓아 주세요' : '「시설」에서 테이블 세트를 놓아 주세요', /* [시안 7] 배치 중에는 「시설」을 빛내지 않고 안내를 바꿈 */ test: () => getS().place.items.some(i => i.id === 'table'), done() { getS().tut.ph = 'wait'; after(1.5, () => go('FT0005')); } },
+     meals: { glow: () => '[data-pop="meals"]', hint: () => '아래 「음식」을 눌러 보세요', test: () => root.UI.popupName() === 'meals',
+       done() { const s = getS(), t = s.tut; t.ph = 'wait'; say('FT0008', 2, () => { give(s); root.UI.repop(); t.ph = 'cook'; }); } },
+     // 테스트 의견 4 (11-19 시안 2 확인): 고기 → 향신료 → 「만들어 보기」 차례로 한 칸씩만 밝힘. 다른 재료는 어두운 덮개에 막혀 못 누르므로 멧돼지 스테이크 정식만 나옴
