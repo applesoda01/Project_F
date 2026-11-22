@@ -631,7 +631,7 @@
   UI.dlgBusy = () => !!(Dlg.cur || Dlg.lines.length || Dlg.gap > 0);
   UI.closeFx = function () { if (root.BookFX && popup) root.BookFX.closeCover(() => UI.close()); else UI.close(); };   // 책끈 · Esc · 바깥 누르기 = 표지 덮으며 닫기
   let bookHold = false, bookSp = 1;   // 책이 펼쳐진 동안 시간 정지: 닫으면 펼치기 전 속도로
-  UI.close = function () { if (bookHold) { bookHold = false; document.body.classList.remove('bookOn'); hooks.setSpeed && hooks.setSpeed(bookSp); } mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
+  UI.close = function () { setTimeout(() => { if (!popup && dlgLater.length) { const L = dlgLater.splice(0); for (const x of L) UI.say(x); } }, 350); if (bookHold) { bookHold = false; document.body.classList.remove('bookOn'); hooks.setSpeed && hooks.setSpeed(bookSp); } mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
   function renderPopup() {
     const b = q('#popBody');
     if (popup === 'board') renderBoard(b);
@@ -2091,8 +2091,13 @@
 .gupG-card .lina .f{width:60px;height:60px;border-radius:50%;flex:none;border:2px solid #d9a066;background:url(assets/npc/lina_face_smile.png) -24px -22px/auto 130px no-repeat #f1d9c0}
 .gupG-card ul{text-align:left;margin:10px 0 14px;padding:0;list-style:none}.gupG-card li{padding:6px 10px;border-bottom:1px dashed rgba(122,74,40,.3);font-size:17px}.gupG-card li b{color:#2f6a52}
 .gupG-fly{position:absolute;z-index:46;background:center/contain no-repeat;transition:all .7s cubic-bezier(.5,0,.3,1)}.gupG-pop{animation:gupGpop .7s}@keyframes gupGpop{40%{transform:scale(1.5);filter:drop-shadow(0 0 10px #ffd75e)}}`; document.head.appendChild(st_); }
-  UI.say = function (lines) { // [{face:'smile', text:'…'}, …]
+  // 2026-11-22 시안 6 반영: 책이 열려 있으면 대화를 미뤘다가 책을 닫을 때 보여 줌 (급한 것: 기본 튜토리얼 · 침공 중 · urgent 표시는 바로)
+  const dlgLater = [];
+  const dlgUrgent = () => (root.Tutorial && root.Tutorial.active && root.Tutorial.active() && s.tut && !s.tut.base) || (root.Invasion && root.Invasion.on);
+  const dlgHold = () => !!popup && !dlgUrgent();   // 장면 사이 쉼에서 책이 열려 있으면 다음 장면을 미룸
+  UI.say = function (lines, opt) { // [{face:'smile', text:'…'}, …]
     if (!lines || !lines.length) return;
+    if (popup && !(opt && opt.urgent) && !dlgUrgent() && !Dlg.open) { dlgLater.push(lines); UI.reqBadge && UI.reqBadge(); return; }
     if (Dlg.cur || Dlg.lines.length || Dlg.gap > 0) Dlg.lines.push({ brk: true });   // 앞 장면이 아직 있으면 장면 나눔
     Dlg.lines.push(...lines);
     if (!Dlg.open && !(Dlg.gap > 0)) next();
@@ -2174,11 +2179,11 @@
     else next();
   };
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
-    if (!Dlg.cur && Dlg.gap > 0) { if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
+    if (!Dlg.cur && Dlg.gap > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
     if (rqdQ.length && !rqdOn && !Dlg.cur) rqdNext();   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
     if (!Dlg.cur) return;
     blinkTick(dt);
-    if (Dlg.wait > 0) { Dlg.wait -= dt; if (Dlg.wait <= 0) q('#dlg').classList.add('open'); root.Lina.chatting = true; return; }
+    if (Dlg.wait > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } stage.ui.classList.add('dlgOn'); Dlg.wait -= dt; if (Dlg.wait <= 0) q('#dlg').classList.add('open'); root.Lina.chatting = true; return; }
     root.Lina.chatting = Dlg.shown < Dlg.cur.text.length;
     if (Dlg.shown < Dlg.cur.text.length) {
       Dlg.t += dt; const n = Math.min(Dlg.cur.text.length, Math.floor(Dlg.t * 28));

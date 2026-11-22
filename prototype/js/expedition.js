@@ -91,7 +91,7 @@
     E.sort((a, b) => (a.done ? -1 : 0) - (b.done ? -1 : 0) || a.x.back - b.x.back).forEach(e => {
       const x = e.x, q = x.q, party = x.party.map(id => advOf(s, id)).filter(Boolean), lead = party[0];
       const nm = (lead ? lead.name : '?') + (party.length > 1 ? ` 외 ${party.length - 1}` : '');
-      const rate = x.rate != null ? x.rate : Math.round((x.p || 0) * 100), [rc, rt] = risk(rate);
+      const rate = x.rate != null ? x.rate : Math.round((x.p || 0) * 100), [rc, rt] = x.q && x.q.tutorial ? ['r-safe', '✎ 연습'] : risk(rate);   // 2026-11-22 시안 5 반영: 튜토리얼 첫 의뢰는 「연습」
       const r = document.createElement('div'); r.className = 'row' + (sel === e.id ? ' sel' : ''); r.dataset.id = e.id;
       const pc = root.Director && root.Director.partyColor ? root.Director.partyColor(e.id) : null;   // 2026-11-12 파티 색 띠: 로비 발밑 원·모험가 목록과 같은 색
       if (pc) { r.classList.add('pty'); r.style.setProperty('--pc', pc); }
@@ -102,7 +102,7 @@
       r.onmouseenter = () => {
         tip.style.display = 'block'; tip.style.top = (PANEL.y + r.offsetTop - list.scrollTop) + 'px';
         const en = x.fight ? groupName(x.fight.enemies) : null;
-        tip.innerHTML = `<b>${q.name || QTYPE[q.type] + ' 의뢰'}</b> (${GR[q.g]}급 ${QTYPE[q.type]})<br>예상 성공률 ${Math.min(100, rate)}%<br>${en ? '적: ' + en : '비전투 의뢰'}<br>파티: ${party.map(a => `<span style="white-space:nowrap">${a.name}(${a.cls} Lv${a.lv})</span>`).join(', ')}`;
+        tip.innerHTML = `<b>${q.name || QTYPE[q.type] + ' 의뢰'}</b> (${GR[q.g]}급 ${QTYPE[q.type]})<br>${q.tutorial ? '첫 의뢰 연습 · 무사히 돌아와요' : `예상 성공률 ${Math.min(100, rate)}%`}<br>${en ? '적: ' + en : '비전투 의뢰'}<br>파티: ${party.map(a => `<span style="white-space:nowrap">${a.name}(${a.cls} Lv${a.lv})</span>`).join(', ')}`;
       };
       r.onmouseleave = () => { tip.style.display = 'none'; };
       list.appendChild(r);
