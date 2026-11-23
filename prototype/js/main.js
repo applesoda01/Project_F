@@ -28,8 +28,9 @@
 
   // 규칙 한 주 진행 → 전후 상태 비교 → 화면 대본(M2-7) · 알림 · 리나 대화
   function step() {
-    const before = Director.snap(s), g0 = s.grade, top = s.log[0];
+    const before = Director.snap(s), g0 = s.grade, top = s.log[0], gb = UI.growSnap && UI.growSnap();
     Gm.stepWeek(s);
+    if (UI.growShow) UI.growShow(gb);   // 2026-11-23 모험가 개선작업 ②: 원정 뒤 성장 카드
     if (s.subPaid) { UI.toast(`왕국 보조금 +${s.subPaid}G`, 'info'); delete s.subPaid; }   // 2026-11-23 4차 13번
     Director.onWeek(before, s, Lobby.Board);
     const fresh = []; for (const L of s.log) { if (L === top) break; fresh.push(L); }

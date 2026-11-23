@@ -269,6 +269,37 @@
 
   // ---------- 알림 (전직 제안 등 꼭 알려야 할 것만) ----------
   const TOAST_KIND = { promo: 1, depart: 1, success: 1, fail: 1, unlock: 1, build: 1, warn: 1, arrive: 1 };
+  // 2026-11-23 모험가 개선작업 ② (사용자 20:31 「진행하자」 · 시안 mockups/idea_1123/성장카드_시안_1920.png): 원정에서 돌아온 모험가 성장 카드 — 화면 정수가 실제로 오른 능력치만
+  const statInt = (a, i) => Math.round(Math.min(s.cfg.growth.statCap, a.stats[i]));
+  UI.growSnap = function () {
+    if (!s) return null; const A = new Map(), Q = new Map();
+    for (const a of s.advs) if (a.alive) A.set(a.id, { lv: a.lv, xp: a.xp, st: [0, 1, 2, 3, 4].map(i => statInt(a, i)), state: a.state });
+    for (const x of s.active || []) for (const id of x.party || []) Q.set(id, { q: x.q, ok: x.ok });
+    return { A, Q };
+  };
+  let gcQ = [], gcOn = 0;
+  UI.growShow = function (B) {
+    if (!B || !s || (s.tut && s.tut.on && !s.tut.base)) return;   // 기본 튜토리얼 동안은 띄우지 않음
+    const G = s.cfg.growth;
+    for (const a of s.advs) {
+      const b = B.A.get(a.id); if (!b || !a.alive || b.state !== 'quest' || a.state === 'quest') continue;
+      const up = a.lv > b.lv, ds = [0, 1, 2, 3, 4].map(i => [Gm.STATS[i], statInt(a, i) - b.st[i]]).filter(x => x[1] > 0);
+      const need = G.lvA * Math.pow(a.lv, G.lvB), cap = Gm.lvCapOf(s, a), pc = a.lv >= cap ? 100 : Math.min(100, a.xp / need * 100);
+      const gain = up ? 0 : Math.max(0, a.xp - b.xp), pc0 = up ? 0 : Math.max(0, Math.min(100, b.xp / need * 100));
+      const qi = B.Q.get(a.id), sub = `${qi && qi.q ? esc(cleanName(qi.q)) + (qi.ok ? ' 성공' : ' 실패') : '원정'} · ${a.state === 'injured' ? '부상 귀환' : '귀환'}`;
+      gcQ.push(`<div class="gcard${up ? ' up' : ''}"><div class="gh"><span class="gf" style="${faceStyle(a, 40, 208, 20)}"></span><span class="gn"><b>${esc(a.name)}</b>${up ? '<span class="tag">레벨 업!</span>' : ''}<small>${sub}</small></span><span class="lv">${up ? `Lv ${b.lv} → <b>${a.lv}</b>` : `Lv ${a.lv}`}</span></div>`
+        + (ds.length ? `<div class="gs">${ds.map(([k, v]) => `<span>${k} <b>+${v}</b></span>`).join('')}</div>` : '')
+        + `<div class="gb"><i style="width:${up ? pc : pc0}%"></i>${up ? '' : `<i class="n" style="left:${pc0}%;width:${Math.max(0, pc - pc0)}%"></i>`}</div><div class="gx"><span>${gain ? `경험치 +${fmt(Math.round(gain))}` : up ? '새 레벨' : ''}</span><span>${a.lv >= cap ? '레벨 상한' : `Lv ${a.lv + 1}까지 ${Math.round(pc)}%`}</span></div></div>`);
+    }
+    gcPump();
+  };
+  function gcPump() {
+    const box = q('#growStack'); if (!box) return;
+    while (gcQ.length && gcOn < 3) {
+      gcOn++; box.insertAdjacentHTML('afterbegin', gcQ.shift()); const el = box.firstElementChild;
+      setTimeout(() => { el.classList.add('out'); setTimeout(() => { el.remove(); gcOn--; gcPump(); }, 400); }, 3200);
+    }
+  }
   function toast(text, kind) {
     const box = q('#toasts'), el = document.createElement('div');
     el.className = 'toast k-' + (kind || 'info'); el.textContent = text; box.prepend(el);

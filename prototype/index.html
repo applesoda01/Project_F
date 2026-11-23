@@ -130,6 +130,18 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 #goalBox.main .gk{color:#b3361f}
 body.bookOn #goalBox{transform:translateX(-480px);opacity:0;pointer-events:none}
 body:has(#townUi.on) #goalBox{display:none}
+#growStack{position:absolute;right:24px;bottom:118px;display:flex;flex-direction:column-reverse;gap:10px;pointer-events:none;z-index:4}   /* 2026-11-23 모험가 개선작업 ②: 원정 뒤 성장 카드 */
+.gcard{width:300px;padding:10px 14px 9px;border-radius:12px;background:#fffaf0;border:2px solid #e9d7b0;box-shadow:0 4px 12px rgba(40,24,10,.3);color:#4a321c;font-size:13px;animation:gcIn .3s ease-out both}
+.gcard.up{border-color:#f0c24a;box-shadow:0 0 0 2px rgba(240,194,74,.35),0 4px 14px rgba(40,24,10,.35)}
+.gcard.out{animation:gcOut .4s ease-in both}
+.gcard .gh{display:flex;align-items:center;gap:10px}.gcard .gf{width:40px;height:40px;border-radius:50%;flex:none;background-color:#efe2c6;border:2px solid #d8c29a}
+.gcard .gn{flex:1;min-width:0}.gcard .gn b{font-size:15px}.gcard .gn small{display:block;color:#7a6a58;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcard .tag{display:inline-block;margin-left:6px;padding:0 6px;border-radius:8px;background:#f0c24a;color:#5a3a10;font-size:11px;font-weight:700;vertical-align:2px}
+.gcard .lv{font-size:14px;color:#7a5a2e;white-space:nowrap}.gcard .lv b{font-size:19px;color:#a8721a}
+.gcard .gs{margin:6px 0 2px;display:flex;gap:12px;font-size:13px}.gcard .gs b{color:#3f7a3a}
+.gcard .gb{position:relative;height:7px;border-radius:4px;background:#eadfc8;overflow:hidden;margin-top:6px}.gcard .gb i{position:absolute;top:0;bottom:0;left:0;background:#d9a648}.gcard .gb i.n{background:#6dbb6a}
+.gcard .gx{display:flex;justify-content:space-between;margin-top:3px;font-size:11px;color:#7a6a58}
+@keyframes gcIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}@keyframes gcOut{to{opacity:0;transform:translateX(30px)}}
 #toasts{position:absolute;left:50%;top:22px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
 .toast{background:rgba(255,250,238,.96);border:3px solid var(--wood2);border-radius:16px;padding:8px 20px;font-size:21px;max-width:900px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:tin .3s ease-out;transition:opacity .4s,transform .4s}
 .toast.out{opacity:0;transform:translateY(-10px)}
@@ -408,6 +420,7 @@ body:not(.dev) #devToggle,body:not(.dev) #dev,body:not(.dev) #titleSkip,body:not
   <div id="hudTR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><button class="btn" id="ppBtn" title="일시정지·재생 (스페이스)"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg></button><span class="more"><button class="chip on" data-speed="1" title="1배속 (1)"><b>1×</b></button><button class="chip" data-speed="2" title="2배속 (2)"><b>2×</b></button><button class="chip" data-speed="4" title="4배속 (3)"><b>4×</b></button></span></div></div>
   <div id="goalBox" title="리퀘스트 장 열기"></div>
   <div id="toasts"></div>
+  <div id="growStack"></div>
   <div id="logBox"><div class="lr" title="끌어서 높이 조절 · 더블클릭: 기본 6줄"></div><div class="ll"></div><div class="lg" title="끌어서 이동 · 더블클릭: 원위치">기록 · 끌어서 이동</div></div>
   <button class="plate btn" id="bPromo" hidden>전직 제안</button>
   <div id="hudBR"><i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in">
