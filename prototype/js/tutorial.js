@@ -202,20 +202,42 @@
   // ---------- 상황별 안내 (기본 튜토리얼 뒤, 한 주에 하나) ----------
   const alive = s => s.advs.filter(a => a.alive);
   const SIT = [
-    ['FT0021', s => s.gold < 0, s => { s.gold += 500; s.month.other = (s.month.other || 0) + 500; Gm.log(s, '리나가 비상금 500G를 금고에 넣었습니다. (한 번만)', 'sys'); }, '#mgBtn'],
-    ['FT0010', s => (s.history || []).length >= 1, null, '#mgBtn'],
+    ['FT0021', s => s.gold < 0, s => { s.gold += 500; s.month.other = (s.month.other || 0) + 500; Gm.log(s, '리나가 비상금 500G를 금고에 넣었습니다. (한 번만)', 'sys'); }, 'g:ledger'],
+    ['FT0010', s => (s.history || []).length >= 1, null, 'g:ledger'],
     ['FT0013', s => !!s.built['집무실'], null, '[data-pop="board"]'],
-    ['FT0017', s => s.advs.some(a => a.alive && a.state === 'injured'), null, '[data-pop="advs"]', s => (s.advs.find(a => a.alive && a.state === 'injured') || {}).id],
+    ['FT0017', s => s.advs.some(a => a.alive && a.state === 'injured'), null, 'g:injury', s => (s.advs.find(a => a.alive && a.state === 'injured') || {}).id],
     ['FT0007', s => alive(s).length >= 5 && s.active.filter(x => x.start === s.week - 1).length >= 2 && !Gm.upg(s, '접수대'), null, '[data-pop="fac"]'],
-    ['FT0015', s => Object.values(s.mats || {}).some(n => n > 10) || (s.consign || []).length > 0, null, '#mgBtn'],
+    ['FT0015', s => Object.values(s.mats || {}).some(n => n > 10) || (s.consign || []).length > 0 || (Gm.carOn && Gm.carOn(s) && Gm.carHere(s).length > 0), null, 'g:mats'],   // 2026-11-23 3차 17: 상단이 처음 와도 이 안내(소재 관리 + 상단)
     ['FT0016', s => (s.req ? s.req.open : []).some(r => { const n = Gm.reqNeed(s, r); return Object.keys(n.mats || {}).length && !Gm.reqCanPay(s, r); }), null, '[data-pop="req"]'],
-    ['FT0014', s => !!s.built['집무실'] && Gm.contractOpen(s) && alive(s).some(a => !a.contract && !Gm.contractWhy(s, a)), null, '[data-pop="advs"]', s => (alive(s).find(a => !a.contract && !Gm.contractWhy(s, a)) || {}).id],
+    ['FT0014', s => !!s.built['집무실'] && Gm.contractOpen(s) && alive(s).some(a => !a.contract && !Gm.contractWhy(s, a)), null, 'g:contract', s => (alive(s).find(a => !a.contract && !Gm.contractWhy(s, a)) || {}).id],
     ['FT0011', s => alive(s).length >= Gm.advCap(s), null, null],
     ['FT0012', s => !!(s.main && s.main.state === 'offer'), null, '[data-pop="req"]'],
     ['FT0019', s => s.grade >= 1, null, null],
     ['FT0018', s => !!(s.townUnlock && s.townUnlock.smith), null, '[data-act="town"]'],
     ['FT0020', s => (s.proposals || []).length > 0, null, '[data-pop="advs"]', s => (s.proposals[0] || {}).id]
   ];
+  // 2026-11-23 3차 5 · 6 · 7 · 9 · 17: 여러 단계로 가리키는 안내 — 누를 곳을 차례로 밝히고(암전 + 빛남), 다 끝나면 끝. 단계는 화면 상태로 정함(눌러서 넘어감)
+  const pop = () => root.UI.popupName && root.UI.popupName();
+  const mgOpen = () => { const g = document.getElementById('mgBtn'); const gr = g && g.closest('.grp'); return !!(gr && (gr.matches(':focus-within') || gr.matches(':hover'))); };
+  const mgStep = (p, sub) => pop() === p ? null : pop() ? `#bookSub [data-sub="${p}"], #bookMarks [data-ch="mgmt"]` : mgOpen() ? `#mgUp [data-pop="${p}"]` : '#mgBtn';   // 경영 → 하위 메뉴 (책이 열려 있으면 책갈피 · 오른쪽 책갈피)
+  const rowOn = id => !!document.querySelector(`.ux-row.on[data-adv="${id}"]`);
+  const req2Of = s => s.req && s.req.open.find(r => r.sure && r.state === 'open');
+  const GUIDE = {
+    ledger: { glow: () => mgStep('ledger'), hint: () => '「경영」 → 「장부」를 눌러 이번 달 장부를 보세요', done: () => pop() === 'ledger' },
+    mats: { glow: g => { if (!g.sell) { if (pop() === 'sell' || pop() === 'trade') g.sell = true; else return mgStep('sell'); }
+        const s = getS(); if (Gm.carOn && Gm.carOn(s) && Gm.carHere(s).length && pop() !== 'car') return pop() ? '#bookSub [data-sub="car"]' : mgStep('car');
+        return null; },
+      hint: g => !g.sell ? '「경영」 → 「소재 관리」에서 소재를 팔거나 사들일 수 있어요' : '상단이 머무는 동안 「상단」 장에서 사고팔 수 있어요',
+      done: g => { const s = getS(); return !!g.sell && (!(Gm.carOn && Gm.carOn(s) && Gm.carHere(s).length) || pop() === 'car'); } },
+    injury: { glow: g => pop() !== 'advs' ? '[data-pop="advs"]' : `.ux-row[data-adv="${g.id}"]`, hint: () => '「모험가」 명부에서 다친 모험가를 눌러 상태를 보세요',
+      done: g => { const s = getS(), a = s.advs.find(x => x.id === g.id); return !a || !a.alive || a.state !== 'injured' || (pop() === 'advs' && rowOn(g.id)); } },
+    contract: { glow: g => { if (pop() !== 'advs') return '[data-pop="advs"]'; if (!rowOn(g.id)) return `.ux-row[data-adv="${g.id}"]`; if (!document.querySelector('.ct-of')) return '#bookSub [data-sub="advs:contract"]'; return '[data-ct="go"]:not([disabled])'; },
+      hint: g => !document.querySelector('.ct-of') ? '「모험가」 명부에서 모험가를 고르고 「계약 제안」 책갈피를 눌러 보세요' : '기간 · 보수를 정하고 「제안하기」를 눌러 보세요',
+      done: g => { const s = getS(), a = s.advs.find(x => x.id === g.id); return !a || !a.alive || !!a.contract; } },
+    req2: { glow: () => { const s = getS(), r = req2Of(s); if (!r) return null; if (pop() !== 'req') return '[data-pop="req"]'; const card = `[data-rq="${r.id}"]`; if (!document.querySelector(card + '.on')) return card;
+        return Gm.reqPartyOf(s, r).length >= 2 ? '[data-rqact="send"]:not([disabled])' : '[data-rqnom]:not(.no):not(.in)'; },
+      hint: () => '리퀘스트 장에서 모험가 2명을 지명해 보내 주세요', done: () => !req2Of(getS()) }
+  };
   function situational() {
     const s = getS(), t = s.tut;
     for (const [id, test, fx, sel, who] of SIT) {
@@ -224,7 +246,7 @@
       if (!ok) continue;
       t.seen[id] = s.week; t.cur = who ? who(s) : null;
       if (fx) { fx(s); root.UI.hud(); }
-      say(id, 1, () => { t.cur = null; if (sel) { t.sitSel = sel; glow(sel); } if (id === 'FT0007') t.ph = 'upg'; });   // 2026-11-23 2차 1번 C안: 10초 빛남 → 그 버튼을 누를 때까지 암전 + 빛남
+      say(id, 1, () => { const who_ = t.cur; t.cur = null; if (sel && sel.startsWith('g:')) t.guide = { k: sel.slice(2), id: who_ }; else if (sel) { t.sitSel = sel; glow(sel); } if (id === 'FT0007') t.ph = 'upg'; });   // g: = 여러 단계 안내 (GUIDE)   // 2026-11-23 2차 1번 C안: 10초 빛남 → 그 버튼을 누를 때까지 암전 + 빛남
       return true;
     }
     return false;
@@ -279,6 +301,12 @@
     if (t.base && t.resume && !root.UI.popupName() && H.getSpeed) { if (H.getSpeed() === 0) H.setSpeed(wantSp(t)); t.resume = false; }   // 튜토리얼 끝(FT0006) 뒤 책을 닫으면 저절로 시작
     if (t.base) {
       if (t.ph === 'upg' && Gm.upg(s, '접수대') && !root.UI.dlgBusy()) { t.ph = null; say('FT0007', 2); }
+      if (!t.guide && !t.req2Done && req2Of(s) && !root.UI.dlgBusy()) t.guide = { k: 'req2' };   // 3차 5: 튜토리얼 다음 2명 리퀘스트도 안내
+      if (t.guide && !root.UI.dlgBusy()) {
+        const G = GUIDE[t.guide.k];
+        if (!G || G.done(t.guide)) { if (t.guide.k === 'req2') t.req2Done = true; t.guide = null; t.sitSel = null; unglow(); hint(null); return; }
+        const sel = G.glow(t.guide); t.sitSel = sel || null; if (sel !== glowSel) glow(sel); else paintGlow(); hint(G.hint(t.guide)); return;
+      }
       hint(null);
       if (t.sitSel && !root.UI.dlgBusy()) { if (glowSel !== t.sitSel) glow(t.sitSel); else paintGlow(); }   // 누를 버튼이 안 보이면(창이 바뀜) 덮개 안전장치가 덮지 않음
       else if (glowSel && !glowUntil) unglow(); else if (glowSel) paintGlow();
