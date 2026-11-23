@@ -216,7 +216,7 @@
     ['FT0017', s => s.advs.some(a => a.alive && a.state === 'injured'), null, 'g:injury', s => (s.advs.find(a => a.alive && a.state === 'injured') || {}).id],
     ['FT0007', s => alive(s).length >= 5 && s.active.filter(x => x.start === s.week - 1).length >= 2 && !Gm.upg(s, '접수대'), null, '[data-pop="fac"]'],
     ['FT0015', s => Object.values(s.mats || {}).some(n => n > 10) || (s.consign || []).length > 0 || (Gm.carOn && Gm.carOn(s) && Gm.carHere(s).length > 0), null, 'g:mats'],   // 2026-11-23 3차 17: 상단이 처음 와도 이 안내(소재 관리 + 상단)
-    ['FT0016', s => (s.req ? s.req.open : []).some(r => { const n = Gm.reqNeed(s, r); return Object.keys(n.mats || {}).length && !Gm.reqCanPay(s, r); }), null, '[data-pop="req"]'],
+    ['FT0016', s => (s.req ? s.req.open : []).some(r => { const n = Gm.reqNeed(s, r); return Object.keys(n.mats || {}).length && !Gm.reqCanPay(s, r); }), null, 'g:gq'],   // 2026-11-23 4차 10: 길드 발주 → 길드 의뢰 (리퀘스트 → 길드 의뢰 책갈피까지)
     ['FT0014', s => !!s.built['집무실'] && Gm.contractOpen(s) && alive(s).some(a => !a.contract && !Gm.contractWhy(s, a)), null, 'g:contract', s => (alive(s).find(a => !a.contract && !Gm.contractWhy(s, a)) || {}).id],
     ['FT0011', s => alive(s).length >= Gm.advCap(s), null, null],
     ['FT0012', s => !!(s.main && s.main.state === 'offer'), null, '[data-pop="req"]'],
@@ -246,14 +246,18 @@
         return null; },
       hint: g => !g.sell ? '「경영」 → 「소재 관리」에서 소재를 팔거나 사들일 수 있어요' : '상단이 머무는 동안 「상단」 장에서 사고팔 수 있어요',
       done: g => { const s = getS(); return !!g.sell && (!(Gm.carOn && Gm.carOn(s) && Gm.carHere(s).length) || pop() === 'car'); } },
-    injury: { glow: g => pop() !== 'advs' ? '[data-pop="advs"]' : `.ux-row[data-adv="${g.id}"]`, hint: () => '「모험가」 명부에서 다친 모험가를 눌러 상태를 보세요',
-      done: g => { const s = getS(), a = s.advs.find(x => x.id === g.id); return !a || !a.alive || a.state !== 'injured' || (pop() === 'advs' && rowOn(g.id)); } },
+    injury: { glow: g => pop() !== 'advs' ? '[data-pop="advs"]' : !rowOn(g.id) ? `.ux-row[data-adv="${g.id}"]` : '.av-head .ux-tag.injured',   // 4차 6 (1안): 명부 → 다친 모험가 → 「부상 회복 ○주」 표시
+      hint: g => pop() === 'advs' && rowOn(g.id) ? '여기 적힌 주가 지나야 다시 의뢰를 나갈 수 있어요 (눌러서 끝)' : '「모험가」 명부에서 다친 모험가를 눌러 상태를 보세요',
+      click: (g, el) => { if (el.closest('.av-head .ux-tag.injured')) g.st = 1; },
+      done: g => { const s = getS(), a = s.advs.find(x => x.id === g.id); return !a || !a.alive || a.state !== 'injured' || !!g.st; } },
     contract: { glow: g => { if (pop() !== 'advs') return '[data-pop="advs"]'; if (!rowOn(g.id)) return `.ux-row[data-adv="${g.id}"]`; if (!document.querySelector('.ct-of')) return '.av-acts [data-sub="advs:contract"]';   /* 2026-11-23 책 단순화: 계약 제안은 상세 안 단추 */ return '[data-ct="go"]:not([disabled])'; },
       hint: g => !document.querySelector('.ct-of') ? '「모험가」 명부에서 모험가를 고르고 「계약 제안」 단추를 눌러 보세요' : '기간 · 보수를 정하고 「제안하기」를 눌러 보세요',
       done: g => { const s = getS(), a = s.advs.find(x => x.id === g.id); return !a || !a.alive || !!a.contract; } },
     board: { glow: g => { if (!g.st) { if (pop() === 'board') g.st = 1; else return '[data-pop="board"]'; } if (pop() !== 'board') return '[data-pop="board"]'; return g.st === 1 ? '.qb-bars' : '.mk5-fee .ct-seg button:not([disabled])'; },   // 잠긴 20% 칸은 눌리지 않으므로 열린 칸만 밝힘
       hint: g => !g.st ? '「의뢰」를 눌러 게시판을 열어 보세요' : g.st === 1 ? '의뢰 배분: 막대가 많을수록 그 등급 의뢰가 많이 붙어요 (눌러서 넘기기)' : '기본 수수료: 높으면 수입이 늘지만 돈이 급한 모험가는 잘 안 맡아요 (눌러서 끝)',
       click: (g, el) => { if (g.st === 1 && el.closest('.qb-bars')) g.st = 2; else if (g.st === 2 && el.closest('.mk5-fee')) g.st = 3; }, done: g => g.st >= 3 },
+    gq: { glow: () => pop() === 'req' ? '#bookSub [data-sub="order"]' : pop() === 'order' ? null : '[data-pop="req"]',   // 4차 10
+      hint: () => '「리퀘스트」 → 「길드 의뢰」를 열어 보세요', done: () => pop() === 'order' },
     req2: { glow: () => { const s = getS(), r = req2Of(s); if (!r) return null; if (pop() !== 'req') return '[data-pop="req"]'; const card = `[data-rq="${r.id}"]`; if (!document.querySelector(card + '.on')) return card;
         return Gm.reqPartyOf(s, r).length >= 2 ? '[data-rqact="send"]:not([disabled])' : '[data-rqnom]:not(.no):not(.in)'; },
       hint: () => '리퀘스트 장에서 모험가 2명을 지명해 보내 주세요', done: () => !req2Of(getS()) }
@@ -323,6 +327,8 @@
     if (t.base) {
       if (t.ph === 'upg' && Gm.upg(s, '접수대') && !root.UI.dlgBusy()) { t.ph = null; say('FT0007', 2); }
       if (!t.guide && !t.req2Done && req2Of(s) && !root.UI.dlgBusy()) t.guide = { k: 'req2' };   // 3차 5: 튜토리얼 다음 2명 리퀘스트도 안내
+      if (!t.guide && root.UI.popupName() === 'order' && Gm.gqOn(s) && !(t.seen && t.seen.gqHi) && !root.UI.dlgBusy()) {   // 2026-11-23 4차 10 A안: 길드 의뢰 장을 처음 열면 리나 세 줄 + 종류 목록 빛남
+        (t.seen = t.seen || {}).gqHi = 1; root.UI.say(lines('FT0035', 1).concat([{ fn: () => { t.sitSel = '.gq-kinds'; glow('.gq-kinds'); } }]), { urgent: true }); }   // 책 위에서 바로 (urgent: 책이 열려 있어도 미루지 않음)
       if (t.guide && !root.UI.dlgBusy()) {
         const G = GUIDE[t.guide.k];
         if (!G || G.done(t.guide)) { if (t.guide.k === 'req2') t.req2Done = true; t.guide = null; t.sitSel = null; unglow(); hint(null); return; }

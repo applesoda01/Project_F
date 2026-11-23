@@ -1238,3 +1238,5 @@ body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 .bk-fac .fc.can .fb-ic.empty img{opacity:1;filter:none}.bk-fac .fc.can small{color:#3f7a3a}
 .bk-fac .bk-l .fc.can .mk{color:#3f7a3a;background:rgba(63,122,58,.12);border-color:rgba(63,122,58,.5)}
 .bk-fac .fc.poorc .fb-ic img{opacity:.45;filter:grayscale(.6)}
+.mk5-fee b{white-space:nowrap}   /* 4차 2 B안: 「F급 기본 수수료」 한 줄 */
+.bkq-act small.two{line-height:1.45}

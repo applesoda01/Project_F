@@ -950,7 +950,7 @@
     let R;
     const q = s.board.find(x => x.id === qSel);
     let A = '';   // 의뢰 취소 버튼: 오른쪽 쪽 안이 아니라 책 그림 좌표에 고정 (--bkc-x, --bkc-y)
-    if (q) { const G = gqOf(q); R = `<div class="bkq-det">${qDetailHtml(q, !G)}</div>`; A = G ? `<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">길드 의뢰 거두기</button><small>위약금 없음 · 남은 ${fmt(G.hold)}G는 금고로</small></div>` : `${feeOpen ? qFeeHtml(q) : ''}<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">의뢰 취소</button><small>등록비·위약금 ${fmt(Math.round(q.reward * 0.10))}G · 신뢰도 −2</small></div>`; }   // 2026-11-20 길드 의뢰 카드: 수수료 칸 없음 · 거두면 남은 돈을 돌려받음
+    if (q) { const G = gqOf(q); R = `<div class="bkq-det">${qDetailHtml(q, !G)}</div>`; A = G ? `<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">길드 의뢰 거두기</button><small>위약금 없음 · 남은 ${fmt(G.hold)}G는 금고로</small></div>` : `${feeOpen ? qFeeHtml(q) : ''}<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">의뢰 취소</button><small class="two">기한 <b>${Gm.expireWeeks(s) - (s.week - q.posted)}주</b> 남음 (지나면 신뢰도 −${s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1})<br>취소하면 위약금 ${fmt(Math.round(q.reward * 0.10))}G, 신뢰도 −2</small></div>`; }   // 2026-11-23 4차 2 B안: 기한도 단추 옆으로 (상세 맨 아래 줄 없앰)   // 2026-11-20 길드 의뢰 카드: 수수료 칸 없음 · 거두면 남은 돈을 돌려받음
     else R = '<div class="bkq-none"><b>게시된 의뢰가 없습니다</b>의뢰는 매주 게시판에 들어옵니다.</div>';
     b.innerHTML = `<div class="bk2"><section class="bk-l">${L}</section><section class="bk-r">${R}</section>${A}</div>`;
     b.onclick = e => {
@@ -1270,8 +1270,6 @@
     { const G = gqOf(q); if (G) { const left = G.end - s.week;   // 2026-11-20 길드 의뢰 카드: 명성 · 신뢰 · 수수료 · 위약금 없음
       h += `<div class="gq-det"><span class="gq-tag">길드 의뢰 ${GQ_NUM[G.kind] || ''}</span> <b>${esc(Gm.gqLabel(G))}</b>${G.kind === 'mat' ? ` · <b>${G.got} / ${G.n}개</b> 모음` : ''}${G.hot ? ' · <em class="gq-hot">바로 맡겨짐</em>' : ''} · 기한 ${left > 0 ? left + '주 남음' : '이번 주 끝'}<br>${esc(GQ_FX[G.kind] || '')} 수수료 · 명성 · 신뢰도 변화 없이 보상을 그대로 받습니다.</div>`; return h; } }   // 거두기 안내는 아래 버튼 줄에
     h += `<div class="foot"><span>성공 명성 <b class="ux-plus">+${fs}</b> · 신뢰도 <b class="ux-plus">+${ts}</b></span><span>실패 명성 <b class="ux-minus">−${ff}</b> · 신뢰도 <b class="ux-minus">−${tf}</b></span>${fee ? `<span class="fd-chip${feeOpen ? ' on' : ''}" data-qfeeopen="1" title="이 의뢰만 수수료 바꾸기">수수료 <b>${Math.round(Gm.questFee(s, q) * 100)}%</b>${q.fee == null ? ' 기본' : ''} ${feeOpen ? '▾' : '▸'}</span>` : ''}</div>`;
-    { const left = Gm.expireWeeks(s) - (s.week - q.posted);
-      h += `<div class="foot muted">기한 ${left}주 남음 (지나면 사라지고 신뢰도 −${s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1}) · 취소하면 ${fmt(Math.round(q.reward * 0.10))}G, 신뢰도 −2</div>`; }
     return h;
   }
   function showTip(b) {
@@ -1416,7 +1414,7 @@
       <div class="row ux-muted">${Gm.STATS[k.line]} ${Math.round(Gm.finalStat(s, a, k.line))}</div>
       ${evo.length ? `<div class="sec">진화</div><div class="evs">${evo.join('')}</div>` : a.stage >= 3 || a.fin ? '<div class="row ux-muted">최종 형태</div>' : ''}`;
   }
-  function advStateHtml(a) { return a.state === 'quest' ? `<span class="st quest">의뢰 중 ${a.until - s.week > 0 ? (a.until - s.week) + "주" : "· 이번 주 귀환"}</span>` : a.state === 'town' ? '<span class="st town">길드에 있음</span>' : a.state === 'injured' ? `<span class="st away">부상 회복 ${Math.max(0, a.until - s.week)}주</span>` : '<span class="st away">마을 밖</span>'; }
+  function advStateHtml(a) { return a.state === 'quest' ? `<span class="st quest">의뢰 중 ${a.until - s.week > 0 ? (a.until - s.week) + "주" : "· 이번 주 귀환"}</span>` : a.state === 'town' ? '<span class="st town">길드에 있음</span>' : a.state === 'injured' ? `<span class="st away">${a.until - s.week > 0 ? `부상 회복 ${a.until - s.week}주` : '부상 · 이번 주 회복'}</span>` : '<span class="st away">마을 밖</span>'; }
   // ---------- 모험가 팝업 (시안: 머리 / 장비 · 능력치 · 전투 수치 / 아래 탭) ----------
   const CLS_KEY = ['warrior', 'archer', 'mage', 'cleric', 'rogue'];
   const FACE_AT = { warrior_m: [132, 118], warrior_f: [161, 121], archer_m: [148, 110], archer_f: [152, 119], mage_m: [145, 137], mage_f: [158, 142], cleric_m: [128, 116], cleric_f: [143, 125], rogue_m: [132, 122], rogue_f: [147, 128] };   // 상세 창(104×120) 얼굴 위치 [x, y, 확대]
@@ -1477,7 +1475,7 @@
   const stOf = a => a.state === 'quest' ? 'quest' : a.state === 'town' ? 'town' : a.state === 'injured' ? 'injured' : 'away';
   const ST_SHORT = { quest: '의뢰 중', town: '길드', injured: '부상', away: '마을 밖' };   // 2026-11-16 명부 줄은 짧게 (한 줄에 들어가게)
   const ST_TXT = { quest: '의뢰 중', town: '길드에 있음', injured: '부상 회복', away: '마을 밖' };
-  const stTag = a => { const k = stOf(a), w = Math.max(0, a.until - s.week); return `<span class="ux-tag ${k}">● ${ST_TXT[k]}${k === 'quest' ? (w ? ' ' + w + '주' : ' · 이번 주 귀환') : k === 'injured' ? ' ' + w + '주' : ''}</span>`; };   // 2026-11-12: 남은 0주 → "이번 주 귀환"
+  const stTag = a => { const k = stOf(a), w = Math.max(0, a.until - s.week); return `<span class="ux-tag ${k}">● ${k === 'injured' && !w ? '부상' : ST_TXT[k]}${k === 'quest' ? (w ? ' ' + w + '주' : ' · 이번 주 귀환') : k === 'injured' ? (w ? ' ' + w + '주' : ' · 이번 주 회복') : ''}</span>`; };   // 2026-11-12: 남은 0주 → "이번 주 귀환"
   const ITEMS_ = ((root.GAME_DATA || {}).content || {}).items || [];
   const gearItem = (type, g) => ITEMS_.find(i => i.kind === 'gear' && i.gtype === type && i.grade === GR[g]) || null;
   const bkBack = (sub, t) => `<div class="bk-back"><button data-sub="${sub}">← ${t}</button></div>`;   // 2026-11-23 책: 들어간 화면에서 되돌아가는 단추 (탭 대신)
