@@ -835,6 +835,121 @@
 .mk5-q .fd-h{display:flex;align-items:baseline;cursor:pointer}
 .mk5-q .fd-ar{margin-left:auto;font-style:normal;font-weight:400;font-size:14px;color:#8a5a12}
 
+/* 2026-11-19 V4 1단계: 상시 발주 · 메뉴판 운영 · 수수료 5% */
+.od-ed{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.od-mx{font:inherit;font-size:15px;font-weight:700;padding:3px 10px;border-radius:8px;border:2px solid #b9a385;background:#fffaf0;color:#5a3a22;cursor:pointer}
+.od-mx.on{border-color:#1f5f5a;background:#2f7f7a;color:#fff}
+.od-on{color:#2f7f7a;font-style:normal;font-weight:700}.od-off{color:#9a8670;font-style:normal}
+.od-strip span.off{opacity:.5}
+.kmr{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:6px;font-size:13px;color:#5a3a22}
+.kmr button{font:inherit;font-size:12px;font-weight:700;padding:1px 7px;border-radius:6px;border:1.5px solid #b9a385;background:#fffaf0;color:#5a3a22;cursor:pointer;margin:0 2px}
+.kmr button:disabled{opacity:.4;cursor:default}.kmr button.rs{border-style:dashed}
+.kmr .kst b{font-size:15px}.kmr .kst.out{color:#b42332;font-weight:700}
+.kmr .kwarn{color:#b42332}.kmr .kshop{color:#7a5f45}
+.kmr .kpr b,.kmr .kpp b{font-size:15px;margin:0 3px}
+.mk5-chip.lo{background:#e3f1e5;color:#1a6b30;border-color:#7ec795}
+.mk5-eta{font-size:12px;color:#7a5f45;margin-left:4px;white-space:nowrap}
+.ct-seg button.fast{border-color:#7ec795}
+
+/* 2026-11-19 V4 2단계: 시세 화살표 · 소재 처리 */
+.mk-tr{font-size:.8em;font-weight:700;color:#7a5f45;margin-left:4px;white-space:nowrap}.mk-tr.up{color:#b42332}.mk-tr.dn{color:#1a6b30}
+.sl-hint{font-weight:400;font-size:.85em;color:#7a5f45}
+.mp-list{display:flex;flex-direction:column;gap:6px;max-height:330px;overflow:auto;margin:6px 0}
+.mp-row{display:flex;align-items:center;gap:10px;background:#fffaf0;border:1.5px solid #e0cba4;border-radius:9px;padding:4px 8px}
+.mp-row .ic.sm img{width:36px;height:36px;display:block}
+.mp-n{flex:1;min-width:0;display:flex;flex-direction:column;font-size:15px}.mp-n small{font-size:12px;color:#7a5f45}
+.mp-seg{display:flex;gap:3px}.mp-seg.r{min-width:150px;justify-content:flex-end}.mp-seg small{font-size:12px;color:#7a5f45}
+.mp-seg button{font:inherit;font-size:13px;font-weight:700;padding:2px 8px;border-radius:7px;border:1.5px solid #b9a385;background:#fffaf0;color:#5a3a22;cursor:pointer}
+.mp-seg button.on{border-color:#1f5f5a;background:#2f7f7a;color:#fff}
+
+/* 2026-11-19 V4 3단계: 개체수 */
+.res-row{gap:8px;align-items:baseline}.res-b{padding:0 8px;border-radius:7px;font-size:.9em}.res-b.r0{background:#f6dcdc;color:#b42332}.res-b.r1{background:#efe6d2;color:#5a3a22}.res-b.r2{background:#dcefe1;color:#1a6b30}.res-row small{color:#7a5f45}
+
+/* 2026-11-19 결정 47: 남은 그릇 처리 */
+.kmr .kleft button.on{border-color:#1f5f5a;background:#2f7f7a;color:#fff}.kmr .ksale{color:#b42332;font-weight:700}
+
+/* 2026-11-19 시세 그래프: 선 하나 + 기준가 점선, 글자는 잉크색 */
+.sl-chart{margin:10px 0 6px}.sl-ch{font-size:15px;font-weight:700;color:#5a3a22}.sl-ch small{font-weight:400;color:#7a5f45;font-size:12px}
+.pc{display:block;max-width:420px}.pc-none{font-size:13px;color:#7a5f45;padding:8px 0}
+.pc-line{fill:none;stroke:#00897b;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.pc-end{fill:#00897b;stroke:#fffaf0;stroke-width:2}.pc-dot{fill:#00897b;opacity:0;pointer-events:none}
+.pc-hit{fill:transparent;cursor:crosshair}.pc-hit:hover+.pc-dot{opacity:1}
+.pc-base{stroke:#9a8670;stroke-width:1;stroke-dasharray:4 3}.pc-ax{stroke:#d8c6a4;stroke-width:1}
+.pc-t{font-size:11px;fill:#7a5f45}.pc-v{font-size:12px;font-weight:700;fill:#3b2a1a}
+.pc-spark{vertical-align:middle;margin:0 2px}.pc-spark path{fill:none;stroke:#00897b;stroke-width:1.5}
+
+/* 2026-11-19 음식 장: 쪽 상자가 #popBody[data-p=meals] .kitchen{height:100%}(ui_kit.css)를 받아 책 아래로 삐져나오던 것 — 쪽 높이로 고정 */
+#popBody .bk-mg.bk2>.bk-l.kitchen{height:var(--bk-lh)}#popBody .bk-mg.bk2>.bk-r.kitchen{height:var(--bk-rh)}
+
+.kmnote{font-size:12px;color:#7a5f45;text-align:center;margin:-4px 0 4px;line-height:1.35}
+
+/* 2026-11-20 길드 의뢰 · 매입 */
+.gq-tag{font-size:13px;font-weight:700;font-style:normal;color:#fff;background:#8a5a1e;border-radius:8px;padding:1px 8px;margin-left:4px;white-space:nowrap;flex:none}
+.gq-tag.sm{font-size:11px;padding:0 6px;vertical-align:1px}
+.qcard.gqb{border-color:#b8862e;background-image:linear-gradient(90deg,rgba(214,160,60,.22),rgba(214,160,60,0) 40%)}
+.gq-strip{background:#fbf1d6;border-color:#d6b46a;color:#5a3a12}.gq-strip span{border-color:#d6b46a}.gq-strip small{color:#8a6a3a}
+.gq-det{margin:8px 0 0;padding:6px 12px;border-radius:8px;background:#fbf1d6;border:1px solid #e2c48c;font-size:15px;color:#5a4636;line-height:1.5}
+.bk-gq .od-card .n b{font-size:20px}.bk-gq .od-card .sub{font-size:15px}.bk-gq .od-card .ic img{width:48px;height:48px}
+.bk-gq .od-card{padding:10px 14px;gap:12px}.bk-gq .od-empty{padding:12px;font-size:16px}
+.bk-gq .od-btn:disabled{opacity:.45;cursor:default}
+.bk-gq .od-log{font-size:15px;padding:5px 2px}
+.gq-why{font-size:12px;font-weight:700;border-radius:7px;padding:0 6px;background:#efe6d2;color:#5a3a22}.gq-why.done{background:#dcefe1;color:#1a6b30}.gq-why.cancel{background:#f6dcdc;color:#8a3b26}
+.gq-lock{margin:0 0 10px;padding:10px 14px;border-radius:10px;background:#fff0dc;border:2px solid #d9a04a;font-size:15px;color:#6a4614;line-height:1.5}.gq-lock b{display:block;font-size:18px;color:#8a4a12}
+.gq-kinds{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:6px}
+.gq-k{font:inherit;text-align:left;padding:2px 8px;border-radius:9px;border:2px solid #dcc59c;background:#fffaf0;color:#5a3a22;cursor:pointer;line-height:1.25}
+.gq-k b{display:block;font-size:14px;white-space:nowrap}.gq-k small{display:block;font-size:11px;color:#8a7258}
+.gq-k.on{border-color:#2f7f7a;background:#e3f3ef}.gq-k:disabled{cursor:default}.gq-k.soon{opacity:.75;border-style:dashed}.gq-k.lk{opacity:.55;background:#f1e8d6}
+.bk-gq.bk2>.bk-r>*{flex:none}.bk-gq .gq-pick{max-height:162px;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:8px}.bk-gq .gq-pick .od-m img{width:38px;height:38px}.bk-gq .gq-pick .od-m{font-size:12px}
+.od-m.gq-ing:after{content:'의뢰 중';position:absolute;top:-8px;right:-4px;background:#8a5a1e;color:#fff;font-size:11px;padding:1px 6px;border-radius:8px}
+.bk-gq .od-row{font-size:18px;margin:3px 0}.bk-gq .od-h{margin-bottom:8px}.bk-gq .od-row>b:first-child{width:64px}.bk-gq .od-row small{font-size:14px;line-height:1.3}
+.bk-gq .od-step b{font-size:20px}.bk-gq .gq-rw b{width:96px}
+.bk-gq .od-tot{font-size:17px;padding:8px 14px;margin-top:8px;line-height:1.5}.bk-gq .od-tot b{font-size:19px}.bk-gq .od-tot .gq-t{font-size:inherit;color:#5a3a22}
+.bk-gq .od-go{margin-top:6px}.bk-gq .od-btn.go{font-size:20px;padding:8px 30px}.bk-gq .od-note{font-size:14px}
+.bk-buy .gq-mp{max-height:430px}
+.gq-h{font-size:12px;color:#7a5f45}.gq-h b{color:#2f7f7a}
+.gq-rate{display:flex;align-items:center;border:1.5px solid #c9a774;border-radius:8px;overflow:hidden;flex:none}
+.gq-rate button{width:26px;border:0;background:#efe0bf;font:700 16px/1.4 inherit;font-family:inherit;color:#5a3a22;cursor:pointer}.gq-rate button:disabled{color:#c2ae8c;cursor:default}
+.gq-rate b{width:48px;text-align:center;background:#fffaf0;font-size:14px}
+.gq-bp{width:54px;text-align:right;font-weight:700;color:#b5462f;font-size:15px;flex:none}
+/* 2026-11-20 길드 의뢰 여섯 종류 · 떠돌이 상단 (결정 57~62) */
+.gq-ki{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:#efe0bf;border:2px solid #c9a774;font:700 22px/1 MaruBuri,serif;color:#6a4614}
+.bk-gq .gq-pick.wide{grid-template-columns:repeat(3,1fr)}
+.bk-gq .gq-pick.wide .od-m{display:flex;align-items:center;gap:6px;text-align:left;padding:4px 6px}
+.bk-gq .gq-pick.wide .od-m img{width:32px;height:32px;margin:0;flex:none}.bk-gq .gq-pick.wide .od-m span{flex:1;min-width:0}
+.bk-gq .gq-pick.wide .od-m .gq-x{flex:none;font-size:11px}.gq-x small{color:#7a5f45}
+.gq-face{width:38px;height:38px;margin-right:0;flex:none}
+.res-b.sc{outline:1.5px dashed #2f7f7a;outline-offset:1px}.res-row small.sc{color:#2f7f7a;font-weight:700}
+.gq-hot{font-style:normal;font-weight:700;color:#1a6b30}.gq-cold{font-style:normal;color:#8a6a3a}
+.gq-c{font-style:normal;color:#8a5a1e;font-weight:700}
+.car-card .n b em{color:#8a5a1e}.car-card.here{border-color:#2f7f7a;background:#eef8f5}.car-card.lk{opacity:.6;background:#f1e8d6}
+.car-last{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;font-size:13px;color:#7a5f45;align-items:center}.car-last span{background:#fff;border:1px solid #d8bf8f;border-radius:8px;padding:0 6px}
+.car-row{display:flex;align-items:center;gap:10px;background:#fffaf0;border:1.5px solid #e0cba4;border-radius:9px;padding:4px 8px;margin-bottom:6px}
+.car-row .ic.sm img{width:36px;height:36px;display:block}.car-row .mp-n b{font-size:16px}.car-row .mp-n small{font-size:13px}.car-row .mp-n small b{font-size:13px;color:#b5462f}
+.car-x{font-style:normal;color:#1a6b30;font-size:14px}
+.car-btn{display:flex;gap:4px;flex:none}
+.car-cons{grid-template-columns:40px 62px 1fr auto}.car-pay{text-align:right;font-size:13px;line-height:1.3}.car-pay small{font-weight:400}
+.gq-strip{flex-wrap:wrap}.gq-strip span{white-space:nowrap}.gq-strip>b{white-space:nowrap}
+/* 2026-11-20 매입가 골드 입력 */
+.gq-rate button[data-bgold]{min-width:26px;padding:0 4px}.gq-auto{margin-left:4px;font-size:11px;padding:0 5px}
+/* 2026-11-20 식당: 시장에서 사는 상시 재료 */
+.kmat .kmk{display:block;font-size:10px;font-style:normal;opacity:.75}
+/* 2026-11-20 매입 화면: 물음표 도움말 · 아이콘 밑 수량 · 시세 그래프 */
+.tr-help{display:inline-block;position:relative;margin-left:6px;vertical-align:middle}
+.tr-help summary{list-style:none;cursor:pointer;width:20px;height:20px;border-radius:50%;background:#2f6a52;color:#fff;font:700 13px/20px sans-serif;text-align:center}
+.tr-help summary::-webkit-details-marker{display:none}
+.tr-help[open] summary{background:#b5462f}
+.tr-help-b{position:absolute;right:-8px;top:26px;z-index:20;width:340px;max-width:70vw;padding:10px 12px;border-radius:8px;background:#fffaf0;border:1.5px solid #c9a76a;box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:13px;font-weight:400;color:#3b2f22;line-height:1.6;white-space:normal}
+.mp-ic{display:flex;flex-direction:column;align-items:center;flex:none;width:40px}
+.mp-ic>b{font-size:12px;line-height:1.1;color:#4a3a28}
+.mp-spk{border:0;background:none;padding:1px 3px;border-radius:5px;cursor:pointer;vertical-align:middle}
+.mp-spk:hover,.mp-spk.on{background:rgba(0,137,123,.13)}
+.mp-chart{background:#fffaf0;border:1.5px solid #e0cba4;border-radius:9px;padding:6px 8px;margin:-2px 0 2px}
+.mp-per{display:flex;gap:4px;align-items:center;margin-bottom:4px}
+.mp-per button{font-size:12px;padding:1px 8px;border-radius:6px;border:1px solid #c9a76a;background:#fff;cursor:pointer}
+.mp-per button.on{background:#2f6a52;color:#fff;border-color:#2f6a52}
+.mp-per small{margin-left:6px;color:#7a6650}
+.gq-am{font-weight:400;color:#7a6650;font-size:12px}
+
 /* 2026-11-19 요리 버프 아이콘: 명부 이름 옆 */
 .buff-ico{width:22px;height:22px;object-fit:contain;vertical-align:-5px;margin-left:4px;padding:1px;border-radius:50%;background:#fff3cf;box-shadow:0 0 0 1.5px #d9a64a}
 .ux-face .buff-ico.pt{position:absolute;left:-7px;top:-7px;width:20px;height:20px;margin:0;vertical-align:0}   /* 명부 줄: 초상 왼쪽 위 모서리 (이름 칸이 좁아 이름 옆에 두면 F 배지와 겹침) */
@@ -857,6 +972,139 @@ p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 
 .kdish .rc.rum em{display:inline-block;margin-right:4px;padding:0 4px;border-radius:3px;background:#e9c98a;color:#5a3a20;font:700 10px/1.5 var(--hf);font-style:normal}
 .kdish .rc.rum u{text-decoration:none;color:#b06a18;letter-spacing:1px;white-space:nowrap}
 
+/* 2026-11-20 오른쪽 책갈피: 책 페이지 높이 안에 들어가게 (많으면 조금씩 줄어듦) */
+#bookSub{height:calc(var(--bk-ry) + var(--bk-rh) - var(--bkm-y) - 24px)}
+#bookSub button{height:auto;flex:0 1 var(--bkm-h);min-height:64px}
+/* 2026-11-20 길드 의뢰 토벌 · 정찰: 사냥터 정보 */
+.gq-site{margin:2px 0 6px;padding:6px 10px;border-radius:8px;background:rgba(255,250,236,.65);border:1px solid rgba(122,74,40,.22);display:flex;flex-direction:column;gap:4px}
+.gs-r{display:flex;align-items:center;gap:8px;font-size:14px;flex-wrap:wrap}
+.gs-r>b:first-child{width:52px;flex:none;font-size:14px}
+.gs-r>small{color:#7a6650;font-size:13px}
+.gs-mons{display:flex;flex-wrap:wrap;gap:4px 12px}
+.gs-mon{display:inline-flex;align-items:center;gap:4px}
+.gs-mon .pic{display:inline-block;width:34px;height:26px;background:no-repeat center bottom/contain;image-rendering:pixelated}
+.gs-mon small{color:#7a6650;font-size:12px;margin-left:2px}
+.gs-sk{display:inline-flex;gap:2px}.gs-sk .sk{width:18px;height:18px}
+.gs-mats{display:flex;flex-wrap:wrap;gap:6px}
+.gs-mat{display:inline-flex;flex-direction:column;align-items:center;font-size:12px}
+.gs-mat .ux-slot{width:34px;height:34px}.gs-mat .ux-slot img{width:28px;height:28px}
+.gs-mat em{font-style:normal;color:#7a6650}.gs-mat.main em{color:#2f6a52;font-weight:700}
+.gs-note{font-size:12px;color:#7a6650;line-height:1.35}
+.gs-sk{display:inline-flex;align-items:center;gap:2px;margin-left:auto}.gs-sk small{font-size:12px;color:#7a6650;margin-left:4px}
+.gs-q{display:inline-block;width:15px;height:15px;border-radius:50%;background:#2f6a52;color:#fff;font:700 11px/15px sans-serif;text-align:center;font-style:normal;cursor:help}
+.gq-site{gap:2px;padding:4px 10px}
+.bk-gq .gq-pick.wide{max-height:86px}
+.bk-gq .od-tot{font-size:14px;padding:6px 12px;line-height:1.4}.bk-gq .od-tot b{font-size:16px}
+/* 2026-11-20 사용자 시안 피드백: 사냥터 고르기 칸 넓게 · 몬스터 그림 · 버튼은 쪽 아래로 */
+.bk-gq .gq-pick.wide{max-height:178px}
+.gq-mpic{display:inline-block;flex:none;width:44px;height:34px;background:no-repeat center bottom/contain;image-rendering:pixelated}
+.bk-gq .od-go{margin-top:auto;padding-bottom:6px}
+.bk-gq .gq-pick.wide{grid-template-columns:repeat(2,minmax(0,1fr));overflow-x:hidden;overflow-y:auto}
+.bk-gq .gq-pick.wide .od-m span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 2026-11-20 소재 관리 (판매 + 매입 + 시장 재고) */
+.bk-mt.bk2>.bk-l,.bk-mt.bk2>.bk-r{display:flex;flex-direction:column;min-height:0}
+.mt{color:#4a321c;display:flex;flex-direction:column;height:100%;min-height:0}
+.mt .ux-h{display:flex;align-items:center;gap:6px}
+.mt-flt{display:flex;gap:6px;margin:6px 0}
+.mt-flt button{font:inherit;padding:2px 12px;border-radius:999px;border:1.5px solid #c9a76a;font-size:14px;background:#fffaf0;color:#5a3a22;cursor:pointer}
+.mt-flt button.on{background:#7a4a28;border-color:#7a4a28;color:#fff3dc}
+.mt-list{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:5px;padding-right:4px}
+.mt-row{font:inherit;color:inherit;text-align:left;cursor:pointer;display:grid;grid-template-columns:46px 1fr 90px 84px;align-items:center;gap:8px;padding:4px 8px;background:#fffaf0;border:1.5px solid #e0cba4;border-radius:9px}
+.mt-row:hover{border-color:#b8862e}
+.mt-row.on{border-color:#7a4a28;box-shadow:inset 4px 0 0 #7a4a28;background:#fbefd6}
+.mt-ic{display:flex;flex-direction:column;align-items:center}.mt-ic img{width:36px;height:36px}.mt-ic b{font-size:12px;line-height:1.1}.mt-ic.zero b{color:#b0998a}
+.mt-nm b{font-size:16px}.mt-nm small{display:block;font-size:12px;color:#7a6650}.mt-nm i{font-style:normal}.mt-nm i.up{color:#b42332}.mt-nm i.dn{color:#1a6b30}
+.mt-bp{text-align:center;font-size:12px;color:#7a6650;line-height:1.25}.mt-bp b{display:block;font-size:17px;color:#b5462f}.mt-bp.auto b{color:#7a5a3a}
+.mt-h4{font-size:12px;color:#7a6650;line-height:1.35;text-align:right}.mt-h4 b{color:#2f6a52}
+.mt-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(122,74,40,.35);font-size:14px}
+.mt-r{color:#4a321c;display:flex;flex-direction:column;gap:9px;height:100%;min-height:0;overflow:auto}
+.mt-top{display:flex;gap:12px;align-items:center}
+.mt-top .big{width:72px;height:72px;flex:none}.mt-top .big img{width:60px;height:60px}
+.mt-tn{display:flex;align-items:center;gap:6px}.mt-tn b{font-size:22px}
+.mt-tn .tg{padding:0 8px;border-radius:999px;font-size:12px;background:#e9d6b0;color:#5a3a22}.mt-tn .tg.rare{background:#7e4aa0;color:#fff}.mt-tn .tg.st{background:#2f6a52;color:#fff}
+.mt-top p{margin:2px 0 0;font-size:13px;color:#7a6650}
+.mt-ch{background:#fffaf0;border:1.5px solid #e0cba4;border-radius:9px;padding:6px 8px}
+.mt-per{display:flex;gap:4px;align-items:center;font-size:12px}
+.mt-per button{font:inherit;font-size:12px;padding:1px 8px;border-radius:6px;border:1px solid #c9a76a;background:#fff;cursor:pointer}
+.mt-per button.on{background:#2f6a52;color:#fff;border-color:#2f6a52}.mt-per em{margin-left:auto;font-style:normal;color:#7a6650}
+.mt-stock{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:4px}
+.mt-stock .bar{position:relative;flex:1;height:8px;border-radius:4px;background:#efe2c8;overflow:visible}
+.mt-stock .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#b8862e}
+.mt-stock .bar u{position:absolute;top:-3px;bottom:-3px;width:2px;background:#5a3a22}
+.mt-stock small{color:#7a6650}
+.mt-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mt-box{background:#fffaf0;border:1.5px solid #e0cba4;border-radius:9px;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.mt-box h4{margin:0;font-size:16px;display:flex;justify-content:space-between;align-items:center}.mt-box h4 small{font-weight:400;color:#7a6650;font-size:12px}
+.mt-kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:14px}.mt-kv b{text-align:right}
+.mt-btns{display:flex;gap:6px}.mt-btns .ux-btn{flex:1;font-size:13px;padding:5px 0}
+.mt-step{display:flex;align-items:center;justify-content:center;gap:4px}
+.mt-step button{font:inherit;min-width:28px;padding:2px 4px;border-radius:6px;border:1px solid #c9a76a;background:#fff;font-size:12px;cursor:pointer}.mt-step button:disabled{opacity:.4;cursor:default}
+.mt-step b{min-width:56px;text-align:center;font-size:21px;color:#b5462f}
+.mt-auto{text-align:center;font-size:12px;color:#7a6650}
+.mt-who{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:12px;text-align:center;line-height:1.25}
+.mt-who span{padding:3px 0;border-radius:6px;background:#efe2c8;color:#7a5a3a}.mt-who span.y{background:#c6e2cf;color:#1f5a3a;font-weight:700}
+.mt-log{font-size:13px;color:#5a3c22;border-top:1px dashed rgba(122,74,40,.35);padding-top:6px}.mt-log div{display:flex;justify-content:space-between;padding:1px 0}
+.mt-note{font-size:12px;color:#9a5a3a;line-height:1.35}
+.bk-mt .tr-help-b{left:0;right:auto}
+/* 2026-11-20 사용자: 기한 ~ 내기 버튼 사이 빈 곳을 써서 사냥터 정보를 크게 */
+.bk-gq .gq-site{padding:8px 12px;gap:8px;margin:4px 0 10px}
+.bk-gq .gs-r{font-size:15px;gap:10px}.bk-gq .gs-r>b:first-child{width:60px;font-size:15px}
+.bk-gq .gs-mon .pic{width:58px;height:44px}.bk-gq .gs-mon{font-size:15px}
+.bk-gq .gs-sk .sk{width:22px;height:22px}.bk-gq .gs-sk small{font-size:13px}
+.bk-gq .gs-mat .ux-slot{width:44px;height:44px}.bk-gq .gs-mat .ux-slot img{width:36px;height:36px}.bk-gq .gs-mat{font-size:13px}
+.bk-gq .gq-pick.wide{max-height:200px}
+.bk-gq.bk2>.bk-r>.gq-site{flex:1 1 auto;justify-content:space-evenly;max-height:260px}
+/* 2026-11-20 떠돌이 상단: 주인 인사 · 사기 */
+.car-say{margin:2px 0 6px;padding:8px 12px;border-radius:10px;background:#fffaf0;border:1.5px solid #e0cba4;font-size:15px;line-height:1.5;color:#4a321c}
+.car-say b{display:block;font-size:13px;color:#8a5a12}
+.car-row.buy{background:rgba(47,106,82,.06)}
+.car-row.rare{background:rgba(126,74,160,.10);border-color:#7e4aa0}
+.car-rare{font-style:normal;font-size:11px;padding:0 6px;border-radius:999px;background:#7e4aa0;color:#fff;margin-left:4px}
+/* 2026-11-20 사용자 피드백: 소재 관리 줄 정리 · 도움말 잘림 · 장부 상세 */
+.mt-row{grid-template-columns:46px 1fr 96px}
+.bk-mt.bk2>.bk-l{overflow:visible;z-index:3}.bk-mt .mt{overflow:visible}.bk-mt .mt .ux-h{position:relative;z-index:5}
+.bk-mt .tr-help-b{width:380px;max-width:none;z-index:30}
+.mt-per .mk-tr{font-style:normal}
+.lg tr.lg-k{cursor:pointer}.lg tr.lg-k:hover td{background:rgba(184,134,46,.12)}
+.lg tr.lg-k.on td{background:rgba(122,74,40,.16);font-weight:700}
+.lg-sum-btn{font:inherit;font-size:13px;padding:2px 10px;border-radius:999px;border:1.5px solid #c9a76a;background:#fffaf0;color:#5a3a22;cursor:pointer}
+.lg-sum-btn.on{background:#7a4a28;border-color:#7a4a28;color:#fff3dc}
+.lg-det .ld-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.lg-det .ld-box{background:#fffaf0;border:1.5px solid #e0cba4;border-radius:9px;padding:8px 10px}
+.lg-det .ld-box>b{font-size:14px;color:#7a6650}.lg-det .ld-box>em{display:block;font-style:normal;font-size:24px;font-weight:700;color:#2f6a52}.lg-det .ld-box>em.neg{color:#b42332}
+.lg-det .ld-tx{font-size:13.5px;line-height:1.5;color:#4a321c;margin-top:4px}
+.lg-det .ld-hist{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.lg-det .ld-r{display:grid;grid-template-columns:54px 1fr 70px;align-items:center;gap:8px;font-size:13px}
+.lg-det .ld-r i{height:10px;background:#efe2c8;border-radius:5px;position:relative;overflow:hidden}
+.lg-det .ld-r u{position:absolute;left:0;top:0;bottom:0;background:#2f6a52;border-radius:5px}.lg-det .ld-r u.neg{background:#b42332}
+.lg-det .ld-r b{text-align:right}
+#pop .bk2.mg-ledger table.lg td,#pop .bk2.mg-ledger table.lg th{padding-top:4px!important;padding-bottom:4px!important}
+/* 2026-11-20 상단 호위 의뢰 */
+.es-box{margin:0 0 8px;padding:10px 12px;border-radius:10px;background:linear-gradient(#fff6e2,#fbeccc);border:2px solid #b8862e;box-shadow:0 2px 6px rgba(90,58,34,.18);color:#4a321c}
+.es-box.st{padding:7px 12px;font-size:14px;border-width:1.5px;box-shadow:none}.es-box.off{opacity:.7}
+.es-h{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700}.es-h .lv{margin-left:auto;font-size:12px;font-weight:400;color:#7a6650}
+.es-q{margin:6px 0;font-size:14px;line-height:1.5}
+.es-kv{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:3px 10px;font-size:13px;margin:6px 0}.es-kv b{color:#5a3a22}
+.es-two{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12.5px;line-height:1.4}.es-two div{padding:5px 8px;border-radius:7px}
+.es-two .ok{background:#e3f1e5;color:#1f5a3a}.es-two .ng{background:#f6e0da;color:#7c2a1a}
+.es-btns{display:flex;gap:6px;margin-top:8px}.es-btns .ux-btn{flex:1}
+.gq-tag.es{background:#b8862e}
+.bk-car .es-box{padding:7px 10px}.bk-car .es-kv{margin:4px 0}.bk-car .es-btns{margin-top:6px}
+/* 2026-11-20 사용자: 하락 표시 크기 · 물음표 도움말 · 상단 빨간 점 */
+.mt-nm i,.mt-per .mk-tr{font:700 10px/1 sans-serif;font-style:normal;vertical-align:1px}
+.mt-box h4 .mt-q{margin-left:4px;margin-right:auto}.mt-box h4 .mt-q summary{width:17px;height:17px;font:700 11px/17px sans-serif}
+.mt-box .tr-help-b{width:300px;font-size:12.5px;font-weight:400;right:auto;left:-40px}
+.mt-r{overflow:visible}.bk-mt.bk2>.bk-r{overflow:visible}
+#hudBR .rdot::after,#mgBtn.rdot::after{content:'';position:absolute;right:8px;top:4px;width:12px;height:12px;border-radius:50%;background:#d93a2b;box-shadow:0 0 0 2px #fff3dc}
+#mgBtn{position:relative}
+.mt-two .mt-box:last-child .tr-help-b{left:auto;right:-12px}
+/* 2026-11-23 사용자: 소재 관리 최근 매입 — 누구에게서 · 개당 값 */
+.mt-log>div{display:grid;grid-template-columns:minmax(0,1fr) auto 52px 48px;gap:8px;align-items:center}
+.mt-log>div>span:first-child{display:flex;gap:6px;align-items:center;min-width:0}
+.mt-log small{color:#7a6248;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt-log .mt-lq{color:#5a4632}.mt-log .mt-lw{color:#8a7458;font-size:12px;text-align:right}.mt-log>div>span:last-child{text-align:right;font-weight:700}
+.mt-src{font-style:normal;font:700 11px/1 sans-serif;padding:3px 6px;border-radius:9px;background:#e9dcc2;color:#5a4632;flex:none}
+.mt-src.mk{background:#dbe7d0;color:#3d5a2c}.mt-src.car{background:#ead7c6;color:#7a4320}
 /* ---------- 던전 (2026-11-21 3단계 · 시안 docs/design/mockups/dungeon_1120/dg_req) ---------- */
 .bk-rq .rq-dg{position:relative;display:flex;gap:14px;align-items:center;width:100%;margin:0 0 14px;padding:12px 16px;border-radius:12px;background:linear-gradient(180deg,#f3e9d6,#eadcc0);border:2px solid #8a5a2b;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5);cursor:pointer;text-align:left;font:inherit;color:inherit}
 .bk-rq .rq-dg.on{border-color:#c48a2a;box-shadow:0 0 0 3px rgba(212,160,60,.35),inset 0 0 0 2px rgba(255,255,255,.6)}

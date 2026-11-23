@@ -59,7 +59,11 @@
   };
 
   // ---------- 상태 표시 ----------
+  function carBadge() {   // 하단 경영 메뉴: 상단이 머무는 동안 '상단' 항목, 아직 안 열어 봤으면 빨간 점
+    const b = document.getElementById('mCarBtn'), mg = document.getElementById('mgBtn'); if (!b || !s) return; const here = Gm.carOn(s) ? Gm.carHere(s) : [], key = here.map(c => c.id + ':' + s.car[c.id].until).join(',');
+    b.hidden = !here.length; const red = !!key && key !== carSeen; b.classList.toggle('rdot', red); if (mg) mg.classList.toggle('rdot', red); }
   UI.hud = function () {
+    carBadge();
     { const sb = q('#mSellBtn'); if (sb) sb.classList.toggle('lock', !s.built['판매창구']); }   // 판매창구를 짓기 전에는 회색
     q('#hDate').textContent = Gm.dateLabel(s.week);
     q('#hGrade').style.backgroundImage = 'url(assets/ui/hud/badge_' + GR[s.grade] + '.png)'; hudTip(q('#hGrade'), '지금 길드는 ' + GR[s.grade] + '급이에요.\n' + (s.grade < 6 ? '길드의 등급이 상승하면, 최대로 활동할 수 있는 모험가가 늘어나요.\n' : '') + GUILD_UP[s.grade]);
@@ -200,6 +204,8 @@
     for (const L of logs) { if (L.dgOpen) dgOpenScene(); if (L.dgRoyal) dgRoyalScene(); }   // 2026-11-21 던전 열림 대화 · 정복 왕국 포상 (시안 확정)
     for (const L of logs) if (L.kind === 'arrive' && L.who && L.who[0]) { const a = s.advs.find(b => b.name === L.who[0] && b.alive); if (a) arrShow(a); }   // 2026-11-20 새 모험가 소개 카드 (버릇은 영입할 때 공개, 사용자 결정)
     for (const L of logs) {
+      if (L.car && L.car.ev === 'notice') { const c = Gm.CARS.find(x => x.id === L.car.id); if (c) UI.say([{ name: '리나', face: 'smile', text: `마스터, ${c.name}이 ${L.car.n || 2}주 뒤에 들른대요! 좋아하는 물건(${CAR_LIKE[c.id] || '여러 가지'})을 창고에 모아 두면 비싸게 팔 수 있어요.` }]); }
+      else if (L.car) { const c = Gm.CARS.find(x => x.id === L.car.id); if (c && L.car.ev === 'hi') carOpenQ = true; if (c) UI.say(L.car.ev === 'hi' ? [{ name: '리나', face: 'smile', text: `마스터, ${c.name}이 왔어요! 경영 → 상단에서 사고팔 수 있어요.` }, { name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'hi', L.car.lv) }].concat(L.car.esc ? [{ name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'esc') }] : []) : L.car.ev === 'escOk' || L.car.ev === 'escNg' ? [] : [{ name: `${c.boss} (${c.name})`, face: 'smile', text: Gm.carTalk(c, 'bye') }]); }   // 2026-11-20 사용자: 상단 방문 대화
       if (L.rq) {   // 리퀘스트: 의뢰 · 완료 · 실패 · 거절 대사 (data/quest_lines.csv). 외지인이 처음 오면 리나 한마디가 앞에 붙음
         const R0 = Gm.reqOf(s), fr = (Gm.QLINES[L.rq.key] || {}).first; let ls = [];
         if (L.rq.ev === 'req' && fr && !(R0.first = R0.first || {})[L.rq.key]) { R0.first[L.rq.key] = 1; ls = ls.concat(rqLinesOf(L.rq.key, 'first', L.rq.who)); }
@@ -263,6 +269,7 @@
     pop.appendChild(el); setTimeout(() => el.classList.add('out'), 1250); setTimeout(() => el.remove(), 1700);
   }
   UI.rqStamp = rqStamp;   // 시험용
+  let carOpenQ = false, carSeen = '';   // 2026-11-20 사용자: 상단 도착 대화가 끝나면 상단 화면을 한 번 열고, 하단 경영 메뉴에 '상단' + 빨간 점
   const RQD_MS = 4500, rqdQ = []; let rqdEl = null, rqdTimer = 0, rqdOn = false;
   function rqdFace(key, who) {   // 의뢰인 얼굴: NPC 초상(눈 위치 기준으로 잘라 냄) 또는 모험가 SD 얼굴
     const d = Gm.NQ_BY[key]; if (!d) return '';
@@ -314,10 +321,13 @@
     { id: 'adv', name: '모험가', col: '#b38a26', pops: ['advs', 'promo'] },
     { id: 'fac', name: '시설', col: '#566d84', pops: ['fac'] },
     { id: 'food', name: '음식', col: '#b0612e', pops: ['meals'] },   // 2026-11-13: 경영 장에서 분리 (사용자 결정)
-    { id: 'mgmt', name: '경영', col: '#66763a', pops: ['ledger', 'sell', 'trade', 'codex', 'log'] },   // trade: 매입 · 위탁 (2026-11-18 V2 E4-4)
+    { id: 'mgmt', name: '경영', col: '#66763a', pops: ['ledger', 'sell', 'trade', 'car', 'codex', 'log'] },   // car: 떠돌이 상단 (2026-11-20 결정 57~62, carOn일 때만 책갈피)   // trade: 매입 · 위탁 (2026-11-18 V2 E4-4)
     { id: 'opt', name: '설정', col: '#6a4785', pops: ['opts'] },
   ];
-  const SUB_NAME = { board: '게시판', req: '리퀘스트', advs: '명부', 'advs:career': '경력', 'advs:contract': '계약 제안', promo: '전직 제안', fac: '시설', ledger: '장부', meals: '음식 설정', sell: '소재 판매', trade: '매입 위탁', order: '길드 발주', codex: '도감', log: '기록', opts: '설정' };
+  const SUB_NAME = { board: '게시판', req: '리퀘스트', advs: '명부', 'advs:career': '경력', 'advs:contract': '계약 제안', promo: '전직 제안', fac: '시설', ledger: '장부', meals: '음식 설정', sell: '소재 판매', trade: '매입 위탁', car: '상단', order: '길드 발주', codex: '도감', log: '기록', opts: '설정' };
+  const GQ_NAME = { order: '길드 의뢰', trade: '소재 관리' };   // 2026-11-20: 소재 판매 + 매입 = 소재 관리   // 2026-11-20 길드 의뢰 · 매입 개편이 켜지면 책갈피 이름
+  const subName = p => (Gm.gqOn(s) && GQ_NAME[p]) || SUB_NAME[p] || TITLES[p];
+  const popTitle = p => (Gm.gqOn(s) && GQ_NAME[p]) || TITLES[p] || '';
   const chapterOf = name => BOOK.find(c => c.pops.includes(name)) || null;
   function bookInit() {
     const mk = q('#bookMarks'); if (!mk || mk.childElementCount) return;
@@ -331,10 +341,10 @@
   function bookSync(name) {
     bookInit(); const c = chapterOf(name);
     q('#bookMarks').querySelectorAll('[data-ch]').forEach(b => b.classList.toggle('on', !!c && b.dataset.ch === c.id));
-    q('#bookTitle').textContent = c ? c.name : (TITLES[name] || '');
+    q('#bookTitle').textContent = c ? c.name : popTitle(name);
     { const on = q('#bookMarks [data-ch].on'); q('#bookSub').style.setProperty('--bm', on ? getComputedStyle(on).getPropertyValue('--bm') : '#8a6a46'); }   // 오른쪽 책갈피 색 = 지금 장 색
-    const subs = c ? (c.id === 'adv' ? [['advs', name === 'advs' && advView === 'detail'], ['advs:career', name === 'advs' && advView === 'career'], ['promo', name === 'promo']].concat(Gm.contractOpen(s) ? [['advs:contract', name === 'advs' && advView === 'contract']] : []) : c.pops.map(p => [p, p === name])) : [];   // 모험가 장: 명부 · 경력 · 전직 제안
-    q('#bookSub').innerHTML = subs.length > 1 ? subs.map(([p, on]) => `<button data-sub="${p}" class="${on ? 'on' : ''}">${(SUB_NAME[p] || TITLES[p]).replace(/ /g, '')}</button>`).join('') : '';
+    const subs = c ? (c.id === 'adv' ? [['advs', name === 'advs' && advView === 'detail'], ['advs:career', name === 'advs' && advView === 'career'], ['promo', name === 'promo']].concat(Gm.contractOpen(s) ? [['advs:contract', name === 'advs' && advView === 'contract']] : []) : c.pops.filter(p => (p !== 'car' || Gm.carOn(s)) && (p !== 'sell' || !Gm.gqOn(s))).map(p => [p, p === name])) : [];   // 모험가 장: 명부 · 경력 · 전직 제안
+    q('#bookSub').innerHTML = subs.length > 1 ? subs.map(([p, on]) => `<button data-sub="${p}" class="${on ? 'on' : ''}">${subName(p).replace(/ /g, '')}</button>`).join('') : '';
   }
   // ---------- 책: 경영 장 정렬 (2026-11-13) — 기존 화면을 그대로 그린 뒤 왼쪽 / 오른쪽 쪽으로 나눠 담음 (쪽마다 원래 바깥 상자 class를 붙여 스타일 유지) ----------
   function mgBook(b, kind) {
@@ -607,13 +617,15 @@
   // 화면에서 바로 일어난 리퀘스트 기록(완료 · 거절 등)을 로그 · 대사로 흘려보냄 (주 진행 때는 main.js 가 UI.onLogs 로 보냄)
   function rqFlush(top) { const f = []; for (const L of s.log) { if (L === top) break; f.push(L); } if (f.length && f.length < 20) UI.onLogs(f.reverse()); }
   UI.reqBadge = function () { goalShow(); const n = (s.req ? s.req.open : []).filter(r => r.isNew).length + (s.main && s.main.state === 'offer' ? 1 : 0) + (dgShown() && !s.dg.seen ? 1 : 0), b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); const c = q('#bReq'); if (c) { c.textContent = n; c.hidden = !n; } return n; };
-  const TITLES = { req: '리퀘스트', order: '길드 발주', trade: '매입 · 위탁', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
+  const TITLES = { req: '리퀘스트', order: '길드 발주', trade: '매입 · 위탁', car: '떠돌이 상단', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
+    if (name === 'sell' && Gm.gqOn(s)) name = 'trade';   // 2026-11-20: 소재 판매는 소재 관리에 합침
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
+    if (name === 'car' && s && Gm.carOn(s)) { carSeen = Gm.carHere(s).map(c => c.id + ':' + s.car[c.id].until).join(','); setTimeout(carBadge, 0); }
     const wasOpen = q('#popBack').classList.contains('open'), prev = popup;
     if (!bookHold) { bookHold = true; bookSp = curSp; hooks.setSpeed && hooks.setSpeed(0); document.body.classList.add('bookOn'); }   // 책을 펼치면 일시정지 + HUD 숨김 (2026-11-16)
     const go = () => {
-      popup = name; q('#popTitle').textContent = TITLES[name];
+      popup = name; q('#popTitle').textContent = popTitle(name);
       q('#popBack').classList.add('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.toggle('on', b.dataset.pop === name));
       q('#popBody').innerHTML = ''; q('#popBody').dataset.g = ''; q('#popBody').dataset.p = name; renderPopup(); q('#popBody').scrollTop = 0;
       bookSync(name);
@@ -643,8 +655,9 @@
     else if (popup === 'log') { const l0 = b.querySelector('.gl-list'), y = l0 ? l0.scrollTop : 0; b.innerHTML = logHtml(); mgBook(b, 'log'); const l1 = b.querySelector('.gl-list'); if (l1) l1.scrollTop = y; }   // 필터 줄은 고정, 목록만 스크롤 (다시 그려도 위치 유지)
     else if (popup === 'codex') { b.innerHTML = codexHtml(); mgBook(b, 'codex'); }
     else if (popup === 'sell') { b.innerHTML = sellHtml(); mgBook(b, 'sell'); }
-    else if (popup === 'trade') b.innerHTML = tradeHtml();
-    else if (popup === 'order') b.innerHTML = orderHtml();
+    else if (popup === 'trade') { const k = b.querySelector('.gq-mp'), y = k ? k.scrollTop : 0; b.innerHTML = Gm.gqOn(s) ? matHtml() : tradeHtml(); const k1 = b.querySelector('.gq-mp'); if (k1) k1.scrollTop = y; }   // 2026-11-20 매입 개편: 목록 스크롤 유지
+    else if (popup === 'car') { const keep = sel => { const el = b.querySelector(sel); return el ? el.scrollTop : 0; }, y1 = keep('.bk-car .bk-l'), y2 = keep('.bk-car .bk-r'); b.innerHTML = carHtml(); const l1 = b.querySelector('.bk-car .bk-l'), r1 = b.querySelector('.bk-car .bk-r'); if (l1) l1.scrollTop = y1; if (r1) r1.scrollTop = y2; }   // 2026-11-20 떠돌이 상단
+    else if (popup === 'order') { const keep = sel => { const el = b.querySelector(sel); return el ? el.scrollTop : 0; }, y1 = keep('.bk-gq .bk-l'), y2 = keep('.bk-gq .bk-r'); b.innerHTML = Gm.gqOn(s) ? gqHtml() : orderHtml(); const l1 = b.querySelector('.bk-gq .bk-l'), r1 = b.querySelector('.bk-gq .bk-r'); if (l1) l1.scrollTop = y1; if (r1) r1.scrollTop = y2; }   // 2026-11-20 길드 의뢰
     else if (popup === 'opts') b.innerHTML = optsHtml();
     else if (popup === 'req') { const keep = sel => { const el = b.querySelector(sel); return el ? el.scrollTop : 0; }, y1 = keep('.bk-rq .bk-r'), y2 = keep('.rq-list'), sel0 = b.dataset.rsel; b.innerHTML = reqHtml(); const r1 = b.querySelector('.bk-rq .bk-r'), l1 = b.querySelector('.rq-list'); if (r1 && sel0 === String(rqSel)) r1.scrollTop = y1; if (l1) l1.scrollTop = y2; b.dataset.rsel = rqSel; UI.reqBadge(); }
   }
@@ -652,20 +665,44 @@
   // 소재 판매 창구 (docs/balance/economy_v1.md 6절, 시설 팝업 '판매하기'로 열기): 보관 소재를 직접 팖. 음식이 아닌 소재 먼저, 음식 소재는 "요리 재료"
   const SELL_P = [6, 9, 12, 30, 36, 48, 90];
   let sellSel = null;
-  const sellPrice = m => Gm.matSellPrice(s, m.id);   // 판매 창구 업그레이드 +3G (2026-11-12) · 2026-11-17 규칙은 game_core.matSellPrice
+  const sellPrice = m => Gm.matSellPrice(s, m.id);   // 판매 창구 업그레이드 +3G (2026-11-12) · 2026-11-17 규칙은 game_core.matSellPrice · 2026-11-19 시세
+  const trendTag = id => { const t = Gm.mktTrend(s, id), x = Gm.mktMult(s, id); return `<span class="mk-tr ${t > 0 ? 'up' : t < 0 ? 'dn' : ''}" title="시세 · 기준가의 ${Math.round(x * 100)}% (4주 전과 비교)">${t > 0 ? '▲ ' : t < 0 ? '▼ ' : ''}기준 ${Math.round(x * 100)}%</span>`; };   // V4 2단계
   function sellDo(ids, all) { const { n, g } = Gm.sellMats(s, ids.map(id => [id, all ? (s.mats[id] || 0) : 1]));
     if (!n) return;   // 장부: '소재 판매' 줄 (game_core.sellMats)
     Gm.log(s, `소재 ${n}개를 팔아 ${g}G를 받았습니다.`, 'guild'); UI.hud && UI.hud(); }
+  // 2026-11-19 시세 그래프 (V4 2단계): 한 소재의 최근 시세(G) 선 하나 + 기준가 점선. 주마다 마우스를 올리면 값. 색은 선 #00897b (검사 통과: 채도 · 대비), 글자는 잉크색
+  function priceChart(id, W, H, weeks, noBase) {   // noBase: 기준가 선 · 글자 없이 (2026-11-20 사용자: 기준가는 기획서에만)
+    const L = weeks ? Gm.mktLogOf(s, id).slice(-weeks) : Gm.mktLogOf(s, id), base = Gm.matBase(id), wk = w => { const d = s.week - w; return d <= 1 ? '이번 주' : (d - 1) + '주 전'; };
+    if (L.length < 2) return '<div class="pc-none">시세 기록이 2주 이상 쌓이면 그래프가 보입니다.</div>';
+    const ps = L.map(x => x[1]), lo = Math.min(base, ...ps), hi = Math.max(base, ...ps), y0 = Math.max(0, Math.floor(lo - Math.max(0.5, (hi - lo) * 0.15))), y1 = Math.ceil(hi + Math.max(0.5, (hi - lo) * 0.15));
+    const ml = 34, mr = 46, mt = 10, mb = 22, iw = W - ml - mr, ih = H - mt - mb;
+    const X = i => ml + (L.length === 1 ? iw : iw * i / (L.length - 1)), Y = v => mt + ih * (1 - (v - y0) / (y1 - y0 || 1));
+    const line = L.map((x, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(x[1]).toFixed(1)}`).join(''), last = L[L.length - 1], lx = X(L.length - 1), ly = Y(last[1]);
+    const step = iw / Math.max(1, L.length - 1);
+    const hits = L.map((x, i) => `<rect class="pc-hit" x="${(X(i) - step / 2).toFixed(1)}" y="${mt}" width="${step.toFixed(1)}" height="${ih}"><title>${wk(x[0])} · ${Math.round(x[1])}G${noBase ? '' : ` (기준의 ${Math.round(x[1] / base * 100)}%)`}</title></rect><circle class="pc-dot" cx="${X(i).toFixed(1)}" cy="${Y(x[1]).toFixed(1)}" r="4"></circle>`).join('');
+    return `<svg class="pc" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc((MATS[id] || {}).name || id)} 시세 기록: ${L.length}주, 지금 ${Math.round(last[1])}G, 기준 ${base}G">`
+      + `<line class="pc-ax" x1="${ml}" y1="${mt + ih}" x2="${ml + iw}" y2="${mt + ih}"/>`
+      + (noBase ? '' : `<line class="pc-base" x1="${ml}" y1="${Y(base).toFixed(1)}" x2="${ml + iw}" y2="${Y(base).toFixed(1)}"/><text class="pc-t" x="${ml + iw + 4}" y="${(Y(base) + 4).toFixed(1)}">기준 ${base}G</text>`)
+      + `<text class="pc-t" x="${ml - 4}" y="${mt + 4}" text-anchor="end">${y1}G</text><text class="pc-t" x="${ml - 4}" y="${mt + ih}" text-anchor="end">${y0}G</text>`
+      + `<text class="pc-t" x="${ml}" y="${H - 4}">${wk(L[0][0])}</text><text class="pc-t" x="${ml + iw}" y="${H - 4}" text-anchor="end">이번 주</text>`
+      + `<path class="pc-line" d="${line}"/><circle class="pc-end" cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4"/><text class="pc-v" x="${(lx + 7).toFixed(1)}" y="${(ly - 6).toFixed(1)}">${Math.round(last[1])}G</text>${hits}</svg>`;
+  }
+  function priceSpark(id) {   // 매입 · 위탁 줄에 붙는 작은 선 (최근 12주)
+    const L = Gm.mktLogOf(s, id).slice(-12); if (L.length < 2) return '';
+    const ps = L.map(x => x[1]), lo = Math.min(...ps), hi = Math.max(...ps), W = 56, H = 18, X = i => 1 + (W - 2) * i / (L.length - 1), Y = v => H - 2 - (H - 4) * (hi === lo ? 0.5 : (v - lo) / (hi - lo));
+    return `<svg class="pc-spark" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true"><path d="${L.map((x, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(x[1]).toFixed(1)}`).join('')}"/></svg>`;
+  }
   function sellHtml() {
     const mats = s.mats || {}, known = s.knownMats || {};
     const have = Object.values(MATS).filter(m => known[m.id] && (mats[m.id] || 0) > 0).sort((a, b) => GR.indexOf(a.grade) - GR.indexOf(b.grade));
     const nf = have.filter(m => m.line !== 'food'), fd = have.filter(m => m.line === 'food');
     if (sellSel && !(mats[sellSel] > 0)) sellSel = null; if (!sellSel && have.length) sellSel = (nf[0] || fd[0]).id;
     const cell = m => `<button class="kmat ${sellSel === m.id ? 'sel' : ''}" data-ssel="${m.id}" data-mt="${m.id}"><span class="ux-slot" data-g="${GR.indexOf(m.grade)}">${matImg(m)}${cntBadge(mats[m.id])}</span><em>${esc(m.name)}</em></button>`;
-    const sum = ms => ms.reduce((t, m) => t + mats[m.id] * sellPrice(m), 0);
+    const sum = ms => ms.reduce((t, m) => t + Gm.sellPreview(s, m.id, mats[m.id]), 0);   // 2026-11-19: 한 개 팔 때마다 시세가 내려감
     const m = sellSel && MATS[sellSel];
     const detail = m ? `<div class="sl-d"><div class="sl-top"><span class="ux-slot" data-g="${GR.indexOf(m.grade)}" style="width:96px;height:96px">${matImg(m)}</span><div><div class="sl-nm">${badge(GR.indexOf(m.grade))}<b>${esc(m.name)}</b></div>${m.line === 'food' ? '<span class="ux-tag sl-food">요리 재료</span>' : ''}<div class="ux-muted sl-ds">${esc(m.desc || '')}</div></div></div>
-      <div class="sl-kv"><span>보유</span><b>${mats[m.id]}개</b><span>1개 가격</span><b>${sellPrice(m)} G</b><span>전부 팔면</span><b>${mats[m.id] * sellPrice(m)} G</b></div>
+      <div class="sl-kv"><span>보유</span><b>${mats[m.id]}개</b><span>1개 가격</span><b>${sellPrice(m)} G ${trendTag(m.id)}</b><span>전부 팔면</span><b>${Gm.sellPreview(s, m.id, mats[m.id])} G</b><span>팔면</span><b class="sl-hint">많이 팔수록 마을에 흔해져 값이 내려갑니다</b></div>
+      <div class="sl-chart"><div class="sl-ch">시세 기록 <small>최근 ${Gm.mktLogOf(s, m.id).length}주 · 마우스를 올리면 그 주 값</small></div>${priceChart(m.id, 420, 140)}</div>
       <div class="sl-btns"><button class="ux-btn" data-sone="${m.id}">1개 팔기</button><button class="ux-btn primary" data-sall="${m.id}">전부 팔기</button></div></div>` : '<div class="ux-muted">팔 소재가 없습니다.</div>';
     return `<div class="sell"><div class="kpan sl-left"><div class="ux-h">음식이 아닌 소재 <small>${nf.length}종 · ${sum(nf)} G</small></div><div class="kpantry">${nf.map(cell).join('') || '<span class="ux-muted">없음</span>'}</div>
       <div class="ux-h" style="margin-top:16px">음식 소재 <small>요리 재료 · 팔면 요리를 못 만들 수 있음</small></div><div class="kpantry">${fd.map(cell).join('') || '<span class="ux-muted">없음</span>'}</div></div>
@@ -744,7 +781,9 @@
   const foeBand = q => q.foe == null ? null : q.foe < 0.95 ? 'down' : q.foe > 1.05 ? 'up' : 'mid';
   // 의뢰 기한 막대 (2026-11-12): 남은 비율 = (기한 − 게시 후 지난 주 − 이번 주 진행률) ÷ 기한. 주 게이지와 같은 진행률로 매 프레임 줄어듦
   let wkFrac = 0;
-  const dlLeft = (q, f) => { const W = Gm.expireWeeks(s); return Math.max(0, Math.min(1, (W - (s.week - q.posted) - (f || 0)) / W)); };
+  const gqOf = q => q && q.gq != null ? (s.gq || []).find(o => o.id === q.gq) || null : null;   // 2026-11-20 게시판 카드 → 길드 의뢰
+  const qWkLeft = q => { const G = gqOf(q); return G ? G.end - s.week : Gm.expireWeeks(s) - (s.week - q.posted); };   // 길드 의뢰 카드는 길드 의뢰 기한
+  const dlLeft = (q, f) => { const G = gqOf(q), W = G ? Math.max(1, G.end - (G.w != null ? G.w : q.posted)) : Gm.expireWeeks(s); return Math.max(0, Math.min(1, (qWkLeft(q) - (f || 0)) / W)); };
   const ageOf = q => { const w = s.week - q.posted; return w >= 4 ? 2 : w >= 2 ? 1 : 0; };
   const cleanName = q => q.name || `${GR[q.g]}급 ${Gm.QTYPE[q.type]} 의뢰`;
   const gradeImg = (g, cls) => `<i class="ux-grade ${cls || ''}" style="background-image:url(assets/ui/hud/badge_${GR[g]}.png)" title="${GR[g]}급"></i>`;
@@ -765,8 +804,8 @@
       const T = QT[q.tid], d = danger(T, q.g), fb = foeBand(q), intel = !!s.built['정보실'];
       const sk = d.n ? `<span class="skulls" title="위험도">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}</span>` : '';
       const foe = d.n ? (intel ? (fb === 'up' ? '<i class="foe up" title="강한 무리">▲</i>' : fb === 'down' ? '<i class="foe down" title="약한 무리">▼</i>' : '') : '<i class="foe unk" title="정보실이 있으면 알 수 있음">?</i>') : '';
-      cards += `<div class="qcard age${ageOf(q)}${q.x2 ? ' x2' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q)}${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}</div>
-        <div class="r2">${sk}${foe}${q.party ? `<em class="qparty" title="파티 의뢰 — 적이 많아 ${q.party}명 이상이 함께 가야 이길 만해요">파티 ${q.party}+</em>` : ''}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><button class="ux-btn danger sm" data-wd="${q.id}">취소</button></div>
+      cards += `<div class="qcard age${ageOf(q)}${q.x2 ? ' x2' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q)}${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}${q.gq != null ? '<span class="gq-tag">길드 의뢰</span>' : ''}</div>
+        <div class="r2">${sk}${foe}${q.party ? `<em class="qparty" title="파티 의뢰 — 적이 많아 ${q.party}명 이상이 함께 가야 이길 만해요">파티 ${q.party}+</em>` : ''}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><button class="ux-btn danger sm" data-wd="${q.id}">${q.gq != null ? '거두기' : '취소'}</button></div>
         <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
     }
     if (!s.board.length) cards = '<div class="ux-empty qb-none">게시된 의뢰가 없습니다. 의뢰는 매주 들어옵니다.</div>';
@@ -796,19 +835,21 @@
     }
     L += '</div>';
     { // 2026-11-17 V2 E5-4 (결정 11 · 22, 시안 사용자 확인): 등급 기본 수수료 — 따로 정하지 않은 그 등급 의뢰에 붙음, 출발한 의뢰는 출발 때 수수료 그대로
-      const O = s.cfg.econ.feeOpt || [0.1, 0.15, 0.2], open = Gm.feeOptions(s), lockWhy = ['', '집무실을 지으면 열립니다', '게시판 업그레이드 뒤 열립니다'];
+      const O = s.cfg.econ.feeOpt || [0.1, 0.15, 0.2], open = Gm.feeOptions(s), fb0 = s.cfg.econ.feeBase != null ? s.cfg.econ.feeBase : 0.1;   // 2026-11-19 결정 42: 5% 추가 (잠금 사유는 Gm.feeLock)
       for (let g = 0; g <= s.grade && g < GR.length; g++) { const cur = Gm.questFee(s, { g });
-        L += `<div class="mk5-fee"><b>${GR[g]}급 기본 수수료</b><span class="ct-seg">${O.map((r, i) => { const ok = open.some(x => Math.abs(x - r) < 1e-9); return `<button data-gfee="${g}:${r}" class="${Math.abs(cur - r) < 1e-9 ? 'on' : ''} ${i === 0 ? 'df' : ''} ${ok ? '' : 'lk'}" ${ok ? '' : `disabled title="${lockWhy[i] || ''}"`}>${ok ? '' : '🔒'}${Math.round(r * 100)}%</button>`; }).join('')}</span>${g === 0 ? '<small>따로 정한 의뢰는 빼고 그 등급 의뢰에 붙습니다</small>' : ''}</div>`; } }
+        L += `<div class="mk5-fee"><b>${GR[g]}급 기본 수수료</b><span class="ct-seg">${O.map((r, i) => { const ok = open.some(x => Math.abs(x - r) < 1e-9); return `<button data-gfee="${g}:${r}" class="${Math.abs(cur - r) < 1e-9 ? 'on' : ''} ${Math.abs(r - fb0) < 1e-9 ? 'df' : ''} ${r < fb0 - 1e-9 ? 'fast' : ''} ${ok ? '' : 'lk'}" ${ok ? '' : `disabled title="${Gm.feeLock(s, r)}"`} title="${r < fb0 - 1e-9 ? '모험가가 먼저 맡아 빨리 처리됩니다 · 길드 몫이 줄어듭니다' : ''}">${ok ? '' : '🔒'}${Math.round(r * 100)}%</button>`; }).join('')}</span>${g === 0 ? '<small>따로 정한 의뢰는 빼고 그 등급 의뢰에 붙습니다</small>' : ''}</div>`; } }
     L += `<div class="ux-h qb-h">게시된 의뢰 <small>${s.board.length} / ${cap}칸</small></div>`;
-    if ((s.orders || []).length) L += `<div class="od-strip"><b>길드 발주</b>${s.orders.map(o => `<span>${esc((MATS[o.m] || { name: o.m }).name)} ${o.got}/${o.n}</span>`).join('')}<small>리퀘스트 장에서 관리</small></div>`;   // 2026-11-18 V2 6단계
+    if (false && (s.gq || []).length) L += `<div class="od-strip gq-strip"><b>길드 의뢰</b>${s.gq.map(o => `<span>${o.kind === 'mat' ? `${esc((MATS[o.m] || { name: o.m }).name)} ${o.got}/${o.n}` : `${GQ_NUM[o.kind] || ''} ${esc(((Gm.GQ_KIND || {})[o.kind] || { name: '' }).name)}`}</span>`).join('')}<small>리퀘스트 장에서 관리</small></div>`;   // 2026-11-20 길드 의뢰: 모은 수 / 약속한 수
+    if ((s.orders || []).length) L += `<div class="od-strip"><b>상시 발주</b>${s.orders.map(o => `<span class="${Gm.orderLive(s, o) ? '' : 'off'}">${esc((MATS[o.m] || { name: o.m }).name)} ${(s.mats || {})[o.m] || 0}/${o.target}</span>`).join('')}<small>리퀘스트 장에서 관리</small></div>`;   // 2026-11-19 결정 41: 창고 / 목표 (흐린 것 = 멈춤)
     L += `<div class="bkq-list ${root.BOOK_CARD_STYLE || 'st-d'}">`;
     for (const q of s.board) {
       const T = QT[q.tid], d = danger(T, q.g), fb = foeBand(q), intel = !!s.built['정보실'];
       const sk = d.n ? `<span class="skulls" title="위험도">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}</span>` : '<span class="bkq-nc">비전투</span>';
       const foe = d.n ? (intel ? (fb === 'up' ? '<i class="foe up" title="강한 무리">▲</i>' : fb === 'down' ? '<i class="foe down" title="약한 무리">▼</i>' : '') : '<i class="foe unk" title="정보실이 있으면 알 수 있음">?</i>') : '';
-      const om = T && (s.orders || []).length ? (T.rewards || []).find(r => r.p >= 30 && s.orders.some(o => o.m === r.m && o.got < o.n)) : null;   // 2026-11-18 V2 6단계: 발주 소재가 나오는 의뢰
-      L += `<div class="qcard bk age${ageOf(q)}${q.x2 ? ' x2' : ''}${q.id === qSel ? ' sel' : ''}${om ? ' od-hit' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q)}${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}${(() => { const f = Math.round(Gm.questFee(s, q) * 100); return `<span class="mk5-chip ${f >= 20 ? 'hi' : f >= 15 ? 'mid' : ''}" title="길드가 떼는 수수료${q.fee != null ? ' (이 의뢰만 따로 정함)' : ''}">수수료 ${f}%</span>`; })()}${om ? `<span class="od-chip" title="발주 · ${esc((MATS[om.m] || { name: '' }).name)}">발주</span>` : ''}</div>
-        <div class="r2">${sk}${foe}${q.party ? `<em class="qparty" title="파티 의뢰 — 적이 많아 ${q.party}명 이상이 함께 가야 이길 만해요">파티 ${q.party}+</em>` : ''}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span><span class="dlw${Gm.expireWeeks(s) - (s.week - q.posted) <= 1 ? ' low' : ''}">${Gm.expireWeeks(s) - (s.week - q.posted)}주</span></div>
+      const om = T && (s.orders || []).length ? (T.rewards || []).find(r => r.p >= 30 && s.orders.some(o => o.m === r.m && Gm.orderLive(s, o))) : null;   // 2026-11-18 V2 6단계: 발주 소재가 나오는 의뢰 (2026-11-19: 켜진 상시 발주만)
+      const G = gqOf(q);   // 2026-11-20 길드 의뢰 카드: 수수료 대신 '길드 의뢰' 띠, 기한 = 길드 의뢰 기한
+      L += `<div class="qcard bk age${ageOf(q)}${q.x2 ? ' x2' : ''}${q.id === qSel ? ' sel' : ''}${om ? ' od-hit' : ''}${G ? ' gqb' : ''}" data-q="${q.id}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b>${qlvBadge(q)}${q.x2 ? '<em class="qx2" title="골드 보상 2배">×2</em>' : ''}${q.esc ? '<span class="gq-tag es" title="떠돌이 상단이 낸 호위 의뢰 · 보상은 상단이 냄">상단 호위</span>' : ''}${G ? `<span class="gq-tag" title="길드가 낸 의뢰 · ${esc(Gm.gqLabel(G))}${G.kind === 'mat' ? ` ${G.got}/${G.n}개` : ''}${G.hot ? ' · 바로 맡겨짐' : ''}">길드 의뢰</span>` : (() => { const f = Math.round(Gm.questFee(s, q) * 100); return `<span class="mk5-chip ${f >= 20 ? 'hi' : f >= 15 ? 'mid' : f < 10 ? 'lo' : ''}" title="길드가 떼는 수수료${q.fee != null ? ' (이 의뢰만 따로 정함)' : ''}">수수료 ${f}%</span>`; })()}${om ? `<span class="od-chip" title="발주 · ${esc((MATS[om.m] || { name: '' }).name)}">발주</span>` : ''}</div>
+        <div class="r2">${sk}${foe}${q.party ? `<em class="qparty" title="파티 의뢰 — 적이 많아 ${q.party}명 이상이 함께 가야 이길 만해요">파티 ${q.party}+</em>` : ''}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span>${(() => { const n = Gm.questEta(s, q); return `<span class="mk5-eta" title="지금 게시판 · 마을 모험가 수로 본 예상 처리 (어림)">처리 ~${n >= 4 ? '4주+' : n + '주'}</span>`; })()}<span class="dlw${qWkLeft(q) <= 1 ? ' low' : ''}">${qWkLeft(q)}주</span></div>
         <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
     }
     for (let k = s.board.length; k < Math.min(cap, 14); k++) L += '<div class="bkq-slot"></div>';   // 빈 칸 = 점선 자리 (한 쪽에 보이는 14칸까지)
@@ -816,11 +857,11 @@
     let R;
     const q = s.board.find(x => x.id === qSel);
     let A = '';   // 의뢰 취소 버튼: 오른쪽 쪽 안이 아니라 책 그림 좌표에 고정 (--bkc-x, --bkc-y)
-    if (q) { R = `<div class="bkq-det">${qDetailHtml(q, true)}</div>`; A = `${feeOpen ? qFeeHtml(q) : ''}<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">의뢰 취소</button><small>등록비·위약금 ${fmt(Math.round(q.reward * 0.10))}G · 신뢰도 −2</small></div>`; }
+    if (q) { const G = gqOf(q); R = `<div class="bkq-det">${qDetailHtml(q, !G)}</div>`; A = G ? `<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">길드 의뢰 거두기</button><small>위약금 없음 · 남은 ${fmt(G.hold)}G는 금고로</small></div>` : `${feeOpen ? qFeeHtml(q) : ''}<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">의뢰 취소</button><small>등록비·위약금 ${fmt(Math.round(q.reward * 0.10))}G · 신뢰도 −2</small></div>`; }   // 2026-11-20 길드 의뢰 카드: 수수료 칸 없음 · 거두면 남은 돈을 돌려받음
     else R = '<div class="bkq-none"><b>게시된 의뢰가 없습니다</b>의뢰는 매주 게시판에 들어옵니다.</div>';
     b.innerHTML = `<div class="bk2"><section class="bk-l">${L}</section><section class="bk-r">${R}</section>${A}</div>`;
     b.onclick = e => {
-      const wd = e.target.closest('[data-wd]'); if (wd) { Gm.withdrawQuest(s, +wd.dataset.wd); hooks.changed(); return; }
+      const wd = e.target.closest('[data-wd]'); if (wd) { const G = gqOf(s.board.find(x => x.id === +wd.dataset.wd)), back = G ? G.hold : 0; if (Gm.withdrawQuest(s, +wd.dataset.wd) && G) toast(`길드 의뢰를 거뒀습니다. ${fmt(back)}G를 돌려받았습니다.`, 'grow'); hooks.changed(); return; }
       const gf = e.target.closest('[data-gfee]'); if (gf) { if (gf.disabled) return; const [g, r] = gf.dataset.gfee.split(':').map(Number); if (Gm.setGradeFee(s, g, r)) hooks.changed(); return; }   // E5-4 등급 기본 수수료
       const fo = e.target.closest('[data-qfeeopen]'); if (fo && !e.target.closest('[data-qfee]')) { feeOpen = !feeOpen; renderBoardBook(b); return; }
       const qf = e.target.closest('[data-qfee]'); if (qf) { if (qf.disabled) return; const [id, r] = qf.dataset.qfee.split(':'), q = s.board.find(x => x.id === +id); if (q) { if (r === 'base') { delete q.fee; hooks.changed(); } else if (Gm.setQuestFee(s, +id, +r)) hooks.changed(); } return; }   // E5-4 이 의뢰 수수료
@@ -833,74 +874,289 @@
     };
     b.onmouseover = b.onmouseout = null;
   }
-  // 길드 발주 (2026-11-18 V2 6단계 · 결정 24~27, 시안 mk6 사용자 확인): 왼쪽 = 발주 중 · 들어온 소재 / 오른쪽 = 새 발주
-  let odSel = null, odN = 10, odAsk = null;
+  // 길드 발주 (2026-11-19 결정 41 · V4 1단계): 상시 발주 — 왼쪽 = 걸어 둔 발주 · 들어온 소재 / 오른쪽 = 새 상시 발주 (목표 재고 · 1개 값 배수)
+  let odSel = null, odN = 6, odM = null, odAsk = null;
   function orderHtml() {
-    const O = s.orders || [], max = s.cfg.econ.orderMax != null ? s.cfg.econ.orderMax : 2, mult = s.cfg.econ.orderMult != null ? s.cfg.econ.orderMult : 1.5;
+    const E = s.cfg.econ, O = s.orders || [], max = E.orderMax != null ? E.orderMax : 3, MO = Gm.orderMultOpts(s);
+    if (odM == null || !MO.some(x => Math.abs(x - odM) < 1e-9)) odM = E.orderMult != null ? E.orderMult : MO[1];
     const who = ids => ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean);
-    let L = `<div class="od-h">발주 중 <small>${O.length} / ${max}건</small></div>`;
-    for (const o of O) { const m = MATS[o.m] || { name: o.m }, left = (o.n - o.got) * o.price;
-      L += `<div class="od-card"><span class="ic">${matImg(m)}</span><div class="n"><b>${esc(m.name)} <em>${o.got} / ${o.n}</em></b><div class="od-bar"><i style="width:${(o.got / o.n * 100).toFixed(1)}%"></i></div><div class="sub">1개 ${fmt(o.price)}G · 남은 돈 ${fmt(left)}G</div></div>`
-        + (odAsk === o.id ? `<div class="od-ask"><small>남은 ${fmt(left)}G를 돌려받고 거둘까요?</small><span><button class="ux-btn sm danger" data-oyes="${o.id}">거두기</button><button class="ux-btn sm" data-ono="1">아니요</button></span></div>` : `<button class="od-btn" data-ocancel="${o.id}">거두기</button>`) + '</div>'; }
-    for (let k = O.length; k < max; k++) L += '<div class="od-empty">빈 자리 · 오른쪽에서 소재를 골라 발주하세요</div>';
-    L += '<div class="od-note">발주 중에는 그 소재가 나오는 의뢰가 게시판에 자주 올라오고, 모험가가 먼저 맡습니다. 의뢰 한 번에 몬스터 · 탐색 포인트 수만큼 모아 옵니다.<br>거두면 남은 개수만큼의 돈을 돌려받습니다.</div>';
+    let L = `<div class="od-h">상시 발주 <small>${O.length} / ${max}건</small></div>`;
+    for (const o of O) { const m = MATS[o.m] || { name: o.m }, have = (s.mats || {})[o.m] || 0, live = Gm.orderLive(s, o), p = Gm.orderPriceOf(s, o);
+      const st = live ? '<em class="od-on">켜짐 · 모으는 중</em>' : have >= o.target ? '<em class="od-off">쉬는 중 · 창고 가득</em>' : '<em class="od-off">멈춤 · 금고 부족</em>';
+      L += `<div class="od-card"><span class="ic">${matImg(m)}</span><div class="n"><b>${esc(m.name)} <em>창고 ${have} / ${o.target}</em></b><div class="od-bar"><i style="width:${Math.min(100, have / o.target * 100).toFixed(1)}%"></i></div><div class="sub">1개 ${fmt(p)}G (×${o.mult}) · 게시판 쏠림 ${Math.round(Gm.orderBiasOf(s, o) * 100)}% · 지금까지 ${o.got || 0}개 · ${st}</div>`
+        + `<div class="od-ed"><span class="od-step"><button data-oet="${o.id}:-1" ${o.target <= 1 ? 'disabled' : ''}>−</button><b>${o.target}</b><button data-oet="${o.id}:1" ${o.target >= 30 ? 'disabled' : ''}>+</button></span>${MO.map(x => `<button class="od-mx${Math.abs(x - o.mult) < 1e-9 ? ' on' : ''}" data-oem="${o.id}:${x}">×${x}</button>`).join('')}</div></div>`
+        + (odAsk === o.id ? `<div class="od-ask"><small>이 상시 발주를 내릴까요?</small><span><button class="ux-btn sm danger" data-oyes="${o.id}">내리기</button><button class="ux-btn sm" data-ono="1">아니요</button></span></div>` : `<button class="od-btn" data-ocancel="${o.id}">내리기</button>`) + '</div>'; }
+    for (let k = O.length; k < max; k++) L += '<div class="od-empty">빈 자리 · 오른쪽에서 소재를 골라 상시 발주를 거세요</div>';
+    L += '<div class="od-note">창고가 목표 아래로 떨어지면 저절로 켜져, 그 소재가 나오는 의뢰가 게시판에 자주 올라옵니다. 소재가 들어올 때마다 금고에서 1개 값을 가져온 모험가에게 줍니다(미리 내는 돈 없음). 창고가 목표만큼 차거나 금고가 1개 값보다 적으면 쉽니다.</div>';
     const logs = (s.buyLog || []).filter(x => x.ord).slice(0, 6);
     L += '<div class="od-h od-h2">들어온 소재 <small>최근 순</small></div>';
     L += logs.length ? logs.map(x => { const m = MATS[x.m] || { name: x.m }, ps = who(x.ids), ago = s.week - x.w; return `<div class="od-log">${ago ? ago + '주 전' : '이번 주'} · <b>${ps.map(a => esc(a.name)).join(' · ') || '떠난 모험가'}</b> ${esc(m.name)} ${x.n}개 <em>(${fmt(x.g)}G 지급)</em></div>`; }).join('') : '<div class="od-log none">아직 발주로 들어온 소재가 없습니다.</div>';
     const ing = new Set(O.map(o => o.m)), known = Object.keys(s.knownMats || {}).filter(id => MATS[id] && GR.indexOf(MATS[id].grade) <= s.grade);
     const can = id => !ing.has(id) && Gm.orderSources(s, id).length > 0;
     if (!odSel || !known.includes(odSel) || !can(odSel)) odSel = known.find(can) || null;
-    let R = '<div class="od-h">새 발주 <small>아는 소재 중 길드 등급까지</small></div>';
+    let R = '<div class="od-h">새 상시 발주 <small>아는 소재 중 길드 등급까지</small></div>';
     if (!known.length) R += '<div class="od-empty">아직 아는 소재가 없습니다. 의뢰에서 소재를 주워 오면 발주할 수 있습니다.</div>';
     else R += `<div class="od-pick">${known.map(id => { const m = MATS[id], ok = can(id); return `<button class="od-m${id === odSel ? ' on' : ''}${ing.has(id) ? ' ing' : ''}" data-om="${id}" ${ok ? '' : 'disabled'} title="${ing.has(id) ? '발주 중' : ok ? esc(m.name) : '지금 길드 등급 의뢰에서는 나오지 않습니다'}">${matImg(m)}<span>${esc(m.name)}</span></button>`; }).join('')}</div>`;
     if (odSel) {
-      const m = MATS[odSel], p = Gm.orderPrice(s, odSel), cost = p * odN, why = Gm.orderWhy(s, odSel, odN), src = Gm.orderSources(s, odSel);
-      R += `<div class="od-row"><b>소재</b><span class="ic sm">${matImg(m)}</span>${esc(m.name)}</div>`;
-      R += `<div class="od-row"><b>개수</b><span class="od-step"><button data-on="-1" ${odN <= 1 ? 'disabled' : ''}>−</button><b>${odN}</b><button data-on="1" ${odN >= 30 ? 'disabled' : ''}>+</button></span><small>1~30개</small></div>`;
+      const m = MATS[odSel], p = Gm.orderPrice(s, odSel, odM), why = Gm.orderWhy(s, odSel, odN, odM), src = Gm.orderSources(s, odSel), bi = MO.findIndex(x => Math.abs(x - odM) < 1e-9);
+      R += `<div class="od-row"><b>소재</b><span class="ic sm">${matImg(m)}</span>${esc(m.name)} <small>· 지금 창고 ${(s.mats || {})[odSel] || 0}개</small></div>`;
+      R += `<div class="od-row"><b>목표 재고</b><span class="od-step"><button data-on="-1" ${odN <= 1 ? 'disabled' : ''}>−</button><b>${odN}</b><button data-on="1" ${odN >= 30 ? 'disabled' : ''}>+</button></span><small>창고에 이만큼 유지 · 1~30개</small></div>`;
+      R += `<div class="od-row"><b>1개 값</b><span>${MO.map(x => `<button class="od-mx${Math.abs(x - odM) < 1e-9 ? ' on' : ''}" data-omx="${x}">×${x}</button>`).join('')}</span><small>비쌀수록 게시판 쏠림이 셉니다</small></div>`;
       R += `<div class="od-row"><b>나오는 의뢰</b><span class="od-q">${src.slice(0, 6).map(t => `<span>${t.grade} · ${esc(t.name)}</span>`).join('')}${src.length > 6 ? `<span>외 ${src.length - 6}개</span>` : ''}</span></div>`;
-      R += `<div class="od-tot">1개 값 <b>${fmt(p)}G</b> <small>(판매가 ${fmt(Gm.matSellPrice(s, odSel))}G × ${mult})</small><br>지금 낼 돈 <b>${fmt(cost)}G</b> <small>· 금고 ${fmt(Math.floor(s.gold))}G</small></div>`;
-      R += `<div class="od-go"><button class="od-btn go" data-oplace="1" ${why ? 'disabled' : ''}>발주하기</button>${why ? `<small class="od-why">${esc(why)}</small>` : ''}</div>`;
+      R += `<div class="od-tot">1개 값 <b>${fmt(p)}G</b> <small>(판매가 ${fmt(Gm.matSellPrice(s, odSel))}G × ${odM})</small> · 게시판 쏠림 <b>${Math.round(((E.orderBiasOpt || [])[bi] != null ? E.orderBiasOpt[bi] : (E.orderBias || 0)) * 100)}%</b><br><small>미리 내는 돈 없음 · 들어올 때마다 금고에서 지급 · 금고 ${fmt(Math.floor(s.gold))}G</small></div>`;
+      R += `<div class="od-go"><button class="od-btn go" data-oplace="1" ${why ? 'disabled' : ''}>상시 발주 걸기</button>${why ? `<small class="od-why">${esc(why)}</small>` : ''}</div>`;
     }
-    R += '<div class="od-note">소재가 들어올 때마다 가져온 모험가에게 1개 값을 줍니다. 다 모이면 발주가 끝나고, 그 뒤는 평소처럼 매입합니다.</div>';
+    R += `<div class="od-note">식당이 요리를 만들 때 재료를 쓰므로, 메뉴에 올린 요리의 재료를 걸어 두면 의뢰가 끊이지 않고 올라옵니다.${s.cfg.econ.shopRate ? ' 양념(소금 · 향신료 · 신선한 물 · 밀가루)은 모자라면 잡화 상인에게서 삽니다.' : ' 양념(소금 · 향신료 · 신선한 물 · 밀가루)은 의뢰에서 드물게(15%) 나오지만, 발주를 걸면 의뢰마다 양념이 나올 확률이 쏠림 비율(30 · 50 · 70%)까지 오릅니다.'}</div>`;
     return `<div class="bk2 bk-od"><section class="bk-l">${L}</section><section class="bk-r">${R}</section></div>`;
   }
   function orderClick(e) {
-    const t = e.target.closest('[data-om], [data-on], [data-oplace], [data-ocancel], [data-oyes], [data-ono]'); if (!t || t.disabled) return false;
+    const t = e.target.closest('[data-om], [data-on], [data-omx], [data-oplace], [data-ocancel], [data-oyes], [data-ono], [data-oet], [data-oem]'); if (!t || t.disabled) return false;
     const d = t.dataset;
     if (d.om) { odSel = d.om; odAsk = null; }
     else if (d.on) odN = Math.max(1, Math.min(30, odN + +d.on));
-    else if (d.oplace) { const m = MATS[odSel], r = Gm.orderPlace(s, odSel, odN); toast(r.ok ? `${m.name} ${odN}개를 발주했습니다. (${fmt(Gm.orderPrice(s, odSel) * odN)}G)` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); }
+    else if (d.omx) odM = +d.omx;
+    else if (d.oplace) { const m = MATS[odSel], r = Gm.orderPlace(s, odSel, odN, odM); toast(r.ok ? `${m.name} 상시 발주를 걸었습니다. (창고 ${odN}개 유지 · 1개 ${fmt(r.price)}G)` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); }
+    else if (d.oet) { const [id, k] = d.oet.split(':').map(Number), o = (s.orders || []).find(x => x.id === id); if (o) { const r = Gm.orderEdit(s, id, o.target + k, o.mult); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); } }
+    else if (d.oem) { const [id, x] = d.oem.split(':').map(Number), o = (s.orders || []).find(y => y.id === id); if (o) { const r = Gm.orderEdit(s, id, o.target, x); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); } }
     else if (d.ocancel) odAsk = +d.ocancel;
-    else if (d.oyes) { const r = Gm.orderCancel(s, +d.oyes); odAsk = null; toast(r.ok ? `발주를 거두고 ${fmt(r.back)}G를 돌려받았습니다.` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); }
+    else if (d.oyes) { const r = Gm.orderCancel(s, +d.oyes); odAsk = null; toast(r.ok ? '상시 발주를 내렸습니다.' : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); }
     else if (d.ono) odAsk = null;
     renderPopup(); return true;
+  }
+  // 2026-11-20 길드 의뢰 (V4 결정 49~56): 길드가 금고로 게시판에 의뢰를 냄 — 왼쪽 = 걸어 둔 의뢰 · 끝난 의뢰 · 들어온 소재 / 오른쪽 = 새 길드 의뢰
+  // 2026-11-20 (결정 57~62 라운드): 여섯 종류 모두 — ① 납품 ② 토벌 ③ 정찰 ④ 순찰 · 경비 ⑤ 마을 일손 ⑥ 훈련 원정
+  const GQ_ORDER = ['hunt', 'scout', 'patrol', 'help', 'train'], GQ_NUM = { mat: '·', hunt: '①', scout: '②', patrol: '③', help: '④', train: '⑤' };   // 2026-11-20 결정 63: 소재 납품은 매입가로 합침
+  const GQ_SUB = { mat: '소재를 모아 오게 합니다', hunt: '사냥터 짐승을 줄입니다', scout: '자원지를 살펴봅니다', patrol: '침공에 대비합니다', help: '마을 일을 돕습니다', train: '신입을 키웁니다' };
+  const GQ_FX = {   // 효과 설명 (오른쪽 미리 보기 · 게시판 상세)
+    mat: '가져온 만큼 나눠 지급하고, 덜 채우면 남은 개수로 다시 게시합니다.',
+    hunt: '사냥터에서 싸웁니다. 이기면 개체수가 처치 수 × 5만큼 줄고, 보상은 성공하면 한 번에 줍니다.',
+    scout: '1주 비전투 의뢰(민첩 · 지력)입니다. 성공하면 4주 동안 그 자원지 개체수를 숫자로 보고, 그곳 의뢰의 적 정보 오차가 없어집니다.',
+    patrol: '1주 비전투 의뢰(힘 · 민첩)입니다. 성공하면 8주 안에 침공이 올 때 첫 차례 적이 10% 약해집니다.',
+    help: '1주 비전투 의뢰(힘 · 기교)입니다. 성공하면 마을 인구 +5 · 신뢰 +1.',
+    train: '지명한 모험가만 맡을 수 있습니다. 성공하면 그 모험가가 경험치를 더 얻고 애착 +3.',
+  };
+  const GQ_WHY = { done: '완료', end: '기한 끝', cancel: '거둠' };
+  let gqKind = 'hunt', gqSel = {}, gqN = 6, gqPct = 1, gqWk = null, gqAsk = null;
+  const gqNOf = k => k === 'mat' ? gqN : 1;
+  const gqReward = (k, t, n) => { const R = Gm.gqRangeK(s, k, t, n), b = Gm.gqBaseK(s, k, t, n); return Math.min(R[1], Math.max(R[0], Math.round(b * gqPct / 10) * 10)); };   // 기준 × 고른 % (10G 단위, 범위 안)
+  const resTxt = m => { if (Gm.scoutOn(s, m)) { const v = Gm.resOf(s, m); if (v != null) return `<b class="res-b r${Gm.resBand(s, m)} sc" title="정찰한 곳 · 개체수">${Math.round(v)}</b>`; } const b = Gm.resBand(s, m); return b == null ? '' : `<b class="res-b r${b}">${['적음', '보통', '많음'][b]}</b>`; };   // 정찰하면 숫자
+  const gqIcon = o => (o.kind === 'mat' || o.kind === 'hunt' || o.kind === 'scout') && MATS[o.m] ? matImg(MATS[o.m]) : `<b class="gq-ki">${GQ_NUM[o.kind] || ''}</b>`;
+  const gqMonImg = (k, id) => { const S = Gm.gqSrcK(s, k, id), e = S && ((QT[S.T.id] || S.T).enemies || [])[0], m = e && MONS[e.mon]; return m && m.img ? `<i class="gq-mpic" style="background-image:url(assets/expedition/${m.img})" title="${esc(e.name)}"></i>` : ''; };   // 2026-11-20 사용자: 사냥터 버튼은 대표 출몰 몬스터
+  function gqTargets(k) {   // 종류마다 고를 대상: [{id, name, img, ok, why, extra}]
+    const live = id => (s.gq || []).some(o => o.kind === k && o.m === id);
+    const mats = Object.keys(MATS).filter(id => GR.indexOf(MATS[id].grade) <= s.grade).sort((a, b) => GR.indexOf(MATS[a].grade) - GR.indexOf(MATS[b].grade));
+    if (k === 'mat') return mats.filter(id => (s.knownMats || {})[id]).map(id => { const ok = !live(id) && !!Gm.gqSrc(s, id); return { id, name: MATS[id].name, img: matImg(MATS[id]), ok, ing: live(id), why: live(id) ? '이미 의뢰 중' : ok ? '' : '지금 길드 등급 의뢰에서는 나오지 않습니다' }; });
+    if (k === 'hunt' || k === 'scout') return mats.filter(id => Gm.resOf(s, id) != null && Gm.resBand(s, id) != null && Gm.gqSrcK(s, k, id)).map(id => ({ id, name: Gm.gqPlaceName(s, k, id), img: gqMonImg(k, id) || matImg(MATS[id]), ok: !live(id), ing: live(id), why: live(id) ? '이미 의뢰 중' : '', extra: `<small>${esc(MATS[id].name)} 나옴</small> ${resTxt(id)}` }));   // 2026-11-20: 자원지 이름으로
+    if (k === 'train') return s.advs.filter(a => a.alive).map(a => ({ id: a.id, name: a.name, img: `<span class="tr-f gq-face" style="${faceStyle(a, 38, 180, 19)}"></span>`, ok: !live(a.id), ing: live(a.id), why: live(a.id) ? '이미 의뢰 중' : '', extra: `<small>${GR[a.grade]}급 Lv${a.lv || 1}</small>` }));
+    return null;   // 순찰 · 일손: 대상 없음
+  }
+  // 2026-11-20 사용자: 토벌 · 정찰 화면에도 일반 의뢰처럼 사냥터 정보 — 출현 몬스터 · 위험도 · 얻는 소재(확률)
+  function gqSiteHtml(S, t) {
+    const T = QT[S.T.id] || S.T, d = danger(T, S.g), sc = Gm.scoutOn(s, t), E = T.enemies || [];
+    let h = `<div class="gq-site"><div class="gs-r"><b>개체수</b>${resTxt(t)}${sc ? '<small class="sc">정찰함</small>' : ''}</div>`;
+    if (E.length) {
+      h += `<div class="gs-r"><b>몬스터</b><span class="gs-mons">${E.map(e => { const m = MONS[e.mon] || {}; return `<span class="gs-mon" title="${esc(e.name)}${sc ? ` · 체력 ${e.hp} · 공격 ${e.atk}` : ''}"><i class="pic"${m.img ? ` style="background-image:url(assets/expedition/${m.img})"` : ''}></i>${esc(e.name)} ×${e.count}${e.boss ? ' <em class="ux-tag injured">보스</em>' : ''}${sc ? `<small>체력 ${e.hp} · 공격 ${e.atk}</small>` : ''}</span>`; }).join('')}</span>${d.n ? `<span class="gs-sk" title="위험도 · ${GR[S.g]}급 모험가 ${d.n}명${d.more ? ' 이상' : ''} 권장">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}<small>${d.n}명${d.more ? '+' : ''} 권장</small></span>` : ''}</div>`;
+    }
+    const rw = (T.rewards || []).filter(r => MATS[r.m]).sort((a, b) => b.p - a.p), n = E.reduce((a, e) => a + (e.count || 1), 0);
+    h += `<div class="gs-r"><b title="${n ? `성공하면 몬스터 1마리마다 주 소재(진한 %) 1개 — 이 사냥터 약 ${n}마리. ` : ''}드문 소재(옅은 %)는 의뢰마다 한 번 굴림. 실패하면 소재 없음 · 개체수가 적으면 절반">소재 <i class="gs-q">?</i></b><span class="gs-mats">${rw.map(r => { const m = MATS[r.m], kn = !!(s.knownMats || {})[r.m]; return `<span class="gs-mat${r.p >= 30 ? ' main' : ''}" title="${kn ? esc(m.name) : '???'} · ${r.p >= 30 ? '몬스터마다 뽑는 주 소재' : '의뢰마다 한 번 굴리는 드문 소재'}"><span class="ux-slot${kn ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${kn || m.icon ? matImg(m) : ''}</span><em>${r.p}%</em></span>`; }).join('')}</span></div>`;
+    return h + '</div>';
+  }
+  function gqHtml() {
+    const O = s.gq || [], max = Gm.gqMax(s), open = Gm.gqOpen(s), WK = Gm.gqWeekOpts(s), KD = Gm.GQ_KIND;
+    if (gqWk == null || !WK.includes(gqWk)) gqWk = WK[Math.min(1, WK.length - 1)];
+    if (!Gm.gqKindOpen(s, gqKind)) gqKind = 'hunt';
+    const who = ids => ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean), mn = id => (MATS[id] || { name: id }).name;
+    let L = `<div class="od-h">길드 의뢰 <small>${O.length} / ${max}건</small></div>`;
+    for (const o of O) { const left = o.end - s.week, onB = s.board.some(q => q.gq === o.id), mat = o.kind === 'mat';
+      const st = onB ? '<em class="od-on">게시 중</em>' : '<em class="od-off">모험가가 맡아 떠남</em>';
+      L += `<div class="od-card"><span class="ic">${gqIcon(o)}</span><div class="n"><b>${esc(Gm.gqLabel(o))}${mat ? ` <em>${o.got} / ${o.n}개</em>` : ''}</b>${mat ? `<div class="od-bar"><i style="width:${Math.min(100, o.got / o.n * 100).toFixed(1)}%"></i></div>` : ''}<div class="sub">보상 ${fmt(o.reward)}G${mat ? ` · 맡아 둔 돈 ${fmt(o.hold)}G 남음` : ''}${o.hot ? ' · <em class="gq-hot">바로 맡겨짐</em>' : ''} · ${left > 0 ? left + '주 남음' : '이번 주 끝'} · ${st}</div></div>`
+        + (gqAsk === o.id ? `<div class="od-ask"><small>남은 ${fmt(o.hold)}G를 돌려받습니다</small><span><button class="ux-btn sm danger" data-gqyes="${o.id}">거두기</button><button class="ux-btn sm" data-gqno="1">아니요</button></span></div>` : `<button class="od-btn" data-gqcancel="${o.id}" ${onB ? '' : 'disabled title="모험가가 돌아오면 거둘 수 있습니다"'}>거두기</button>`) + '</div>'; }
+    for (let k = O.length; k < max; k++) L += `<div class="od-empty">빈 자리 · ${open ? '오른쪽에서 새 길드 의뢰를 내세요' : '집무실을 지으면 쓸 수 있습니다'}</div>`;
+    const D = (s.gqDone || []).slice(0, 5);
+    L += '<div class="od-h od-h2">끝난 의뢰 <small>최근 순</small></div>';
+    L += D.length ? D.map(x => { const ago = s.week - x.w; return `<div class="od-log">${ago ? ago + '주 전' : '이번 주'} · <b>${esc(x.label || `${mn(x.m)} ${x.n}개 납품`)}</b>${!x.kind || x.kind === 'mat' ? ` ${x.got} / ${x.n}개` : ''} <span class="gq-why ${x.why}">${GQ_WHY[x.why] || x.why}</span> <em>(지급 ${fmt(x.paid)}G${x.back ? ` · 돌려받음 ${fmt(x.back)}G` : ''})</em></div>`; }).join('') : '<div class="od-log none">아직 끝난 길드 의뢰가 없습니다.</div>';
+    const logs = (s.buyLog || []).filter(x => x.ord).slice(0, 6);
+    L += '<div class="od-h od-h2">들어온 소재 <small>최근 순</small></div>';
+    L += logs.length ? logs.map(x => { const ps = who(x.ids), ago = s.week - x.w; return `<div class="od-log">${ago ? ago + '주 전' : '이번 주'} · <b>${ps.map(a => esc(a.name)).join(' · ') || '떠난 모험가'}</b> ${esc(mn(x.m))} ${x.n}개 <em>(${fmt(x.g)}G 지급)</em></div>`; }).join('') : '<div class="od-log none">아직 길드 의뢰로 들어온 소재가 없습니다.</div>';
+    // 오른쪽: 새 길드 의뢰
+    const k = gqKind, TG = gqTargets(k);
+    if (TG) { const cur = TG.find(x => x.id === gqSel[k]); if (!cur || !cur.ok) gqSel[k] = (TG.find(x => x.ok) || {}).id; if (gqSel[k] == null) gqSel[k] = null; }
+    const t = TG ? gqSel[k] : null, n = gqNOf(k);
+    let R = '<div class="od-h">새 길드 의뢰 <small>보상은 금고에서 맡아 둡니다</small></div>';
+    if (!open) R += '<div class="gq-lock"><b>집무실이 필요합니다</b>집무실을 지으면 길드가 직접 게시판에 의뢰를 낼 수 있습니다. 시설 장에서 지으세요.</div>';
+    R += `<div class="gq-kinds">${GQ_ORDER.map(id => { const K = KD[id] || { name: id }, ok = Gm.gqKindOpen(s, id); return ok ? `<button class="gq-k${id === k ? ' on' : ''}" data-gqk="${id}"><b>${GQ_NUM[id]} ${esc(K.name)}</b><small>${GQ_SUB[id]}</small></button>` : `<button class="gq-k lk" disabled><b>🔒 ${GQ_NUM[id]} ${esc(K.name)}</b><small>${esc(K.lock || '아직 열리지 않음')}</small></button>`; }).join('')}</div>`;
+    if (TG) {
+      if (!TG.length) R += `<div class="od-empty">${k === 'mat' ? '아직 아는 소재가 없습니다. 의뢰에서 소재를 주워 오면 낼 수 있습니다.' : k === 'train' ? '마을에 모험가가 없습니다.' : '지금 길드 등급으로 갈 수 있는 곳이 없습니다.'}</div>`;
+      else R += `<div class="od-pick gq-pick${k === 'mat' ? '' : ' wide'}">${TG.map(x => `<button class="od-m${x.id === t ? ' on' : ''}${x.ing ? ' gq-ing' : ''}" data-gqm="${x.id}" ${x.ok ? '' : 'disabled'} title="${esc(x.why || x.name)}">${x.img}<span>${esc(x.name)}</span>${x.extra ? `<span class="gq-x">${x.extra}</span>` : ''}</button>`).join('')}</div>`;
+    }
+    const ready = !TG || t != null, S = ready ? Gm.gqSrcK(s, k, t) : null;
+    if (ready && S) {
+      const Rg = Gm.gqRangeK(s, k, t, n), base = Gm.gqBaseK(s, k, t, n), rw = gqReward(k, t, n), why = Gm.gqWhy(s, k, t, n, rw, gqWk), hot = rw >= base;
+      if (k === 'mat') {
+        R += `<div class="od-row"><b>소재</b><span class="ic sm">${matImg(MATS[t])}</span>${esc(MATS[t].name)} <small>· 지금 창고 ${(s.mats || {})[t] || 0}개</small></div>`;
+        R += `<div class="od-row"><b>개수</b><span class="od-step"><button data-gqn="-1" ${gqN <= 1 ? 'disabled' : ''}>−</button><b>${gqN}</b><button data-gqn="1" ${gqN >= 20 ? 'disabled' : ''}>+</button></span><small>1~20개</small></div>`;
+      } else if (k === 'hunt' || k === 'scout') R += gqSiteHtml(S, t);   // 2026-11-20 사용자: 사냥터 이름 줄은 빼고 개체수는 정보 상자에
+      else if (k === 'train') { const a = s.advs.find(x => x.id === t); R += `<div class="od-row"><b>모험가</b>${a ? esc(a.name) : ''} <small>· 이 모험가만 맡을 수 있음</small></div>`; }
+      R += `<div class="od-row"><b>보상</b><span class="od-step gq-rw"><button data-gqr="-1" ${rw <= Rg[0] ? 'disabled' : ''}>−</button><b>${fmt(rw)}G</b><button data-gqr="1" ${rw >= Rg[1] ? 'disabled' : ''}>+</button></span><small>기준 ${fmt(base)}G의 ${base ? Math.round(rw / base * 100) : 0}% · ${fmt(Rg[0])}~${fmt(Rg[1])}G<br><em class="${hot ? 'gq-hot' : 'gq-cold'}">${hot ? '기준 이상 · 바로 맡겨짐' : '기준 아래 · 다른 의뢰 다음'}</em></small></div>`;
+      R += `<div class="od-row"><b>기한</b><span>${WK.map(w => `<button class="od-mx${w === gqWk ? ' on' : ''}" data-gqw="${w}">${w}주</button>`).join(' ')}</span></div>`;
+      if (k === 'mat') R += `<div class="od-tot">${k === 'mat' ? `1개당 약 <b>${fmt(Math.round(rw / n))}G</b> <small>· 시세 ${fmt(Gm.matPrice(s, t))}G</small><br>` : ''}<small>${esc(GQ_FX[k])}<br>게시판에 <b class="gq-t">${GR[S.g]}급 · ${esc(S.T.name)}</b> 틀로 올라갑니다<br>금고에서 ${fmt(rw)}G를 맡아 둡니다 · 남으면 돌려받음 · 금고 ${fmt(Math.floor(s.gold))}G</small></div>`;
+      R += `<div class="od-go"><button class="od-btn go" data-gqplace="1" ${why ? 'disabled' : ''}>길드 의뢰 내기</button>${why ? `<small class="od-why">${esc(why)}</small>` : ''}</div>`;
+    } else if (ready) R += `<div class="od-empty">${esc(Gm.gqWhy(s, k, t, n, 10, gqWk) || '지금은 낼 수 없습니다')}</div>`;
+    if (!(k === 'hunt' || k === 'scout')) R += '<div class="od-note">수수료가 없어 모험가가 보상을 그대로 받습니다. 기한이 지나면 남은 돈을 돌려받습니다.</div>';   // 토벌 · 정찰은 사냥터 정보 자리 (2026-11-20)
+    return `<div class="bk2 bk-od bk-gq"><section class="bk-l">${L}</section><section class="bk-r">${R}</section></div>`;
+  }
+  function gqClick(e) {
+    const el = e.target.closest('[data-gqm], [data-gqn], [data-gqr], [data-gqw], [data-gqplace], [data-gqcancel], [data-gqyes], [data-gqno], [data-gqk]'); if (!el || el.disabled) return false;
+    const d = el.dataset, k = gqKind, t = gqSel[k] != null ? gqSel[k] : null;
+    if (d.gqk) { gqKind = d.gqk; gqAsk = null; }
+    else if (d.gqm) { gqSel[k] = k === 'train' ? +d.gqm : d.gqm; gqAsk = null; }
+    else if (d.gqn) gqN = Math.max(1, Math.min(20, gqN + +d.gqn));   // 보상은 기준 대비 % 유지
+    else if (d.gqr) { const n = gqNOf(k), R = Gm.gqRangeK(s, k, t, n), b = Gm.gqBaseK(s, k, t, n), rw = Math.max(R[0], Math.min(R[1], gqReward(k, t, n) + 10 * +d.gqr)); if (b) gqPct = rw / b; }
+    else if (d.gqw) gqWk = +d.gqw;
+    else if (d.gqplace) { const n = gqNOf(k), rw = gqReward(k, t, n), r = Gm.gqPlace(s, k, t, n, rw, gqWk); toast(r.ok ? `길드 의뢰를 냈습니다: ${Gm.gqLabel(r.o)} · ${fmt(rw)}G · ${gqWk}주` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); }
+    else if (d.gqcancel) gqAsk = +d.gqcancel;
+    else if (d.gqyes) { const r = Gm.gqCancel(s, +d.gqyes); gqAsk = null; toast(r.ok ? `길드 의뢰를 거뒀습니다. ${fmt(r.back)}G를 돌려받았습니다.` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); }
+    else if (d.gqno) gqAsk = null;
+    renderPopup(); return true;
+  }
+  // 2026-11-20 떠돌이 상단 (결정 57~62): 왼쪽 = 상단 목록 (관계 · 오는 시기 · 지난 주문) / 오른쪽 = 머무는 상단 주문서 · 위탁 보관함
+  const CAR_LIKE = { farm: '요리 재료', smith: '광석 · 짐승 · 쇠붙이', herb: '약초 · 약재' };
+  function carHtml() {
+    const E = s.cfg.econ, T = E.carRel || [200, 600], cf = E.consignFee != null ? E.consignFee : 0.1, keepW = E.consWeeks || 8, nt = E.carNotice != null ? E.carNotice : 2;
+    const open = Gm.carOpenList(s), here = [];
+    let L = `<div class="od-h">떠돌이 상단 <small>${open.length} / ${Gm.CARS.length}곳</small></div>`;
+    for (const c of Gm.CARS) {
+      if (c.g > s.grade) { L += `<div class="od-card car-card lk"><span class="ic"><b class="gq-ki">🔒</b></span><div class="n"><b>${esc(c.name)}</b><div class="sub">${GR[c.g]}급 길드가 되면 들르기 시작합니다 · ${CAR_LIKE[c.id] || ''}</div></div></div>`; continue; }
+      const st = Gm.carState(s, c), lv = Gm.carRelLv(s, st), lo = lv === 1 ? 0 : T[lv - 2], hi = T[lv - 1], left = st.next - s.week;
+      if (st.here) here.push([c, st]);
+      const stt = st.here ? `<em class="od-on">마을에 머무는 중${st.until != null ? ` · ${Math.max(0, st.until - s.week)}주 뒤 떠남` : ''}</em>` : left <= nt ? `<em class="gq-hot">곧 옴 (${nt}주 안)</em>` : '<em class="od-off">언제 올지 모름</em>';
+      const last = Object.keys(st.last || {}).filter(m => MATS[m]);
+      L += `<div class="od-card car-card${st.here ? ' here' : ''}"><span class="ic"><b class="gq-ki">${esc(c.name.slice(0, 1))}</b></span><div class="n"><b>${esc(c.name)} <em>관계 ${lv}단계</em></b><div class="sub">좋아하는 물건 · ${CAR_LIKE[c.id] || '여러 가지'} · ${stt}</div>`
+        + `<div class="od-bar"><i style="width:${hi != null ? Math.min(100, (st.rel - lo) / (hi - lo) * 100).toFixed(1) : 100}%"></i></div><div class="sub">거래 ${fmt(st.rel)}G${hi != null ? ` · 다음 단계까지 ${fmt(hi - st.rel)}G` : ' · 최고 단계'}</div>`
+        + (last.length ? `<div class="car-last">지난 주문 ${last.map(m => `<span>${esc(MATS[m].name)} ×${st.last[m]}</span>`).join('')}</div>` : '') + '</div></div>';
+    }
+    L += `<div class="od-note">상단에 판 소재는 마을 밖으로 나가 우리 시세를 내리지 않습니다. 오는 시기는 ${nt}주 전에만 알 수 있고, 주문서는 와서 공개합니다. 관계 단계(거래 ${fmt(T[0])} · ${fmt(T[1])}G)마다 주문 종류 +1 · 개수 +5.</div>`;
+    let R = '';
+    if (!here.length) R += '<div class="od-h">주문서</div><div class="od-empty">지금 마을에 머무는 상단이 없습니다.</div>';
+    for (const [c, st] of here) {
+      R += `<div class="car-say"><b>${esc(c.boss)}</b> “${esc(Gm.carTalk(c, 'hi', Gm.carRelLv(s, st)))}”</div>`;   // 2026-11-20 사용자: 상단 주인 대화
+      { const o = st.escort; if (o) { const fee = Math.round(Gm.questFee(s, { g: o.g }) * 100), onB = o.qid != null && s.board.some(q => q.id === o.qid);   // 2026-11-20 상단 호위 의뢰
+        R += o.state === 'offer' ? `<div class="es-box"><div class="es-h">🛡 ${esc(c.boss)}의 부탁 — 상단 호위<span class="lv">떠나기 전까지</span></div><div class="es-kv"><span>보상</span><b>${fmt(o.reward)}G (상단이 냄)</b><span>수수료</span><b>${fee}% · 길드 몫 ${fmt(Math.round(o.reward * fee / 100))}G</b><span>기간</span><b>${s.cfg.econ.escWeeks || 2}주 · 전투</b><span>인원</span><b>2~3명 권장</b></div><div class="es-two"><div class="ok"><b>성공</b> · 관계 +${s.cfg.econ.escRel || 100} · 다음 방문 1~2주 빨라짐 · 다음 주문서 값 +${s.cfg.econ.escBonus || 0.1}배</div><div class="ng"><b>실패</b> · 관계 −${s.cfg.econ.escRelFail || 50} · 다음 방문 늦어짐<br><b>거절</b> · 변화 없음</div></div><div class="es-btns"><button class="ux-btn primary" data-ces="${c.id}:post">게시판에 올리기</button><button class="ux-btn" data-ces="${c.id}:no">이번엔 거절</button></div></div>`
+          : o.state === 'posted' ? `<div class="es-box st">🛡 ${esc(c.name)} 호위 — ${onB ? '게시판에서 맡을 모험가를 기다리는 중 (상단은 떠난 뒤에도 1주 더 기다려 줌, 그래도 없으면 거둠)' : '모험가가 호위하며 떠났습니다'}</div>` : o.state === 'refused' ? `<div class="es-box st off">이번 호위 부탁은 거절했습니다.</div>` : ''; } }
+      R += `<div class="od-h">${esc(c.name)}에게서 사기 <small>우리 마을 시장에 없는 물건 · 한정</small></div>`;
+      for (const w of (st.wares || [])) { const m = MATS[w.m] || { name: w.m }, p = Gm.carWarePrice(s, w), rest = w.max - w.sold, can = Math.min(rest, Math.floor(s.gold / p), (s.cfg.econ.storeCap || 30) - ((s.mats || {})[w.m] || 0));
+        R += `<div class="car-row buy${w.rare ? ' rare' : ''}"><span class="ic sm">${matImg(m)}</span><span class="mp-n"><b>${esc(m.name)}${w.rare ? ' <em class="car-rare">희귀</em>' : ''} <em class="car-x">${GR[GR.indexOf(m.grade)] || ''}급</em></b><small>1개 <b>${fmt(p)}G</b> · 시세 ${fmt(Gm.matPrice(s, w.m))}G · 남은 수 ${rest} / ${w.max} · 창고 ${(s.mats || {})[w.m] || 0}</small></span><span class="car-btn"><button class="ux-btn sm" data-cb="${c.id}:${w.m}:1" ${can > 0 ? '' : 'disabled'}>1개</button><button class="ux-btn sm" data-cb="${c.id}:${w.m}:${Math.max(1, can)}" ${can > 0 ? '' : 'disabled'} title="${fmt(p * Math.max(0, can))}G">다 사기${can > 0 ? ` ${can}` : ''}</button></span></div>`; }
+      if (!(st.wares || []).length) R += '<div class="od-empty">이번에는 팔 물건이 없답니다.</div>';
+      R += `<div class="od-h">${esc(c.name)}에게 팔기 <small>주문서 · 머무는 동안만</small></div>`;
+      for (const o of st.order) { const m = MATS[o.m] || { name: o.m }, p = Gm.carPrice(s, o), have = (s.mats || {})[o.m] || 0, rest = o.max - o.sold, can = Math.min(rest, have);
+        R += `<div class="car-row"><span class="ic sm">${matImg(m)}</span><span class="mp-n"><b>${esc(m.name)} <em class="car-x">×${o.mult}</em></b><small>1개 <b>${fmt(p)}G</b> · 시세 ${fmt(Gm.matPrice(s, o.m))}G · 산 수 ${o.sold} / ${o.max} · 창고 ${have}</small></span><span class="car-btn"><button class="ux-btn sm" data-cs="${c.id}:${o.m}:1" ${can ? '' : 'disabled'}>1개</button><button class="ux-btn sm" data-cs="${c.id}:${o.m}:${can}" ${can ? '' : 'disabled'} title="주문 수량까지 · ${fmt(p * can)}G">다 팔기${can ? ` ${can}` : ''}</button></span></div>`; }
+      if (!st.order.length) R += '<div class="od-empty">이번에는 살 물건이 없답니다.</div>';
+    }
+    const cons = s.cons || [], who = ids => ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean), face = a => `<span class="tr-f" style="${faceStyle(a, 34, 180, 17)}"></span>`;
+    L += `<div class="od-h od-h2">위탁 보관함 <small>모험가가 맡긴 소재 · 수수료 ${Math.round(cf * 100)}%</small></div>`;
+    if (!cons.length) L += '<div class="od-log none">맡아 둔 소재가 없습니다. 지난 상단 값이 길드 매입 · 시장보다 훨씬 높으면 모험가가 소재를 맡깁니다.</div>';
+    for (const e of cons) { const m = MATS[e.m]; if (!m) continue; const ps = who(e.ids), wl = keepW - (s.week - e.w), lm = Gm.carLastMult(s, e.m), sale = lm ? Math.max(1, Math.round(Gm.matPrice(s, e.m) * lm)) * e.n : 0, fee = sale ? Gm.consignFeeOf(s, sale) : 0;
+      L += `<div class="tr-row c car-cons"><span class="ic">${matImg(m)}</span><span class="fs">${ps.slice(0, 2).map(face).join('')}</span><span><b>${esc(m.name)}</b> ×${e.n}<br><small>${ps.map(a => esc(a.name)).join(' · ') || '떠난 모험가'} 것 · ${wl > 0 ? `${wl}주 뒤 찾아감` : '곧 찾아감'}</small></span><span class="g car-pay">${sale ? `모험가 ${fmt(sale - fee)}G<br><small>길드 ${fmt(fee)}G</small>` : '<small>값 모름</small>'}</span></div>`; }
+    if (false) L += `<div class="tr-note">상단이 오면 주문서대로 위탁 소재를 먼저 팝니다. 값은 지난 상단 값으로 어림한 것입니다. ${keepW}주 안에 팔리지 않으면 모험가가 찾아가 시장에 팝니다.</div>`;
+    return `<div class="bk2 bk-od bk-gq bk-car"><section class="bk-l">${L}</section><section class="bk-r">${R}</section></div>`;
+  }
+  function carClick(e) {
+    { const b = e.target.closest('[data-ces]'); if (b) { const [cid, act] = b.dataset.ces.split(':'), r = Gm.carEscort(s, cid, act); toast(r.ok ? (act === 'no' ? '호위 부탁을 거절했습니다.' : '호위 의뢰를 게시판에 올렸습니다.') : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); renderPopup(); return true; } }   // 2026-11-20 상단 호위
+    { const b = e.target.closest('[data-cb]'); if (b) { if (b.disabled) return true; const [cid, m, n] = b.dataset.cb.split(':'), r = Gm.carBuy(s, cid, m, +n); toast(r.ok ? `${(MATS[m] || { name: m }).name} ${r.n}개를 ${fmt(r.g)}G에 샀습니다.` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); renderPopup(); return true; } }   // 2026-11-20 상단에게서 사기
+    const el = e.target.closest('[data-cs]'); if (!el || el.disabled) return false;
+    const [cid, m, n] = el.dataset.cs.split(':'), r = Gm.carSell(s, cid, m, +n);
+    toast(r.ok ? `${(MATS[m] || { name: m }).name} ${r.n}개를 ${fmt(r.g)}G에 팔았습니다.` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); renderPopup(); return true;
+  }
+  // 2026-11-20 매입 개편 (결정 52 · 53): 소재마다 매입가 하나 — 모험가가 매입가와 시장을 비교해 고름 (위탁은 나중에 떠돌이 상단으로)
+  // 2026-11-20 사용자: 소재 판매 + 매입을 한 화면 '소재 관리'로 (시안 docs/design/mockups/market_trade). 마을 시장 재고도 함께
+  let mtSel = null, mtFlt = 'all';
+  function matHtml() {
+    const E = s.cfg.econ, cap = E.storeCap || 30, TH = E.sellTh || [0.9, 0.85, 0.75], mats = s.mats || {}, shop = !!s.built['판매창구'];
+    const known = Object.keys(s.knownMats || {}).filter(id => MATS[id] && GR.indexOf(MATS[id].grade) <= s.grade).sort((a, b) => GR.indexOf(MATS[a].grade) - GR.indexOf(MATS[b].grade) || (MATS[b].line === 'food') - (MATS[a].line === 'food'));
+    const list = known.filter(id => mtFlt === 'all' || (mtFlt === 'food') === (MATS[id].line === 'food'));
+    if (!mtSel || !list.includes(mtSel)) mtSel = list[0] || null;
+    const h4 = (id, k) => ((s.sellHist || {})[id] || []).filter(x => x.w > s.week - 4).reduce((t, x) => t + (x[k] || 0), 0);
+    const mT = id => Gm.SPICE.has(id) ? (E.mktTargetSpice || 15) : (E.mktTarget || 20), mM = id => Math.max(0, Math.round(((s.mkt || {})[id] != null ? s.mkt[id] : mT(id))));
+    const help = `<b>소재 매입:</b> 모험가가 주워 온 소재는 모험가 것입니다. 매입가가 시세의 기준 이상이면 길드에, 아니면 시장에 직접 팝니다 (기준 절약 ${Math.round(TH[0] * 100)} · 보통 ${Math.round(TH[1] * 100)} · 낭비 ${Math.round(TH[2] * 100)}%, 애착이 높으면 조금 싸게도 넘김). 금고가 모자라거나 창고가 가득(${cap}개)이면 시장으로 갑니다.${Gm.carOn(s) ? ' 지난 떠돌이 상단 값이 훨씬 높으면 길드에 맡겨(위탁) 상단에 팝니다.' : ''}<br><b>마을 시장 재고:</b> 마을 상점들이 가진 양입니다. 의뢰에서 나온 소재 · 길드가 판 소재가 들어오고, 마을 사람들이 매주 사 가며(인구가 많을수록 많이), 식당이 모자란 상시 재료를 사 가도 줄어듭니다. 재고가 적으면 시세가 오르고 많으면 내립니다.`;
+    let L = `<div class="mt"><div class="ux-h">소재 관리 <small>판매 · 매입 · 시세</small><details class="tr-help"><summary title="도움말" aria-label="도움말">?</summary><div class="tr-help-b">${help}</div></details></div>
+      <div class="mt-flt">${[['all', `전체 ${known.length}`], ['food', '음식 소재'], ['etc', '그 밖의 소재']].map(([k, t]) => `<button class="${mtFlt === k ? 'on' : ''}" data-mtf="${k}">${t}</button>`).join('')}</div><div class="mt-list gq-mp">`;
+    for (const id of list) { const m = MATS[id], n = mats[id] || 0, fixed = Gm.buyGoldOf(s, id) != null, bp = Gm.matBuyPrice(s, id), t = Gm.mktTrend(s, id);
+      L += `<button class="mt-row${id === mtSel ? ' on' : ''}" data-mtsel="${id}"><span class="mt-ic${n ? '' : ' zero'}" title="창고 ${n}/${cap}개">${matImg(m)}<b>${n}</b></span><span class="mt-nm"><b>${esc(m.name)}</b><small>시세 ${Gm.matPrice(s, id)}G ${t > 0 ? '<i class="up">▲</i>' : t < 0 ? '<i class="dn">▼</i>' : ''}${priceSpark(id)} · 시장 ${mM(id)}</small></span><span class="mt-bp${fixed ? '' : ' auto'}">매입가<b>${bp}G</b></span></button>`; }   // 2026-11-20 사용자: '자동' · 지난 4주 길드 / 시장 문구 없앰
+    if (!list.length) L += '<div class="tr-none">아직 아는 소재가 없습니다.</div>';
+    const nf = known.filter(id => MATS[id].line !== 'food' && mats[id] > 0), sum = nf.reduce((t, id) => t + Gm.sellPreview(s, id, mats[id]), 0), M = s.month || {};
+    L += `</div><div class="mt-bar"><span>이번 달 판매 <b>${fmt(Math.round(M.sell || 0))}G</b> · 매입 <b>${M.matBuyN || 0}개 ${fmt(Math.round(-(M.matBuy || 0)))}G</b></span><button class="ux-btn primary" data-snf="1" ${nf.length && shop ? '' : 'disabled'}>음식이 아닌 소재 모두 팔기 (${fmt(sum)}G)</button></div></div>`;
+    let R = '<div class="mt-r">';
+    if (mtSel) { const id = mtSel, m = MATS[id], n = mats[id] || 0, mp = Gm.matPrice(s, id), bp = Gm.matBuyPrice(s, id), mx = Gm.buyGoldMax(s, id), fixed = Gm.buyGoldOf(s, id) != null, food = m.line === 'food', st = Gm.isStaple(s, id), mm = mM(id), tg = mT(id);
+      const nm = ids => ids.map(x => (s.advs.find(a => a.id === x) || {}).name).filter(Boolean), CN = k => (Gm.CARS.find(c => 'car:' + c.id === k) || {}).name || '떠돌이 상단';   // 2026-11-23 사용자: 누구에게서 · 개당 얼마에 샀는지
+      const logs = (s.buyLog || []).filter(b => b.m === id).map(b => ({ w: b.w, n: b.n, g: b.g, who: b.ord ? '발주' : '모험가', sub: nm(b.ids || []).join(' · ') }))
+        .concat((s.mkBuyLog || []).filter(b => b.m === id).map(b => ({ w: b.w, n: b.n, g: b.g, who: b.src === 'mk' ? '시장' : '상단', sub: b.src === 'mk' ? '식당 재료' : CN(b.src) }))).sort((a, b) => b.w - a.w).slice(0, 5);
+      R += `<div class="mt-top"><span class="big ux-slot" data-g="${GR.indexOf(m.grade)}">${matImg(m)}</span><div><div class="mt-tn">${badge(GR.indexOf(m.grade))}<b>${esc(m.name)}</b>${food ? `<span class="tg ${st ? 'st' : 'rare'}" title="${st ? '창고에 없으면 식당이 시장에서 삼' : '시장에 없음 — 모험가 매입으로만'}">${st ? '상시 재료' : '희귀 재료'}</span>` : ''}</div><p>${esc(m.desc || '')}</p></div></div>
+        <div class="mt-ch"><div class="mt-per">${[4, 12, 24, 48].map(w => `<button class="${buyChartW === w ? 'on' : ''}" data-bper="${w}">${w}주</button>`).join('')}<em>지금 ${mp}G ${(t => t > 0 ? '<i class="mk-tr up">▲</i>' : t < 0 ? '<i class="mk-tr dn">▼</i>' : '')(Gm.mktTrend(s, id))}</em></div>${priceChart(id, 480, 128, buyChartW, true)}
+          <div class="mt-stock" title="마을 상점들이 가진 양 — 적으면 시세가 오름">마을 시장 재고 <span class="bar"><i style="width:${Math.min(100, Math.round(mm / (tg * 1.5) * 100))}%"></i><u style="left:${Math.round(100 / 1.5)}%"></u></span><b>${mm}개</b><small>보통 ${tg}개${mm < tg * 0.5 ? ' · 모자람' : mm > tg * 1.2 ? ' · 넉넉함' : ''}</small></div></div>
+        <div class="mt-two">
+          <div class="mt-box"><h4>소재 판매 <details class="tr-help mt-q"><summary aria-label="도움말">?</summary><div class="tr-help-b">${shop ? `판매 창구에서 길드 창고의 소재를 마을 시장에 팝니다. 많이 팔수록 마을 재고가 늘어 값이 내려갑니다.${food ? ' 음식 소재는 팔면 요리를 못 만들 수 있습니다.' : ''}` : '판매 창구를 지으면 팔 수 있습니다.'}</div></details><small>창고 ${n} / ${cap}개</small></h4><div class="mt-kv"><span>1개 값</span><b>${Gm.matSellPrice(s, id)}G</b><span>전부 팔면</span><b>${n ? Gm.sellPreview(s, id, n) : 0}G</b></div><div class="mt-btns"><button class="ux-btn" data-sone="${id}" ${n && shop ? '' : 'disabled'}>1개 팔기</button><button class="ux-btn primary" data-sall="${id}" ${n && shop ? '' : 'disabled'}>전부 팔기</button></div></div>
+          <div class="mt-box"><h4>소재 매입 <details class="tr-help mt-q"><summary aria-label="도움말">?</summary><div class="tr-help-b">모험가가 주워 온 소재를 이 값에 사들입니다. 모험가는 이 매입가가 시세의 성향 기준(절약 ${Math.round(TH[0] * 100)} · 보통 ${Math.round(TH[1] * 100)} · 낭비 ${Math.round(TH[2] * 100)}%) 이상이면 길드에, 아니면 시장에 팝니다. 애착이 높으면 조금 더 싸게도 넘깁니다. 정하지 않으면 시세를 따라갑니다.</div></details><small>모험가에게서</small></h4><div class="mt-step"><button data-bgold="${id}:-5" ${bp <= 1 ? 'disabled' : ''}>−5</button><button data-bgold="${id}:-1" ${bp <= 1 ? 'disabled' : ''}>−</button><b>${bp}G</b><button data-bgold="${id}:1" ${bp >= mx ? 'disabled' : ''}>+</button><button data-bgold="${id}:5" ${bp >= mx ? 'disabled' : ''}>+5</button></div>${fixed ? `<div class="mt-auto"><button class="gq-auto" data-bgold="${id}:auto" title="정한 값을 지우고 시세를 따라가게">자동으로</button></div>` : ''}</div>
+        </div>
+        <div class="mt-log"><b>최근 매입</b>${logs.length ? logs.map(b => `<div><span><em class="mt-src ${b.who === '시장' ? 'mk' : b.who === '상단' ? 'car' : 'adv'}">${b.who}</em>${b.sub ? `<small>${esc(b.sub)}</small>` : ''}</span><span class="mt-lq">${b.n}개 · 개당 ${Math.round(b.g / b.n * 10) / 10}G</span><span class="mt-lw">${b.w === s.week ? '이번 주' : (s.week - b.w) + '주 전'}</span><span>${fmt(b.g)}G</span></div>`).join('') : '<div><span>아직 없음</span></div>'}</div>`; }
+    else R += '<div class="tr-none">소재를 고르세요.</div>';
+    return `<div class="bk2 bk-tr bk-mt"><section class="bk-l">${L}</section><section class="bk-r">${R}</div></section></div>`;
+  }
+  let buyChart = null, buyChartW = 12;
+  function buyHtml() {
+    const E = s.cfg.econ, cap = E.storeCap || 30, lo = E.buyRateMin != null ? E.buyRateMin : 0.5, hi = E.buyRateMax != null ? E.buyRateMax : 1.2, TH = E.sellTh || [0.9, 0.85, 0.75];
+    const who = ids => ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean), face = a => `<span class="tr-f" style="${faceStyle(a, 34, 180, 17)}"></span>`;
+    const known = Object.keys(s.knownMats || {}).filter(id => MATS[id] && GR.indexOf(MATS[id].grade) <= s.grade).sort((a, b) => GR.indexOf(MATS[a].grade) - GR.indexOf(MATS[b].grade));
+    const sumH = (id, k) => ((s.sellHist || {})[id] || []).filter(x => x.w > s.week - 4).reduce((t, x) => t + (x[k] || 0), 0);
+    const help = `모험가가 매입가와 시장을 비교해 고릅니다. 매입가가 시세의 기준 이상이면 길드에, 아니면 시장에 직접 팝니다 (기준 절약 ${Math.round(TH[0] * 100)} · 보통 ${Math.round(TH[1] * 100)} · 낭비 ${Math.round(TH[2] * 100)}%, 애착이 높으면 조금 싸게도 넘김). 금고가 모자라거나 창고가 가득(${cap}개)이면 시장으로 갑니다.${Gm.carOn(s) ? ' 지난 떠돌이 상단 값이 훨씬 높으면 길드에 맡겨(위탁) 상단에 팝니다.' : ''}`;
+    let L = `<div class="tr"><div class="ux-h">소재 매입가 <small>골드로 정함</small><details class="tr-help"><summary title="모험가는 어디에 파나" aria-label="도움말">?</summary><div class="tr-help-b">${help}</div></details></div><div class="mp-list gq-mp">`;   // 2026-11-20 사용자: 설명은 물음표를 누르면
+    for (const id of known) { const m = MATS[id], r = Gm.polRate(s, id), g = sumH(id, 'g'), k = sumH(id, 'm');
+      L += `<div class="mp-row"><span class="mp-ic" title="창고 ${(s.mats || {})[id] || 0}/${cap}개"><span class="ic sm">${matImg(m)}</span><b>${(s.mats || {})[id] || 0}</b></span><span class="mp-n"><b>${esc(m.name)}</b><small>시세 ${Gm.matPrice(s, id)}G ${trendTag(id)} ${Gm.mktLogOf(s, id).length >= 2 ? `<button class="mp-spk${buyChart === id ? ' on' : ''}" data-bchart="${id}" title="시세 그래프 보기">${priceSpark(id)}</button>` : ''}</small><small class="gq-h">지난 4주 · <b>길드 ${g}</b> · 시장 ${k}${sumH(id, 'c') ? ` · <em class="gq-c">위탁 ${sumH(id, 'c')}</em>` : ''}</small></span><span class="gq-rate">${(() => { const bp = Gm.matBuyPrice(s, id), mx = Gm.buyGoldMax(s, id); return `<button data-bgold="${id}:-5" ${bp <= 1 ? 'disabled' : ''}>−5</button><button data-bgold="${id}:-1" ${bp <= 1 ? 'disabled' : ''}>−</button><b>${fmt(bp)}G</b><button data-bgold="${id}:1" ${bp >= mx ? 'disabled' : ''}>+</button><button data-bgold="${id}:5" ${bp >= mx ? 'disabled' : ''}>+5</button>`; })()}</span><span class="gq-bp">${Gm.buyGoldOf(s, id) != null ? `<button class="gq-auto" data-bgold="${id}:auto" title="정한 값을 지우고 시세를 따라가게">자동으로</button>` : '<small class="gq-am">자동</small>'}</span></div>`;
+      if (buyChart === id) L += `<div class="mp-chart"><div class="mp-per">${[4, 12, 24, 48].map(w => `<button class="${buyChartW === w ? 'on' : ''}" data-bper="${w}">${w}주</button>`).join('')}<small>마우스를 올리면 그 주 값</small></div>${priceChart(id, 460, 150, buyChartW)}</div>`; }   // 2026-11-20 사용자: 그래프를 누르면 기간별 시세   /* 2026-11-20 사용자: 매입가를 골드로 */
+    if (!known.length) L += '<div class="tr-none">아직 아는 소재가 없습니다.</div>';
+    L += `</div></div>`;
+    const logs = (s.buyLog || []).slice(0, 8), M = s.month;
+    let R = `<div class="tr"><h3>이번 달 매입</h3><div class="sub">모험가가 주워 온 소재는 모험가 것입니다 · 길드는 매입가로 삽니다</div>
+      <div class="tr-sum"><div>길드 매입<b class="m">${M.matBuyN || 0}개 · ${fmt(-(M.matBuy || 0))}G</b>돈은 주워 온 모험가에게</div><div>시장으로<b>${M.mktSellN || 0}개</b>모험가가 직접 팖 · 길드 몫 없음</div></div>
+      <div class="ux-h">매입 기록 <small>최근 순</small></div>`;
+    if (!logs.length) R += '<div class="tr-none">아직 매입한 소재가 없습니다.</div>';
+    for (const b of logs) { const m = MATS[b.m], ps = who(b.ids); if (!m) continue;
+      R += `<div class="tr-row"><span class="ic">${matImg(m)}</span><span class="fs">${ps.slice(0, 2).map(face).join('')}</span><span><b>${esc(m.name)}</b> ×${b.n}${b.ord ? ' <em class="gq-tag sm">길드 의뢰</em>' : ''}<br><small>${ps.length ? esc(ps[0].name) + (ps.length > 1 ? ' 파티' : '') + '가 주워 옴' : '떠난 모험가'}</small></span><span class="g">${fmt(b.g)}G</span><span class="wk">${b.w === s.week ? '이번 주' : (s.week - b.w) + '주 전'}</span></div>`; }
+    R += '<div class="tr-note">산 소재는 길드 창고로 들어가 요리 · 리퀘스트 납품에 쓰고, <b>소재 판매</b> 책갈피에서 팔 수도 있습니다.</div></div>';
+    return `<div class="bk2 bk-tr bk-buy"><section class="bk-l">${L}</section><section class="bk-r">${R}</section></div>`;
   }
   function tradeHtml() {   // 2026-11-18 V2 E4-4 (시안 사용자 확인): 매입 기록 + 위탁 보관함 · 위탁품 지금 사들이기
     const E = s.cfg.econ, br = Math.round((E.matBuyRate != null ? E.matBuyRate : 0.7) * 100), cf = E.consignFee != null ? E.consignFee : 0.1;
     const who = ids => ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean), face = a => `<span class="tr-f" style="${faceStyle(a, 34, 180, 17)}"></span>`;
     const cons = s.consign || [], logs = (s.buyLog || []).slice(0, 7), cn = cons.reduce((t, c) => t + c.n, 0), left = (Gm.WPM - s.week % Gm.WPM) % Gm.WPM || Gm.WPM;
-    const feeOf = c => Math.floor(Gm.matSellPrice(s, c.m) * c.n * cf + 1e-9);
-    let L = `<div class="tr"><div class="sub">모험가가 주워 온 소재는 모험가 것입니다 · 귀환 때 길드가 판매가의 <b>${br}%</b>로 삽니다</div>
-      <div class="tr-sum"><div>이번 달 매입<b class="m">${s.month.matBuyN || 0}개 · ${fmt(-(s.month.matBuy || 0))}G</b>돈은 주워 온 모험가에게</div><div>위탁 보관 중<b>${cn}개</b>${cn ? `월말에 팔리면 수수료 +${fmt(cons.reduce((t, c) => t + feeOf(c), 0))}G` : '금고가 모자랄 때만 생깁니다'}</div></div>
+    const feeOf = c => Gm.consignFeeOf(s, Gm.matSellPrice(s, c.m) * c.n);   // 2026-11-19: 반올림 · 최소 1G
+    // 2026-11-19 V4 2단계 (결정 43): 소재마다 매입(시세 × 50 · 70 · 90%) / 위탁 / 안 받음
+    const RO = E.buyRateOpt || [0.5, 0.7, 0.9], cap = E.storeCap || 30, known = Object.keys(s.knownMats || {}).filter(id => MATS[id] && GR.indexOf(MATS[id].grade) <= s.grade).sort((a, b) => GR.indexOf(MATS[a].grade) - GR.indexOf(MATS[b].grade));
+    let P = '<div class="tr"><div class="ux-h">소재 처리 <small>귀환 때 소재마다 · 시세는 마을 시장 재고에 따라 움직입니다</small></div><div class="mp-list">';
+    for (const id of known) { const m = MATS[id], p = Gm.matPol(s, id), r = Gm.polRate(s, id);
+      P += `<div class="mp-row"><span class="ic sm">${matImg(m)}</span><span class="mp-n"><b>${esc(m.name)}</b><small>시세 ${Gm.matPrice(s, id)}G ${trendTag(id)} ${priceSpark(id)} · 창고 ${(s.mats || {})[id] || 0}/${cap}</small></span><span class="mp-seg">${[['buy', '매입'], ['consign', '위탁'], ['none', '안 받음']].map(([k, t]) => `<button class="${p.mode === k ? 'on' : ''}" data-mpol="${id}:${k}">${t}</button>`).join('')}</span><span class="mp-seg r">${p.mode === 'buy' ? RO.map(x => `<button class="${Math.abs(x - r) < 1e-9 ? 'on' : ''}" data-mrate="${id}:${x}" title="매입가 ${Math.floor(Gm.matPrice(s, id) * x + 1e-9)}G">${Math.round(x * 100)}%</button>`).join('') : '<small>' + (p.mode === 'consign' ? `팔리면 수수료 ${Math.round(cf * 100)}%` : '모험가가 직접 팖 · 길드 몫 없음') + '</small>'}</span></div>`; }
+    if (!known.length) P += '<div class="tr-none">아직 아는 소재가 없습니다.</div>';
+    P += `</div><div class="tr-note"><b>매입</b> = 길드 창고로(요리 · 납품 · 발주) · 매입가를 낮추면 돈이 필요한 모험가가 그 의뢰를 덜 맡습니다(50%면 25% 거름). <b>위탁</b> = 길드가 월말에 시세로 대신 팔고 수수료. <b>안 받음</b> = 모험가가 직접 팔아 길드 몫이 없습니다. 창고가 ${cap}개 차면 위탁으로 돌립니다.</div></div>`;
+    let L = P + `<div class="tr"><div class="sub">모험가가 주워 온 소재는 모험가 것입니다 · 매입은 소재마다 정한 비율(기본 ${br}%)로 삽니다</div>
+      <div class="tr-sum"><div>이번 달 매입<b class="m">${s.month.matBuyN || 0}개 · ${fmt(-(s.month.matBuy || 0))}G</b>돈은 주워 온 모험가에게</div><div>위탁 보관 중<b>${cn}개</b>${cn ? `월말에 팔리면 수수료 +${fmt(cons.reduce((t, c) => t + feeOf(c), 0))}G` : '위탁을 고른 소재 · 창고가 찼거나 금고가 모자랄 때 생깁니다'}</div></div>
       <div class="ux-h">매입 기록 <small>최근 순</small></div>`;
     if (!logs.length) L += '<div class="tr-none">아직 매입한 소재가 없습니다.</div>';
     for (const b of logs) { const m = MATS[b.m], ps = who(b.ids); if (!m) continue;
       L += `<div class="tr-row"><span class="ic">${matImg(m)}</span><span class="fs">${ps.slice(0, 2).map(face).join('')}</span><span><b>${esc(m.name)}</b> ×${b.n}<br><small>${ps.length ? esc(ps[0].name) + (ps.length > 1 ? ' 파티' : '') + '가 주워 옴' : '떠난 모험가'}</small></span><span class="g">${fmt(b.g)}G</span><span class="wk">${b.w === s.week ? '이번 주' : (s.week - b.w) + '주 전'}</span></div>`; }
     L += `<div class="tr-note">산 소재는 길드 창고로 들어가 요리 · 리퀘스트 납품에 쓰고, <b>소재 판매</b> 책갈피에서 판매가 그대로 팔 수 있습니다.</div></div>`;
-    let R = `<div class="tr"><h3>위탁 보관함</h3><div class="sub">금고가 모자라 사지 못한 소재 · 모험가 것으로 맡아 둡니다</div>`;
+    let R = `<div class="tr"><h3>위탁 보관함</h3><div class="sub">위탁을 고른 소재 · 창고가 찼거나 금고가 모자라 사지 못한 소재 · 모험가 것으로 맡아 둡니다</div>`;
     if (!cons.length) R += '<div class="tr-none">맡아 둔 소재가 없습니다.<br><small>귀환 때 금고가 매입가보다 적으면 여기에 쌓입니다.</small></div>';
     cons.forEach((c, i) => { const m = MATS[c.m], ps = who(c.ids); if (!m) return; const sale = Gm.matSellPrice(s, c.m) * c.n, fee = feeOf(c), cost = Gm.matBuyPrice(s, c.m) * c.n;
       R += `<div class="tr-row c"><span class="ic">${matImg(m)}</span><span class="fs">${ps.slice(0, 2).map(face).join('')}</span><span><b>${esc(m.name)}</b> ×${c.n}<br><small>${ps.map(a => esc(a.name)).join(' · ') || '떠난 모험가'} 것 · 월말(${left}주 뒤) 판매 시 모험가 ${fmt(sale - fee)}G · 길드 ${fmt(fee)}G</small></span><button class="ux-btn sm" data-cbuy="${i}" ${s.gold < cost ? 'disabled title="금고가 모자랍니다"' : ''}>${fmt(cost)}G에 사들이기</button></div>`; });
-    R += `<div class="tr-warn">위탁 소재는 길드 것이 아니라서 요리 · 리퀘스트 납품에 쓸 수 없습니다. 사들이면 창고로 들어옵니다.</div><div class="tr-note">위탁 수수료는 판매가의 <b>${Math.round(cf * 100)}%</b>입니다. 금고가 넉넉하면 다음 귀환부터는 다시 자동으로 매입합니다.</div></div>`;
+    R += `<div class="tr-warn">위탁 소재는 길드 것이 아니라서 요리 · 리퀘스트 납품에 쓸 수 없습니다. 사들이면 창고로 들어옵니다.</div><div class="tr-note">위탁 수수료는 시세의 <b>${Math.round(cf * 100)}%</b>입니다. 매입으로 둔 소재는 금고가 넉넉하면 다음 귀환부터 다시 자동으로 매입합니다.</div></div>`;
     return `<div class="bk2 bk-tr"><section class="bk-l">${L}</section><section class="bk-r">${R}</section></div>`;
   }
   function qFeeHtml(q) {   // 2026-11-17 V2 E5-4: 이 의뢰 수수료 + 실수령 미리 보기 (책 오른쪽 쪽)
     const O = s.cfg.econ.feeOpt || [0.1, 0.15, 0.2], open = Gm.feeOptions(s), base = Gm.questFee(s, { g: q.g }), cur = Gm.questFee(s, q), R = q.reward * (q.x2 ? 2 : 1);
     const one = Gm.econSplit(R, [cur]), three = Gm.econSplit(R, [cur, cur, cur]), K = s.cfg.econ.restK || 0;
-    const skip = r => Math.min(100, Math.round(Math.max(0, r - O[0]) / O[0] * K * 100));
+    const fb0 = s.cfg.econ.feeBase != null ? s.cfg.econ.feeBase : 0.1, skip = r => Math.min(100, Math.round(Math.max(0, r - fb0) / fb0 * K * 100));   // 2026-11-19: 기본 = feeBase (5%가 첫 칸)
     return `<div class="mk5-q pop"><h4 data-qfeeopen="1" class="fd-h">이 의뢰 수수료<i class="fd-ar">접기 ▾</i></h4><span class="ct-seg"><button data-qfee="${q.id}:base" class="${q.fee == null ? 'on' : ''} df">${GR[q.g]}급 기본 ${Math.round(base * 100)}%</button>${O.map(r => { const ok = open.some(x => Math.abs(x - r) < 1e-9); return `<button data-qfee="${q.id}:${r}" class="${q.fee != null && Math.abs(q.fee - r) < 1e-9 ? 'on' : ''} ${ok ? '' : 'lk'}" ${ok ? '' : 'disabled'}>${ok ? '' : '🔒'}${Math.round(r * 100)}%</button>`; }).join('')}</span>
       <div class="pv">혼자 가면 <b>모험가 실수령 ${fmt(one.net[0])}G</b> · 길드 <em>${fmt(one.guild)}G</em> &nbsp;|&nbsp; 3명이면 1인 실수령 ${three.net[2] === three.net[0] ? fmt(three.net[0]) : fmt(three.net[2]) + '~' + fmt(three.net[0])}G</div>
-      <div class="nt">${cur > O[0] + 1e-9 ? `돈이 필요한 모험가는 이 의뢰를 ${skip(cur)}% 확률로 거릅니다. 남아서 기한이 지나면 사라지고 신뢰도 −1.` : `수수료를 올리면 돈이 필요한 모험가가 덜 고릅니다 (${O.slice(1).map(r => `${Math.round(r * 100)}% → ${skip(r)}% 거름`).join(' · ')}).`} 이미 출발한 의뢰는 출발 때 수수료 그대로입니다.</div></div>`;
+      <div class="nt">${cur > fb0 + 1e-9 ? `돈이 필요한 모험가는 이 의뢰를 ${skip(cur)}% 확률로 거릅니다. 남아서 기한이 지나면 사라지고 신뢰도 −1.` : cur < fb0 - 1e-9 ? '기본보다 싼 수수료라 모든 모험가가 이 의뢰를 먼저 맡습니다 — 빨리 처리되는 대신 길드 몫이 줄어듭니다.' : `수수료를 낮추면 빨리 처리되고, 올리면 돈이 필요한 모험가가 덜 고릅니다 (${O.filter(r => r > fb0 + 1e-9).map(r => `${Math.round(r * 100)}% → ${skip(r)}% 거름`).join(' · ')}).`} 이미 출발한 의뢰는 출발 때 수수료 그대로입니다.</div></div>`;
   }
   function qDetailHtml(q, fee) {   // fee: 게시판 책 오른쪽 쪽이면 성공 · 실패 줄 끝에 '수수료 ○% 바꾸기' (누르면 수수료 칸이 의뢰 취소 위에 펼쳐짐)
     const T = QT[q.tid] || {}, d = danger(T, q.g), fb = foeBand(q), intel = !!s.built['정보실'], wk = T.weeks || 1;
@@ -913,10 +1169,13 @@
       h += `<div class="sec">위험도</div><div class="row">${[1, 2, 3].map(k => SKULL(k <= d.n)).join('')}<span>${GR[q.g]}급 모험가 <b>${d.n}명${d.more ? ' 이상' : ''}</b> 권장${d.more ? ' (장비가 필요할 수 있음)' : ''}</span></div>`;
       h += q.fz && LV ? `<div class="ql-warn">레벨이 막 올라 <b>적 정보가 부정확</b>해요 — 실제는 훨씬 강하거나 약할 수 있음 <small>(앞으로 ${LV.fresh}번)</small></div>` : `<div class="row">${intel ? (fb === 'up' ? '<i class="foe up">▲</i> 이번 무리는 평소보다 <b>강합니다</b>' : fb === 'down' ? '<i class="foe down">▼</i> 이번 무리는 평소보다 <b>약합니다</b>' : '이번 무리는 평소 수준입니다') : '<i class="foe unk">?</i> 정보실이 있으면 이번 무리의 강약을 알 수 있습니다'}</div>`;
     } else h += `<div class="sec">요구 능력치 <small>비전투 의뢰</small></div><div class="row">${q.req.map(k => `<span class="ux-tag">${Gm.STATS[k]} ${Math.round(q.r)}</span>`).join(' ')}</div>`;
+    { const bm = Gm.baseMatOf(T), b = bm ? Gm.resBand(s, bm) : null; if (b != null) h += `<div class="row res-row">사냥터 · 채집지 ${resTxt(bm)}${Gm.scoutOn(s, bm) ? '<small class="sc">정찰함</small>' : ''}<small>${b === 0 ? '흔적을 찾기 어렵고 얻는 소재가 절반 · 의뢰 레벨이 오르지 않음' : b === 2 ? (QT[q.tid] && (QT[q.tid].enemies || []).length ? '너무 많아 마을에 피해 · 잡을수록 좋음' : '넉넉함') : '알맞음'}</small></div>`; }   // 2026-11-19 V4 3단계 (결정 44, 숫자 숨김)
     const rw = (T.rewards || []).filter(r => MATS[r.m]);
     h += `<div class="sec">보상</div><div class="rw"><span class="gold big"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G${q.x2 ? ' <em class="qx2">×2</em>' : ''}</span>${rw.map(r => { const m = MATS[r.m], known = !!(s.knownMats || {})[r.m];   // 모르는 소재: 실루엣 + ? (이름은 ???)
       return `<span class="mat ${r.role === '주' ? 'main' : ''}" title="${known ? esc(m.name) : '???'}"><span class="ux-slot${known ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${known || m.icon ? matImg(m) : ''}</span><em>${r.p}%</em></span>`; }).join('')}</div>`;
     const fs = q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g], ff = q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g], ts = q.trustS != null ? q.trustS : s.cfg.quest.trustSucc, tf = q.trustF != null ? q.trustF : s.cfg.quest.trustFail;
+    { const G = gqOf(q); if (G) { const left = G.end - s.week;   // 2026-11-20 길드 의뢰 카드: 명성 · 신뢰 · 수수료 · 위약금 없음
+      h += `<div class="gq-det"><span class="gq-tag">길드 의뢰 ${GQ_NUM[G.kind] || ''}</span> <b>${esc(Gm.gqLabel(G))}</b>${G.kind === 'mat' ? ` · <b>${G.got} / ${G.n}개</b> 모음` : ''}${G.hot ? ' · <em class="gq-hot">바로 맡겨짐</em>' : ''} · 기한 ${left > 0 ? left + '주 남음' : '이번 주 끝'}<br>${esc(GQ_FX[G.kind] || '')} 수수료 · 명성 · 신뢰도 변화 없이 보상을 그대로 받습니다.</div>`; return h; } }   // 거두기 안내는 아래 버튼 줄에
     h += `<div class="foot"><span>성공 명성 <b class="ux-plus">+${fs}</b> · 신뢰도 <b class="ux-plus">+${ts}</b></span><span>실패 명성 <b class="ux-minus">−${ff}</b> · 신뢰도 <b class="ux-minus">−${tf}</b></span>${fee ? `<span class="fd-chip${feeOpen ? ' on' : ''}" data-qfeeopen="1" title="이 의뢰만 수수료 바꾸기">수수료 <b>${Math.round(Gm.questFee(s, q) * 100)}%</b>${q.fee == null ? ' 기본' : ''} ${feeOpen ? '▾' : '▸'}</span>` : ''}</div>`;
     { const left = Gm.expireWeeks(s) - (s.week - q.posted);
       h += `<div class="foot muted">기한 ${left}주 남음 (지나면 사라지고 신뢰도 −${s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1}) · 취소하면 ${fmt(Math.round(q.reward * 0.10))}G, 신뢰도 −2</div>`; }
@@ -934,9 +1193,9 @@
   }
   // ---------- 장부: 수입 · 지출 (지난달 | 이번 달) + 12개월 순이익 그래프 (docs/design/popup_ledger.md) ----------
   // 순이익 = 수입 − 지출(시설 건설비·기타). 관문 1의 "운영 순이익(m.net)"은 건설비를 빼고 계산하므로 따로 둠
-  const LG_IN = [['fee', '의뢰 수수료'], ['resale', '소재 판매'], ['consign', '위탁 수수료'], ['meal', '식사 판매'], ['tavern', '주점 매출'], ['reqIn', '리퀘스트 보상'], ['subsidy', '왕국 보조금'], ['royal', '왕국 포상금']];
-  const LG_OUT = [['build', '시설 건설비'], ['matBuy', '소재 매입'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['order', '길드 발주'], ['gift', '장비 선물'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
-  const LG_OPT = { royal: 1, consign: 1, cpay: 1, csup: 1, order: 1, gift: 1, prep: 1 };   // order: 길드 발주 선지급 − 거둔 돈 (2026-11-18 E8-4)
+  const LG_IN = [['fee', '의뢰 수수료'], ['resale', '소재 판매'], ['consign', '위탁 수수료'], ['car', '상단 판매'], ['meal', '식사 판매'], ['tavern', '주점 매출'], ['reqIn', '리퀘스트 보상'], ['subsidy', '왕국 보조금'], ['royal', '왕국 포상금']];
+  const LG_OUT = [['build', '시설 건설비'], ['matBuy', '소재 매입'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['order', '길드 발주'], ['gq', '길드 의뢰'], ['carBuy', '상단 구매'], ['shop', '식당 재료 (시장 구매)'], ['gift', '장비 선물'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
+  const LG_OPT = { royal: 1, carBuy: 1, car: 1, consign: 1, cpay: 1, csup: 1, order: 1, gq: 1, gift: 1, prep: 1 };   // shop: 식당이 잡화 상인에게서 산 양념 (2026-11-19 결정 38)   // order: 길드 발주 선지급 − 거둔 돈 (2026-11-18 E8-4)
   const LG_EOM = { subsidy: 1 };   // 월말 결산 때 한꺼번에 들어오는 항목 (주점 매출은 2026-11-12부터 매주 술 1잔 단위라 제외)
   const lgIn = m => LG_IN.reduce((t, [k]) => t + (m[k] || 0), 0), lgOut = m => LG_OUT.reduce((t, [k]) => t + (m[k] || 0), 0), lgNet = m => lgIn(m) + lgOut(m);
   const gG = v => `${v < 0 ? '−' : ''}${fmt(Math.abs(Math.round(v)))}G`;
@@ -944,16 +1203,24 @@
     const E = s.cfg.econ, fr = m.feeRate != null ? m.feeRate : Gm.feeRate(s);
     if (k === 'fee') return `성공한 의뢰 <b>${m.success || 0}건</b> · 보상의 ${Math.round(fr * 100)}%`;
     if (k === 'resale') return (E.resaleRate ? `성공한 의뢰 <b>${m.success || 0}건</b> · 보상의 ${Math.round(E.resaleRate * 100)}% · ` : '') + (m.sell ? `판매 창구 <b>${fmt(m.sell)}G</b>` : '판매 없음');
+    if (k === 'matBuy' && Gm.gqOn(s)) return m.matBuyN ? `모험가가 주워 온 소재 <b>${m.matBuyN}개</b>를 소재마다 정한 매입가로 매입${m.mktSellN ? ` · 시장으로 ${m.mktSellN}개` : ''}` : '없음';   // 2026-11-20 매입 개편
     if (k === 'matBuy') return m.matBuyN ? `모험가가 주워 온 소재 <b>${m.matBuyN}개</b>를 판매가의 ${Math.round((E.matBuyRate || 0.7) * 100)}%로 매입` : '없음';
     if (k === 'consign') return m.consignN ? `위탁 소재 <b>${m.consignN}개</b> 판매 · 수수료 ${Math.round((E.consignFee || 0.1) * 100)}%` : '없음';
-    if (k === 'meal') { const d = m.dishes || {}, ks = Object.keys(d); return ks.length ? ks.map(n => `${esc(n)} <b>${d[n]}그릇</b>`).join('<br>') : (m.dishes ? '판매 없음' : '내역 없음 (예전 기록)'); }
+    if (k === 'meal') { const d = m.dishes || {}, sa = m.dishSale || {}, fr = m.dishFree || {}, wa = m.dishWaste || {}, ks = [...new Set([...Object.keys(d), ...Object.keys(fr), ...Object.keys(wa)])];   // 2026-11-20 사용자: 마감 할인 · 무료 식사 · 버린 그릇도
+      if (!ks.length) return m.dishes ? '판매 없음' : '내역 없음 (예전 기록)';
+      const one = n => `${esc(n)} 판매 <b>${d[n] || 0}그릇</b>${sa[n] ? ` (마감 할인 ${sa[n]})` : ''}${fr[n] ? ` · 무료 식사 ${fr[n]}` : ''}${wa[n] ? ` · 버림 ${wa[n]}` : ''}`;
+      return ks.map(one).join('<br>') + `<br><small>합계 판매 ${Object.values(d).reduce((a, b) => a + b, 0)}그릇 · 마감 할인 ${m.saleN || 0} · 무료 식사 ${m.freeMeal || 0} · 버림 ${m.waste || 0}</small>`; }
     if (k === 'tavern') return `술 <b>${m.drinks || 0}잔</b> 판매 · 1잔 마진 ${GR[s.grade]}급 ${(s.cfg.econ.drinkMargin || [2])[s.grade] || 2}G${Gm.upg(s, '주점') ? ' + 업그레이드 5G' : ''}`;   // 2026-11-12: 매주 술 1잔 단위
     if (k === 'subsidy' && E.subsidyMode === 1) { const pc = Math.round((E.subsidyRate != null ? E.subsidyRate : 0.5) * 100), ev = E.subsidyEvery || 6, base = cur ? (s.subHalf || 0) : (m.subsidyBase || 0);   // 2026-11-18 결정 23: 성과 보조금 (4주마다 [임시])
       return cur ? `${ev === 1 ? '월말 결산' : '6 · 12월 말'} 때 들어옵니다 · 지금까지 성공한 의뢰 보상 <b>${fmt(base)}G</b>의 ${pc}%` : (m.subsidy ? `성공한 의뢰 보상 <b>${fmt(base)}G</b>의 ${pc}%` : '지급 달이 아님'); }
     if (k === 'subsidy') { const g = cur ? s.grade : (m.grade != null ? m.grade : s.grade); return `${cur ? '월말 결산 때 들어옵니다 · ' : ''}${GR[g]}급 길드 월 <b>${fmt(E.subsidy[g])}G</b>`; }
     if (k === 'reqIn') { const b = m.reqs || []; return b.length ? b.map(x => `${esc(x.n)} <b>${gG(x.g)}</b>`).join('<br>') : '없음'; }
     if (k === 'gift') return m.gift ? '대장간에서 모험가에게 장비를 선물한 값' : '없음';
-    if (k === 'order') return m.order ? '발주할 때 미리 낸 돈 − 거두어 돌려받은 돈 (리퀘스트 장 → 길드 발주)' : '없음';
+    if (k === 'order') return m.order ? '상시 발주로 들어온 소재 값 (가져온 모험가에게 지급 · 리퀘스트 장 → 길드 발주)' : '없음';
+    if (k === 'carBuy') return m.carBuy ? `떠돌이 상단에게서 <b>${m.carBuyN || 0}개</b> 삼 (경영 장 → 상단)` : '없음';   // 2026-11-20
+    if (k === 'car') return m.car ? `창고 소재 <b>${m.carN || 0}개</b>를 떠돌이 상단에 판매 (경영 장 → 상단)` : '없음';   // 2026-11-20
+    if (k === 'gq') return m.gq ? `길드 의뢰로 들어온 소재 <b>${m.gqN || 0}개</b> 값 (맡아 둔 돈에서 가져온 모험가에게 지급 · 리퀘스트 장 → 길드 의뢰)` : '없음';   // 2026-11-20
+    if (k === 'shop') return m.shop ? '식당이 요리를 만들 때 창고에 없는 상시 재료를 시장에서 산 값' : '없음';
     if (k === 'cpay') return m.cpay ? '계약 모험가 월 보수 (근무한 주만큼, 월말 지급)' : '없음';
     if (k === 'csup') return m.csup ? '계약 모험가 식사 · 물약 지원 (약정 한도 안 실제 사용액)' : '없음';
     if (k === 'prep') return m.prepN ? `정비 때 물약 <b>${m.prepN}개</b>` : '없음';
@@ -974,6 +1241,7 @@
       <div class="gd-row ${ok2 ? 'ok' : ''} ${ok1 ? '' : 'wait'}"><i>${ok2 ? '✔' : '2'}</i><span>메인 퀘스트 「다리를 지켜라」 달성</span><b></b><em class="gd-st">${st2}</em></div>
       <p class="gd-rw">승급하면: ${fmt(m.gold)}G · 명성 +${m.fame} · 모험가 관리소 해금 · ${GR[m.grade + 1]}급 의뢰</p></div>`;
   }
+  let lgSel = null;   // 2026-11-20 사용자: 왼쪽 항목을 누르면 오른쪽에 상세, 요약(12개월 그래프 · 승급)은 버튼으로
   function ledgerHtml() {
     const cur = s.month, prev = s.lastMonth; lgTips = [];
     const tipId = html => { lgTips.push(html); return lgTips.length - 1; };
@@ -983,18 +1251,25 @@
       return `<td class="n ${eom ? 'eom' : v < 0 ? 'neg' : ''}" data-lt="${tipId(lgTip(k, m, isCur))}">${eom ? '월말' : v ? gG(v) : '0G'}</td>`;
     };
     let h = `<div class="lg-book"><table class="lg"><colgroup><col><col class="c"><col class="c"></colgroup>
-      <tr class="hd"><th></th><th class="n">지난달</th><th class="n">이번 달</th></tr>
+      <tr class="hd"><th><button class="lg-sum-btn${lgSel ? '' : ' on'}" data-lgk="">요약 보기</button></th><th class="n">지난달</th><th class="n">이번 달</th></tr>
       <tr class="sec in"><th colspan="3">수입</th></tr>`;
     const lgShow = k => !LG_OPT[k] || (prev && prev[k]) || cur[k];   // 2026-11-17: 쓸 때만 보이는 줄 (위탁 · 계약 · 침공 물약) — 장부가 책 한 쪽을 넘지 않게
-    for (const [k, n] of LG_IN) if (lgShow(k)) h += `<tr><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
+    for (const [k, n] of LG_IN) if (lgShow(k)) h += `<tr class="lg-k${lgSel === k ? ' on' : ''}" data-lgk="${k}"><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
     h += `<tr class="sum in"><td>수입 합계</td><td class="n">${prev ? gG(lgIn(prev)) : '—'}</td><td class="n">${gG(lgIn(cur))}</td></tr>
       <tr class="sec out"><th colspan="3">지출</th></tr>`;
-    for (const [k, n] of LG_OUT) if (lgShow(k)) h += `<tr><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
+    for (const [k, n] of LG_OUT) if (lgShow(k)) h += `<tr class="lg-k${lgSel === k ? ' on' : ''}" data-lgk="${k}"><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
     h += `<tr class="sum out"><td>지출 합계</td><td class="n neg">${prev ? gG(lgOut(prev)) : '—'}</td><td class="n neg">${gG(lgOut(cur))}</td></tr>
       <tr class="tot"><td>순이익</td><td class="n ${prev && lgNet(prev) < 0 ? 'neg' : 'pos'}">${prev ? gG(lgNet(prev)) : '—'}</td><td class="n ${lgNet(cur) < 0 ? 'neg' : 'pos'}">${gG(lgNet(cur))}</td></tr></table>`;
     // 그래프: 최근 12개월 순이익 (건설비 포함). 0 기준선 위 = 이익, 아래 = 손해
     const hist = s.history.slice(-12);
-    if (hist.length) {
+    if (lgSel) {   // 항목 상세 (오른쪽 쪽)
+      const nm = ([...LG_IN, ...LG_OUT].find(x => x[0] === lgSel) || [, lgSel])[1], isIn = LG_IN.some(x => x[0] === lgSel), rows = hist.map(m => [m, m[lgSel] || 0]), mx = Math.max(1, ...rows.map(r => Math.abs(r[1])), Math.abs(cur[lgSel] || 0));
+      h += `<section class="lg-chart lg-det"><div class="ux-h">${esc(nm)} <small>${isIn ? '수입' : '지출'}</small></div>`
+        + `<div class="ld-two"><div class="ld-box"><b>이번 달</b><em class="${(cur[lgSel] || 0) < 0 ? 'neg' : ''}">${gG(cur[lgSel] || 0)}</em><div class="ld-tx">${lgTip(lgSel, cur, true)}</div></div>`
+        + `<div class="ld-box"><b>지난달</b><em class="${prev && (prev[lgSel] || 0) < 0 ? 'neg' : ''}">${prev ? gG(prev[lgSel] || 0) : '—'}</em><div class="ld-tx">${prev ? lgTip(lgSel, prev, false) : '아직 지난달 기록이 없습니다'}</div></div></div>`
+        + (rows.length ? `<div class="ux-h" style="margin-top:10px">최근 ${rows.length}개월</div><div class="ld-hist">${rows.map(([m, v]) => `<div class="ld-r"><span>${Gm.dateLabel(m.week - 1).replace(/ \d+주$/, '').replace(/^\d+년차 /, '')}</span><i><u class="${v < 0 ? 'neg' : ''}" style="width:${Math.round(Math.abs(v) / mx * 100)}%"></u></i><b>${gG(v)}</b></div>`).join('')}</div>` : '')
+        + '</section>';
+    } else if (hist.length) {
       const nets = hist.map(lgNet), avg = nets.reduce((a, b) => a + b, 0) / nets.length, succ = hist.reduce((t, m) => t + m.success, 0), qn = hist.reduce((t, m) => t + m.quests, 0);
       const up = Math.max(0, ...nets), dn = Math.max(0, ...nets.map(v => -v)), pad = 18, span = Math.max(1, up + dn), zero = pad + up / span * (100 - pad * 2);   // 위아래 18%는 금액 글자 자리
       h += `<section class="lg-chart"><div class="ux-h">최근 ${hist.length}개월 순이익 <small>평균 ${gG(avg)} · 의뢰 성공률 ${qn ? Math.round(succ / qn * 100) : 0}%</small></div><div class="lg-bars" style="--z:${zero}%">`;
@@ -1166,9 +1441,9 @@
   }
   function contractPage(a) {
     const C = s.cfg.contract, D = Gm.contractDefault(s);
-    if (!ctDraft || ctDraft.aid !== a.id) ctDraft = Object.assign({ aid: a.id }, D);
+    if (!ctDraft || ctDraft.aid !== a.id) ctDraft = Object.assign({ aid: a.id }, D, { pay: Math.max(D.pay, Gm.contractMinPay(s, a)) });   // 결정 48: 기본 보수가 최소 보수보다 적으면 최소 보수로
     const T = ctDraft, why = Gm.contractWhy(s, a), tw = Gm.contractTermsWhy(s, T), e = Gm.contractEval(s, a, T), r = { no: 0, maybe: 1, yes: 2 }[e.mood];
-    const names = ['거절할 것 같다', '고민 중', '받아들일 것 같다'], say = ['"이 조건이면 혼자 일하는 게 낫겠어요."', '"음… 조금만 더 생각해 볼게요. 조건이 살짝 아쉬워요."', '"좋아요, 마스터. 잘 부탁드려요."'][r];
+    const names = ['거절할 것 같다', '고민 중', '받아들일 것 같다'], say = [e.lowPay ? `"계약에 묶이는 만큼 월 보수는 적어도 ${e.minPay}G는 받아야겠어요."` : '"이 조건이면 혼자 일하는 게 낫겠어요."', '"음… 조금만 더 생각해 볼게요. 조건이 살짝 아쉬워요."', '"좋아요, 마스터. 잘 부탁드려요."'][r];
     const seg = (k, vals, unit, show) => `<span class="ct-seg">${vals.map(v => `<button data-ct="${k}:${v}" class="${Math.abs(v - T[k]) < 1e-9 ? 'on' : ''} ${Math.abs(v - D[k]) < 1e-9 ? 'df' : ''}">${show ? show(v) : v}${unit}</button>`).join('')}</span>`;
     const step = (k, max, unit) => `<span class="ct-step"><button data-ct="${k}:-" ${T[k] <= 0 ? 'disabled' : ''}>−</button><b>${T[k]}${unit}</b><button data-ct="${k}:+" ${T[k] >= max ? 'disabled' : ''}>+</button>${T[k] !== D[k] ? `<span class="chg">기본 ${D[k]}${unit}</span>` : ''}</span>`;
     const changed = ['weeks', 'rate', 'pay', 'sup'].some(k => Math.abs(T[k] - D[k]) > 1e-9);
@@ -1177,7 +1452,7 @@
       <div class="ct-who"><span class="face" style="${faceStyle(a, 64, 335, 32)}"></span><span><b>${a.name}</b> ${STAGE[a.stage]} ${a.cls} · ${GR[a.grade]}급<br>애착 ${Math.round(a.attach)} <b class="st">${ATT_NAME[att]}</b> · 의뢰 성공 ${a.done || 0}회</span></div>
       <div class="ct-row"><span class="lb">기간</span>${seg('weeks', C.weeksOpt, '주')}<span class="rg">${C.weeksOpt.join(' · ')}주<br>기본 ${D.weeks}주</span></div>
       <div class="ct-row"><span class="lb">계약 수수료</span>${seg('rate', C.rateOpt, '%', v => Math.round(v * 100))}<span class="rg">${Math.round(C.rateOpt[0] * 100)}~${Math.round(C.rateOpt[C.rateOpt.length - 1] * 100)}% (5%)<br>기본 ${Math.round(D.rate * 100)}%</span></div>
-      <div class="ct-row"><span class="lb">월 보수</span>${step('pay', C.payMax, 'G')}<span class="rg">0~${C.payMax}G (${C.step}G)<br>기본 ${D.pay}G</span></div>
+      <div class="ct-row"><span class="lb">월 보수</span>${step('pay', C.payMax, 'G')}<span class="rg">0~${C.payMax}G (${C.step}G)<br>기본 ${D.pay}G · <b>최소 ${Gm.contractMinPay(s, a)}G</b></span></div>
       <div class="ct-row"><span class="lb">지원 한도</span>${step('sup', C.supMax, 'G')}<span class="rg">월 0~${C.supMax}G (${C.step}G)<br>기본 ${D.sup}G</span></div>
       <div class="ct-fix">고정: <em>지명 4주에 ${C.callMax}번까지 · 섭외비 0 · 범위 안 거절 없음 · 리퀘스트 우선</em></div>`;
     if (why) h += `<div class="ct-why">${why}</div>`;
@@ -1190,8 +1465,8 @@
     const C = s.cfg.contract, D = Gm.contractDefault(s);
     if (cmd === 'reset') { ctDraft = Object.assign({ aid: a.id }, D); renderPopup(); return; }
     if (cmd === 'go') { const r = Gm.contractPropose(s, a.id, { weeks: ctDraft.weeks, rate: ctDraft.rate, pay: ctDraft.pay, sup: ctDraft.sup });
-      if (r.ok) { toast(`${a.name}: "${r.line}" — ${a.contract && a.contract.next ? '계약 갱신' : '계약 체결'}`, 'grow'); advView = 'detail'; hooks.changed(); bookSync('advs'); }
-      else toast(r.why || r.line, 'warn');
+      if (r.ok) { UI.say([{ name: a.name, face: 'smile', text: r.line, adv: a }, { name: '리나', face: 'smile', text: `${a.name} 씨와 ${a.contract && a.contract.next ? '계약을 갱신했어요' : '계약을 맺었어요'}!` }]); advView = 'detail'; hooks.changed(); bookSync('advs'); }   // 2026-11-20 사용자: 알림 대신 대화
+      else if (r.line) UI.say([{ name: a.name, face: 'smile', text: r.line, adv: a }]); else toast(r.why, 'warn');
       renderPopup(); return; }
     const [k, v] = cmd.split(':'), max = { pay: C.payMax, sup: C.supMax }[k];
     if (v === '+' || v === '-') ctDraft[k] = Math.max(0, Math.min(max, ctDraft[k] + (v === '+' ? C.step : -C.step)));
@@ -1697,11 +1972,11 @@
   });
   function mealsHtml() {
     const top = Math.max(1, s.grade), mats = s.mats || {}, known = s.knownMats || {};
-    kSel = kSel.filter(m => mats[m] > 0);
+    kSel = kSel.filter(m => mats[m] > 0 || Gm.canMarket(s, m));
     // 소재 보관함: 음식 소재만
     const food = Object.values(MATS).filter(m => m.line === 'food' && GR.indexOf(m.grade) <= top).sort((a, b) => GR.indexOf(a.grade) - GR.indexOf(b.grade));
-    const pantry = food.map(m => { const k = !!known[m.id], n = mats[m.id] || 0, used = kSel.filter(x => x === m.id).length;
-      return `<button class="kmat ${!k ? 'unk' : n - used <= 0 ? 'zero' : ''}" ${k && n - used > 0 ? `data-kmat="${m.id}"` : 'aria-disabled="true"'} data-mt="${m.id}"><span class="ux-slot${k ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${k || m.icon ? matImg(m) : ''}${k ? cntBadge(n - used) : ''}</span><em>${k ? esc(m.name) : '???'}</em></button>`; }).join('');
+    const pantry = food.map(m => { const k = !!known[m.id], n = mats[m.id] || 0, used = kSel.filter(x => x === m.id).length, mk = k && n <= 0 && Gm.canMarket(s, m.id), ok = k && (n - used > 0 || (mk && !used));   // 2026-11-20 결정 65: 창고에 없는 상시 재료는 시장에서 삼
+      return `<button class="kmat ${!k ? 'unk' : !ok && n - used <= 0 ? 'zero' : ''}" ${ok ? `data-kmat="${m.id}"` : 'aria-disabled="true"'} data-mt="${m.id}"${mk ? ` title="창고에 없음 — 요리하면 시장에서 ${Gm.shopPrice(s, m.id)}G에 삼"` : ''}><span class="ux-slot${k ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${k || m.icon ? matImg(m) : ''}${k && !mk ? cntBadge(n - used) : ''}</span><em>${k ? esc(m.name) : '???'}${mk ? `<small class="kmk">시장 ${Gm.shopPrice(s, m.id)}G</small>` : ''}</em></button>`; }).join('');
     // 조리대
     let slots = '';
     const shown = kAnim ? kAnim.sel : kSel;
@@ -1725,10 +2000,16 @@
       }
       menu += '</div>';
     }
-    function dishFront(d) { return `<div class="kdish" data-dt="${esc(d.name)}"><span class="pic"><img src="assets/${d.icon}" alt=""></span><div><b>${d.name}</b><div class="rc">${d.mats.map(m => `<span class="ux-slot" data-mt="${m}" data-g="${GR.indexOf((MATS[m] || {}).grade)}">${matImg(MATS[m] || {})}</span>`).join('<span class="plus">+</span>')}<span class="kfx">${esc(d.effect)}</span></div></div></div>`; }
+    function dishFront(d) { return `<div class="kdish" data-dt="${esc(d.name)}"><span class="pic"><img src="assets/${d.icon}" alt=""></span><div><b>${d.name}</b><div class="rc">${d.mats.map(m => `<span class="ux-slot" data-mt="${m}" data-g="${GR.indexOf((MATS[m] || {}).grade)}">${matImg(MATS[m] || {})}</span>`).join('<span class="plus">+</span>')}<span class="kfx">${esc(d.effect)}</span></div>${s.cfg.econ.mealCook && s.dishes[d.name] ? kMenuRow(d) : ''}</div></div>`; }
+    // 2026-11-19 V4 1단계 (결정 37 · 39): 재고 그릇 · 1그릇 원가 · 가격(1G 단위) · 마진 · 한 주 준비량
+    function kMenuRow(d) { const mu = Gm.menuOf(s, d), b = Gm.dishBase(s, d), cost = Gm.dishCost(s, d), st = Gm.stockOf(s, d), k = Gm.priceK(s, d, mu.price), mg = mu.price - cost;
+      const shop = !!s.cfg.econ.shopRate, RS = Gm.reqReserve(s), kp = m => (RS[m] || 0) + (s.cfg.econ.mealKeep || 0), free = m => ((s.mats || {})[m] || 0) - kp(m), spice = shop ? d.mats.filter(m => Gm.isStaple(s, m) && free(m) < 1) : [], lack = d.mats.filter(m => (!shop || !Gm.isStaple(s, m)) && free(m) < 1), none = lack.filter(m => !((s.mats || {})[m] > 0)), held = lack.filter(m => (s.mats || {})[m] > 0);   // 2026-11-19: 정말 없음 / 납품용으로 남겨 둠 구분   // 결정 46: 잡화 상인이 없으면 양념도 '재료 없음' (상시 발주로)
+      return `<div class="kmr"><span class="kst${st ? '' : ' out'}">${st ? `재고 <b>${st}</b>그릇` : '품절'}</span><span>재료 1세트 = <b>${d.serv}</b>그릇 · 1그릇 원가 <b>${(Math.round(cost * 10) / 10)}G</b></span>${lack.length ? `${none.length ? `<span class="kwarn">재료 없음: ${none.map(m => esc((MATS[m] || {}).name || m)).join(' · ')} <small>(희귀 재료 — 매입가를 올리거나 토벌 의뢰로 모으기)</small></span>` : ''}${held.length ? `<span class="kwarn">${held.map(m => `${esc((MATS[m] || {}).name || m)} ${(s.mats || {})[m]}개 있지만 리퀘스트 납품용으로 남겨 둠`).join(' · ')}</span>` : ''}` : spice.length ? `<span class="kshop">창고에 없어 시장에서 삼: ${spice.map(m => `${esc((MATS[m] || {}).name || m)} ${Gm.shopPrice(s, m)}G`).join(' · ')}</span>` : ''}</div>`
+        + `<div class="kmr"><span class="kpr">가격 <button data-kpr="${esc(d.name)}:-5">−5</button><button data-kpr="${esc(d.name)}:-1">−1</button><b>${mu.price}G</b><button data-kpr="${esc(d.name)}:1">+1</button><button data-kpr="${esc(d.name)}:5">+5</button>${mu.price !== b ? `<button class="rs" data-kpr="${esc(d.name)}:base" title="기준가로">기준 ${b}G</button>` : ''}</span><span>마진 <b class="${mg < 0 ? 'ux-minus' : 'ux-plus'}">${Math.round(mg * 10) / 10}G</b> · 손님 ×${(Math.round(k * 100) / 100)}</span><span class="kpp">한 주 준비 <button data-kpp="${esc(d.name)}:-1" ${mu.prep <= 0 ? 'disabled' : ''}>−</button><b>${mu.prep}</b><button data-kpp="${esc(d.name)}:1" ${mu.prep >= 10 ? 'disabled' : ''}>+</button>그릇</span></div>`
+        + `<div class="kmr"><span class="kleft">남은 그릇 <button class="${mu.left === 'sale' ? 'on' : ''}" data-kleft="${esc(d.name)}:sale" title="지난주에 만든 그릇이 남았으면 반값으로 팝니다">마감 할인</button><button class="${mu.left === 'free' ? 'on' : ''}" data-kleft="${esc(d.name)}:free" title="버릴 그릇을 마을에 남은 모험가에게 무료로 대접합니다 (애착 +${s.cfg.econ.freeAttach != null ? s.cfg.econ.freeAttach : 1})">무료 식사</button></span>${Gm.oldBowl(s, d) && mu.left === 'sale' ? `<span class="ksale">지금 마감 할인 ${Gm.salePrice(s, d)}G</span>` : ''}</div>`; }   // 결정 47
     return `<div class="kitchen"><div class="kpan"><div class="ux-h">소재 보관함 <small>음식 소재</small></div><div class="kpantry">${pantry}</div></div>
       <div class="kpan"><div class="ux-h">조리대</div><div class="kslots">${slots}</div>${pot}<button class="ux-btn kcook" data-kcook="1" ${kSel.length && !kAnim ? '' : 'disabled'}>만들어 보기</button>${msg}</div>
-      <div class="kpan wide"><div class="ux-h">메뉴판</div><div class="kmenuwrap">${menu}</div></div></div>`;
+      <div class="kpan wide"><div class="ux-h">메뉴판</div>${s.cfg.econ.mealCook ? '<div class="kmnote">팔 때마다 재료를 씁니다 · 매주 준비량만큼 만들고 남은 그릇은 다음 주까지 팝니다 · 받아 둔 납품 리퀘스트에 필요한 재료는 남겨 둡니다</div>' : ''}<div class="kmenuwrap">${menu}</div></div></div>`;
   }
   // 길드 기록: 월 단위 카드(머리 = 그 달 결산) · 종류 아이콘 · 필터. 'sys'(버튼 반응)·'debug'는 기록에서 숨김
   const LK = {   // 종류 → [아이콘 글자, 이름, 필터 묶음]
@@ -1962,8 +2243,17 @@
   function stagePopClicks() {
     document.addEventListener('click', e => {
       if (!popup) return;
+      { const mt = e.target.closest('[data-mtsel], [data-mtf]'); if (mt && popup === 'trade') { if (mt.dataset.mtsel) mtSel = mt.dataset.mtsel; else mtFlt = mt.dataset.mtf; renderPopup(); return; } }
+      { const bc = e.target.closest('[data-bchart], [data-bper]'); if (bc && popup === 'trade') { if (bc.dataset.bchart) buyChart = buyChart === bc.dataset.bchart ? null : bc.dataset.bchart; else buyChartW = +bc.dataset.bper; renderPopup(); return; } }
+      { const lk = e.target.closest('[data-lgk]'); if (lk && popup === 'ledger') { lgSel = lk.dataset.lgk || null; renderPopup(); return; } }   // 2026-11-20 장부 항목 → 오른쪽 상세
+      { const bg = e.target.closest('[data-bgold]'); if (bg && popup === 'trade' && Gm.gqOn(s)) { if (bg.disabled) return; const [id, k] = bg.dataset.bgold.split(':'), r = Gm.setBuyGold(s, id, k === 'auto' ? null : Math.max(1, Math.min(Gm.buyGoldMax(s, id), Gm.matBuyPrice(s, id) + +k))); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }
+      { const br = e.target.closest('[data-brate]'); if (br && popup === 'trade' && Gm.gqOn(s)) { if (br.disabled) return; const [id, k] = br.dataset.brate.split(':'), st = s.cfg.econ.buyRateStep || 0.05, r = Gm.setBuyRate(s, id, Gm.polRate(s, id) + +k * st); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }   // 2026-11-20 결정 52: 소재별 매입가 ±5%
+      { const mp = !Gm.gqOn(s) && e.target.closest('[data-mpol], [data-mrate]'); if (mp && popup === 'trade') { const [id, v] = (mp.dataset.mpol || mp.dataset.mrate).split(':'), p = Gm.matPol(s, id), r = mp.dataset.mpol ? Gm.setMatPol(s, id, v, null) : Gm.setMatPol(s, id, 'buy', +v); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; } }   // 2026-11-19 결정 43
       { const cb = e.target.closest('[data-cbuy]'); if (cb && popup === 'trade') { if (cb.disabled) return; const r = Gm.consignBuy(s, +cb.dataset.cbuy); toast(r.ok ? `위탁 소재 ${r.n}개를 ${fmt(r.cost)}G에 사들였습니다.` : r.why, r.ok ? 'grow' : 'warn'); hooks.changed(); renderPopup(); return; } }
-      if (popup === 'order' && orderClick(e)) return;
+      if (popup === 'order' && (Gm.gqOn(s) ? gqClick(e) : orderClick(e))) return;
+      if (popup === 'car' && carClick(e)) return;   // 2026-11-20 떠돌이 상단
+      if (popup === 'meals') { const kl = e.target.closest('[data-kleft]'); if (kl) { const [n, v] = kl.dataset.kleft.split(':'), r = Gm.setMenuLeft(s, n, v); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; }   // 결정 47
+      const kb = e.target.closest('[data-kpr], [data-kpp]'); if (kb) { if (kb.disabled) return; const [n, v] = (kb.dataset.kpr || kb.dataset.kpp).split(':'), d = Gm.DISH.find(x => x.name === n); if (d) { const mu = Gm.menuOf(s, d), r = kb.dataset.kpr ? Gm.setMenu(s, n, v === 'base' ? Gm.dishBase(s, d) : Math.max(1, Math.min(Gm.dishBase(s, d) * 3, mu.price + +v)), null) : Gm.setMenu(s, n, null, mu.prep + +v); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); } return; } }   // 2026-11-19 결정 37 · 39: 메뉴 가격 · 준비량
       { const c = e.target.closest('[data-ct]'); if (c && popup === 'advs') { if (!c.disabled) contractClick(c.dataset.ct); return; } }
       const t = e.target.closest('[data-dgnom], [data-dgact], [data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs], [data-rq], [data-rqact], [data-rqnom]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
       if (t.dataset.rq) { rqSel = t.dataset.rq; rqMsg = ''; renderPopup(); return; }
@@ -2088,7 +2378,7 @@
 .gupG-card .bd.new{filter:drop-shadow(0 0 14px #ffd75e);animation:gupGin .9s .3s both}.gupG-card .ar{font-size:30px;color:#b8862e}
 @keyframes gupGin{0%{transform:scale(0) rotate(-180deg);opacity:0}70%{transform:scale(1.2)}100%{transform:none;opacity:1}}
 .gupG-card .lina{display:flex;gap:12px;align-items:center;text-align:left;background:#fff;border-radius:12px;padding:10px 14px;margin:12px 0;font-size:16px}
-.gupG-card .lina .f{width:60px;height:60px;border-radius:50%;flex:none;border:2px solid #d9a066;background:url(assets/npc/lina_face_smile.png) -24px -22px/auto 130px no-repeat #f1d9c0}
+.gupG-card .lina .f{width:60px;height:60px;border-radius:50%;flex:none;border:2px solid #d9a066;background:url(assets/npc/lina_face_smile.png) -38px -34px/auto 256px no-repeat #f1d9c0}
 .gupG-card ul{text-align:left;margin:10px 0 14px;padding:0;list-style:none}.gupG-card li{padding:6px 10px;border-bottom:1px dashed rgba(122,74,40,.3);font-size:17px}.gupG-card li b{color:#2f6a52}
 .gupG-fly{position:absolute;z-index:46;background:center/contain no-repeat;transition:all .7s cubic-bezier(.5,0,.3,1)}.gupG-pop{animation:gupGpop .7s}@keyframes gupGpop{40%{transform:scale(1.5);filter:drop-shadow(0 0 10px #ffd75e)}}`; document.head.appendChild(st_); }
   // 2026-11-22 시안 6 반영: 책이 열려 있으면 대화를 미뤘다가 책을 닫을 때 보여 줌 (급한 것: 기본 튜토리얼 · 침공 중 · urgent 표시는 바로)
@@ -2181,6 +2471,7 @@
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
     if (!Dlg.cur && Dlg.gap > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
     if (rqdQ.length && !rqdOn && !Dlg.cur) rqdNext();   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
+    if (carOpenQ && !Dlg.cur && !Dlg.lines.length && !(Dlg.gap > 0) && !popup && !rqdOn) { carOpenQ = false; if (Gm.carHere(s).length) UI.open('car'); }   // 상단 도착 대화 뒤 상단 화면
     if (!Dlg.cur) return;
     blinkTick(dt);
     if (Dlg.wait > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } stage.ui.classList.add('dlgOn'); Dlg.wait -= dt; if (Dlg.wait <= 0) q('#dlg').classList.add('open'); root.Lina.chatting = true; return; }
