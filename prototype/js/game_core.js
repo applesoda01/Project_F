@@ -609,6 +609,10 @@
     }
     if (paid) payParty(s, ids, paid);
   }
+  function mkNote(s, m, g, n, src) {   // 2026-11-23 사용자: 소재 관리 '최근 매입'에 시장 · 상단에서 산 것도 (화면용, 최근 40줄, 같은 주 · 소재 · 출처는 한 줄로)
+    const L = s.mkBuyLog = s.mkBuyLog || [], e = L.find(x => x.w === s.week && x.m === m && x.src === src);
+    if (e) { e.n += n; e.g += g; } else { L.unshift({ w: s.week, m, n, g, src }); if (L.length > 40) L.length = 40; }
+  }
   function buyNote(s, m, ids, g, n, ord) {   // 매입 기록 (E4-4 화면용, 최근 40줄) — 같은 주 · 같은 소재 · 같은 파티는 한 줄로
     const L = s.buyLog = s.buyLog || [], key = ids.join(','), e = L.find(x => x.w === s.week && x.m === m && x.ids.join(',') === key);
     if (e && !!e.ord === !!ord) { e.n += n; e.g += g; } else { L.unshift({ w: s.week, m, ids: ids.slice(), n, g, ord: !!ord }); if (L.length > 40) L.length = 40; }
@@ -781,7 +785,7 @@
     const w = (st.wares || []).find(x => x.m === m); if (!w) return { ok: false, why: '이 상단은 그 물건을 팔지 않습니다' };
     const cap = s.cfg.econ.storeCap || 30; n = Math.min(n, w.max - w.sold, cap - (s.mats[m] || 0)); if (n <= 0) return { ok: false, why: w.sold >= w.max ? '다 팔렸습니다' : '창고가 가득 찼습니다' };
     const p = carWarePrice(s, w); n = Math.min(n, Math.floor(s.gold / p)); if (n <= 0) return { ok: false, why: '금고가 모자랍니다' };
-    const g = p * n; s.gold -= g; w.sold += n; st.rel += g; s.mats[m] = (s.mats[m] || 0) + n; s.month.carBuy = (s.month.carBuy || 0) - g; s.month.carBuyN = (s.month.carBuyN || 0) + n;
+    const g = p * n; s.gold -= g; w.sold += n; st.rel += g; s.mats[m] = (s.mats[m] || 0) + n; s.month.carBuy = (s.month.carBuy || 0) - g; s.month.carBuyN = (s.month.carBuyN || 0) + n; mkNote(s, m, g, n, 'car:' + cid);
     if (!s.knownMats[m]) s.knownMats[m] = true; carRelCheck(s, c, st); return { ok: true, n, g, p };
   }
   // 2026-11-20 사용자: 상단 호위 의뢰 (시안 docs/design/mockups/caravan) — 관계 2단계 이상 상단이 머무는 동안 부탁(방문마다 escChance), 플레이어가 게시판에 올리면 보통 전투 의뢰처럼 맡음
@@ -1021,7 +1025,7 @@
   // 2026-11-20 결정 65 확장: 창고에 없는 상시 재료는 요리 실험 때도 시장에서 시세로 사서 씀
   const canMarket = (s, m) => mealCookOn(s) && !!s.cfg.econ.shopRate && isStaple(s, m) && (!mktOn(s) || mktM(s, m) >= 1);
   function buyStaples(s, ids) { const need = ids.filter(m => !(s.mats[m] > 0)), cost = need.reduce((a, m) => a + shopPrice(s, m), 0); if (cost > s.gold) return false;
-    for (const m of need) { const c = shopPrice(s, m); s.gold -= c; s.month.shop = (s.month.shop || 0) - c; s.mats[m] = (s.mats[m] || 0) + 1; mktAdd(s, m, -1); } return true; }
+    for (const m of need) { const c = shopPrice(s, m); s.gold -= c; s.month.shop = (s.month.shop || 0) - c; s.mats[m] = (s.mats[m] || 0) + 1; mktAdd(s, m, -1); mkNote(s, m, c, 1, 'mk'); } return true; }
   function cook(s, ids) {
     ids = [...new Set(ids)].filter(Boolean).slice(0, 3);
     if (!ids.length || ids.some(m => !(s.mats[m] > 0) && !canMarket(s, m))) return { kind: 'invalid' };
@@ -1108,7 +1112,7 @@
         const RS = reqReserve(s), keep = m => (RS[m] || 0) + (s.cfg.econ.mealKeep || 0), need = d.mats.filter(m => !(s.mats[m] > keep(m) - 0 && s.mats[m] - keep(m) >= 1));   // 2026-11-19: 받아 둔 납품 리퀘스트에 필요한 만큼만 남겨 둠 (+ mealKeep)
         if (need.some(m => !isStaple(s, m)) || (need.length && !s.cfg.econ.shopRate) || need.some(m => mktOn(s) && mktM(s, m) < 1)) { s.month.soldOut = (s.month.soldOut || 0) + 1; KS[d.name] = true; break; }   // 결정 65: 희귀 재료가 없거나, 시장에도 없으면 품절   // 재료가 없으면 품절 (결정 46: shopRate 0 = 잡화 상인 없음, 양념도 상시 발주로)
         const cost = need.reduce((a, m) => a + shopPrice(s, m), 0); if (cost > s.gold) { KS[d.name] = true; break; }
-        for (const m of need) { const c = shopPrice(s, m); s.gold -= c; s.month.shop = (s.month.shop || 0) - c; s.mats[m] = (s.mats[m] || 0) + 1; mktAdd(s, m, -1); }   // 시장에서 사면 시장 재고가 줄어 시세가 오름
+        for (const m of need) { const c = shopPrice(s, m); s.gold -= c; s.month.shop = (s.month.shop || 0) - c; s.mats[m] = (s.mats[m] || 0) + 1; mktAdd(s, m, -1); mkNote(s, m, c, 1, 'mk'); }   // 시장에서 사면 시장 재고가 줄어 시세가 오름
         for (const m of d.mats) s.mats[m]--;
         const n = d.serv || 2; L.push({ n, w: s.week }); have += n; s.month.cooked = (s.month.cooked || 0) + n;
       }
