@@ -223,7 +223,11 @@
     ['FT0012', s => !!(s.main && s.main.state === 'offer'), null, '[data-pop="req"]'],
     ['FT0019', s => s.grade >= 1, null, null],
     ['FT0018', s => !!(s.townUnlock && s.townUnlock.smith), null, '[data-act="town"]'],
-    ['FT0020', s => (s.proposals || []).length > 0, null, '[data-pop="advs"]', s => (s.proposals[0] || {}).id]
+    ['FT0020', s => (s.proposals || []).length > 0, null, '[data-pop="advs"]', s => (s.proposals[0] || {}).id],
+    // 2026-11-23 빈 시간 개선 A안 (사용자 22:45): 2~10주 빈 구간에 경제와 무관한 작은 장면 3개 (한 주에 하나, 다른 안내가 먼저)
+    ['FT0037', s => s.week >= 3, null, null],
+    ['FT0038', s => { const t = s.tut, w = s.advs.find(a => a.id === t.wid); return s.week >= 5 && w && w.alive && w.state === 'town' && s.advs.some(a => a.alive && a.id !== t.wid && a.state === 'town'); }, null, null, s => (s.advs.find(a => a.alive && a.id !== s.tut.wid && a.state === 'town') || {}).id],
+    ['FT0039', s => s.week >= 7, null, null]
   ];
   // 2026-11-23 3차 5 · 6 · 7 · 9 · 17: 여러 단계로 가리키는 안내 — 누를 곳을 차례로 밝히고(암전 + 빛남), 다 끝나면 끝. 단계는 화면 상태로 정함(눌러서 넘어감)
   const pop = () => root.UI.popupName && root.UI.popupName();
