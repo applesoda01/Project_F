@@ -1255,3 +1255,7 @@ body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 .mt-per .mt-pl{color:#7a6a58;margin-right:8px}.mt-r>.mt-top p{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .mt-logf{margin-top:10px;border:0;background:none;font:inherit;font-size:.92em;color:#a8721a;cursor:pointer;padding:0}
 .mt-step button{touch-action:none}
+/* 2026-11-23 책 정리 */
+.fb-fold{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;cursor:pointer;padding:0}.fb-fold i{font-style:normal;font-size:.8em;color:#a8721a;margin-left:6px}
+.qcard .dlw{width:auto!important;white-space:nowrap}
+.gq-k.lk{cursor:default}
