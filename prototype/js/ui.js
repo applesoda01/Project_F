@@ -8,7 +8,7 @@
   const fmt = n => Math.round(n).toLocaleString();
   // 2026-11-16 상단 HUD 오버 설명: 브라우저 기본 풍선(title) 대신 모험가 성향 쪽지와 같은 크림색 카드
   // 길드 승급 조건 (design_v0.1.md 승급 표). F → E만 게임에 있음(리퀘스트 10번 + 침공, 2026-11-16 결정 · 11-19 8 → 10번) — 나머지는 아직이라 문구 끝에 밝힘 (working_rules 7: 구현 전 효과는 표시)
-  const GUILD_UP = ['리퀘스트를 10번 들어주면 영주의 부탁(침공)이 와요.\n침공을 막으면 E급으로 올라가요.', '보스급 의뢰 3건을 해내고 모험가 관리소를 지은 뒤,\n침공을 막으면 D급으로 올라가요.', '보스급 의뢰 3건을 해내고 훈련장을 지은 뒤,\n침공을 막으면 C급으로 올라가요.', '보스급 의뢰 4건을 해내고 의무실을 지은 뒤,\n침공을 막으면 B급으로 올라가요.',
+  const GUILD_UP = ['리퀘스트를 10번 들어주면 메인 퀘스트(침공)가 와요.\n침공을 막으면 E급으로 올라가요.', '보스급 의뢰 3건을 해내고 모험가 관리소를 지은 뒤,\n침공을 막으면 D급으로 올라가요.', '보스급 의뢰 3건을 해내고 훈련장을 지은 뒤,\n침공을 막으면 C급으로 올라가요.', '보스급 의뢰 4건을 해내고 의무실을 지은 뒤,\n침공을 막으면 B급으로 올라가요.',
     '보스급 의뢰 4건을 해내고 해체장을 지은 뒤,\n침공을 막으면 A급으로 올라가요.', '보스급 의뢰 5건, 명예의 전당, S급 후보 2명을 갖추고\n침공을 막으면 S급으로 올라가요.'].map((t, i) => i === 0 ? t : t + '\n(이 승급은 아직 게임에 적용되지 않았어요)').concat(['가장 높은 등급이에요.']);
   const TRUST_TXT = ['들어오는 의뢰가 크게 줄고, 보상과 경험치도 줄어요.', '들어오는 의뢰가 줄고, 보상과 경험치가 조금 줄어요.', '들어오는 의뢰와 보상·경험치 모두 평소와 같아요.', '들어오는 의뢰가 늘고, 보상과 경험치가 조금 늘어요.', '들어오는 의뢰가 크게 늘고, 보상과 경험치도 늘어요.'];   // 2026-11-16 14:06 존댓말로
   function hudTip(el, txt) { if (!el) return; el.removeAttribute('title'); el.classList.add('has-htip'); let t = el.querySelector(':scope > .htip'); if (!t) { t = document.createElement('i'); t.className = 'htip'; el.appendChild(t); } if (t.textContent !== txt) t.textContent = txt; }
@@ -150,16 +150,22 @@
       for (const el of ll.children) if (!el.classList.contains('dim') && now - el._t > FADE_MS) el.classList.add('dim');
     }, 500);
   }
+  // 2026-11-22 야간 작업 8 (최적화): 줄마다 scrollHeight를 읽고 scrollTop을 쓰면 줄 수만큼 레이아웃을 다시 계산함(주 넘김 끊김의 가장 큰 원인).
+  //   한 프레임에 들어온 줄은 맨 처음에만 "아래에 있었나"를 보고, 스크롤은 다음 프레임에 한 번만 → 화면 동작은 같음
+  let lbPend = false, lbStick = true;
   function lbAdd(el) {
     if (!lb) return;
-    const ll = lb.ll, atBottom = ll.scrollHeight - ll.scrollTop - ll.clientHeight < 12;   // 펼쳐서 위로 올려 읽는 중이면 그 자리를 지켜 줌
+    const ll = lb.ll;
+    if (!lbPend) {
+      lbStick = !lb.box.classList.contains('show') || ll.scrollHeight - ll.scrollTop - ll.clientHeight < 12;   // 펼쳐서 위로 올려 읽는 중이면 그 자리를 지켜 줌
+      lbPend = true; requestAnimationFrame(() => { lbPend = false; if (lbStick) ll.scrollTop = ll.scrollHeight; });   // 아래에 있었다면 새 대사가 들어올 때마다 따라 올라감
+    }
     el._t = performance.now(); ll.appendChild(el);
     while (ll.children.length > LOGMAX) ll.firstChild.remove();
-    if (!lb.box.classList.contains('show') || atBottom) ll.scrollTop = ll.scrollHeight;   // 아래에 있었다면 새 대사가 들어올 때마다 따라 올라감
   }
   // 2026-11-12 채팅 로그 개선: 시스템 기록 앞에 종류 꼬리표, 대화 줄에 얼굴 · 이름 · 직업 Lv (이름·얼굴을 누르면 모험가 정보)
-  const LOG_TAG = { depart: ['출발', 't-go'], success: ['성공', 't-ok'], fail: ['실패', 't-bad'], injury: ['부상', 't-bad'], death: ['사망', 't-bad'], arrive: ['도착', 't-new'], leave: ['떠남', 't-gray'],
-    req: ['부탁', 't-new'], main: ['메인', 't-gold'], ledger: ['결산', 't-gold'], build: ['건설', 't-gray'], unlock: ['발견', 't-gold'], grow: ['성장', 't-ok'], promo: ['전직', 't-new'], expire: ['기한', 't-gray'], withdraw: ['취소', 't-gray'], quirk: ['버릇', 't-new'] };
+  const LOG_TAG = { dungeon: ['던전', 't-gold'], depart: ['출발', 't-go'], success: ['성공', 't-ok'], fail: ['실패', 't-bad'], injury: ['부상', 't-bad'], death: ['사망', 't-bad'], arrive: ['도착', 't-new'], leave: ['떠남', 't-gray'],
+    req: ['리퀘스트', 't-new'], main: ['메인', 't-gold'], ledger: ['결산', 't-gold'], build: ['건설', 't-gray'], unlock: ['발견', 't-gold'], grow: ['성장', 't-ok'], promo: ['전직', 't-new'], expire: ['기한', 't-gray'], withdraw: ['취소', 't-gray'], quirk: ['버릇', 't-new'] };
   UI.logLine = function (text, kind) { // 시스템 기록
     const el = document.createElement('div'); el.className = 'ln k-' + (kind || 'info');
     const tg = LOG_TAG[kind]; if (tg) { const i = document.createElement('i'); i.className = 'tag ' + tg[1]; i.textContent = tg[0]; el.append(i); }
@@ -195,6 +201,7 @@
   UI.onLogs = function (logs) { // 새 기록들 (오래된 것부터)
     ctWatch();   // 2026-11-19 계약 갱신 알림 · 결산 카드 (테스트 의견 10 ⑤ ⑥)
     const gups = logs.filter(L => L.gup).map(L => L.gup); if (gups.length) gupShow(gups);   // 2026-11-12 모험가 승급 축하 카드
+    for (const L of logs) { if (L.dgOpen) dgOpenScene(); if (L.dgRoyal) dgRoyalScene(); }   // 2026-11-21 던전 열림 대화 · 정복 왕국 포상 (시안 확정)
     for (const L of logs) if (L.kind === 'arrive' && L.who && L.who[0]) { const a = s.advs.find(b => b.name === L.who[0] && b.alive); if (a) arrShow(a); }   // 2026-11-20 새 모험가 소개 카드 (버릇은 영입할 때 공개, 사용자 결정)
     for (const L of logs) {
       if (L.car && L.car.ev === 'notice') { const c = Gm.CARS.find(x => x.id === L.car.id); if (c) UI.say([{ name: '리나', face: 'smile', text: `마스터, ${c.name}이 ${L.car.n || 2}주 뒤에 들른대요! 좋아하는 물건(${CAR_LIKE[c.id] || '여러 가지'})을 창고에 모아 두면 비싸게 팔 수 있어요.` }]); }
@@ -391,13 +398,13 @@
     if (m.state === 'done' || s.grade > 0) { k = '목표 달성'; t = `길드가 <b>${GR[s.grade]}급</b>이 되었어요`; d = '모험가 관리소를 지으면 2차 전직을 제안할 수 있어요.'; }
     else if (m.state === 'none') {
       t = `리퀘스트 들어주기 <b>${m.doneN} / ${m.need}</b>`; bar = m.doneN / m.need;
-      if (nNew) { d = `새 부탁 ${nNew}건이 왔어요. 눌러서 확인해 보세요.`; dc = 'new'; }
-      else if (nOpen) d = `고를 수 있는 부탁 ${nOpen}건${nGo ? ` · 진행 중 ${nGo}건` : ''}`;
-      else if (nGo) d = `부탁 ${nGo}건을 들어주는 중이에요.`;
-      else d = '새 부탁을 기다리는 중이에요. 마을이 커지면 찾아와요.';
+      if (nNew) { d = `새 리퀘스트 ${nNew}건이 왔어요. 눌러서 확인해 보세요.`; dc = 'new'; }
+      else if (nOpen) d = `고를 수 있는 리퀘스트 ${nOpen}건${nGo ? ` · 진행 중 ${nGo}건` : ''}`;
+      else if (nGo) d = `리퀘스트 ${nGo}건을 들어주는 중이에요.`;
+      else d = '새 리퀘스트를 기다리는 중이에요. 마을이 커지면 찾아와요.';
     } else {
       main = true; k = '메인 퀘스트'; t = '「다리를 지켜라」';
-      if (m.state === 'offer') { d = '영주의 전갈이 왔어요. 받으면 2주 뒤 침공이 시작돼요.'; dc = 'new'; }
+      if (m.state === 'offer') { d = '메인 퀘스트가 왔어요. 받으면 2주 뒤 침공이 시작돼요.'; dc = 'new'; }
       else if (m.state === 'set') { t = `「다리를 지켜라」 침공까지 <b>${m.left}주</b>`; if (m.blocked) { d = '침공 대비: 모든 의뢰 출발 금지'; dc = 'warn'; } else d = '식사와 물약을 준비하고 모험가를 마을에 남겨 두세요.'; }
       else if (m.state === 'live') { t = '「다리를 지켜라」 침공 중'; d = '마을 다리를 지키는 중이에요.'; dc = 'warn'; }
       else if (m.state === 'cool') { d = `재도전까지 ${m.cool}주 · 리퀘스트 장에서 다시 받을 수 있어요.`; }
@@ -433,15 +440,17 @@
   }
   function reqHtml() {
     const V = Gm.reqView(s), R = Gm.reqOf(s), hints = Gm.reqHints(s, 2);
-    if (!V.some(v => v.r.id === rqSel)) { rqSel = V[0] ? V[0].r.id : null; rqMsg = ''; }
+    if (rqSel === 'dg' && !dgShown()) rqSel = null;
+    if (rqSel !== 'dg' && !V.some(v => v.r.id === rqSel)) { rqSel = V[0] ? V[0].r.id : dgShown() ? 'dg' : null; rqMsg = ''; }
     for (const v of V) if (v.r.id === rqSel) v.r.isNew = false;
     const stTxt = v => v.lock ? `<i class="st lock">${v.d.season.length && !v.d.season.includes(Gm.seasonOf(s.week)) ? v.d.season.map(x => Gm.SEASON_NAME[x]).join(' · ') + '에 진행' : '집무실 필요'}</i>` : RQ_STATE[v.r.state] ? `<i class="st go">${v.r.state === 'queued' && Gm.reqWaitOf(s, v.r).length ? '모이면 출발' : RQ_STATE[v.r.state]}</i>` : v.r.isNew ? '<i class="st new">새 부탁</i>' : (v.nominated ? `<i class="st">${v.r.party.length ? '지명 중' : '지명 기다림'}</i>` : v.d.type === 'install' ? '<i class="st">설치 기다림</i>' : `<i class="st ${v.canPay ? 'ok' : ''}">${v.canPay ? '낼 수 있음' : '준비 부족'}</i>`);
-    let L = mainCardHtml() + `<div class="ux-h">받은 부탁 <small>${V.length}건 · 들어준 부탁 ${Object.values(R.done).reduce((t, x) => t + x.n, 0)}건</small></div><div class="rq-list">`;
+    let L = mainCardHtml() + dgCardHtml() + `<div class="ux-h">받은 리퀘스트 <small>${V.length}건 · 들어준 리퀘스트 ${Object.values(R.done).reduce((t, x) => t + x.n, 0)}건</small></div><div class="rq-list">`;
     for (const v of V) L += `<button class="rq-card ${v.r.id === rqSel ? 'on' : ''} ${v.lock ? 'lock' : ''} gv-${v.d.giver}" data-rq="${v.r.id}"><i class="gv">${RQ_GIVER[v.d.giver]}</i><span class="tx"><b>${esc(v.name)}</b><em>${esc(v.giver)} · ${RQ_TYPE[v.d.type]}${v.d.type === 'town' ? ` ${v.r.stage}/2` : ''}</em></span>${stTxt(v)}</button>`;
-    if (!V.length) L += '<div class="rq-none">지금은 받은 부탁이 없습니다.<br>마을과 길드가 자라면 사람들이 찾아옵니다.</div>';
-    L += `</div><div class="ux-h rq-hh">소문 <small>아직 오지 않은 부탁</small></div><div class="rq-hints">${hints.length ? hints.map(h => `<div class="rq-hint"><b>???</b>${esc(h.hint)}</div>`).join('') : '<div class="rq-hint">들려오는 소문이 없습니다.</div>'}</div>`;
+    if (!V.length) L += '<div class="rq-none">지금은 받은 리퀘스트가 없습니다.<br>마을과 길드가 자라면 사람들이 찾아옵니다.</div>';
+    L += `</div><div class="ux-h rq-hh">소문 <small>아직 오지 않은 리퀘스트</small></div><div class="rq-hints">${hints.length ? hints.map(h => `<div class="rq-hint"><b>???</b>${esc(h.hint)}</div>`).join('') : '<div class="rq-hint">들려오는 소문이 없습니다.</div>'}</div>`;
+    if (rqSel === 'dg') return `<div class="bk2 bk-rq"><section class="bk-l">${L}</section><section class="bk-r">${dgPageHtml()}</section></div>`;
     const v = V.find(x => x.r.id === rqSel);
-    if (!v) return `<div class="bk2 bk-rq"><section class="bk-l">${L}</section><section class="bk-r"><div class="rq-none big">부탁을 고르면 여기에 사연과 보상이 보입니다.</div></section></div>`;
+    if (!v) return `<div class="bk2 bk-rq"><section class="bk-l">${L}</section><section class="bk-r"><div class="rq-none big">리퀘스트를 고르면 여기에 사연과 보상이 보입니다.</div></section></div>`;
     const d = v.d, r = v.r, ev = d.type === 'town' && r.stage === 2 ? 'req2' : 'req', lines = rqLinesOf(d.id, ev, r.who);
     let Rr = `<div class="rq-head gv-${d.giver}"><i class="gv">${RQ_GIVER[d.giver]}</i><div><b>${esc(v.name)}</b><span>${esc(v.giver)} · ${RQ_TYPE[d.type]}${d.type === 'town' ? ` (${r.stage} / 2단계)` : ''}${d.season.length ? ' · ' + d.season.map(x => Gm.SEASON_NAME[x]).join(' · ') + '에만' : ''}${d.repeat === 'yearly' ? ' · 매년' : ''}</span></div></div>`;
     Rr += `<div class="rq-say">${lines.map(l => `<p><b>${esc(l.name)}</b>${esc(l.text)}</p>`).join('')}</div>`;
@@ -475,6 +484,98 @@
       }
     }
     return `<div class="bk2 bk-rq"><section class="bk-l">${L}</section><section class="bk-r">${Rr}</section></div>`;
+  }
+  // ---------- 던전 장면 (2026-11-21 · 대사 확정 docs/design/proposal_dungeon_v1.md 11장) ----------
+  //   열림: 바르톨(하오체) 3줄 → 장면 나눔 → 리나 6줄 → 책 리퀘스트 장 · 던전 칸 반짝임. 대화 동안 시계 멈춤
+  //   정복: 왕국 사자 3줄 → 리나 2줄 → 왕국의 치하 편지 카드(포상 + 정복 보상). A+B (사용자 2026-11-20 21:53)
+  let dgSp = null;
+  const dgPause = () => { if (dgSp == null) { dgSp = curSp; hooks.setSpeed && hooks.setSpeed(0); } };
+  const dgResume = () => { if (dgSp != null) { hooks.setSpeed && hooks.setSpeed(dgSp); dgSp = null; } };   // 멈추기 전 배속으로 (원래 멈춰 있었으면 그대로)
+  UI.dgHold = on => on ? dgPause() : dgResume();   // 미니 뷰 갈림길을 묻는 동안 게임 시계 멈춤 (6초는 실제 시간)
+  function dgOpenScene() {
+    UI.say([{ fn: dgPause }, { name: '바르톨', text: '마스터, 큰일이오! 북쪽 언덕에 굴이 생겼소.' }, { name: '바르톨', text: '밤마다 고블린이 내려와 닭을 물어 간다오.' }, { name: '바르톨', text: '길드에서 그 굴을 좀 맡아 주겠소?' }]);
+    UI.say([{ face: 'surprised', text: '고블린 굴… 그거 던전이에요!' }, { face: 'serious', text: '던전은 게시판 의뢰와 달라요.' }, { face: 'smile', text: '우리가 직접 파티를 골라 보내요.' },
+      { face: 'smile', text: '갈 때마다 모험가들이 던전을 탐색해 줄 거예요.' }, { face: 'laugh', text: '끝까지 탐색하면 마을도 안심할 거예요!' }, { face: 'worried', text: '다치면 오래 쉬니까 무리는 말아요.' },
+      { fn: () => { dgResume(); rqSel = 'dg'; UI.open('req'); setTimeout(() => { const c = document.querySelector('.bk-rq .rq-dg'); if (c) c.classList.add('flash'); }, 900); } }]);
+  }
+  function dgRoyalScene() {
+    const C = s.cfg.dungeon, d = DGI_() || { name: '던전' };
+    UI.say([{ fn: dgPause }, { name: '왕국 사자', text: `「${d.name}」을 정복한 길드가 여기요?` }, { name: '왕국 사자', text: '국왕 폐하께서 노고를 치하하셨소.' }, { name: '왕국 사자', text: `포상금 ${fmt(C.clearGold)}G를 받으시오.` },
+      { face: 'surprised', text: '왕국에서 직접요?! 마스터, 들었어요?' }, { face: 'laugh', text: '이제 왕국도 우리 길드를 알아요!' }, { fn: dgRoyalCard }]);
+  }
+  function dgRoyalCard() {
+    const C = s.cfg.dungeon, d = DGI_() || { name: '던전', items: [] }, D = s.dg || {}, rare = (d.items || []).find(i => i.rare), dish = d.dish, nT = s.advs.filter(a => a.alive && (a.dgTitles || []).includes(d.key)).length;
+    const m = document.createElement('div'); m.id = 'royLay';
+    m.innerHTML = `<div class="rb"><div class="seal"><svg viewBox="0 0 64 64"><path d="M10 46 L14 20 L24 32 L32 14 L40 32 L50 20 L54 46 Z" fill="#f3d27a" stroke="#6a3a0a" stroke-width="3" stroke-linejoin="round"/><rect x="10" y="46" width="44" height="7" rx="2" fill="#f3d27a" stroke="#6a3a0a" stroke-width="3"/></svg></div>
+      <div class="k">왕국의 치하</div><h2>「${esc(d.name)}」 정복</h2><div class="lt">마을을 괴롭히던 ${esc(d.name)}을 정복한 길드의 노고를 치하하며, 그 공을 왕국 곳곳에 알리노라.</div><div class="sig">— 국왕의 이름으로</div>
+      <div class="sec"><i>왕국 포상</i><div class="chips"><span class="gold">포상금 +${fmt(C.clearGold)}G</span><span class="fame">명성 +${C.clearFame}</span></div></div>
+      <div class="sec"><i>정복 보상</i><div class="chips">${rare && C.rare ? `<span class="it"><img src="assets/icons/gear_rare_goblin.png" alt="">${esc(rare.name)}</span>` : ''}${dish && C.recipe ? `<span class="it"><img src="assets/${esc(dish.icon || 'icons/food_02.png')}" alt="">요리 「${esc(dish.name)}」</span>` : ''}${C.title && nT ? `<span>칭호 「고블린 소탕꾼」 ${nT}명</span>` : ''}</div></div>
+      <span class="btn" data-roy="ok">받기</span></div>`;
+    stage.ui.appendChild(m); requestAnimationFrame(() => m.classList.add('on'));
+    m.querySelector('[data-roy]').onclick = () => { m.classList.remove('on'); setTimeout(() => m.remove(), 300); dgResume(); UI.hud && UI.hud(); };
+  }
+  UI.dgOpenScene = dgOpenScene; UI.dgRoyalScene = dgRoyalScene;   // 시험용
+  // ---------- 던전 (2026-11-21 3단계 · 시안 docs/design/mockups/dungeon_1120/dg_req · dg_req_party) ----------
+  //   리퀘스트 장 맨 위 던전 칸 → 오른쪽: 방 지도 · 정복 · 보상 · 파티 고르기(리퀘스트 표 모양) · 보내기(모두 돌아오면 출발, 게시판보다 먼저)
+  let dgSel = [], dgMsg = '';
+  const dgShown = () => !!(Gm.dgOn && Gm.dgOn(s) && s.dg);
+  const DGI_ = () => ((GD_.dungeons || {})[s.dg && s.dg.key] || null);
+  function dgCardHtml() {
+    if (!dgShown()) return ''; const D = s.dg, d = DGI_(); if (!d) return ''; const C = s.cfg.dungeon, setAt = C.setAt;
+    const act = s.active.find(x => x.dgRun || x.dgP), st = D.clear ? `정복 완료${C.keep ? ' · 계속 탐색 가능' : ''}` : act ? '원정 중' : D.plan ? '모이면 출발' : `다음 보상까지 ${Math.max(0, (D.prog < setAt && C.set ? setAt : 100) - D.prog)}%`;
+    return `<button class="rq-dg ${rqSel === 'dg' ? 'on' : ''} ${D.seen ? '' : 'new'}" data-rq="dg"><img src="assets/icons/dungeon_goblin.png" alt=""><span class="tx"><span class="t1"><i class="gv">던전</i>${esc(d.name)}<small>${GR[d.g]}급 · 원정 ${D.runs.length}번</small></span>
+      <span class="pb"><u style="width:${D.prog}%"></u>${C.set ? `<b style="left:${setAt}%"><i>세트 ${setAt}%</i></b>` : ''}<b style="left:99.6%"><i>정복</i></b></span>
+      <span class="t2">정복 <b>${D.prog}%</b> · ${st} · 파티 ${C.party[0]}~${C.party[1]}명 · ${C.weeks}주</span></span></button>`;
+  }
+  function dgPageHtml() {
+    const D = s.dg, d = DGI_(), C = s.cfg.dungeon; D.seen = true;
+    const rooms = d.rooms, fk = r => rooms[r] && (rooms[r].risky || rooms[r].safe) ? `<div class="ln"></div><div class="fk"><span class="rk">위험</span><span class="sf">안전</span></div>` : '<div class="ln"></div>';
+    let R = `<div class="rq-head"><img class="dgic" src="assets/icons/dungeon_goblin.png" alt=""><div><b>${esc(d.name)}</b><span>${GR[d.g]}급 던전 · ${D.open}주에 발견${D.clear ? ` · ${D.clear}주에 정복` : ''}</span></div></div>`;
+    R += `<div class="rq-say"><p>방 3개를 지나며 갈림길을 두 번 만납니다. 방 3 뒤에 <b class="kw">계속</b>을 고르면 고블린 대장이 기다립니다. 지면 그 자리에서 돌아옵니다. 갈림길은 원정 중 미니 뷰에서 고르고, 안 고르면 대장 성향대로 갑니다.</p></div>`;
+    R += `<div class="dgmap"><div class="rm"><i>1</i>입구</div>${fk('2')}<div class="ln"></div><div class="rm"><i>2</i>통로</div>${fk('3')}<div class="ln"></div><div class="rm"><i>3</i>소굴</div><div class="ln"></div>${C.cont ? '<span class="cont">계속 / 귀환</span><div class="ln"></div><div class="rm boss"><i>☠</i>대장</div>' : ''}</div>`;
+    const ok = C.progOk;
+    R += `<div class="rq-sec"><i>정복</i><div><span class="rq-chip">승산 여유 +${ok[0]}% · 팽팽 +${ok[1]}% · 위험 +${ok[2]}%</span><span class="rq-chip">위험한 길 +${C.progRisky}%</span>${C.cont ? `<span class="rq-chip">보스 +${C.progBoss}%</span>` : ''}<span class="rq-chip">실패 +${C.progFail}%</span></div></div>`;
+    const lk = c => c ? 'dglock' : '', nextSet = C.set && !D.setRecipe, gotSet = C.set && D.setRecipe;
+    R += `<div class="rq-sec"><i>보상</i><div><span class="rq-chip">매번: ${esc((MATS.mat_mine_E || {}).name || '광석')} · ${esc((MATS.mat_study_E || {}).name || '마석')}(가끔)</span>${C.set ? `<span class="rq-chip ${gotSet ? 'dgok' : nextSet ? 'dgnext' : ''}">${C.setAt}% 고블린 사냥꾼 세트 조합법${gotSet ? ' ✔' : ''}</span>` : ''}`
+      + `${C.rare ? `<span class="rq-chip ${D.clear ? 'dgok' : lk(nextSet)} ${!nextSet && !D.clear ? 'dgnext' : ''}">100% 왕초의 금이빨 목걸이 (하나뿐)${D.clear ? ' ✔' : ''}</span>` : ''}${C.recipe ? `<span class="rq-chip ${D.clear ? 'dgok' : 'dglock'}">요리 조합법</span>` : ''}${C.title ? `<span class="rq-chip ${D.clear ? 'dgok' : 'dglock'}">칭호 「고블린 소탕꾼」</span>` : ''}${C.royal ? `<span class="rq-chip gold ${D.clear ? 'dgok' : 'dglock'}">왕국 포상 ${fmt(C.clearGold)}G · 명성 +${C.clearFame}</span>` : ''}</div></div>`;
+    // 파티 · 행동
+    const act = s.active.find(x => x.dgRun || x.dgP), plan = D.plan, done = D.clear && !C.keep;
+    if (plan) dgSel = plan.party.slice();
+    dgSel = dgSel.filter(id => s.advs.some(a => a.id === id && a.alive));
+    const party = dgSel.map(id => s.advs.find(a => a.id === id)), [mn, mx] = C.party;
+    const P = party.length >= mn ? Gm.dgOdds(s, party) : null;
+    R += `<div class="rq-party"><span class="pl">파티 ${party.length} / ${mx}</span>${party.map(a => `<span class="pm" style="${faceStyle(a, 34, 178, 17)}" title="${esc(a.name)}"></span>`).join('') || `<em>아래에서 ${mn}~${mx}명을 고르세요 (섭외비 없음 · 길드가 보냄)</em>`}${P != null ? powTag(P).replace('승산 <b>', '승산 <small>(안전한 길로 끝까지)</small> <b>') : ''}</div>`;
+    const lead = party.length ? Gm.reqSorted(party)[0] : null;
+    const why = !plan && !act && !done ? (party.length < mn ? `${mn}명 이상 골라 주세요` : Gm.dgWhy(s, party)) : null;
+    let btn = '';
+    if (done) btn = '<span class="rq-note">이미 정복한 던전입니다.</span>';
+    else if (act) btn = '<span class="rq-note">원정 중 — 미니 뷰에서 갈림길을 고를 수 있습니다.</span>';
+    else if (plan) btn = `<button class="ux-btn" data-dgact="cancel">출발 취소</button><span class="rq-note">${plan.party.some(id => (s.advs.find(a => a.id === id) || {}).state !== 'town') ? '모두 돌아오면' : '다음 주에'} 게시판보다 먼저 출발합니다.</span>`;
+    else btn = `<button class="ux-btn primary ${why ? 'soft-off' : ''}" data-dgact="send" style="white-space:nowrap">보내기 <small>(모두 돌아오면 출발)</small></button>${lead ? `<span class="rq-note">대장: ${esc(lead.name)} (${Gm.RISK[lead.risk]}) — 갈림길을 안 고르면 대장 성향대로</span>` : ''}`;
+    R += `<div class="rq-act">${btn}<span class="rq-msg">${esc(dgMsg)}</span></div>`;
+    if (!act && !done) {
+      R += `<div class="rq-nom ${plan ? 'off' : ''}"><div class="nh"><span>모험가</span><span>주력</span><span>애착</span><span></span><span></span><span>상태</span></div>`;
+      const rows = s.advs.filter(a => a.alive).sort((x, y) => (dgSel.includes(y.id) - dgSel.includes(x.id)) || (y.lv - x.lv) || (x.id - y.id));
+      for (const a of rows) {
+        const inP = dgSel.includes(a.id), rq = !inP && Gm.reqReserved(s, a);
+        const stx = inP ? (a.state === 'town' ? '<b class="ok">✔ 함께 감</b>' : `<b class="ok">✔ 예약 (${a.state === 'injured' ? '부상' : '원정 중'})</b>`) : rq ? '<b class="ng">다른 리퀘스트</b>' : a.state === 'quest' ? `원정 중 · 예약 가능` : a.state === 'injured' ? '부상 · 예약 가능' : a.state === 'away' ? '마을 밖' : '길드에 있음';
+        R += `<button class="nr ${inP ? 'in' : ''} ${rq ? 'no' : ''}" data-dgnom="${a.id}"><span class="who"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span><b>${esc(a.name)}</b><em>${esc(a.cls)} Lv ${a.lv}${ctTag(a)}</em></span></span><span class="sv">${Math.round(Gm.finalStat(s, a, a.core))}</span><span>${Math.round(a.attach)}</span><span></span><span></span><span class="stx">${stx}</span></button>`;
+      }
+      R += '</div>';
+    }
+    return R;
+  }
+  function dgNom(aid) {
+    if (s.dg && s.dg.plan) return; const i = dgSel.indexOf(aid), mx = s.cfg.dungeon.party[1], a = s.advs.find(x => x.id === aid); dgMsg = '';
+    if (i >= 0) dgSel.splice(i, 1); else if (a && Gm.reqReserved(s, a)) dgMsg = `${a.name}: 다른 리퀘스트에 가기로 했습니다.`; else if (dgSel.length >= mx) dgMsg = `${mx}명까지 보낼 수 있습니다.`; else dgSel.push(aid);
+    renderPopup();
+  }
+  function dgAct(act) {
+    dgMsg = '';
+    if (act === 'send') { const party = dgSel.map(id => s.advs.find(a => a.id === id)), r = party.length < s.cfg.dungeon.party[0] ? { ok: false, why: `${s.cfg.dungeon.party[0]}명 이상 골라 주세요` } : Gm.dgPlan(s, dgSel, false);
+      if (!r.ok) { rqShake(r.why); dgMsg = r.why; } else rqStamp('출발', `「${(DGI_() || {}).name || '던전'}」 · 모이면 출발`); }
+    else if (act === 'cancel') { Gm.dgCancel(s); dgSel = []; }
+    hooks.changed && hooks.changed(); renderPopup();
   }
   // 2026-11-19 계약 표시 (사용자: 디자인은 Claude 에게 · 칸 크기가 바뀌지 않게) — 직업 · Lv 줄 끝에 작은 남색 꼬리표, 점 = 남은 '거절 없는 지명' (4주 2번)
   function powTag(P) {   // 2026-11-19 사용자 확정: 전투는 확률이 아니라 실제 전투로 결과가 남 → % 대신 승산 칩 (모의 전투 30번 이긴 비율, 경계 70 · 40% [임시])
@@ -515,7 +616,7 @@
   }
   // 화면에서 바로 일어난 리퀘스트 기록(완료 · 거절 등)을 로그 · 대사로 흘려보냄 (주 진행 때는 main.js 가 UI.onLogs 로 보냄)
   function rqFlush(top) { const f = []; for (const L of s.log) { if (L === top) break; f.push(L); } if (f.length && f.length < 20) UI.onLogs(f.reverse()); }
-  UI.reqBadge = function () { goalShow(); const n = (s.req ? s.req.open : []).filter(r => r.isNew).length + (s.main && s.main.state === 'offer' ? 1 : 0), b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); const c = q('#bReq'); if (c) { c.textContent = n; c.hidden = !n; } return n; };
+  UI.reqBadge = function () { goalShow(); const n = (s.req ? s.req.open : []).filter(r => r.isNew).length + (s.main && s.main.state === 'offer' ? 1 : 0) + (dgShown() && !s.dg.seen ? 1 : 0), b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); const c = q('#bReq'); if (c) { c.textContent = n; c.hidden = !n; } return n; };
   const TITLES = { req: '리퀘스트', order: '길드 발주', trade: '매입 · 위탁', car: '떠돌이 상단', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
     if (name === 'sell' && Gm.gqOn(s)) name = 'trade';   // 2026-11-20: 소재 판매는 소재 관리에 합침
@@ -542,7 +643,7 @@
   UI.dlgBusy = () => !!(Dlg.cur || Dlg.lines.length || Dlg.gap > 0);
   UI.closeFx = function () { if (root.BookFX && popup) root.BookFX.closeCover(() => UI.close()); else UI.close(); };   // 책끈 · Esc · 바깥 누르기 = 표지 덮으며 닫기
   let bookHold = false, bookSp = 1;   // 책이 펼쳐진 동안 시간 정지: 닫으면 펼치기 전 속도로
-  UI.close = function () { if (bookHold) { bookHold = false; document.body.classList.remove('bookOn'); hooks.setSpeed && hooks.setSpeed(bookSp); } mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
+  UI.close = function () { setTimeout(() => { if (!popup && dlgLater.length) { const L = dlgLater.splice(0); for (const x of L) UI.say(x); } }, 350); if (bookHold) { bookHold = false; document.body.classList.remove('bookOn'); hooks.setSpeed && hooks.setSpeed(bookSp); } mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
   function renderPopup() {
     const b = q('#popBody');
     if (popup === 'board') renderBoard(b);
@@ -1074,8 +1175,8 @@
       return `<span class="mat ${r.role === '주' ? 'main' : ''}" title="${known ? esc(m.name) : '???'}"><span class="ux-slot${known ? '' : ' unk'}" data-g="${GR.indexOf(m.grade)}">${known || m.icon ? matImg(m) : ''}</span><em>${r.p}%</em></span>`; }).join('')}</div>`;
     const fs = q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g], ff = q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g], ts = q.trustS != null ? q.trustS : s.cfg.quest.trustSucc, tf = q.trustF != null ? q.trustF : s.cfg.quest.trustFail;
     { const G = gqOf(q); if (G) { const left = G.end - s.week;   // 2026-11-20 길드 의뢰 카드: 명성 · 신뢰 · 수수료 · 위약금 없음
-      h += `<div class="gq-det"><span class="gq-tag">길드 의뢰 ${GQ_NUM[G.kind] || ''}</span> <b>${esc(Gm.gqLabel(G))}</b>${G.kind === 'mat' ? ` · <b>${G.got} / ${G.n}개</b> 모음` : ''}${G.hot ? ' · <em class="gq-hot">바로 맡겨짐</em>' : ''} · 기한 ${left > 0 ? left + '주 남음' : '이번 주 끝'}<br>${esc(GQ_FX[G.kind] || '')} 수수료 · 명성 · 신뢰 변화 없이 보상을 그대로 받습니다.</div>`; return h; } }   // 거두기 안내는 아래 버튼 줄에
-    h += `<div class="foot"><span>성공 명성 <b class="ux-plus">+${fs}</b> · 신뢰 <b class="ux-plus">+${ts}</b></span><span>실패 명성 <b class="ux-minus">−${ff}</b> · 신뢰 <b class="ux-minus">−${tf}</b></span>${fee ? `<span class="fd-chip${feeOpen ? ' on' : ''}" data-qfeeopen="1" title="이 의뢰만 수수료 바꾸기">수수료 <b>${Math.round(Gm.questFee(s, q) * 100)}%</b>${q.fee == null ? ' 기본' : ''} ${feeOpen ? '▾' : '▸'}</span>` : ''}</div>`;
+      h += `<div class="gq-det"><span class="gq-tag">길드 의뢰 ${GQ_NUM[G.kind] || ''}</span> <b>${esc(Gm.gqLabel(G))}</b>${G.kind === 'mat' ? ` · <b>${G.got} / ${G.n}개</b> 모음` : ''}${G.hot ? ' · <em class="gq-hot">바로 맡겨짐</em>' : ''} · 기한 ${left > 0 ? left + '주 남음' : '이번 주 끝'}<br>${esc(GQ_FX[G.kind] || '')} 수수료 · 명성 · 신뢰도 변화 없이 보상을 그대로 받습니다.</div>`; return h; } }   // 거두기 안내는 아래 버튼 줄에
+    h += `<div class="foot"><span>성공 명성 <b class="ux-plus">+${fs}</b> · 신뢰도 <b class="ux-plus">+${ts}</b></span><span>실패 명성 <b class="ux-minus">−${ff}</b> · 신뢰도 <b class="ux-minus">−${tf}</b></span>${fee ? `<span class="fd-chip${feeOpen ? ' on' : ''}" data-qfeeopen="1" title="이 의뢰만 수수료 바꾸기">수수료 <b>${Math.round(Gm.questFee(s, q) * 100)}%</b>${q.fee == null ? ' 기본' : ''} ${feeOpen ? '▾' : '▸'}</span>` : ''}</div>`;
     { const left = Gm.expireWeeks(s) - (s.week - q.posted);
       h += `<div class="foot muted">기한 ${left}주 남음 (지나면 사라지고 신뢰도 −${s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1}) · 취소하면 ${fmt(Math.round(q.reward * 0.10))}G, 신뢰도 −2</div>`; }
     return h;
@@ -1134,7 +1235,7 @@
     if (!Gm.mainView) return ''; const m = Gm.mainView(s);
     if (m.grade > 0) return `<div class="lg-grade"><div class="ux-h">길드 승급 <small>${GR[m.grade]}급</small></div><p class="gd-none">다음 승급 조건은 준비 중입니다.</p></div>`;
     const ok1 = m.doneN >= m.need, ok2 = m.state === 'done';
-    const st2 = m.state === 'none' ? '부탁을 다 들어주면 영주의 전갈이 옵니다' : m.state === 'offer' ? '<b class="go">리퀘스트 장에서 받을 수 있습니다</b>' : m.state === 'set' ? `<b class="go">침공까지 ${m.left}주</b>` : m.state === 'cool' ? `${m.cool}주 뒤 다시 도전` : '달성';
+    const st2 = m.state === 'none' ? '리퀘스트를 다 들어주면 메인 퀘스트가 옵니다' : m.state === 'offer' ? '<b class="go">리퀘스트 장에서 받을 수 있습니다</b>' : m.state === 'set' ? `<b class="go">침공까지 ${m.left}주</b>` : m.state === 'cool' ? `${m.cool}주 뒤 다시 도전` : '달성';
     return `<div class="lg-grade"><div class="ux-h">길드 승급 <small>${GR[m.grade]}급 → ${GR[m.grade + 1]}급</small></div>
       <div class="gd-row ${ok1 ? 'ok' : ''}"><i>${ok1 ? '✔' : '1'}</i><span>리퀘스트 ${m.need}번 들어주기</span><b>${Math.min(m.doneN, m.need)} / ${m.need}</b><em class="gd-bar"><u style="width:${Math.min(100, Math.round(m.doneN / m.need * 100))}%"></u></em></div>
       <div class="gd-row ${ok2 ? 'ok' : ''} ${ok1 ? '' : 'wait'}"><i>${ok2 ? '✔' : '2'}</i><span>메인 퀘스트 「다리를 지켜라」 달성</span><b></b><em class="gd-st">${st2}</em></div>
@@ -2056,7 +2157,7 @@
     if (f === '주점') { const M = s.month || {}, meals = Object.values(M.dishes || {}).reduce((a, b) => a + b, 0); return ['출발 전 식사와 술을 팝니다' + (up ? ' · 1개당 +5G 적용 중' : ''), `이번 달 식사 ${meals} · 술 ${M.drinks || 0} · 수입 ${fmt(Math.round((M.meal || 0) + (M.tavern || 0)))}G · 좌석 ${Gm.seatsOf(s)}석`]; }
     if (f === '판매창구') { const n = Object.values(s.mats || {}).reduce((a, b) => a + (b || 0), 0); return ['소재를 팔아 수입을 얻습니다' + (up ? ' · 1개당 +3G 적용 중' : ''), `보관 중인 소재 ${n}개`]; }
     if (f === '관리소') return ['2차 전직을 할 수 있게 됩니다' + (up ? ' · 수락 확률 +10% 적용 중' : ''), `전직 제안 ${(s.proposals || []).length}건`];
-    if (f === '집무실') return ['메인·서브 퀘스트에 모험가를 지명합니다', '지명 기능은 준비 중입니다'];
+    if (f === '집무실') return ['리퀘스트 · 메인 퀘스트에 모험가를 지명해 보냅니다', `받은 리퀘스트 ${((s.req && s.req.open) || []).length}건`];   // 2026-11-22 야간 작업 3: 옛 문구(준비 중) · 용어 정리
     return ['', ''];
   }
   function facCard(f, pt) {
@@ -2085,7 +2186,7 @@
     }
     const op = FAC_OPEN[f];
     const mid = !built ? '' : op ? `<button class="pm-ic" data-pm="open" data-tip="${op[1]}">${IC('fac_open')}</button>` : `<button class="pm-ic lock" data-pm="open" data-tip="준비 중">${IC('fac_open')}</button>`;
-    const pre = !built ? (f === '집무실' ? '지으면: 메인·서브 퀘스트에 모험가를 지명 (준비 중) · 왼쪽 문이 열립니다' : f === '관리소' ? '지으면: 2차 전직을 할 수 있게 됩니다 · 오른쪽 문이 열립니다' : '') : '';
+    const pre = !built ? (f === '집무실' ? '지으면: 리퀘스트 · 메인 퀘스트에 모험가를 지명해 보낼 수 있습니다 · 왼쪽 문이 열립니다' : f === '관리소' ? '지으면: 2차 전직을 할 수 있게 됩니다 · 오른쪽 문이 열립니다' : '') : '';
     pmMenu.dataset.uid = ''; pmMenu.dataset.fac = f; pmMenu.classList.remove('warn'); pmMenu.classList.add('fac');
     pmMenu.innerHTML = `<div class="fc-hd">${badge(g)}<b class="pm-nm">${FAC_NAME[f] || f}</b>${state}</div>`
       + (built ? `<div class="fc-fx">${fx}</div><div class="fc-stat">${stat}</div>` : `<div class="fc-fx">${pre}</div>`)
@@ -2154,10 +2255,12 @@
       if (popup === 'meals') { const kl = e.target.closest('[data-kleft]'); if (kl) { const [n, v] = kl.dataset.kleft.split(':'), r = Gm.setMenuLeft(s, n, v); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); return; }   // 결정 47
       const kb = e.target.closest('[data-kpr], [data-kpp]'); if (kb) { if (kb.disabled) return; const [n, v] = (kb.dataset.kpr || kb.dataset.kpp).split(':'), d = Gm.DISH.find(x => x.name === n); if (d) { const mu = Gm.menuOf(s, d), r = kb.dataset.kpr ? Gm.setMenu(s, n, v === 'base' ? Gm.dishBase(s, d) : Math.max(1, Math.min(Gm.dishBase(s, d) * 3, mu.price + +v)), null) : Gm.setMenu(s, n, null, mu.prep + +v); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); } return; } }   // 2026-11-19 결정 37 · 39: 메뉴 가격 · 준비량
       { const c = e.target.closest('[data-ct]'); if (c && popup === 'advs') { if (!c.disabled) contractClick(c.dataset.ct); return; } }
-      const t = e.target.closest('[data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs], [data-rq], [data-rqact], [data-rqnom]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
+      const t = e.target.closest('[data-dgnom], [data-dgact], [data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs], [data-rq], [data-rqact], [data-rqnom]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
       if (t.dataset.rq) { rqSel = t.dataset.rq; rqMsg = ''; renderPopup(); return; }
       if (t.dataset.rqact) { rqAct(t.dataset.rqact); return; }
       if (t.dataset.rqnom) { rqNom(+t.dataset.rqnom); return; }
+      if (t.dataset.dgnom) { dgNom(+t.dataset.dgnom); return; }   // 2026-11-21 던전 파티 고르기
+      if (t.dataset.dgact) { dgAct(t.dataset.dgact); return; }
       if (t.dataset.fbs) { fbSel = t.dataset.fbs; renderPopup(); return; }
       if (t.dataset.tsel) { t.closest('.av-ttl').classList.toggle('open'); return; }
       if (t.dataset.tpick != null) { const a = s.advs.find(x => x.id === openAdv); if (a) { const k = +t.dataset.tpick; if (k < 0) delete a.title; else a.title = k; } renderPopup(); return; }
@@ -2278,8 +2381,13 @@
 .gupG-card .lina .f{width:60px;height:60px;border-radius:50%;flex:none;border:2px solid #d9a066;background:url(assets/npc/lina_face_smile.png) -38px -34px/auto 256px no-repeat #f1d9c0}
 .gupG-card ul{text-align:left;margin:10px 0 14px;padding:0;list-style:none}.gupG-card li{padding:6px 10px;border-bottom:1px dashed rgba(122,74,40,.3);font-size:17px}.gupG-card li b{color:#2f6a52}
 .gupG-fly{position:absolute;z-index:46;background:center/contain no-repeat;transition:all .7s cubic-bezier(.5,0,.3,1)}.gupG-pop{animation:gupGpop .7s}@keyframes gupGpop{40%{transform:scale(1.5);filter:drop-shadow(0 0 10px #ffd75e)}}`; document.head.appendChild(st_); }
-  UI.say = function (lines) { // [{face:'smile', text:'…'}, …]
+  // 2026-11-22 시안 6 반영: 책이 열려 있으면 대화를 미뤘다가 책을 닫을 때 보여 줌 (급한 것: 기본 튜토리얼 · 침공 중 · urgent 표시는 바로)
+  const dlgLater = [];
+  const dlgUrgent = () => (root.Tutorial && root.Tutorial.active && root.Tutorial.active() && s.tut && !s.tut.base) || (root.Invasion && root.Invasion.on);
+  const dlgHold = () => !!popup && !dlgUrgent();   // 장면 사이 쉼에서 책이 열려 있으면 다음 장면을 미룸
+  UI.say = function (lines, opt) { // [{face:'smile', text:'…'}, …]
     if (!lines || !lines.length) return;
+    if (popup && !(opt && opt.urgent) && !dlgUrgent() && !Dlg.open) { dlgLater.push(lines); UI.reqBadge && UI.reqBadge(); return; }
     if (Dlg.cur || Dlg.lines.length || Dlg.gap > 0) Dlg.lines.push({ brk: true });   // 앞 장면이 아직 있으면 장면 나눔
     Dlg.lines.push(...lines);
     if (!Dlg.open && !(Dlg.gap > 0)) next();
@@ -2361,12 +2469,12 @@
     else next();
   };
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
-    if (!Dlg.cur && Dlg.gap > 0) { if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
+    if (!Dlg.cur && Dlg.gap > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
     if (rqdQ.length && !rqdOn && !Dlg.cur) rqdNext();   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
     if (carOpenQ && !Dlg.cur && !Dlg.lines.length && !(Dlg.gap > 0) && !popup && !rqdOn) { carOpenQ = false; if (Gm.carHere(s).length) UI.open('car'); }   // 상단 도착 대화 뒤 상단 화면
     if (!Dlg.cur) return;
     blinkTick(dt);
-    if (Dlg.wait > 0) { Dlg.wait -= dt; if (Dlg.wait <= 0) q('#dlg').classList.add('open'); root.Lina.chatting = true; return; }
+    if (Dlg.wait > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } stage.ui.classList.add('dlgOn'); Dlg.wait -= dt; if (Dlg.wait <= 0) q('#dlg').classList.add('open'); root.Lina.chatting = true; return; }
     root.Lina.chatting = Dlg.shown < Dlg.cur.text.length;
     if (Dlg.shown < Dlg.cur.text.length) {
       Dlg.t += dt; const n = Math.min(Dlg.cur.text.length, Math.floor(Dlg.t * 28));

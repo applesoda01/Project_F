@@ -1,0 +1,71 @@
+--- qa/js/expedition.js	2026-11-22 02:29:31.649900030 +0900
++++ mock/js/expedition.js	2026-11-22 02:23:19.306314674 +0900
+@@ -91,7 +91,7 @@
+     E.sort((a, b) => (a.done ? -1 : 0) - (b.done ? -1 : 0) || a.x.back - b.x.back).forEach(e => {
+       const x = e.x, q = x.q, party = x.party.map(id => advOf(s, id)).filter(Boolean), lead = party[0];
+       const nm = (lead ? lead.name : '?') + (party.length > 1 ? ` 외 ${party.length - 1}` : '');
+-      const rate = x.rate != null ? x.rate : Math.round((x.p || 0) * 100), [rc, rt] = risk(rate);
++      const rate = x.rate != null ? x.rate : Math.round((x.p || 0) * 100), [rc, rt] = x.q && x.q.tutorial ? ['r-safe', '✎ 연습'] : risk(rate);   // [시안 5] 튜토리얼 첫 의뢰는 「연습」
+       const r = document.createElement('div'); r.className = 'row' + (sel === e.id ? ' sel' : ''); r.dataset.id = e.id;
+       const pc = root.Director && root.Director.partyColor ? root.Director.partyColor(e.id) : null;   // 2026-11-12 파티 색 띠: 로비 발밑 원·모험가 목록과 같은 색
+       if (pc) { r.classList.add('pty'); r.style.setProperty('--pc', pc); }
+@@ -102,7 +102,7 @@
+       r.onmouseenter = () => {
+         tip.style.display = 'block'; tip.style.top = (PANEL.y + r.offsetTop - list.scrollTop) + 'px';
+         const en = x.fight ? groupName(x.fight.enemies) : null;
+-        tip.innerHTML = `<b>${q.name || QTYPE[q.type] + ' 의뢰'}</b> (${GR[q.g]}급 ${QTYPE[q.type]})<br>예상 성공률 ${Math.min(100, rate)}%<br>${en ? '적: ' + en : '비전투 의뢰'}<br>파티: ${party.map(a => `<span style="white-space:nowrap">${a.name}(${a.cls} Lv${a.lv})</span>`).join(', ')}`;
++        tip.innerHTML = `<b>${q.name || QTYPE[q.type] + ' 의뢰'}</b> (${GR[q.g]}급 ${QTYPE[q.type]})<br>${q.tutorial ? '첫 의뢰 연습 · 무사히 돌아와요' : `예상 성공률 ${Math.min(100, rate)}%`}<br>${en ? '적: ' + en : '비전투 의뢰'}<br>파티: ${party.map(a => `<span style="white-space:nowrap">${a.name}(${a.cls} Lv${a.lv})</span>`).join(', ')}`;
+       };
+       r.onmouseleave = () => { tip.style.display = 'none'; };
+       list.appendChild(r);
+--- qa/js/ui.js	2026-11-22 02:29:31.649930834 +0900
++++ mock/js/ui.js	2026-11-22 02:28:21.986456592 +0900
+@@ -631,7 +631,7 @@
+   UI.dlgBusy = () => !!(Dlg.cur || Dlg.lines.length || Dlg.gap > 0);
+   UI.closeFx = function () { if (root.BookFX && popup) root.BookFX.closeCover(() => UI.close()); else UI.close(); };   // 책끈 · Esc · 바깥 누르기 = 표지 덮으며 닫기
+   let bookHold = false, bookSp = 1;   // 책이 펼쳐진 동안 시간 정지: 닫으면 펼치기 전 속도로
+-  UI.close = function () { if (bookHold) { bookHold = false; document.body.classList.remove('bookOn'); hooks.setSpeed && hooks.setSpeed(bookSp); } mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
++  UI.close = function () { setTimeout(() => { if (!popup && dlgLater.length) { const L = dlgLater.splice(0); for (const x of L) UI.say(x); } }, 350); if (bookHold) { bookHold = false; document.body.classList.remove('bookOn'); hooks.setSpeed && hooks.setSpeed(bookSp); } mTipHide(); const kt = document.getElementById('kToast'); if (kt) kt.classList.remove('on'); popup = null; q('#popBack').classList.remove('open'); stage.ui.querySelectorAll('[data-pop]').forEach(b => b.classList.remove('on')); };
+   function renderPopup() {
+     const b = q('#popBody');
+     if (popup === 'board') renderBoard(b);
+@@ -2091,8 +2091,13 @@
+ .gupG-card .lina .f{width:60px;height:60px;border-radius:50%;flex:none;border:2px solid #d9a066;background:url(assets/npc/lina_face_smile.png) -24px -22px/auto 130px no-repeat #f1d9c0}
+ .gupG-card ul{text-align:left;margin:10px 0 14px;padding:0;list-style:none}.gupG-card li{padding:6px 10px;border-bottom:1px dashed rgba(122,74,40,.3);font-size:17px}.gupG-card li b{color:#2f6a52}
+ .gupG-fly{position:absolute;z-index:46;background:center/contain no-repeat;transition:all .7s cubic-bezier(.5,0,.3,1)}.gupG-pop{animation:gupGpop .7s}@keyframes gupGpop{40%{transform:scale(1.5);filter:drop-shadow(0 0 10px #ffd75e)}}`; document.head.appendChild(st_); }
+-  UI.say = function (lines) { // [{face:'smile', text:'…'}, …]
++  // [시안 6] 책이 열려 있으면 대화를 미뤘다가 책을 닫을 때 보여 줌 (급한 것: 기본 튜토리얼 · 침공 중 · urgent 표시는 바로)
++  const dlgLater = [];
++  const dlgUrgent = () => (root.Tutorial && root.Tutorial.active && root.Tutorial.active() && s.tut && !s.tut.base) || (root.Invasion && root.Invasion.on);
++  const dlgHold = () => !!popup && !dlgUrgent();   // 장면 사이 쉼에서 책이 열려 있으면 다음 장면을 미룸
++  UI.say = function (lines, opt) { // [{face:'smile', text:'…'}, …]
+     if (!lines || !lines.length) return;
++    if (popup && !(opt && opt.urgent) && !dlgUrgent() && !Dlg.open) { dlgLater.push(lines); UI.reqBadge && UI.reqBadge(); return; }
+     if (Dlg.cur || Dlg.lines.length || Dlg.gap > 0) Dlg.lines.push({ brk: true });   // 앞 장면이 아직 있으면 장면 나눔
+     Dlg.lines.push(...lines);
+     if (!Dlg.open && !(Dlg.gap > 0)) next();
+@@ -2174,11 +2179,11 @@
+     else next();
+   };
+   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
+-    if (!Dlg.cur && Dlg.gap > 0) { if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
++    if (!Dlg.cur && Dlg.gap > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
+     if (rqdQ.length && !rqdOn && !Dlg.cur) rqdNext();   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
+     if (!Dlg.cur) return;
+     blinkTick(dt);
+-    if (Dlg.wait > 0) { Dlg.wait -= dt; if (Dlg.wait <= 0) q('#dlg').classList.add('open'); root.Lina.chatting = true; return; }
++    if (Dlg.wait > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } stage.ui.classList.add('dlgOn'); Dlg.wait -= dt; if (Dlg.wait <= 0) q('#dlg').classList.add('open'); root.Lina.chatting = true; return; }
+     root.Lina.chatting = Dlg.shown < Dlg.cur.text.length;
+     if (Dlg.shown < Dlg.cur.text.length) {
+       Dlg.t += dt; const n = Math.min(Dlg.cur.text.length, Math.floor(Dlg.t * 28));
+--- qa/js/tutorial.js	2026-11-22 02:29:31.649693793 +0900
++++ mock/js/tutorial.js	2026-11-22 02:38:25.152370840 +0900
+@@ -130,7 +130,7 @@
+     board: { glow: () => root.UI.popupName() === 'board' ? `.qcard[data-q="${getS().tut.qid}"]` : '[data-pop="board"]', hint: () => root.UI.popupName() === 'board' ? '「오늘 저녁 삼겹살」을 눌러 보내 주세요' : '아래 「의뢰」를 눌러 게시판을 여세요' },
+     mini: { dim: false, glow: () => '#hudExp', hint: () => '오른쪽 원정 목록의 줄을 눌러 보세요', test: () => !!document.querySelector('#expView.on') || WAIT.away.test(), done() { getS().tut.ph = 'away'; awayTalk(); } },
+     away: { test: () => { const s = getS(), t = s.tut, a = s.advs.find(x => x.id === t.wid); return !a || (a.state !== 'quest' && !s.active.some(x => x.party.includes(t.wid))); }, done() { getS().tut.ph = 'wait'; after(3.5, () => go('FT0004')); } },
+-    table: { glow: () => root.UI.popupName() === 'fac' ? '[data-place="table"]' : '[data-pop="fac"]', hint: () => '「시설」에서 테이블 세트를 놓아 주세요', test: () => getS().place.items.some(i => i.id === 'table'), done() { getS().tut.ph = 'wait'; after(1.5, () => go('FT0005')); } },
++    table: { glow: () => document.querySelector('#placeLay.on') ? null : root.UI.popupName() === 'fac' ? '[data-place="table"]' : '[data-pop="fac"]', hint: () => document.querySelector('#placeLay.on') ? '바닥의 초록 칸을 눌러 테이블 세트를 놓아 주세요' : '「시설」에서 테이블 세트를 놓아 주세요', /* [시안 7] 배치 중에는 「시설」을 빛내지 않고 안내를 바꿈 */ test: () => getS().place.items.some(i => i.id === 'table'), done() { getS().tut.ph = 'wait'; after(1.5, () => go('FT0005')); } },
+     meals: { glow: () => '[data-pop="meals"]', hint: () => '아래 「음식」을 눌러 보세요', test: () => root.UI.popupName() === 'meals',
+       done() { const s = getS(), t = s.tut; t.ph = 'wait'; say('FT0008', 2, () => { give(s); root.UI.repop(); t.ph = 'cook'; }); } },
+     // 테스트 의견 4 (11-19 시안 2 확인): 고기 → 향신료 → 「만들어 보기」 차례로 한 칸씩만 밝힘. 다른 재료는 어두운 덮개에 막혀 못 누르므로 멧돼지 스테이크 정식만 나옴

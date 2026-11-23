@@ -99,6 +99,17 @@
 .gxS.up{background:#fff5d8;box-shadow:inset 0 0 0 2px #e6b34a,0 0 10px rgba(230,179,74,.45);cursor:pointer}.gxS.up small{color:#c8862f}.gxS.up b{color:#8a5a12}
 .gxGo{flex:none;font-weight:700;font-size:15px;color:#fff;background:#c8862f;border-radius:10px;padding:3px 10px}
 .smHint{font-size:16px;color:#8a7258;margin:6px 0 4px}
+.cxSet{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;background:#f1e2c6;font:700 17px MaruBuri,serif;color:#5a3412}
+.cxSet small{font:400 14px inherit;font-family:inherit;color:#7a5a3a}
+.cxIt .dgS{position:absolute;left:6px;top:6px;font-style:normal;font:700 12px/1 inherit;font-family:inherit;color:#fff;background:#6b4a9a;border-radius:4px;padding:3px 5px}
+.cxSetFx{padding:8px 10px;border-radius:8px;background:#efe6f6;border:1.5px solid #b59ad0;font-size:14px;line-height:1.45;color:#4a2e66}.cxSetFx b{color:#3a1e5a}
+.gxRare{display:flex;align-items:center;gap:12px;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:linear-gradient(90deg,#fff3cf,#f7e1a6);border:2px solid #d0a03a}
+.gxRare.set{background:linear-gradient(90deg,#f3ecfa,#e6dbf3);border-color:#a98bd0}
+.gxRare img{width:60px;height:60px;flex:none}.gxRare .tx{flex:1;min-width:0}
+.gxRare .tx>b{display:block;font:800 19px/1.2 MaruBuri,serif;color:#5a3a08}.gxRare .tx>b small{font:700 13px inherit;font-family:inherit;color:#a0461c;margin-left:4px}
+.gxRare .tx em{font-style:normal;font-size:14px;line-height:1.35;color:#7a5a20}.gxRare .tx em u{text-decoration:none;color:#a33b22;font-weight:700}
+.gxRare select{font:600 15px inherit;font-family:inherit;padding:4px 6px;border-radius:8px;border:2px solid #c9a774;background:#fffaf0;max-width:230px}
+.gxRare .go{flex:none;padding:7px 14px;border-radius:10px;background:#c48a2a;color:#fff;font:800 16px/1 inherit;font-family:inherit;cursor:pointer}
 `;
   function ensure() {
     if (box) return true;
@@ -141,10 +152,31 @@
     if (k === 1) return [['heavy', '전사'], ['light', '궁수 · 도적'], ['robe', '마법사 · 성직자']].map(([t, w]) => ({ it: itemOf(t, g), who: w })).filter(x => x.it);
     return [0, 1, 2, 3, 4].map(c => ({ it: itemOf(slotType(c, k), g), who: CLS[c] })).filter(x => x.it);
   }
+  // 2026-11-21 던전 세트 (시안 dg_smith_set): 만들기에 「던전」 칸 · 조합법은 정복 50%에 · 선물 탭 맨 위에 던전 장비(레어 · 세트) 주기 띠 (시안 dg_rare_gift)
+  const dgSet = s => { const Gm = G(); return Gm.dgItems ? Gm.dgItems(s).filter(i => !i.rare) : []; };
+  const stTxt = it => [it.atk ? `공격 +${it.atk}` : '', it.hp ? `체력 +${it.hp}` : '', it.def ? `방어 +${it.def}` : ''].filter(Boolean).join(' · ');
+  function dgCraftHtml(s) {
+    const Gm = G(), C = s.cfg.dungeon, L = dgSet(s); if (!cSel || !L.some(i => i.key === cSel)) cSel = (L[0] || {}).key;
+    let h = '<div class="cxWrap"><div class="cxGrid">';
+    h += `<div class="cxSet">고블린 사냥꾼 세트 <small>${esc((Gm.dgDef(s) || {}).name || '던전')} · 정복 ${C.setAt}%에 조합법${s.dg && s.dg.setRecipe ? ' ✔' : ` (지금 ${s.dg ? s.dg.prog : 0}%)`}</small></div>`;
+    for (const it of L) { const own = (s.gearInv || {})[it.key] || 0, ok = !Gm.dgCraftWhy(s, it.key);
+      h += `<div class="cxIt ${it.key === cSel ? 'sel' : ''} ${ok ? 'ok' : 'no'}" data-csel="${it.key}"><i class="dgS">세트</i><img src="assets/${it.icon}" alt=""><b>${esc(it.name)}</b><i>${KN[it.slot]} · 아무 직업</i>${own ? `<em>${own}</em>` : ''}</div>`; }
+    h += '</div>';
+    const it = L.find(i => i.key === cSel);
+    if (it) { const why = Gm.dgCraftWhy(s, it.key), own = (s.gearInv || {})[it.key] || 0;
+      h += `<div class="cxDet"><div class="cxHd"><span class="cxIc"><img src="assets/${it.icon}" alt=""><span class="gbx ${GR[it.g]}">${GR[it.g]}</span></span><div><b>${esc(it.name)}</b><small>${KN[it.slot]} · ${stTxt(it)} · 창고 ${own}개</small></div></div><div class="cxRc">`;
+      for (const r of it.recipe) { const m = mat(r.m), have = (s.mats || {})[r.m] || 0; h += `<div class="cxM ${have < r.n ? 'no' : ''}">${m.icon ? `<img src="assets/${m.icon}" alt="">` : ''}<span>${esc(m.name)}</span><b>${have}<i> / ${r.n}</i></b></div>`; }
+      h += `<div class="cxM fee"><span>공임</span><b>${C.craftFee}G</b></div></div>`;
+      h += `<div class="cxSetFx"><b>세트 효과</b> (같은 사람이 입었을 때)<br>2벌: 체력 +${C.setHp} · 공격 +${C.setAtk}<br>3벌: 이 던전 적에게 피해 +${Math.round(C.set3Vs * 100)}% · 공격 +${Math.round(C.set3Atk * 100)}%</div>`;
+      h += `<button class="cxGo" data-dgcf="${it.key}" ${why ? 'disabled' : ''}>만들기</button><div class="cxWhy">${why ? esc(why) : '만든 장비는 선물 탭에서 모험가에게 줍니다'}</div></div>`; }
+    return h + '</div>';
+  }
   function craftHtml(s) {
     const Gm = G(), gMax = Math.min(s.grade, 1); if (cGrade > gMax) cGrade = gMax;
+    const dgK = dgSet(s).length > 0 && s.dg; if (cKind === 3 && !dgK) cKind = 0;
+    if (cKind === 3) return `<div class="cxBar"><div class="seg">${KN.map((n, i) => `<span data-ck="${i}">${n}</span>`).join('')}<span class="on" data-ck="3">던전</span></div><span class="smGold">금고 ${Math.floor(s.gold).toLocaleString()}G</span></div>` + dgCraftHtml(s);
     const L = craftList(s, cKind, cGrade); if (!cSel || !L.some(x => x.it.id === cSel)) cSel = (L.find(x => !Gm.craftWhy(s, x.it.id)) || L[0] || {}).it?.id;
-    let h = `<div class="cxBar"><div class="seg">${KN.map((n, i) => `<span class="${i === cKind ? 'on' : ''}" data-ck="${i}">${n}</span>`).join('')}</div><div class="seg sm">${GR.slice(0, 2).map((g, i) => `<span class="${i === cGrade ? 'on' : ''} ${i > gMax ? 'lock' : ''}" data-cgr="${i}">${g}급</span>`).join('')}</div><span class="smGold">금고 ${Math.floor(s.gold).toLocaleString()}G</span></div>`;
+    let h = `<div class="cxBar"><div class="seg">${KN.map((n, i) => `<span class="${i === cKind ? 'on' : ''}" data-ck="${i}">${n}</span>`).join('')}${dgK ? '<span data-ck="3">던전</span>' : ''}</div><div class="seg sm">${GR.slice(0, 2).map((g, i) => `<span class="${i === cGrade ? 'on' : ''} ${i > gMax ? 'lock' : ''}" data-cgr="${i}">${g}급</span>`).join('')}</div><span class="smGold">금고 ${Math.floor(s.gold).toLocaleString()}G</span></div>`;
     h += '<div class="cxWrap"><div class="cxGrid">';
     for (const x of L) { const R = Gm.craftInfo(s, x.it.id), ok = !Gm.craftWhy(s, x.it.id);
       h += `<div class="cxIt ${x.it.id === cSel ? 'sel' : ''} ${ok ? 'ok' : 'no'}" data-csel="${x.it.id}"><img src="assets/${x.it.icon}" alt=""><b>${esc(x.it.name)}</b><i>${x.who}</i>${R.own ? `<em>${R.own > 99 ? '99+' : R.own}</em>` : ''}</div>`; }
@@ -159,12 +191,20 @@
   }
   function giftHtml(s) {
     const Gm = G(), al = s.advs.filter(a => a.alive), inv = Object.values(s.gearInv || {}).reduce((t, n) => t + Math.max(0, n), 0);
-    let h = `<div class="cxBar"><span class="gxT">장비 창고 <b>${inv}</b>개</span><span class="gxT sub">빛나는 칸을 누르면 선물 · 애착 F +${(s.cfg.gear.giftAttach || [1, 2])[0]} · E +${(s.cfg.gear.giftAttach || [1, 2])[1]} [임시]</span></div><div class="gxList">`;
+    let h = `<div class="cxBar"><span class="gxT">장비 창고 <b>${inv}</b>개</span><span class="gxT sub">빛나는 칸을 누르면 선물 · 애착 F +${(s.cfg.gear.giftAttach || [1, 2])[0]} · E +${(s.cfg.gear.giftAttach || [1, 2])[1]} [임시]</span></div>`;
+    // 던전 장비 띠: 창고에 있는 레어 · 세트 장비 → 고른 모험가에게 (레어는 주인이 죽거나 떠나면 사라짐)
+    const DI = Gm.dgItems ? Gm.dgItems(s) : [], R0 = s.dg && s.dg.rare;
+    for (const it of DI) { const n = (s.gearInv || {})[it.key] || 0, holder = it.rare && R0 && R0.holder != null ? s.advs.find(a => a.id === R0.holder && a.alive) : null; if (!n && !holder) continue;
+      const opts = al.map(a => `<option value="${a.id}" ${gSel === a.id ? 'selected' : ''}>${esc(a.name)} · ${CLS[a.core]} Lv ${a.lv}${a.sp && a.sp[it.slot] === it.key ? ' (착용 중)' : ''}</option>`).join('');
+      h += `<div class="gxRare ${it.rare ? '' : 'set'}"><img src="assets/${it.icon}" alt=""><div class="tx"><b>${esc(it.name)} <small>${it.rare ? '길드에 하나뿐' : '고블린 사냥꾼 세트'}</small></b><em>${KN[it.slot]} · ${stTxt(it)}${it.rare ? ` · 함께 간 파티 공격 +${Math.round(s.cfg.dungeon.rareParty * 100)}%<br><u>주인이 죽거나 길드를 떠나면 사라집니다</u>` : ''}${holder ? `<br>지금 주인: <b>${esc(holder.name)}</b>` : ''}</em></div>`
+        + (n ? `<select data-dgsel="${it.key}">${opts}</select><span class="go" data-dgg="${it.key}">주기</span>` : '') + '</div>'; }
+    h += '<div class="gxList">';
     for (const a of al) {
       const e = Gm.eqOf(a);
       h += `<div class="gxRow">${face(a)}<span class="gxN"><b>${esc(a.name)}</b><i>${CLS[a.core]} · Lv ${a.lv}</i></span>`;
       for (let k = 0; k < 3; k++) {
-        const g = e[k], cur = g >= 0 ? itemOf(slotType(a.core, k), g) : null, x = Gm.giftItems(s, a, k)[0];
+        const spk = a.sp && a.sp[k] ? DI.find(i => i.key === a.sp[k]) : null;   // 던전 장비를 낀 칸은 그 이름 · 그림으로
+        const g = e[k], cur = spk ? { name: spk.name, icon: spk.icon } : g >= 0 ? itemOf(slotType(a.core, k), g) : null, x = spk ? null : Gm.giftItems(s, a, k)[0];
         const show = x ? x.item : cur, gg = x ? x.g : g;
         h += `<div class="gxS ${x ? 'up' : ''}" ${x ? `data-sg="${a.id}:${k}"` : ''} title="${KN[k]}${cur ? ' · 지금 ' + esc(cur.name) : ' · 없음'}">`
           + (show ? `<span class="ic"><img src="assets/${show.icon}" alt="">${gg >= 0 ? `<span class="gbx ${GR[gg]}">${GR[gg]}</span>` : ''}</span>` : `<span class="ic none">${KN[k][0]}</span>`)
@@ -191,6 +231,10 @@
     const ck = e.target.closest('[data-ck]'); if (ck) { cKind = +ck.dataset.ck; cSel = null; render(); return; }
     const cg = e.target.closest('[data-cgr]'); if (cg) { cGrade = +cg.dataset.cgr; cSel = null; render(); return; }
     const cs = e.target.closest('[data-csel]'); if (cs) { cSel = cs.dataset.csel; render(); return; }
+    const dc = e.target.closest('[data-dgcf]'); if (dc && !dc.disabled) { const r = G().dgCraft(s, dc.dataset.dgcf); if (r.ok) { say = pick(LINES.made); if (root.UI) root.UI.hud(); } else if (root.UI) root.UI.toast(r.why, 'warn'); render(); return; }
+    const dg = e.target.closest('[data-dgg]'); if (dg) { const sel_ = box.querySelector(`[data-dgsel="${dg.dataset.dgg}"]`), aid = sel_ ? +sel_.value : null, a = s.advs.find(x => x.id === aid), r = G().dgGive(s, aid, dg.dataset.dgg);
+      if (r.ok) { say = `${pick(LINES.gave)}<span class="re"><b>${esc(a.name)}</b>${pick(LINES.react[a.social] || LINES.react[1])}</span>`; if (root.UI) root.UI.hud(); } else if (root.UI) root.UI.toast(r.why, 'warn'); render(); return; }
+    if (e.target.closest('select')) return;
     const c = e.target.closest('[data-cf]'); if (c && !c.disabled) { const r = G().smithCraft(s, c.dataset.cf); if (r.ok) { say = pick(LINES.made); if (root.UI) { root.UI.toast(`${r.item}을 만들었습니다. (공임 ${r.fee}G)`, 'unlock'); root.UI.hud(); } } else if (root.UI) root.UI.toast(r.why, 'warn'); render(); return; }
     const b = e.target.closest('[data-sg]'); if (b && !b.disabled) {
       const [aid, k] = b.dataset.sg.split(':').map(Number), a = s.advs.find(x => x.id === aid), r = G().smithGift(s, aid, k);

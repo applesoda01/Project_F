@@ -129,6 +129,22 @@
     130,
     78
    ]
+  },
+  "npc_envoy": {
+   "name": "왕국 사자",
+   "stand": "npc/npc_envoy_stand.webp",
+   "blink": "npc/npc_envoy_blink.webp",
+   "size": [
+    499,
+    640
+   ],
+   "eye": [
+    171,
+    139,
+    113,
+    49
+   ],
+   "note": "2026-11-20 던전 정복 왕국 포상(A+B) 사자. Illustrious 시드 2026112002 → 뜬 눈 qwen 눈 영역 편집 4002(날카로운 갈색 눈) → 감은 눈 qwen 5002 → RIFE(rife47, 9장) 중 감김 = 6번째 장(사용자 선택 3번) · 반쯤 = 5번째 장, 감김 칸은 눈썹 아래 뜬 눈 흔적을 피부색으로 지움. 원본 archive/art_source/envoy/"
   }
  }
 }

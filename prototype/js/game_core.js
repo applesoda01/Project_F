@@ -64,6 +64,15 @@
     for (const e of T.enemies || []) if (e.mon && !s.seenMons[e.mon]) { s.seenMons[e.mon] = s.week; log(s, `처음 보는 몬스터를 만났습니다: ${e.name || e.mon}`, 'unlock'); }
   }
   function log(s, text, kind, extra) { s.log.unshift(Object.assign({ week: s.week, text, kind: kind || 'info' }, extra || {})); if (s.log.length > 600) s.log.pop(); }   // 기록 600개 = 약 2년치 (길드 기록 팝업)
+  // 2026-11-22 야간 작업 4 (사용자 A안): 실패 기록에 간단한 원인 + 손실 (기록 글만, 규칙은 그대로)
+  function failWhy(F) {
+    if (!F || !F.enemies || !F.enemies.length) return '일을 끝내지 못하고 돌아왔습니다.';
+    if (F.units && F.units.length && F.units.every(u => u.down)) return '파티가 모두 쓰러졌습니다.';
+    const n = {}; for (const e of F.enemies) n[e.name] = (n[e.name] || 0) + 1;
+    const top = Object.keys(n).sort((a, b) => n[b] - n[a])[0], c = n[top];
+    return `${top}${c > 1 ? ` ${c}마리` : ''}${c > 1 ? '를' : J(top, '을', '를').slice(top.length)} 감당하지 못하고 물러났습니다.`;
+  }
+  const lossTxt = (dt, df) => { const L = []; dt = Math.round(dt); df = Math.round(df); if (dt > 0) L.push(`신뢰도 −${dt}`); if (df > 0) L.push(`명성 −${df}`); return L.length ? ' ' + L.join(' · ') : ''; };
   const effN = (s, f) => s.eff[f] || 0;
   // ---------- 버릇 (2026-11-20 야간 작업 · 규칙은 combat.js QK, 수치 balance.csv quirk, 글 data/quirks.csv) ----------
   const QKr = () => (CB && CB.QK) || null;
@@ -851,11 +860,13 @@
   // ---------- 튜토리얼 도우미 (2026-11-18, docs/design/튜토리얼.md) ----------
   function tutPost(s, tid) { for (let i = s.board.length - 1; i >= 0; i--) if (s.board[i].tid === tid) s.board.splice(i, 1); const q = makeQuest(s, 0, tid); tutEase(q); s.board.push(q); return q; }   // 같은 의뢰가 먼저 붙어 있으면 내리고 튜토리얼 의뢰로 바꿔 붙임 (2026-11-19)   // 정해진 의뢰를 게시판에 올림
   // 2026-11-19 첫 의뢰 쉽게: 원래 멧돼지 2마리면 Lv1 전사 혼자 300판 중 300판 짐 → 1마리 · 체력 50% · 공격 70% [임시] (300판: 첫 판에 무사히 이김 275판, 다시 굴려도 못 이긴 판 0)
-  function tutEase(q) { if (!q || !q.enemies || !q.enemies.length) return; q.enemies = [Object.assign({}, q.enemies[0], { hp: q.enemies[0].hp * 0.5, atk: q.enemies[0].atk * 0.7 })]; if (q.seen) q.seen = q.seen.slice(0, 1); }
+  function tutEase(q) { if (!q) return; q.tutorial = true; /* 2026-11-22 야간 작업 1 · 5: 첫 원정 짧게(tutLaunch) · 「연습」 표시용 */ if (!q.enemies || !q.enemies.length) return; q.enemies = [Object.assign({}, q.enemies[0], { hp: q.enemies[0].hp * 0.5, atk: q.enemies[0].atk * 0.7 })]; if (q.seen) q.seen = q.seen.slice(0, 1); }
   function tutLaunch(s, aid, qid) {   // 정해진 모험가를 정해진 의뢰로 바로 출발시킴 (강제)
     const a = s.advs.find(x => x.id === aid), q = s.board.find(x => x.id === qid); if (!a || !q || a.state !== 'town') return false;
     s.board.splice(s.board.indexOf(q), 1);
-    launchSure(s, q, [a]); return true;
+    launchSure(s, q, [a]);
+    { const x = s.active[s.active.length - 1]; if (x && q.tutorial) { x.start = s.week - 1; x.back = s.week; } }   // 2026-11-22 야간 작업 1: 주 넘김 차례상 back = 지금 주여야 다음 주 넘김에서 돌아옴 (전엔 2번째 주 넘김 = 약 65초)
+    return true;
   }
   // 첫 의뢰 · 튜토리얼 리퀘스트는 꼭 성공하고 다치지 않게: 결과가 나쁘면 출발을 되돌리고 다시 굴림 (40번 안에 안 되면 결과를 성공으로 고침)
   function launchSure(s, q, party) {
@@ -1235,6 +1246,7 @@
   // ---------- 던전 (2026-11-20, docs/design/proposal_dungeon_v1.md 6 · 7 · 8 · 9장) — 규칙은 combat.js DG (시뮬레이터와 공용), 스위치 balance.csv dungeon ----------
   //   12주에 열림 · 길드가 파티(2~3명)를 보냄 · 방 1~3(사이 갈림길) · 방 3 뒤 「계속 / 귀환」 · 후퇴선에 닿으면 귀환 · 정복 수치(승산 칩 비례) · 50% 세트 조합법 · 100% 레어 장신구 · 요리 조합법 · 칭호 · 정복지
   const DGr = () => (CB && CB.DG) || null;
+  const mulberryG = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let z = Math.imul(a ^ a >>> 15, 1 | a); z = z + Math.imul(z ^ z >>> 7, 61 | z) ^ z; return ((z ^ z >>> 14) >>> 0) / 4294967296; };   // 던전 화면 단계용 고정 씨앗 난수
   const DGC = s => s.cfg.dungeon || {};
   const dgOn = s => !!(DGr() && DGr().on(DGC(s)));
   const dgDef = s => { const L = DGr().list; return L[(s.dg && s.dg.key) || Object.keys(L)[0]]; };
@@ -1267,28 +1279,64 @@
     if (why) { s.dg.plan = null; log(s, `던전 파티가 출발하지 못했습니다. (${why})`, 'sys'); return; }
     const wt = party.filter(a => a.state !== 'town');
     if (wt.length) { if (P.auto && s.week >= P.by) s.dg.plan = null; return; }
-    s.dg.plan = null; dgLaunch(s, party);
+    s.dg.plan = null; dgLaunch(s, party, { live: !P.auto });   // 플레이어가 보낸 파티 = 미니 뷰에서 갈림길을 고름
   }
   function dgFoes3(s, d) { const DG = DGr(), Dc = DGC(s), k = s.dg && s.dg.clear ? Dc.foeKeep : 1; return ['1', '2', '3'].flatMap(r => DG.foes(d, r, (d.rooms[r] || {}).safe ? 'safe' : 'base', k * ((d.rooms[r] || {}).safe ? Dc.foeSafe : 1))); }
   function dgOdds(s, party, how) { const d = dgDef(s), P = reqSorted(party), U = P.map(m => unitOf(s, m, 0, null)); return DGr().odds(d, U, P[0], P[0].risk, DGC(s), !!s.dg.clear, how); }   // 출발 승산 (방 1~3 안전한 길 기준)
+  // 원정 결과 묶음 (출발 때 한꺼번에 · 화면 단계에서는 귀환 때) — 미니 뷰 기록 · 버릇 사건 · 정복 수치
+  function dgPack(s, res, p0, prEv) {
+    const DG = DGr(), Dc = DGC(s), ok = res.cleared3, last = res.last;
+    const sumU = res.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), maxMp: Math.round(u.maxMp || 0), hp: Math.round(u.hp), down: u.down, pots: u.pots, used: u.used, fled: u.fled || null, cov: u.covered || 0 }));
+    const fight = last ? { win: ok, result: last.r.result, rounds: last.r.rounds, log: (last.r.log || []).map(e => e.hp != null ? Object.assign({}, e, { hp: Math.round(e.hp) }) : e), units: sumU, enemies: last.foes.map(e => ({ name: e.name, mon: e.mon, boss: e.boss, maxHp: Math.round(e.hp), atk: Math.round(e.atk) })), room: last.room } : null;
+    const qkEv = (prEv || []).slice(); for (const u of sumU) { if (u.fled) qkEv.push({ k: u.fled === 'selfish' ? 'selfFlee' : 'cowardFlee', id: u.id }); if (u.cov) qkEv.push({ k: 'cover', id: u.id, n: u.cov }); }
+    const gain = s.dg.clear ? 0 : DG.prog(Dc, p0, res);
+    const run = { rooms: res.rooms.map(r => r.ask ? r : { room: r.room, path: r.path, result: r.result }), cleared3: res.cleared3, boss: res.boss, risky: res.risky, mats: res.mats, rare: res.rare, gain, chip: DG.chip(p0) };
+    return { ok, fight, qkEv, run };
+  }
   function dgLaunch(s, party0, opt) {
     const why = dgWhy(s, party0) || (party0.find(a => a.state !== 'town') ? '마을에 없는 사람이 있습니다' : null); if (why) return { ok: false, why };
     const DG = DGr(), Dc = DGC(s), d = dgDef(s), party = reqSorted(party0), lead = party[0], QC = s.cfg.quirk;
     const U0 = party.map(m => unitOf(s, m, 0, null)), p0 = DG.odds(d, U0, lead, lead.risk, Dc, !!s.dg.clear);
     const pr = QKr() ? QKr().prep(U0, { Qc: QC, week: s.week, R: s.R, p: p0, risk: lead.risk, ate: () => false, dish: false, bad: (a, b) => relTier(relOf(s, a.id, b.id)) === 'bad', pal: (a, b) => relTier(relOf(s, a.id, b.id)) === 'good' }) : { ev: [], risk: lead.risk };
-    const res = DG.run(d, U0, lead, pr.risk, s.R, Dc, { log: true, cleared: !!s.dg.clear, choose: opt && opt.choose });
-    const ok = res.cleared3, last = res.last, weeks = Dc.weeks;
-    const sumU = res.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), maxMp: Math.round(u.maxMp || 0), hp: Math.round(u.hp), down: u.down, pots: u.pots, used: u.used, fled: u.fled || null, cov: u.covered || 0 }));
-    const fight = last ? { win: ok, result: last.r.result, rounds: last.r.rounds, log: (last.r.log || []).map(e => e.hp != null ? Object.assign({}, e, { hp: Math.round(e.hp) }) : e), units: sumU, enemies: last.foes.map(e => ({ name: e.name, mon: e.mon, boss: e.boss, maxHp: Math.round(e.hp), atk: Math.round(e.atk) })) } : null;
-    const q = { id: s.nextId++, g: d.g, type: 0, name: d.name, weeks, reward: 0, self: true, dg: d.key, fameS: 0, fameF: 0, trustS: 0, trustF: 0 };
-    const qkEv = pr.ev.slice(); for (const u of sumU) { if (u.fled) qkEv.push({ k: u.fled === 'selfish' ? 'selfFlee' : 'cowardFlee', id: u.id }); if (u.cov) qkEv.push({ k: 'cover', id: u.id, n: u.cov }); }
-    const gain = s.dg.clear ? 0 : DG.prog(Dc, p0, res);
+    const weeks = Dc.weeks, q = { id: s.nextId++, g: d.g, type: 0, name: d.name, weeks, reward: 0, self: true, dg: d.key, fameS: 0, fameF: 0, trustS: 0, trustF: 0 };
     for (const m of party) { m.state = 'quest'; m.until = s.week + weeks; }
-    const run = { rooms: res.rooms.map(r => r.ask ? r : { room: r.room, path: r.path, result: r.result }), cleared3: res.cleared3, boss: res.boss, risky: res.risky, mats: res.mats, rare: res.rare, gain, chip: DG.chip(p0) };
-    s.active.push({ uid: s.uidNext++, q, party: party.map(m => m.id), p: ok ? 1 : 0, ok, rate: Math.round(p0 * 100), start: s.week, weeks, back: s.week + weeks, fight, dgRun: run, qk: qkEv.length ? qkEv : undefined, rates: party.map(() => 0) });
-    log(s, `${J(names(party), '이', '가')} 「${d.name}」으로 떠났습니다. (승산 ${['여유', '팽팽', '위험'][run.chip]})`, 'depart', { who: party.map(m => m.name) });
-    return { ok: true, run };
+    const x = { uid: s.uidNext++, q, party: party.map(m => m.id), rate: Math.round(p0 * 100), start: s.week, weeks, back: s.week + weeks, rates: party.map(() => 0) };
+    if (opt && opt.live) {   // 2026-11-21 화면 단계: 갈림길 · 계속/귀환을 플레이어가 미니 뷰에서 고름 → 방마다 이어서 판정 (같은 씨앗으로 다시 돌려 앞 방 결과가 그대로 나옴)
+      x.dgP = { seed: Math.floor(s.R() * 2147483647), risk: pr.risk, p0, ev: pr.ev, ch: [], pend: null, auto: [] }; x.p = p0;
+      s.active.push(x); dgAdvance(s, x);
+    } else {
+      const res = DG.run(d, U0, lead, pr.risk, s.R, Dc, { log: true, cleared: !!s.dg.clear, choose: opt && opt.choose });
+      const P = dgPack(s, res, p0, pr.ev);
+      Object.assign(x, { p: P.ok ? 1 : 0, ok: P.ok, fight: P.fight, dgRun: P.run, qk: P.qkEv.length ? P.qkEv : undefined });
+      s.active.push(x);
+    }
+    log(s, `${J(names(party), '이', '가')} 「${d.name}」으로 떠났습니다. (승산 ${['여유', '팽팽', '위험'][DG.chip(p0)]})`, 'depart', { who: party.map(m => m.name) });
+    return { ok: true, uid: x.uid };
   }
+  // 화면 단계 원정: 지금까지 고른 것으로 다시 돌려 멈춘 곳(다음 질문)과 마지막 싸움을 갱신. fin = 귀환 — 남은 질문은 대장 성향대로
+  function dgReplay(s, x, fin) {
+    const DG = DGr(), Dc = DGC(s), d = dgDef(s), P = x.dgP, party = x.party.map(id => s.advs.find(a => a.id === id)).filter(Boolean);
+    const U0 = party.map(m => unitOf(s, m, 0, null)), lead = party[0]; let i = 0;
+    const Rl = mulberryG(P.seed ^ 0x2545F491);
+    const choose = (kind) => { if (i < P.ch.length) return P.ch[i++]; if (!fin) return undefined; const v = DG.lean(lead, Rl) > 0; P.auto.push(kind); i++; return v; };
+    return DG.run(d, U0, lead, P.risk, mulberryG(P.seed), Dc, { log: true, cleared: !!s.dg.clear, choose });
+  }
+  function dgAdvance(s, x) {
+    const res = dgReplay(s, x, false), P = x.dgP;
+    P.pend = res.pending ? Object.assign({ k: P.ch.length }, res.pending) : null;
+    const pk = dgPack(s, res, P.p0, P.ev); x.fight = pk.fight;   // 미니 뷰: 지금까지 마지막 방 싸움
+    if (!res.pending) dgFinish(s, x, res);   // 질문이 더 없으면 결과 확정
+  }
+  function dgFinish(s, x, res) { const P = x.dgP, pk = dgPack(s, res, P.p0, P.ev); Object.assign(x, { ok: pk.ok, p: pk.ok ? 1 : 0, fight: pk.fight, dgRun: pk.run, qk: pk.qkEv.length ? pk.qkEv : undefined }); P.pend = null; P.done = true; }
+  // 플레이어 선택: kind 'path' → v true = 위험한 길 / 'cont' → v true = 계속
+  function dgChoose(s, uid, v) { const x = s.active.find(z => z.uid === uid && z.dgP); if (!x || !x.dgP.pend || x.dgP.done) return false; x.dgP.ch.push(!!v); dgAdvance(s, x); return true; }
+  // 대장 성향대로라면 어느 쪽인지 (미니 뷰가 빛나게 보여 줄 기본값) — 귀환 때 자동 선택과 같은 난수
+  function dgLean(s, uid) {
+    const x = s.active.find(z => z.uid === uid && z.dgP); if (!x) return null; const lead = s.advs.find(a => a.id === x.party[0]); if (!lead) return null;
+    const Rl = mulberryG(x.dgP.seed ^ 0x2545F491); let v = false; for (let k = 0; k <= x.dgP.ch.length; k++) v = DGr().lean(lead, Rl) > 0; return v;
+  }
+  const dgPending = s => s.active.filter(x => x.dgP && x.dgP.pend && !x.dgP.done).map(x => Object.assign({ uid: x.uid, lean: dgLean(s, x.uid) }, x.dgP.pend));
+  function dgSettle(s, x) { if (!x.dgP || x.dgP.done) return; const res = dgReplay(s, x, true); dgFinish(s, x, res); }   // 귀환 직전: 남은 질문은 대장 성향대로
   function dgReturn(s, x, party, ok) {
     const DG = DGr(), Dc = DGC(s), d = dgDef(s), R = x.dgRun, G = s.cfg.growth, A = s.cfg.adv, D = s.dg; if (!D) return;
     for (const a of party) { if (!a || !a.alive) continue; gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, d.g) * (ok ? 1 : G.xpFailRate) * (QKr() ? QKr().xpMul(s.cfg.quirk, a, rivalHere(s, a)) : 1)); if (ok) a.attach = Math.min(100, a.attach + A.attachSuccess); }
@@ -1298,13 +1346,13 @@
     const far = R.boss ? '보스까지' : R.cleared3 ? '방 3까지' : `방 ${Math.max(1, R.rooms.filter(r => r.result === 'win').length + 1)}에서 귀환`;
     log(s, `${J(names(party.filter(Boolean)), '이', '가')} 「${d.name}」에서 돌아왔습니다 — ${far}${R.risky ? ` · 위험한 길 ${R.risky}번` : ''}${D.clear ? '' : ` · 정복 +${R.gain}% (${D.prog}%)`}${R.mats || R.rare ? ` · 소재 ${matName(M1)} ${R.mats}${R.rare ? ` · ${matName(M2)} ${R.rare}` : ''}` : ''}.`, ok ? 'success' : 'fail', { who: party.filter(Boolean).map(a => a.name) });
     D.runs.unshift({ w: x.start, party: x.party, rooms: R.rooms.filter(r => !r.ask).length, boss: R.boss, gain: R.gain, ok, p: x.rate, risky: R.risky, res: (R.rooms.filter(r => r.result).slice(-1)[0] || {}).result }); if (D.runs.length > 20) D.runs.length = 20;
-    if (Dc.set && !D.setRecipe && p0 < Dc.setAt && D.prog >= Dc.setAt) { D.setRecipe = s.week; log(s, `「${d.name}」 정복 ${Dc.setAt}% — 대장간에서 굴 사냥꾼 세트를 만들 수 있게 되었습니다.`, 'dungeon'); }
+    if (Dc.set && !D.setRecipe && p0 < Dc.setAt && D.prog >= Dc.setAt) { D.setRecipe = s.week; log(s, `「${d.name}」 정복 ${Dc.setAt}% — 대장간에서 고블린 사냥꾼 세트를 만들 수 있게 되었습니다.`, 'dungeon'); }
     if (!D.clear && D.prog >= 100) {
       D.clear = s.week; log(s, `「${d.name}」을 정복했습니다!`, 'dungeon', { dgClear: d.key });
       if (Dc.royal) { s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + Dc.clearFame); s.gold += Dc.clearGold; s.month.royal = (s.month.royal || 0) + Dc.clearGold; D.royal = s.week; log(s, `왕국에서 「${d.name}」 정복의 노고를 치하하며 포상금 ${Dc.clearGold}G를 보내왔습니다. 길드의 이름이 널리 퍼집니다. (명성 +${Dc.clearFame})`, 'dungeon', { dgRoyal: d.key }); }   // 2026-11-20 사용자: 100% 달성 때 왕국이 치하 (연출은 2단계 시안)
       const rare = d.items.find(it => it.rare); if (Dc.rare && rare && !D.rare) { D.rare = { key: rare.key, holder: null, gone: null }; s.gearInv = s.gearInv || {}; s.gearInv[rare.key] = 1; log(s, `보물 「${rare.name}」을 손에 넣었습니다. 길드에 하나뿐인 장신구입니다.`, 'dungeon'); }
       const dd = DISH.find(z => z.dungeon === d.key); if (Dc.recipe && dd && !s.dishes[dd.name]) { s.dishes[dd.name] = s.week; syncMeals(s); for (const m of dd.mats) s.knownMats[m] = true; log(s, `던전에서 요리 조합법을 얻었습니다: ${dd.name}`, 'unlock'); }
-      if (Dc.title) for (const a of party) if (a && a.alive) { (a.dgTitles = a.dgTitles || []).push(d.key); a.attach = Math.min(100, a.attach + Dc.titleAttach); (a.career = a.career || []).push({ week: s.week, text: `「${d.name}」 정복 — 칭호 「굴의 정복자」` }); }
+      if (Dc.title) for (const a of party) if (a && a.alive) { (a.dgTitles = a.dgTitles || []).push(d.key); a.attach = Math.min(100, a.attach + Dc.titleAttach); (a.career = a.career || []).push({ week: s.week, text: `「${d.name}」 정복 — 칭호 「고블린 소탕꾼」` }); }
     }
   }
   // 세트 장비 만들기 · 특별 장비 주기 (화면은 시안 확정 뒤 — 지금은 자동 진행 · 측정용으로 씀)
@@ -1359,6 +1407,7 @@
     for (const x of back) {
       if (x.uid != null) { if (s.settled[x.uid] != null) continue; s.settled[x.uid] = s.week; }   // 같은 원정은 한 번만 정산
 
+      if (x.dgP) dgSettle(s, x);   // 2026-11-21 화면 단계 던전 원정: 고르지 않은 갈림길은 대장 성향대로 정하고 결과 확정
       const party = x.party.map(id => s.advs.find(a => a.id === id));
       const q = x.q, F = x.fight; s.month.quests++; seeMons(s, q);
       const ok = x.ok != null ? x.ok : F ? F.win : s.R() < x.p;   // 예전 저장(출발 때 결과 없음)은 귀환 때 판정
@@ -1390,9 +1439,10 @@
         if (hasDeco(s, 'locker')) { const T = QBYID[q.tid], b = T && (T.rewards || []).reduce((x, r) => (!x || r.p > x.p ? r : x), null); if (b) { s.mats[b.m] = (s.mats[b.m] || 0) + DV.mat; if (!s.knownMats[b.m]) { s.knownMats[b.m] = true; const m = MAT[b.m]; if (m) log(s, `처음 보는 소재를 얻었습니다: ${m.name}`, 'unlock'); } } }   // 사물함: 기본 소재 +1
         log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 성공했습니다.${q.x2 ? ' (×2 보상)' : ''} 길드 수입 ${Math.round(fee + resale)}G.`, 'success', { who: party.map(x => x.name) });
       } else {
+        const tr0 = s.trust, fa0 = s.fame || 0;
         s.stats.fail++; if (x.late) s.stats.late = (s.stats.late || 0) + 1; else { s.trust = Math.max(0, s.trust - (q.trustF != null ? q.trustF : s.cfg.quest.trustFail)); s.fame = Math.max(0, (s.fame || 0) - (q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g])); }   // 늦장 실패: 명성 · 신뢰 그대로 (결정 30)
         for (const a of party) { gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate * (QKr() ? QKr().xpMul(s.cfg.quirk, a, rivalHere(s, a)) : 1)); if (a.contract && x.start >= a.contract.start && x.start <= a.contract.end) ctLog(a.contract, 'fail'); }
-        log(s, x.late ? `${J(names(party), '이', '가')} 늦장을 부리다 ${qn(q)} 의뢰의 기한을 넘겼습니다. (명성 · 신뢰는 그대로)` : `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 실패했습니다.`, 'fail', { who: party.map(x => x.name) });
+        log(s, x.late ? `${J(names(party), '이', '가')} 늦장을 부리다 ${qn(q)} 의뢰의 기한을 넘겼습니다. (명성 · 신뢰도는 그대로)` : `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 실패했습니다. ${failWhy(x.fight)}${lossTxt(tr0 - s.trust, fa0 - (s.fame || 0))}`, 'fail', { who: party.map(x => x.name) });
       }
       if (q.gq != null) gqAfter(s, q, ok, party);
       if (q.esc) escAfter(s, q, ok);   // 2026-11-20 상단 호위   // 2026-11-20 길드 의뢰: 다시 게시 · 끝
@@ -1704,7 +1754,7 @@
     const n = reqNeed(s, r);
     if (n.gold) { s.gold -= n.gold; s.month.build = (s.month.build || 0) - n.gold; (s.month.builds = s.month.builds || []).push({ f: '리퀘스트 「' + reqName(s, r) + '」', c: n.gold }); }   // 장부: 건설 · 설비 줄 (운영 순이익에는 넣지 않음)
     for (const [m, k] of Object.entries(n.mats)) s.mats[m] -= k;
-    if (d.type === 'town' && r.stage === 1) { r.stage = 2; reqLog(s, r, 'ok', `「${reqName(s, r)}」 첫 부탁을 들어주었습니다. 다음 부탁: ${d.cost.gold2}G`); return true; }
+    if (d.type === 'town' && r.stage === 1) { r.stage = 2; reqLog(s, r, 'ok', `「${reqName(s, r)}」 첫 단계를 들어주었습니다. 다음 단계: ${d.cost.gold2}G`); return true; }
     reqComplete(s, r, null); return true;
   }
   function reqRefuse(s, rid) {   // 마스터가 거절: 목록에서 빠지고 12주 뒤에 다시 올 수 있음
@@ -1826,7 +1876,7 @@
     const r = reqOf(s).open.find(y => y.id === x.q.rq); if (!r) return;
     if (ok) { reqComplete(s, r, party.filter(Boolean)); return; }
     r.state = 'open'; r.fails = (r.fails || 0) + 1; r.party = r.who != null ? [r.who] : []; delete r.qid;
-    reqLog(s, r, 'fail', `리퀘스트 「${reqName(s, r)}」에 실패했습니다. 다시 도전할 수 있습니다.`);
+    reqLog(s, r, 'fail', `리퀘스트 「${reqName(s, r)}」에 실패했습니다. ${failWhy(x && x.fight)} 다시 도전할 수 있습니다.`);   // 2026-11-22 야간 작업 4: 원인 한 줄
   }
   function reqWeekly(s) {
     const R = reqOf(s);
@@ -1993,7 +2043,7 @@
   }
   function mainWeekly(s) {   // 주 진행: 귀환 뒤, 출발 전
     if (!COMBAT || s.grade > 0) return; const M = mainOf(s);
-    if (M.state === 'none' && mainReady(s)) { M.state = 'offer'; M.offered = s.week; log(s, `부탁을 ${MAIN_CFG.need}번 들어준 길드에 영주의 전갈이 왔습니다: 메인 퀘스트 「다리를 지켜라」. 리퀘스트 장에서 받을 수 있습니다.`, 'main'); }
+    if (M.state === 'none' && mainReady(s)) { M.state = 'offer'; M.offered = s.week; log(s, `리퀘스트를 ${MAIN_CFG.need}번 들어준 길드에 영주의 전갈이 왔습니다: 메인 퀘스트 「다리를 지켜라」. 리퀘스트 장에서 받을 수 있습니다.`, 'main'); }
     else if (M.state === 'cool' && s.week >= M.cool) { M.state = 'offer'; log(s, '메인 퀘스트 「다리를 지켜라」에 다시 도전할 수 있습니다.', 'main'); }
     else if (M.state === 'set' && s.week >= M.at) { if (api.live) mainStart(s); else mainRun(s); }
   }
@@ -2041,7 +2091,7 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, dgWhy, dgLaunch, dgPlan, dgCancel, dgOdds, dgCraftWhy, dgCraft, dgGive, dgItems, dgOn, dgDef, hintPeek, hintSaid, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  const api = { live: false, reqSorted, dgWhy, dgLaunch, dgPlan, dgChoose, dgPending, dgLean, dgCancel, dgOdds, dgCraftWhy, dgCraft, dgGive, dgItems, dgOn, dgDef, hintPeek, hintSaid, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
   Object.assign(api, { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, isStaple, canMarket, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carBuy, carWarePrice, carTalk, carEscort, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log });   // 2026-11-20 main 병합: 시장 · 길드 의뢰 · 상단 쪽 API
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

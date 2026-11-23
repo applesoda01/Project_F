@@ -119,12 +119,18 @@
       });
     }
   };
+  // 2026-11-22 야간 작업 1 (사용자 C안): 첫 원정을 기다리는 동안 리나 말풍선 2줄 (FT0003 구간 2). 대화창이 아니라 말풍선이라 시계는 그대로 흐름
+  function awayTalk() {
+    const L = lines('FT0003', 2); if (!L.length || !root.Lina || !root.Lina.say) return;
+    const still = () => { const t = getS().tut; return t && !t.base && t.step === 'FT0003' && t.ph === 'away'; };
+    L.forEach((l, i) => after(1.5 + i * 10.5, () => { if (still()) root.Lina.say(l.text, 6); }));
+  }
   // 단계별 기다림: 조건(test)을 매 프레임 확인, 그동안 빛낼 곳(glow) · 안내 문구(hint)
   const WAIT = {
     board: { glow: () => root.UI.popupName() === 'board' ? `.qcard[data-q="${getS().tut.qid}"]` : '[data-pop="board"]', hint: () => root.UI.popupName() === 'board' ? '「오늘 저녁 삼겹살」을 눌러 보내 주세요' : '아래 「의뢰」를 눌러 게시판을 여세요' },
-    mini: { dim: false, glow: () => '#hudExp', hint: () => '오른쪽 원정 목록의 줄을 눌러 보세요', test: () => !!document.querySelector('#expView.on') || WAIT.away.test(), done() { getS().tut.ph = 'away'; } },
+    mini: { dim: false, glow: () => '#hudExp', hint: () => '오른쪽 원정 목록의 줄을 눌러 보세요', test: () => !!document.querySelector('#expView.on') || WAIT.away.test(), done() { getS().tut.ph = 'away'; awayTalk(); } },
     away: { test: () => { const s = getS(), t = s.tut, a = s.advs.find(x => x.id === t.wid); return !a || (a.state !== 'quest' && !s.active.some(x => x.party.includes(t.wid))); }, done() { getS().tut.ph = 'wait'; after(3.5, () => go('FT0004')); } },
-    table: { glow: () => root.UI.popupName() === 'fac' ? '[data-place="table"]' : '[data-pop="fac"]', hint: () => '「시설」에서 테이블 세트를 놓아 주세요', test: () => getS().place.items.some(i => i.id === 'table'), done() { getS().tut.ph = 'wait'; after(1.5, () => go('FT0005')); } },
+    table: { glow: () => document.querySelector('#placeLay.on') ? null : root.UI.popupName() === 'fac' ? '[data-place="table"]' : '[data-pop="fac"]', hint: () => document.querySelector('#placeLay.on') ? '바닥의 초록 칸을 눌러 테이블 세트를 놓아 주세요' : '「시설」에서 테이블 세트를 놓아 주세요', /* 2026-11-22 시안 7 반영: 배치 중에는 「시설」을 빛내지 않고 안내를 바꿈 */ test: () => getS().place.items.some(i => i.id === 'table'), done() { getS().tut.ph = 'wait'; after(1.5, () => go('FT0005')); } },
     meals: { glow: () => '[data-pop="meals"]', hint: () => '아래 「음식」을 눌러 보세요', test: () => root.UI.popupName() === 'meals',
       done() { const s = getS(), t = s.tut; t.ph = 'wait'; say('FT0008', 2, () => { give(s); root.UI.repop(); t.ph = 'cook'; }); } },
     // 테스트 의견 4 (11-19 시안 2 확인): 고기 → 향신료 → 「만들어 보기」 차례로 한 칸씩만 밝힘. 다른 재료는 어두운 덮개에 막혀 못 누르므로 멧돼지 스테이크 정식만 나옴
@@ -135,7 +141,7 @@
         const s = getS(), r = s.req && s.req.open.find(x => x.id === s.tut.rid), card = `[data-rq="${s.tut.rid}"]`; if (!r) return null;
         if (!document.querySelector(card + '.on')) return card;
         if (r.party.length && document.querySelector('[data-rqact="send"]:not([disabled]):not(.soft-off)')) return '[data-rqact="send"]';   // 2026-11-19: 조건을 못 채운 보내기(soft-off)는 밝히지 않고 모험가 줄을 밝힘 (암전 버그)
-        return '[data-rqnom]:not(.no)'; }, hint: () => '리퀘스트 장에서 들개 떼 부탁에 모험가를 지명해 보내 주세요',
+        return '[data-rqnom]:not(.no)'; }, hint: () => '리퀘스트 장에서 들개 떼 리퀘스트에 모험가를 지명해 보내 주세요',
       test: () => { const s = getS(), r = s.req && s.req.open.find(x => x.id === s.tut.rid); return !r || r.state === 'queued' || r.state === 'active'; },
       done() { const t = getS().tut; t.ph = 'wait'; t.nomGo = true; say('FT0006', 3, () => { t.base = true; t.noGo = false; t.step = null; t.ph = null; hold(false); }); } }
   };
