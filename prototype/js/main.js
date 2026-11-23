@@ -194,9 +194,10 @@
       await fadeTo(false, 700); next();
     };
     v.innerHTML = '<source src="assets/prologue/prologue_FINAL.mp4"><source src="../docs/video/prologue_FINAL.mp4">';
-    const srcs = v.querySelectorAll('source'); srcs[srcs.length - 1].onerror = () => { if (!over) { over = true; document.removeEventListener('keydown', key); box.classList.remove('on'); next(); } };
+    const srcs = v.querySelectorAll('source'); srcs[srcs.length - 1].onerror = () => { if (!over) { over = true; document.removeEventListener('keydown', key); box.classList.remove('on'); skip.classList.remove('show'); next(); } };
     v.onended = end; v.onerror = end; skip.onclick = end; document.addEventListener('keydown', key);
-    fadeTo(true, 700).then(() => { box.classList.add('on'); v.load(); const p = v.play(); if (p && p.catch) p.catch(() => end()); fadeTo(false, 700); setTimeout(() => { if (!over) skip.classList.add('show'); }, 1500); });
+    fadeTo(true, 700).then(() => { if (over) { box.classList.remove('on'); fadeTo(false, 400); return; }   // 2026-11-23 1차 16: 영상을 못 읽어 이미 게임으로 넘어갔으면 영상 화면을 다시 켜지 않고 밝힘 (전엔 검은 덮개가 남아 게임이 안 보였음)
+      box.classList.add('on'); v.load(); const p = v.play(); if (p && p.catch) p.catch(() => end()); fadeTo(false, 700); setTimeout(() => { if (!over) skip.classList.add('show'); }, 1500); });
   }
 
   // ---------- 루프 ----------
