@@ -71,6 +71,7 @@
     const cw = !!(later && bookOpen() && t && !t.base), sit = !!(t && t.base && t.sitSel && glowSel === t.sitSel);   // sit: 2026-11-23 2차 1번 C안 — 상황별 안내도 누를 때까지 암전 + 빛남   // 2026-11-23 2차 5 · 6: 「책을 닫으면 이어서 진행돼요」 동안은 닫기만 밝힘
     const can = (cw || sit || (W && W.dim !== false)) && !glowUntil && !document.querySelector('#placeLay.on') && !(root.UI.dlgBusy && root.UI.dlgBusy());
     // 2026-11-23 버그 2: 책이 펼쳐지는 · 넘어가는 동안은 덮개를 새로 켜거나 구멍을 옮기지 않음. 3차 3번: 끄는 것(덮을 단계가 아님)은 책 연출 중에도 바로 — 책을 닫는 동안 옛 구멍이 남지 않게
+    if (root.BookFX && root.BookFX.busy && cw) { dimPaint(null); return; }   // 3차 3번 (찰나의 흔적): 닫기를 누르면 표지가 덮이는 연출(약 0.5초) 동안 책이 아직 열린 상태라 닫기 구멍이 남았음 → 연출이 시작되면 바로 끔
     if (root.BookFX && root.BookFX.busy && want.size && can) return;
     dimPaint(want.size && can ? [...want] : null, can && !!glowSel);
   }
