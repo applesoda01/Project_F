@@ -684,6 +684,9 @@
 @keyframes rqShake{0%,100%{transform:translateX(0)}15%{transform:translateX(-7px)}30%{transform:translateX(6px)}45%{transform:translateX(-5px)}60%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
 .bk-rq .rq-msg.warn{color:#ca2618;font-weight:700;animation:rqShake .5s ease-in-out}
 .bk-rq .ux-btn.soft-off{filter:saturate(.35) brightness(1.05);opacity:.75}
+/* 2026-11-23 사용자: 보내기 칸 높이 고정(버튼 한 줄 · 안내 한 줄) + 보낼 수 없으면 붉은 버튼 */
+.bk-rq .rq-act>.ux-btn{flex:none;white-space:nowrap}.bk-rq .rq-act .rq-msg{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bk-rq .ux-btn.no-go{color:#ca2618;border-color:#df6150;border-width:1.5px;background:#fff0ee;filter:none;opacity:1}
 .bk-rq .rq-act{display:flex;align-items:center;gap:10px;min-height:38px}
 .bk-rq .rq-act .rq-no{margin-left:0;opacity:.85}.bk-rq .rq-msg{font:400 14px var(--hf);color:#7a5032;min-width:0}.bk-rq .rq-note{font:400 14px var(--hf);color:var(--ux-wood)}
 .bk-rq .rq-party{display:flex;align-items:center;gap:6px;min-height:38px;font:400 14px var(--hf);color:var(--ux-wood)}

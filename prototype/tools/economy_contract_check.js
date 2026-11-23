@@ -109,7 +109,7 @@ const CASES = [
     R.open.push({ id: 'chkN2', key: 'f_req_bat01', state: 'open', stage: 1, who: null, party: [], refused: {}, at: g.week, isNew: true, fails: 0 });
     // 지명은 다른 조건(★ 능력 등)으로도 막힐 수 있어, "금고 적자" 이유로 막혔는지를 본다. 지명은 집무실이 있어야 열림
     const try3 = gold => { const h = reload(g); h.gold = gold; delete h.built['집무실']; const b = Gm.build(h, '집무실');   /* 2026-11-19 측정 판은 집무실이 있는 채로 시작 → 건설 시험을 위해 지움 */ h.built['집무실'] = true; const r = Gm.reqNominate(h, 'chkN2', a.id) || {};
-      return [b, Gm.upgrade(h, '게시판'), !/적자/.test(r.why || '')]; };
+      return [b, Gm.upgrade(h, '게시판'), !/적자|^돈이 모자라요$/.test(r.why || '')]; };   // 2026-11-23 사용자: 지명 적자 문구 → 「돈이 모자라요」
     const neg = try3(-1), rich = try3(100000);
     return { ok: neg.every(x => x === false) && rich.every(x => x === true), detail: `-1G: ${neg.join(' · ')} / 100,000G: ${rich.join(' · ')} (집무실 건설 · 게시판 업그레이드 · 지명이 적자 이유로 안 막힘)` };
   } },

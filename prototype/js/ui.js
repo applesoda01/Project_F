@@ -474,7 +474,7 @@
       const party = Gm.reqPartyOf(s, r), P = Gm.reqPredict(s, r.id), why = r.state === 'open' ? Gm.reqSendWhy(s, r) : null, rows = Gm.reqNomList(s, r.id);
       const pTxt = P == null ? '' : Gm.reqIsCombat(s, r.id) ? powTag(P) : `<span class="rq-p ${P >= 0.7 ? 'ok' : P >= 0.4 ? 'mid' : 'bad'}">예상 성공률 <b>${Math.round(P * 100)}%</b></span>`;   // 전투 = 승산 칩, 비전투 = 확률
       Rr += `<div class="rq-party"><span class="pl">파티 ${party.length} / ${(Gm.reqPartyRange(s, r.id) || d.party)[1]}</span>${party.map(a => `<span class="pm" style="${faceStyle(a, 34, 178, 17)}" title="${esc(a.name)}"></span>`).join('') || '<em>아래에서 모험가를 눌러 부탁하세요 (부탁할 때마다 섭외비가 나갑니다)</em>'}${pTxt}</div>`;
-      Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary ${why ? 'soft-off' : ''}" data-rqact="send">보내기 <small>(${Gm.reqWaitOf(s, r).length ? '모두 돌아오면 출발' : '다음 주 출발'})</small></button>` : r.state === 'queued' ? `<button class="ux-btn" data-rqact="unsend">출발 취소</button>${Gm.reqWaitOf(s, r).length ? `<span class="rq-note">예약: ${esc(josa(Gm.reqWaitOf(s, r).map(a => a.name).join(' · '), '이', '가'))} 돌아오는 주에 바로 출발해요. 그동안 파티원은 게시판 의뢰를 받지 않아요.</span>` : ''}` : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}<span class="rq-msg">${esc(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</span></div>`;
+      Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary ${why ? 'no-go' : ''}" data-rqact="send">보내기 <small>(${Gm.reqWaitOf(s, r).length ? '모두 돌아오면 출발' : '다음 주 출발'})</small></button>` : r.state === 'queued' ? `<button class="ux-btn" data-rqact="unsend">출발 취소</button>${Gm.reqWaitOf(s, r).length ? `<span class="rq-note">예약: ${esc(josa(Gm.reqWaitOf(s, r).map(a => a.name).join(' · '), '이', '가'))} 돌아오는 주에 바로 출발해요. 그동안 파티원은 게시판 의뢰를 받지 않아요.</span>` : ''}` : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}${(m => `<span class="rq-msg" title="${esc(m)}">${esc(m)}</span>`)(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</div>`;
       if (r.state !== 'active') {
         Rr += `<div class="rq-nom ${r.state !== 'open' || v.lock ? 'off' : ''}"><div class="nh"><span>모험가</span><span>${d.req && d.req[0] >= 0 ? Gm.STATS[d.req[0]] : rows[0] && rows[0].stat != null ? '주력' : ''}</span><span>애착</span><span>수락</span><span>섭외비</span><span>상태</span></div>`;
         for (const x of rows) { const a = s.advs.find(z => z.id === x.id);
@@ -604,14 +604,14 @@
     if (act === 'send' && v.r.state === 'open' && Gm.reqSendWhy(s, v.r)) { rqShake(Gm.reqSendWhy(s, v.r)); return; }
     if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; else rqStamp('수락', `「${v.name}」`); }   // 2026-11-17 사용자: 도장은 밤 원본(초록 '수락' + 「이름」)으로
     else if (act === 'refuse') Gm.reqRefuse(s, v.r.id);
-    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = Gm.reqWaitOf(s, v.r).length ? '' : '다음 주가 되면 게시판 의뢰보다 먼저 출발합니다.'; rqStamp('수락', `「${v.name}」 · ${Gm.reqWaitOf(s, v.r).length ? '모이면 출발' : '다음 주 출발'}`); } }
+    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = Gm.reqWaitOf(s, v.r).length ? '' : '다음 주에 게시판 의뢰보다 먼저 떠나요'; rqStamp('수락', `「${v.name}」 · ${Gm.reqWaitOf(s, v.r).length ? '모이면 출발' : '다음 주 출발'}`); } }
     else if (act === 'unsend') Gm.reqUnsend(s, v.r.id);
     else if (act === 'office') Gm.build(s, '집무실');
     rqFlush(top); hooks.changed(); renderPopup();
   }
   function rqNom(aid) {
     const a = s.advs.find(x => x.id === aid), res = Gm.reqNominate(s, rqSel, aid); if (!a) return;
-    rqMsg = res.removed ? `${a.name}: 파티에서 뺐습니다.` : res.why ? `${a.name}: ${res.why}` : `${a.name}: ${res.ok ? '✔' : '✖'} "${res.line}"${res.fee ? ` (섭외비 −${res.fee}G)` : ''}`;
+    rqMsg = res.removed ? `${a.name}: 파티에서 뺐습니다.` : res.why ? (res.why.startsWith(a.name + ':') ? res.why : `${a.name}: ${res.why}`) : `${a.name}: ${res.ok ? '✔' : '✖'} "${res.line}"${res.fee ? ` (섭외비 −${res.fee}G)` : ''}`;
     hooks.changed(); renderPopup();
   }
   // 화면에서 바로 일어난 리퀘스트 기록(완료 · 거절 등)을 로그 · 대사로 흘려보냄 (주 진행 때는 main.js 가 UI.onLogs 로 보냄)

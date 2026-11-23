@@ -1823,12 +1823,12 @@
     const lock = reqLock(s, r); if (lock) return { ok: false, why: lock };
     if (r.party.includes(aid)) { if (aid === r.who) return { ok: false, why: '의뢰한 본인은 꼭 함께 갑니다' }; r.party = r.party.filter(x => x !== aid); return { ok: true, removed: true }; }
     // 2026-11-16 예약 지명: 원정 중 · 부상 중인 모험가도 부탁할 수 있음(수락 판정 · 섭외비는 지금). '마을 밖'은 예전처럼 바로 부탁 가능(그 주 길드에 없을 뿐)
-    { const o = reqOtherOf(s, r, aid); if (o) return { ok: false, why: `${a.name}: 다른 리퀘스트 「${reqName(s, o)}」에 가기로 했습니다` }; }   // 2026-11-19: 한 모험가가 두 리퀘스트에 들어가지 않게 (섭외비 두 번도 막음)
-    if (r.refused[aid] === s.week) return { ok: false, why: '이번 주에는 거절했습니다 (다음 주에 다시 부탁할 수 있어요)' };
-    if (r.party.length >= reqPR(r, d)[1]) return { ok: false, why: '파티가 가득 찼습니다' };
-    if (s.gold < 0) return { ok: false, why: '금고 적자 — 금고가 0G 이상이 되면 다시 부탁할 수 있어요' };   // 결정 7: 마이너스인 동안 지명 막힘
-    if (cPastEnd(s, a, d.weeks)) return { ok: false, why: `${a.name}: 계약이 곧 끝나서 이번 일은 어렵겠는데요. (계약을 갱신하면 맡을 수 있어요)`, line: '계약이 곧 끝나서 이번 일은 어렵겠는데요.' };   // 결정 9
-    const fee = scoutFee(s, r, a); if (s.gold < fee) return { ok: false, why: `섭외비 ${fee}G가 부족합니다` };
+    { const o = reqOtherOf(s, r, aid); if (o) return { ok: false, why: `${a.name}: 「${reqName(s, o)}」에 가기로 했어요` }; }   // 2026-11-19: 한 모험가가 두 리퀘스트에 들어가지 않게 (섭외비 두 번도 막음)
+    if (r.refused[aid] === s.week) return { ok: false, why: '이번 주는 힘들 것 같아요' };
+    if (r.party.length >= reqPR(r, d)[1]) return { ok: false, why: '파티가 꽉 찼어요' };
+    if (s.gold < 0) return { ok: false, why: '돈이 모자라요' };   // 결정 7: 마이너스인 동안 지명 막힘
+    if (cPastEnd(s, a, d.weeks)) return { ok: false, why: `${a.name}: 계약이 곧 끝나서 어려워요`, line: '계약이 곧 끝나서 이번 일은 어렵겠는데요.' };   // 결정 9
+    const fee = scoutFee(s, r, a); if (s.gold < fee) return { ok: false, why: '섭외비가 모자라요' };
     if (fee) { s.gold -= fee; a.wallet += fee; s.month.scout = (s.month.scout || 0) - fee; s.month.scoutN = (s.month.scoutN || 0) + 1; }   // 결정 10: 섭외비는 부탁받은 모험가 지갑으로 (거절해도)   // 섭외비는 부탁하는 순간 나감 (거절당해도 돌려받지 않음)
     const yes = reqR(s) < reqChance(s, r, a) || !!r.tut;   // 튜토리얼 리퀘스트(FT0006)는 지명하면 꼭 수락
     if (yes && cActive(s, a)) { a.contract.calls.push(s.week); ctLog(a.contract, 'nom'); }
@@ -1840,10 +1840,10 @@
   function reqSendWhy(s, r) {   // 보낼 수 없는 까닭 (없으면 null)
     const d = NQ_BY[r.key], party = reqPartyOf(s, r), lock = reqLock(s, r);
     if (lock) return lock;
-    if (mainBlocked(s)) return '침공 대비 중에는 출발할 수 없습니다';
-    if (party.length < reqPR(r, d)[0]) return `${reqPR(r, d)[0]}명 이상 지명해야 합니다`;
-    if (!party.some(a => reqMeets(s, r, a))) return '조건(★)을 채운 모험가가 1명 있어야 합니다';
-    { const late = party.find(a => cPastEnd(s, a, d.weeks)); if (late) return `${late.name}의 계약이 끝나기 전에 돌아올 수 없습니다`; }   // 결정 9
+    if (mainBlocked(s)) return '침공 대비 중이라 못 떠나요';
+    if (party.length < reqPR(r, d)[0]) return `${reqPR(r, d)[0]}명은 있어야 해요`;
+    if (!party.some(a => reqMeets(s, r, a))) return '★ 조건을 채운 사람이 있어야 해요';
+    { const late = party.find(a => cPastEnd(s, a, d.weeks)); if (late) return `${late.name}: 계약 기간 안에 못 돌아와요`; }   // 결정 9
     return null;   // 2026-11-16 예약 지명: 원정 중 · 부상 중인 파티원이 있어도 보낼 수 있음 → 모두 돌아온 주에 출발 (reqLaunch)
   }
   const autoWaitOk = (s, id) => { const a = s.advs.find(x => x.id === id); return !!a && a.state === 'quest' && a.until - s.week <= REQ_CFG.autoWait; };   // 자동 예약: 원정에서 autoWait주 안에 돌아오는 사람만 (부상자는 기다리지 않음)
