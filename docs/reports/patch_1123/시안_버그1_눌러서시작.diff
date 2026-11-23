@@ -1,0 +1,33 @@
+diff --git prototype/js/main.js prototype/js/main.js
+index dcd1e0c..ea8681d 100644
+--- prototype/js/main.js
++++ prototype/js/main.js
+@@ -220,10 +220,15 @@
+ 
+   if (/[?&]dev=1/.test(location.search)) document.body.classList.add('dev');   // 개발용 버튼 보이기 (2026-11-16)
+   $('loadMsg').textContent = '그림 불러오는 중…';
+-  Assets.load(window.ASSET_MANIFEST, st => { const n = st.ok + st.temp, p = st.total ? Math.round(n / st.total * 100) : 0; $('loadBar').style.width = p + '%'; $('loadMsg').textContent = `그림 불러오는 중 ${p}%  (${n} / ${st.total})`; }).then(() => {
++  Assets.load(window.ASSET_MANIFEST, st => { const n = st.ok + st.temp, p = st.total ? Math.round(n / st.total * 100) : 0; $('loadBar').style.width = p + '%'; $('loadMsg').textContent = `그림 불러오는 중 ${p}%  (${n} / ${st.total})`; }).then(async () => {
+     const st = Assets.stats;
+     q('#dAssets').textContent = `리소스 ${st.ok}개 · 임시 그래픽 ${st.temp}개`;
+     q('#dAssets').title = st.missing.length ? '임시: ' + st.missing.join(', ') : '모든 파일을 찾았습니다';
++    await new Promise(res => {   // [시안] 버그 1: 브라우저는 누르기 전 소리를 막음 → 로딩이 끝나면 「눌러서 시작」 한 번 → 타이틀과 곡이 함께 시작
++      $('loadBar').parentNode.style.visibility = 'hidden'; $('loadMsg').innerHTML = '<b class="ld-go">화면을 눌러 시작하세요</b>';
++      const ok = () => { ['pointerdown', 'keydown'].forEach(e => window.removeEventListener(e, ok, true)); if (window.Snd && Snd.unlock) Snd.unlock(); res(); };
++      ['pointerdown', 'keydown'].forEach(e => window.addEventListener(e, ok, true));
++    });
+     $('loading').remove();
+     Assets.loadLazy(window.ASSET_MANIFEST);   // 마을 주민 걷기 그림 등 큰 그림은 타이틀 뒤에 받음
+     window.__s = () => s; Lobby.update(s, 0); Director.init(s); UI.hud();
+diff --git prototype/index.html prototype/index.html
+index 4110a9b..7e7fbce 100644
+--- prototype/index.html
++++ prototype/index.html
+@@ -291,6 +291,7 @@ tr.adv{cursor:pointer}tr.adv:hover,tr.adv.on{background:rgba(232,180,74,.18)}
+ #loading .ld-bar{height:14px;border-radius:7px;background:rgba(0,0,0,.45);border:1px solid rgba(232,180,74,.45);overflow:hidden}
+ #loading .ld-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c9862e,#f0c766);border-radius:7px;transition:width .25s ease}
+ #loading #loadMsg{display:block;margin-top:12px;font-size:16px;color:#f0dcb6}
++#loading .ld-go{display:inline-block;margin-top:6px;font-size:22px;letter-spacing:2px;color:#f6dfaf;animation:ldGo 1.4s ease-in-out infinite}@keyframes ldGo{0%,100%{opacity:1}50%{opacity:.35}}
+ #loading .ld-tip{margin-top:26px;font-size:14px;line-height:1.6;color:#b99a72}
+ /* 개발용 버튼은 주소에 ?dev=1을 붙였을 때만 보임 (2026-11-16, 동료 시연용) */
+ body:not(.dev) #devToggle,body:not(.dev) #dev,body:not(.dev) #titleSkip,body:not(.dev) #tDev{display:none!important}
