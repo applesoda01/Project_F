@@ -1519,8 +1519,17 @@
   // 2026-11-13: Gemini로 만든 상태 아이콘 4개 (assets/ui/status/, 게임 아이콘 화풍)
   const stImg = (f, t) => `<img src="assets/ui/status/st_${f}.png" alt="${t}">`;
   ICON.ok = stImg('health_ok', '건강'); ICON.hurt = stImg('health_hurt', '부상'); ICON.meat = stImg('hunger', '배고픔'); ICON.moon = stImg('fatigue', '피로');
+  // 2026-11-23 책 정보 줄이기 (사용자 A안): 건강 · 배고픔 · 피로 = 아이콘 3개 묶음, 글자는 마우스를 올리면 말풍선(#condTip). 나쁜 상태만 붉은 테
   const condIcons = a => { const c = sampleCond(a), hurt = stOf(a) === 'injured';
-    return `<span class="cond"><i class="ci" title="${hurt ? '부상' : '건강'}">${hurt ? ICON.hurt : ICON.ok}</i><span class="cs lv${c.food}" title="배고픔"><i class="ci">${ICON.meat}</i>${FOOD_N[c.food]}</span><span class="cs lv${c.tired}" title="피로"><i class="ci">${ICON.moon}</i>${TIRED_N[c.tired]}</span></span>`; };
+    const tip = `<b>건강</b> : ${hurt ? '<em>부상</em>' : '좋음'} · <b>허기</b> : ${c.food ? `<em>${FOOD_N[c.food]}</em>` : FOOD_N[0]} · <b>피로</b> : ${c.tired ? `<em>${TIRED_N[c.tired]}</em>` : TIRED_N[0]}`;   // 사용자 18:2x: 「배고픔 배고픔」 대신 「허기 : 배고픔」 꼴
+    return `<span class="cond" data-ctip="${esc(tip)}"><i class="ci${hurt ? ' bad' : ''}">${hurt ? ICON.hurt : ICON.ok}</i><i class="ci lv${c.food}${c.food ? ' bad' : ''}">${ICON.meat}</i><i class="ci lv${c.tired}${c.tired ? ' bad' : ''}">${ICON.moon}</i></span>`; };
+  { let tipEl = null;   // 컨디션 말풍선: 책 목록이 스크롤 영역이라 잘리지 않게 stage.ui 위에 하나만 띄움
+    document.addEventListener('mouseover', e => { const c = e.target.closest && e.target.closest('.bk-av .cond[data-ctip]');
+      if (!c) { if (tipEl) tipEl.hidden = true; return; }
+      if (!tipEl) { tipEl = document.createElement('div'); tipEl.id = 'condTip'; stage.ui.appendChild(tipEl); }
+      tipEl.innerHTML = c.dataset.ctip; tipEl.hidden = false;
+      const k = stage.ui.getBoundingClientRect().width / 1920 || 1, u = stage.ui.getBoundingClientRect(), r = c.getBoundingClientRect();
+      tipEl.style.left = ((r.left + r.width / 2 - u.left) / k - tipEl.offsetWidth / 2) + 'px'; tipEl.style.top = ((r.bottom - u.top) / k + 8) + 'px'; }); }
   const attMini = a => { const AT = [0, 30, 60, 90, 100], t = Gm.attachTier(a), lo = AT[t], hi = AT[t + 1] || 100, pct = t >= 3 ? 100 : Math.min(100, (a.attach - lo) / (hi - lo) * 100);
     return `<span class="attm" title="애착 ${Math.round(a.attach)}"><em>${ATT_NAME[t]}</em><i class="trk"><i style="width:${pct}%"></i></i></span>`; };
   // 책 펼침 (2026-11-13 시안): 왼쪽 쪽 = 모험가 명부 / 오른쪽 쪽 = 고른 모험가 상세 (아래 스킬·전직·성향·경력·칭호 = 붙인 쪽지 묶음)

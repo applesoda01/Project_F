@@ -1222,3 +1222,9 @@ body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 .av-acts button.p{background:#2f6a52;border-color:#2f6a52;color:#fff}
 .mg-more{display:flex;justify-content:flex-start;margin-top:14px}
 #hudBR #mgUp .btn[data-pop="log"]{display:none}
+
+/* 2026-11-23 책 정보 줄이기 — 명부 컨디션 아이콘 묶음 (사용자 A안) */
+.bk-av .ux-row .cond{gap:2px;padding:2px 6px;border-radius:12px;background:rgba(110,72,36,.08);border:1px solid rgba(110,72,36,.18)}
+.bk-av .ux-row .cond .ci.bad{border-radius:50%;background:rgba(200,50,40,.18);box-shadow:0 0 0 2px rgba(200,50,40,.65)}
+#condTip{position:absolute;z-index:9999;padding:6px 12px;border-radius:8px;background:#3b2a1c;color:#fbefd9;font-size:17px;line-height:1.5;white-space:nowrap;box-shadow:0 4px 10px rgba(0,0,0,.3);pointer-events:none}
+#condTip[hidden]{display:none}#condTip b{color:#ffd27a}#condTip em{font-style:normal;color:#ff9a8a;font-weight:700}
