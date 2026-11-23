@@ -506,9 +506,12 @@
     const ty = y0 + H / 2 + 1, tx1 = x0 + pad + bs + gap + NP.ndx, tx2 = x0 + pad + bs + gap + nw + gap + NP.ldx;
     const dark = NP.pill;   // 알약 배경을 쓰면 글자는 어두운 색
     g.font = `700 ${NP.fs}px ${FF}`;
-    if (!dark) g.strokeText(nm, tx1, ty + NP.ndy); g.fillStyle = dark ? '#3a2616' : NP.nameColor; g.fillText(nm, tx1, ty + NP.ndy);
+    const hv = D.hover === ac.id;   // 2026-11-23 로비 누르기 A안 (사용자 22:30): 마우스를 올린 모험가 이름표를 밝게
+    if (hv) { g.shadowColor = 'rgba(255,214,90,.95)'; g.shadowBlur = 10; }
+    if (!dark) g.strokeText(nm, tx1, ty + NP.ndy); g.fillStyle = dark ? '#3a2616' : hv ? '#ffe66b' : NP.nameColor; g.fillText(nm, tx1, ty + NP.ndy);
     g.font = `700 ${NP.lfs}px ${FF}`;
-    if (!dark) g.strokeText(lv, tx2, ty + NP.ldy); g.fillStyle = dark ? '#9a6228' : NP.lvColor; g.fillText(lv, tx2, ty + NP.ldy);
+    if (!dark) g.strokeText(lv, tx2, ty + NP.ldy); g.fillStyle = dark ? '#9a6228' : hv ? '#ffe66b' : NP.lvColor; g.fillText(lv, tx2, ty + NP.ldy);
+    if (hv) { g.shadowColor = 'transparent'; g.shadowBlur = 0; }
     { const B = root.GuildGame && GuildGame.mealBuffOf && root.Director && D.s ? GuildGame.mealBuffOf(D.s, a) : null;   // 2026-11-19 요리 버프 (이번 원정 동안): 명찰 왼쪽 바깥 동그란 요리 그림
       if (B && B.icon) { const im = buffImg(B.icon); if (im.complete && im.naturalWidth) { const r = 13, cx = x0 - r - 3, cy = y0 + H / 2; g.save(); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fillStyle = '#fff3cf'; g.fill(); g.lineWidth = 2; g.strokeStyle = '#d9a64a'; g.stroke(); g.clip(); g.drawImage(im, cx - r + 2, cy - r + 2, r * 2 - 4, r * 2 - 4); g.restore(); } } }
     let extra = 0;

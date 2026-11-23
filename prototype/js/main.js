@@ -67,7 +67,8 @@
   }
 
   stage.canvas.addEventListener('click', e => { if (window.Town && Town.active) return; Director.tap(stage.toGame(e.clientX, e.clientY)); });   // 2026-11-23 로비 모험가 누르기
-  stage.canvas.addEventListener('mousemove', e => { if (window.Town && Town.active) return; stage.canvas.style.cursor = Director.hitAt(stage.toGame(e.clientX, e.clientY)) ? 'pointer' : ''; });
+  stage.canvas.addEventListener('mousemove', e => { if (window.Town && Town.active) return; const h = Director.hitAt(stage.toGame(e.clientX, e.clientY)); Director.hover = h ? h.id : null; stage.canvas.style.cursor = h ? 'pointer' : ''; });
+  stage.canvas.addEventListener('mouseleave', () => { Director.hover = null; stage.canvas.style.cursor = ''; });
   UI.init(stage, s, { setSpeed, save, load, newGame, slots: () => ({ cur: slot, list: Array.from({ length: SLOTS }, (_, i) => slotInfo(i + 1)) }), saveTo, loadSlot,   // 책 설정 장 오른쪽: 슬롯 3칸 정보 · 칸 골라 저장 / 불러오기 (2026-11-13)
     changed: () => UI.hud(), promoted: a => Director.celebrate(a.id), town: () => Town.open() });
   Town.init(stage, () => s, {});
