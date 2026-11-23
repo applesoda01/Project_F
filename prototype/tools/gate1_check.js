@@ -9,8 +9,8 @@ const ctx = { console, Math, JSON, Date }; ctx.window = ctx; vm.createContext(ct
 for (const f of ['data_gen.js', 'combat.js', 'sim_engine.js', 'game_core.js']) vm.runInContext(fs.readFileSync(path.join(JS, f), 'utf8'), ctx, { filename: f });
 const Sim = ctx.GuildSim, Gm = ctx.GuildGame, N = 100;
 
-let op = 0, d = 0, f = 0;
-for (let i = 0; i < N; i++) { const g = Gm.newGame(Sim.defaults(), 7000 + i); Gm.autoPlace(g, true); /* 테이블: 첫 주 2세트, 이후 월말 여유 있으면 1세트씩 (시뮬레이터와 같음, 2026-11-12) */ for (let w = 0; w < 48; w++) { Gm.autoRequests(g); /* 리퀘스트 자동 처리 (2026-11-16, 시뮬레이터 reqStep과 같은 규칙) */ Gm.stepWeek(g); Gm.autoCook(g); /* 요리: 재료가 모이면 바로 만든다고 가정 (시뮬레이터와 같음) */ if (g.week % Gm.WPM === 0) Gm.autoPlace(g, false); } op += g.history.reduce((t, m) => t + m.net, 0) / g.history.length; d += g.stats.done; f += g.stats.fail; }
+let op = 0, d = 0, f = 0, cf = 0, mgS = 0, mgLo = 1e9;   // cf: 첫 3달(12주) 금고 변화 · 월 평균(건설 포함) · mg: 금고 최저 (2026-11-23 개선 분석 1, 참고 지표)
+for (let i = 0; i < N; i++) { const g = Gm.newGame(Sim.defaults(), 7000 + i); Gm.autoPlace(g, true); /* 테이블: 첫 주 2세트, 이후 월말 여유 있으면 1세트씩 (시뮬레이터와 같음, 2026-11-12) */ const g0 = g.gold; let mg = g.gold; for (let w = 0; w < 48; w++) { Gm.autoRequests(g); /* 리퀘스트 자동 처리 (2026-11-16, 시뮬레이터 reqStep과 같은 규칙) */ Gm.stepWeek(g); Gm.autoCook(g); /* 요리: 재료가 모이면 바로 만든다고 가정 (시뮬레이터와 같음) */ if (g.week % Gm.WPM === 0) Gm.autoPlace(g, false); mg = Math.min(mg, g.gold); if (w === 11) cf += (g.gold - g0) / 3; } mgS += mg; mgLo = Math.min(mgLo, mg); op += g.history.reduce((t, m) => t + m.net, 0) / g.history.length; d += g.stats.done; f += g.stats.fail; }
 const cfg = Sim.defaults(); cfg.run.maxYears = 1; let o2 = 0, d2 = 0, f2 = 0;
 for (let i = 0; i < N; i++) { const r = Sim.simulate(cfg, 'balanced', 7000 + i); o2 += r.firstNetF.reduce((a, c) => a + c, 0) / r.firstNetF.length; d2 += r.qDone; f2 += r.qFail; }
 const gOp = op / N, sOp = o2 / N, gS = d / (d + f), sS = d2 / (d2 + f2);
@@ -22,6 +22,8 @@ const md = [
   '| 지표 | 게임 | 시뮬레이터 | 기준 | 판정 |', '| --- | ---: | ---: | --- | --- |',
   `| 첫해 월 운영 순이익 | ${Math.round(gOp)}G | ${Math.round(sOp)}G | 300~600G, 차이 10% 미만 | ${mark(okOp)} |`,
   `| 의뢰 성공률 | ${(gS * 100).toFixed(1)}% | ${(sS * 100).toFixed(1)}% | 80~95%, 차이 5%p 미만 | ${mark(okS)} |`,
+  `| (참고) 첫 3달 금고 변화 · 건설 포함 | 월 ${Math.round(cf / N)}G | — | 기준 없음 [임시] | 참고 |`,
+  `| (참고) 첫해 금고 최저 | 평균 ${Math.round(mgS / N)}G · 가장 낮은 판 ${Math.round(mgLo)}G | — | 기준 없음 [임시] | 참고 |`,
   '', '기준값 (2026-10 데이터 분리 시점): 436G · 75.9% / 2026-11 전투 도입: 게임 459G · 93.2%, 시뮬레이터 454G · 92.0%'
 ].join('\n');
 console.log(md);

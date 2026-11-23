@@ -2609,6 +2609,8 @@
     else if (m.net >= 500 && succ >= 60) out.push(...UI.lines('monthly_good', v), ...(m.meal > 0 ? UI.lines('monthly_meal', v) : []));
     else if (succ < 60 && m.quests > 0) out.push(...UI.lines('monthly_low', v));
     else out.push(...UI.lines('monthly_normal', v));
+    { const top = LG_OUT.map(([k, nm]) => [nm.replace(/ \(.*\)$/, ''), -(m[k] || 0)]).filter(x => x[1] >= 50).sort((a, b) => b[1] - a[1]).slice(0, 2);   // 2026-11-23 개선 분석 1: 무엇에 돈이 나갔는지 (건설비 포함)
+      if (top.length) out.push({ face: 'serious', text: `지난달엔 ${top.map(x => `${x[0]}(${fmt(Math.round(x[1]))}G)`).join(', ')}에 돈이 가장 많이 나갔어요. 자세한 건 장부에서 볼 수 있어요.` }); }
     UI.say(out);
   };
   // 2026-11-19: 길드 승급은 위의 승급 카드(UI.gradeUp)로 바뀜. 예전 리나 대화(dialog.csv gradeup)는 카드 안 리나 한마디로 대신함
