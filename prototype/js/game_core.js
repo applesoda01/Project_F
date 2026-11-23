@@ -1721,7 +1721,7 @@
   const reqLog = (s, r, ev, text, extra) => log(s, text, 'req', Object.assign({ rq: { key: r.key, ev, who: r.who != null ? r.who : null, name: reqName(s, r) } }, extra || {}));
   function reqAppear(s) {
     if (s.tut && !s.tut.base) return null;
-    if (s.reqNext2) { delete s.reqNext2; const d2 = NQ_BY['f_req_bat07'], R2 = reqOf(s); if (d2 && !R2.open.some(x => x.key === d2.id) && !R2.done[d2.id]) { const ow = reqOwnerFor(s, d2), r2 = { id: 'r' + (R2.next++), key: d2.id, state: 'open', stage: 1, who: ow ? ow.id : null, party: [], refused: {}, at: s.week, isNew: true, fails: 0 }; R2.open.push(r2); reqLog(s, r2, 'req', `${J(reqGiver(s, r2), '이', '가')} 리퀘스트를 맡겼습니다: 「${reqName(s, r2)}」`); return r2; } }   // 2026-11-18 튜토리얼: 기본 튜토리얼이 끝날 때까지 리퀘스트는 튜토리얼이 직접 엶 (FT0006)
+    if (s.reqNext2) { delete s.reqNext2; const d2 = NQ_BY['f_req_bat07'], R2 = reqOf(s); if (d2 && !R2.open.some(x => x.key === d2.id) && !R2.done[d2.id]) { const ow = reqOwnerFor(s, d2), r2 = { id: 'r' + (R2.next++), key: d2.id, state: 'open', stage: 1, who: ow ? ow.id : null, party: [], refused: {}, at: s.week, isNew: true, fails: 0, sure: true }; R2.open.push(r2); reqLog(s, r2, 'req', `${J(reqGiver(s, r2), '이', '가')} 리퀘스트를 맡겼습니다: 「${reqName(s, r2)}」`); return r2; } }   // 2026-11-18 튜토리얼: 기본 튜토리얼이 끝날 때까지 리퀘스트는 튜토리얼이 직접 엶 (FT0006)
     const R = reqOf(s); if (!NQ.length || R.open.length >= REQ_CFG.maxOpen) return null;
     const cands = NQ.filter(d => reqEligible(s, d) && !((R.cool[d.id] || 0) > s.week) && (() => { const [m, t] = reqProgress(s, d); return m === t; })());
     if (!cands.length || reqR(s) >= REQ_CFG.appear) return null;
@@ -1808,7 +1808,7 @@
   const reqPR = (r, d) => r.tut ? [1, 1] : d.party;   // 2026-11-19 튜토리얼 리퀘스트(FT0006)는 1명 · 반드시 성공 (두 명 협동은 다음 리퀘스트 「들개 떼 우두머리」에서)
   function reqPartyRange(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); return r ? reqPR(r, NQ_BY[r.key]) : null; }
   function reqIsCombat(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); return !!(r && isCombat(reqQuest(s, r, true))); }   // 2026-11-19: 전투 리퀘스트는 % 대신 승산 칩
-  function reqPredict(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); if (!r) return null; const party = reqSorted(reqPartyOf(s, r)); return party.length ? questP(s, party, reqQuest(s, r, true)) : null; }
+  function reqPredict(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); if (!r) return null; const party = reqSorted(reqPartyOf(s, r)); return party.length ? (r.sure ? 1 : questP(s, party, reqQuest(s, r, true))) : null; }   // 2026-11-23 사용자: 튜토리얼 다음 「들개 떼 우두머리」(2명)는 성공률 100% (r.sure)
   const reqOtherOf = (s, r, aid) => reqOf(s).open.find(o => o !== r && o.party.includes(aid) && (o.state === 'open' || o.state === 'queued' || o.state === 'active')) || null;   // 이 모험가가 들어가 있는 다른 리퀘스트
   function reqNomList(s, rid) {   // 지명 창 목록: 조건(★) · 상태 · 수락 확률
     const r = reqOf(s).open.find(x => x.id === rid); if (!r) return [];
@@ -1862,14 +1862,14 @@
       if (wt.length) continue;   // 예약: 원정 · 부상에서 모두 돌아올 때까지 기다림
       delete r.auto;
       const party = reqSorted(reqPartyOf(s, r)), q = reqQuest(s, r, false);
-      if (!r.tut && s.cfg.quirk && party.some(a => a.quirk === 'coward' || a.quirk === 'omen')) {   // 2026-11-20 버릇: 겁쟁이(「팽팽」 · 「위험」) · 미신가(비 오는 달)는 출발 직전에 가끔 미룸 → 한 주 뒤 다시 (예약 그대로)
+      if (!r.tut && !r.sure && s.cfg.quirk && party.some(a => a.quirk === 'coward' || a.quirk === 'omen')) {   // 2026-11-20 버릇: 겁쟁이(「팽팽」 · 「위험」) · 미신가(비 오는 달)는 출발 직전에 가끔 미룸 → 한 주 뒤 다시 (예약 그대로)
         const QC = s.cfg.quirk, pp = questP(s, party, q);
         const cw = pp < 0.7 ? party.find(a => a.quirk === 'coward' && s.R() < qkRisk(s, a, QC.cowardQuit)) : null;
         const om = !cw && QKr().rainy(s.seed, s.week) ? party.find(a => a.quirk === 'omen' && s.R() < qkRisk(s, a, QC.omenRain)) : null;
         if (cw) { qkLog(s, cw, 'cowardQuit', `${J(cw.name, '이', '가')} 「${reqName(s, r)}」 출발 직전에 빠졌습니다. (겁쟁이 · 한 주 뒤 다시 출발)`); continue; }
         if (om) { qkLog(s, om, 'omenWait', `${J(om.name, '이', '가')} 비가 그칠 때까지 「${reqName(s, r)}」 출발을 미뤘습니다. (미신가 · 한 주 뒤 다시 출발)`); continue; }
       }
-      r.state = 'active'; r.qid = q.id; if (r.tut) launchSure(s, q, party); else launchParty(s, q, party, questP(s, party, q));
+      r.state = 'active'; r.qid = q.id; if (r.tut || r.sure) launchSure(s, q, party); else launchParty(s, q, party, questP(s, party, q));
     }
   }
   function reqReturn(s, x, ok, party) {
