@@ -92,7 +92,15 @@
   ['pointerdown', 'keydown'].forEach(e => root.addEventListener(e, unlock, true));
   if (AC) { ensureCtx(); if (ctx) Snd.unlocked = true; }   // 바로 곡을 걸어 둠 (Web Audio가 있을 때만. 예전 <audio> 방식은 첫 입력을 기다림)
   Snd.set = function (k, v) { Opt[k] = v; save(); };
-  // 효과음 음량 = 전체 × 효과음 (효과음은 아직 없음 — 효과음을 넣을 때 재생 음량에 이 값을 곱함)
+  // 효과음 음량 = 전체 × 효과음
   Snd.sfxVol = () => Opt.mute ? 0 : clamp(Opt.master == null ? 1 : Opt.master) * clamp(Opt.sfx == null ? 0.8 : Opt.sfx);
+  // 2026-11-23 사용자: 클릭 소리 = assets/audio/sfx_click.ogg (사용자가 준 general_click_16.wav, 0.06초). 단추 · 메뉴 · 책갈피 · 목록 줄을 누르는 순간 한 번
+  const CLICK = 'assets/audio/sfx_click.ogg', CLICKABLE = 'button, .mb, .cb, .btn, [data-pop], [data-act], [data-sub], [data-ch], [data-adv], .ux-row, [role="button"], a[href]';
+  Snd.click = function () {
+    const v = Snd.sfxVol(), c = ensureCtx(); if (!v || !c || c.state !== 'running') return;
+    load(CLICK).then(b => { if (!b) return; const src = c.createBufferSource(), g = c.createGain(); g.gain.value = v; src.buffer = b; src.connect(g); g.connect(c.destination); src.start(); });
+  };
+  if (AC) root.addEventListener('pointerdown', e => { if (e.button) return; const t = e.target && e.target.closest && e.target.closest(CLICKABLE); if (t && !t.disabled) Snd.click(); }, true);
+  if (AC && ctx) load(CLICK);   // 미리 받아 둠 (첫 클릭이 늦게 들리지 않게)
   root.Snd = Snd;
 })(this);

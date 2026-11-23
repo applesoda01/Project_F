@@ -165,7 +165,8 @@
   const WORK_ICON = ['', '🌿', '🔍', '🛡️', '📜'];   // 비전투 수행 중 머리 위 아이콘: 사냥·채집 = 약초 · 조사 = 돋보기 · 호위·구호 = 방패 · 탐사 = 두루마리 (2026-11-16)
   // 몬스터 SD (2026-11-16): 서 있기 · 공격 반복 / 쓰러짐 한 번. TH = 미니 뷰에서의 키(px), 예전 도트 키의 약 1.2배
   // boss_goblin: 고블린 대장(던전 보스) — 움직임 시트가 생기기 전까지 고블린 시트를 1.3배로 [임시] (그림 expedition_sd/mon_goblin_boss_still.png는 정지 1장)
-  const MONSD = { boss_goblin: ['goblin', 74], mon_01: ['dog', 46], mon_02: ['thief', 64], mon_03: ['slime', 40], mon_04: ['wolf', 52], mon_05: ['wolf_alpha', 64], mon_06: ['goblin', 56], mon_07: ['boar', 54], mon_08: ['bandit', 70] };
+  // 셋째 값 1 = 그림이 오른쪽을 봄 → 좌우 뒤집어 그림 (2026-11-23 4차 6번: 도적 시트만 반대 방향)
+  const MONSD = { boss_goblin: ['goblin', 74], mon_01: ['dog', 46], mon_02: ['thief', 64, 1], mon_03: ['slime', 40], mon_04: ['wolf', 52], mon_05: ['wolf_alpha', 64], mon_06: ['goblin', 56], mon_07: ['boar', 54], mon_08: ['bandit', 70] };
   const monSheet = (k, act) => ({ im: sdi('assets/expedition_sd/mon_' + k + '_' + act + '.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: act === 'idle' ? 10 : act === 'fall' ? 24 : 16 });   // 2026-11-23 버그 12: 쓰러짐 16 → 24fps (1초 → 0.67초)
   function sdSheet(k, anim) {
     if (anim === 'fall') return { im: sdi('assets/expedition_sd/' + k + '_fall.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: 16, once: true };   // 쓰러짐: 한 번 재생 후 누운 채 유지
@@ -310,7 +311,9 @@
         tmp.width = fw; tmp.height = fh; tg.clearRect(0, 0, fw, fh); tg.imageSmoothingQuality = 'high'; tg.drawImage(ms.im, (f % ms.cols) * ms.fw, Math.floor(f / ms.cols) * ms.fh, ms.fw, ms.fh, 0, 0, fw, fh);
         const c = m.crit > 0 ? 'rgba(255,244,194,' + (0.8 * Math.min(1, m.crit * 4)) + ')' : m.flash > 0 ? 'rgba(255,40,30,' + (0.65 * Math.min(1, m.flash * 4)) + ')' : null;
         if (c) { tg.globalCompositeOperation = 'source-atop'; tg.fillStyle = c; tg.fillRect(0, 0, fw, fh); tg.globalCompositeOperation = 'source-over'; }
-        g.drawImage(tmp, Math.round(xx + w / 2 - ms.ax * sc), Math.round(SURF + 1 - (i % 2 ? 4 : 0) - ms.ay * sc));
+        const fx = Math.round(xx + w / 2), fy = Math.round(SURF + 1 - (i % 2 ? 4 : 0) - ms.ay * sc);
+        if (m.sd[2]) { g.save(); g.translate(fx, 0); g.scale(-1, 1); g.drawImage(tmp, -Math.round(ms.ax * sc), fy); g.restore(); }   // 발 기준 좌우 뒤집기
+        else g.drawImage(tmp, fx - Math.round(ms.ax * sc), fy);
       } else if (pic && !m.sd) {   // 그림(예전 도트, ?px=1일 때만): 맞으면 붉게, 치명타는 밝게 (모험가와 같은 방식)
         tmp.width = w; tmp.height = h; tg.clearRect(0, 0, w, h); tg.drawImage(m.im, 0, 0);
         const c = m.crit > 0 ? 'rgba(255,244,194,' + (0.8 * Math.min(1, m.crit * 4)) + ')' : m.flash > 0 ? 'rgba(255,40,30,' + (0.65 * Math.min(1, m.flash * 4)) + ')' : null;
