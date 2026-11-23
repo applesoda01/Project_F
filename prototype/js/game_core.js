@@ -774,9 +774,10 @@
   const carHR = (a, b, c) => { let h = ((a | 0) * 2654435761 ^ (b | 0) * 40503 ^ c * 97) >>> 0 || 1; return () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; }; };
   function carMakeWares(s, c, st) {
     const E = s.cfg.econ, lv = carRelLv(s, st), R = carHR(s.seed, s.week, CARS.indexOf(c) + 1), k = (E.carWareKinds || 2) + (lv - 1), M = E.carWareMult || [1.2, 1.5], Q = E.carWareQty || [2, 5];
-    const pool = Object.keys(MAT).filter(m => c.likes(m) && !isStaple(s, m) && (() => { const g = GR.indexOf(MAT[m].grade); return g >= s.grade && g <= s.grade + 1; })());
+    const buying = new Set((st.order || []).map(o => o.m)); for (const x of carHere(s)) for (const o of (s.car[x.id].order || [])) buying.add(o.m);   // 2026-11-23 사용자: 주문서(상단이 사는 소재)에 있는 것은 팔지 않음 — 사서 바로 되팔면 이득이던 문제
+    const pool = Object.keys(MAT).filter(m => c.likes(m) && !buying.has(m) && !isStaple(s, m) && (() => { const g = GR.indexOf(MAT[m].grade); return g >= s.grade && g <= s.grade + 1; })());
     const out = []; while (out.length < k && pool.length) { const m = pool.splice(Math.floor(R() * pool.length), 1)[0]; out.push({ m, mult: Math.round((M[0] + R() * (M[1] - M[0])) * 100) / 100, max: Q[0] + Math.floor(R() * (Q[1] - Q[0] + 1)), sold: 0 }); }
-    if (lv >= 3) { const rp = Object.keys(MAT).filter(m => c.likes(m) && GR.indexOf(MAT[m].grade) === Math.min(6, s.grade + 2)); if (rp.length) out.push({ m: rp[Math.floor(R() * rp.length)], mult: E.carRareMult || 1.6, max: 1, sold: 0, rare: true }); }
+    if (lv >= 3) { const rp = Object.keys(MAT).filter(m => c.likes(m) && !buying.has(m) && GR.indexOf(MAT[m].grade) === Math.min(6, s.grade + 2)); if (rp.length) out.push({ m: rp[Math.floor(R() * rp.length)], mult: E.carRareMult || 1.6, max: 1, sold: 0, rare: true }); }
     return out;
   }
   const carWarePrice = (s, w) => Math.max(1, Math.round(matPrice(s, w.m) * w.mult));
@@ -835,6 +836,7 @@
       if (!st.here && s.week === st.next - (E.carNotice != null ? E.carNotice : 2)) log(s, `리나: "${c.name}이 ${E.carNotice != null ? E.carNotice : 2}주 뒤 들른답니다."`, 'town', { car: { id: c.id, ev: 'notice', n: E.carNotice != null ? E.carNotice : 2 } });   // 2026-11-20 사용자: 예고도 리나 대화로
       if (!st.here && s.week >= st.next) { st.here = true; st.until = s.week + (E.carStay || 1); st.order = carMakeOrder(s, c, st); st.wares = carMakeWares(s, c, st); carEscOffer(s, c, st);
         log(s, `${c.name}이 마을에 들렀습니다. 주문서: ${st.order.map(o => `${MAT[o.m].name} ×${o.mult} (${o.max}개)`).join(' · ')}${st.wares.length ? ` · 파는 물건: ${st.wares.map(w => MAT[w.m].name).join(' · ')}` : ''}`, 'town', { car: { id: c.id, ev: 'hi', lv: carRelLv(s, st), esc: !!st.escort } }); carConsSell(s, c, st); } }
+    { const B = new Set(); for (const x of carHere(s)) for (const q of s.car[x.id].order) B.add(q.m); for (const x of carHere(s)) s.car[x.id].wares = (s.car[x.id].wares || []).filter(w => !B.has(w.m) || w.sold); }   // 2026-11-23: 같은 주에 온 다른 상단이 사는 소재도 팔지 않음
     for (const e of (s.cons || []).slice()) if (s.week - e.w >= keep) { payParty(s, e.ids, matPrice(s, e.m) * e.n); mktAdd(s, e.m, e.n); s.cons.splice(s.cons.indexOf(e), 1); }   // 8주가 지나면 모험가가 찾아가 시장에 팖
   }
   function consWant(s, party, m) {   // 모험가 위탁 판단: 그 소재를 사 간 상단이 있고, 지난 상단 값 × 90%가 길드 매입 · 시장보다 10% 넘게 높고, 돈이 급하지 않을 때 [임시]
