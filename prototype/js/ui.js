@@ -342,7 +342,38 @@
   const STAT_NM = ['힘', '민첩', '지력', '정신', '기교'];
   // 새 모험가 소개 카드 (2026-11-20 사용자 시안 확정 mk_quirk_arrive): 위쪽 가운데, 6초 뒤 또는 누르면 닫힘 · 시계는 멈추지 않음 · 여럿이면 차례로
   let arrEl = null, arrTimer = 0; const arrQ = [], ARR_MS = 6000;
-  function arrShow(a) { if (arrQ.includes(a)) return; arrQ.push(a); if (!arrEl || !arrEl.classList.contains('on')) arrNext(); }
+  // 2026-11-23 모험가 개선작업 ① 이름 짓기 (사용자 17:23 결정 · 21:14 「진행하자」): 새 모험가가 오면 이름 짓기 팝업 — 추천 이름이 채워져 있고 「이대로」 한 번이면 끝, 최대 6글자 [임시], 같은 이름이면 흔들림. 튜토리얼 모험가 · 창립 모험가는 없음
+  const NM_MAX = 6; let nmQ = [], nmEl = null, nmSp = null;
+  const nmOn = a => a && !a.home && !a.named && !(s.tut && s.tut.on && !s.tut.base) && s.cfg.adv.nameOn !== 0;
+  const fixJosa = (w, j) => { const P = { 이: '가', 가: '이', 은: '는', 는: '은', 을: '를', 를: '을', 과: '와', 와: '과' }; if (!j || !P[j]) return w + (j || ''); const c = w.charCodeAt(w.length - 1), bat = c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0; const A = ['이', '은', '을', '과'].includes(j) ? j : P[j], B = P[A]; return w + (bat ? A : B); };
+  const swapName = (txt, o, n) => String(txt).replace(new RegExp(o.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(이|가|은|는|을|를|과|와)?', 'g'), (m, j) => fixJosa(n, j));
+  function nmRename(a, n) {
+    const o = a.name; if (o === n) return; a.name = n;
+    for (const L of s.log) if (L.who && L.who.includes(o)) { L.who = L.who.map(x => x === o ? n : x); L.text = swapName(L.text, o, n); }
+    document.querySelectorAll('#logBox .ln').forEach(el => { if (el.textContent.includes(o)) el.querySelectorAll('*').forEach(c => { if (!c.children.length && c.textContent.includes(o)) c.textContent = swapName(c.textContent, o, n); }); });
+    if (a.career && a.career[0]) a.career[0].text = '길드에 처음 옴';
+  }
+  function nmShow(a) { nmQ.push(a); if (!nmEl || !nmEl.classList.contains('on')) nmNext(); }
+  function nmNext() {
+    const a = nmQ.shift(); if (!a) { if (nmEl) nmEl.classList.remove('on'); if (nmSp != null) { hooks.setSpeed && hooks.setSpeed(nmSp); nmSp = null; } return; }
+    if (nmSp == null) { nmSp = curSp; hooks.setSpeed && hooks.setSpeed(0); }
+    if (!nmEl) { nmEl = document.createElement('div'); nmEl.id = 'nmPop'; stage.ui.appendChild(nmEl); }
+    const q = qkOf(a), RS = Gm.RISK || ['신중', '보통', '무모'], SP = Gm.SPEND || ['절약', '보통', '낭비'], SO = Gm.SOCIAL || ['독불장군', '보통', '사교적'];
+    nmEl.innerHTML = `<div class="nm-box"><span class="nm-face${starCls(a)}" style="${faceStyle(a, 84, 300, 42)}"></span><h3>새 모험가가 찾아왔어요</h3><div class="nm-sub">${esc(a.cls)} · Lv ${a.lv}${starTag(a)}</div><div class="nm-tr">모험심 ${RS[a.risk]} · 소비 ${SP[a.spend]} · 사교 ${SO[a.social]}</div>${q ? `<div class="nm-qk"><em>버릇 「${esc(q.name)}」</em> ${esc(q.desc || '')}</div>` : ''}`
+      + `<div class="nm-in"><input maxlength="${NM_MAX}" value="${esc(a.name)}" aria-label="모험가 이름"><button class="nm-re" title="다른 이름 추천">🎲</button></div><div class="nm-lim">이름을 지어 주세요 · 최대 ${NM_MAX}글자</div><div class="nm-err"></div><button class="nm-ok">이대로</button></div>`;
+    nmEl.classList.add('on'); const box = nmEl.querySelector('.nm-box'), inp = nmEl.querySelector('input'), err = nmEl.querySelector('.nm-err');
+    const shake = m => { err.textContent = m; box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); };
+    nmEl.querySelector('.nm-re').onclick = () => { const used = new Set(s.advs.map(x => x.name)), L = ((root.GAME_DATA || {}).names || []).filter(x => !used.has(x)); if (L.length) inp.value = L[Math.floor(Math.random() * L.length)]; err.textContent = ''; box.classList.remove('dup'); };
+    const ok = () => { const n = inp.value.trim().replace(/\s+/g, ' ');
+      if (!n) return shake('이름을 적어 주세요');
+      if ([...n].length > NM_MAX) return shake(`최대 ${NM_MAX}글자예요`);
+      if (n !== a.name && s.advs.some(x => x !== a && x.name === n)) { box.classList.add('dup'); return shake('중복된 이름입니다'); }
+      nmRename(a, n); a.named = true; hooks.changed && hooks.changed(); nmNext(); };   // 팝업에 성향 · 버릇을 다 보여 주므로 소개 카드는 따로 안 띄움
+    nmEl.querySelector('.nm-ok').onclick = ok; inp.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') ok(); }; inp.oninput = () => { box.classList.remove('dup'); err.textContent = ''; };
+    setTimeout(() => { inp.focus(); inp.select(); }, 50);
+  }
+  UI.nameBusy = () => !!(nmEl && nmEl.classList.contains('on'));
+  function arrShow(a, named) { if (!named && nmOn(a)) return nmShow(a); if (arrQ.includes(a)) return; arrQ.push(a); if (!arrEl || !arrEl.classList.contains('on')) arrNext(); }
   function arrNext() {
     clearTimeout(arrTimer); const a = arrQ.shift(); if (!a) { if (arrEl) arrEl.classList.remove('on'); return; }
     if (!arrEl) { arrEl = document.createElement('div'); arrEl.id = 'arrCard'; stage.ui.appendChild(arrEl); arrEl.addEventListener('pointerdown', () => arrNext()); }
