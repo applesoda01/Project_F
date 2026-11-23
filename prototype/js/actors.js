@@ -151,6 +151,7 @@
   D.onWeek = function (before, s, Board) {
     const SV = Math.max(0.5, SERVE - (root.GuildGame && root.GuildGame.upg && root.GuildGame.upg(s, '접수대') ? 0.5 : 0));   // 접수대 업그레이드: 응대 −0.5초
     D.flush();
+    for (const ac of D.actors.values()) ac.doze = false; D.timers.push({ t: D.t + 6 + Math.random() * 8, fn: dozeTick });   // 2026-11-23 로비 누르기: 주 중간에 졸음
     for (const q of [...D.pcol.keys()]) if (!before.active.has(q) && !s.active.some(x => x.q.id === q) && ![...D.actors.values()].some(o => o.pq === q)) D.pcol.delete(q);   // 끝난 파티 색 반납 (이번 주에 돌아오는 파티는 같은 색 유지)
     const after = D.snap(s), busy = new Set(), find = id => s.advs.find(a => a.id === id);
     // 1) 귀환
@@ -313,8 +314,54 @@
     if (emo) ac.emo = { k: emo, t0: D.t, until: D.t + (dur || 1.8) + 0.7 }; if (root.UI && root.UI.chat && ac.a) root.UI.chat(ac.a.name, text, null, ac.a, grp); } }   // 얼굴·직업 표시용으로 모험가를 함께 넘김
 
   // ---------- 매 프레임 ----------
+  // ---------- 2026-11-23 로비 모험가 누르기 (사용자 22:18 「진행해줄래?」 · 시안 mockups/idea_1123/로비누르기_시안) ----------
+  // 쉬는 모험가를 누르면: 한마디(쉬는 까닭 × 성격) · 기억 · 가끔 소문 · 한 주 처음이면 애착 +1 ♥ · 졸고 있으면 깨움. 규칙 · 관문에는 영향 없음(누를 때만, 애착 +1 은 한 모험가당 주 1회)
+  const TAP_IDLE = {   // [사교 0 독불장군, 1 보통, 2 사교적]
+    mates: [['혼자 가면 그만이지… 근데 이번 건 좀 세네.', '같이 갈 사람을 기다리는 중이에요.', '같이 갈 사람 없나요? 혼자는 좀…'], ['혼자 가기엔 위험해 보여서요.', '파티가 모이면 바로 나갈게요!', '누구 저랑 한 팀 할 사람~?']],
+    noq: [['게시판에 쓸 만한 게 없군.', '제게 맞는 의뢰가 안 보이네요.', '마스터, 재밌는 의뢰 좀 붙여 주세요!'], ['너무 쉽거나 너무 어렵거나…', '다음 주엔 좋은 게 붙겠죠?', '게시판 칸을 조금 바꿔 주시면 안 돼요?']],
+    fee: [['수수료가 좀 세군.', '수수료가 조금만 낮으면 갈 텐데…', '이번 달은 지갑이 얇아서요, 헤헤.']],
+    sleep: [['…시끄럽군.', '어제 좀 많이 마셨나 봐요…', '머리가 지끈지끈해요~']],
+    rain: [['비 오는 날은 안 나가.', '비 오는 날엔 불길한 일이 생긴대요.', '비 그치면 바로 나갈게요!']],
+    req: [['지명받은 일이 있어서 대기 중이다.', '리퀘스트 출발을 기다리고 있어요.', '마스터가 맡긴 일, 준비 끝이에요!']],
+    rest: [['…쉬는 중이다.', '잠깐 숨 좀 돌리고 있어요.', '여기 의자 편하네요~'], ['방해하지 마.', '오늘은 조용하네요.', '마스터도 좀 쉬세요!']]
+  };
+  const TAP_MEM = { win_big: '지난번 「{q}」, 제법 잘했죠?', qlv: '「{q}」 점점 어려워지는 거 알아요?', hurt: '「{q}」에서 다친 데가 아직 욱신거려요…', fail: '「{q}」… 다음엔 꼭 해낼 거예요.', grow: '요즘 몸이 가벼워요!', gift: '마스터가 준 장비, 아주 좋아요!', saved: '{with} 덕분에 살았어요.' };
+  const TAP_HI = ['헤헤, 불러 주셨어요?', '네, 마스터!', '앗, 마스터다!', '무슨 일 있어요?'];
+  const TAP_WAKE = ['으앗! 안 잤어요, 안 잤어요!', '…으음? 아, 마스터…', '정신 번쩍! 일하러 가야죠!'];
+  const pick = L => L[Math.floor(Math.random() * L.length)];
+  function tapLine(a, s) {
+    const G = root.GuildGame, r = Math.random();
+    if (r < 0.15 && G && G.DISH) {   // 가끔 소문: 아직 모르는 요리의 재료
+      const d = pick(G.DISH.filter(x => !x.dungeon && !(s.dishes || {})[x.name]) || []); const MT = {}; for (const m of (((root.GAME_DATA || {}).content || {}).materials || [])) MT[m.id] = m.name;
+      if (d && d.mats) return [`어디서 들었는데… ${d.mats.map(m => MT[m] || '무언가').join('이랑 ')}로 맛있는 걸 만든대요.`, 'spark'];
+    }
+    if (r < 0.4 && G && G.memOf) { const m = G.memOf(s, a).slice().reverse().find(x => TAP_MEM[x.k]); if (m) { const wn = (m.with || []).map(id => (s.advs.find(x => x.id === id) || {}).name).filter(Boolean)[0] || '동료'; return [TAP_MEM[m.k].replace('{q}', m.q || '그 의뢰').replace('{with}', wn), m.k === 'hurt' || m.k === 'fail' ? 'sweat' : 'note']; } }
+    const key = a.idleW >= (s.week - 1) && TAP_IDLE[a.idle] ? a.idle : 'rest', rows = TAP_IDLE[key]; return [pick(rows)[a.social != null ? a.social : 1], 'note'];
+  }
+  D.hitAt = function (p) { let best = null, bd = 1e9; if (!p) return null;
+    for (const ac of D.actors.values()) { const a = ac.a; if (!a || !a.alive || a.state !== 'town' || ac.tasks.some(k => k.k === 'leave')) continue;
+      if (Math.abs(p.x - ac.x) > 40 || p.y < headY(ac) - 14 || p.y > ac.y + 8) continue; const d = Math.abs(p.x - ac.x) + Math.abs(p.y - (ac.y - 70)) * 0.5; if (d < bd) { bd = d; best = ac; } }
+    return best; };
+  D.tap = function (p) {   // p: 게임 좌표
+    const s = D.s; if (!s || !p) return false;
+    if (root.UI && ((root.UI.popupName && root.UI.popupName()) || (root.UI.dlgBusy && root.UI.dlgBusy()) || (root.UI.nameBusy && root.UI.nameBusy()))) return false;
+    if (root.Town && root.Town.active) return false;
+    const best = D.hitAt(p); if (!best) return false;
+    const a = best.a; let text, emo;
+    if (best.doze) { best.doze = false; best.lab = restLab(a); [text, emo] = [pick(TAP_WAKE), 'qex']; }
+    else if (a.tapW !== s.week) [text, emo] = [Math.random() < 0.5 ? pick(TAP_HI) : tapLine(a, s)[0], 'heart'];
+    else [text, emo] = tapLine(a, s);
+    if (a.tapW !== s.week) { a.tapW = s.week; a.attach = Math.min(100, (a.attach || 0) + 1); best.lab = '♥ 애착 +1'; const w = s.week; D.timers.push({ t: D.t + 2.2, fn: () => { if (best.lab === '♥ 애착 +1') best.lab = best.doze ? '💤 졸고 있음' : restLab(a); } }); if (!emo || emo === 'note') emo = 'heart'; }
+    best.hop = D.t; say(best, text, 2.6, null, emo); return true;
+  };
+  function dozeTick() {   // 한 주에 한 번, 앉아서 쉬는 모험가 중 하나가 꾸벅꾸벅 (50%, [임시])
+    const s = D.s; if (!s || Math.random() > 0.5) return;
+    const L = [...D.actors.values()].filter(ac => ac.a && ac.a.alive && ac.a.state === 'town' && ac.pose === 'sit' && !ac.doze); if (!L.length) return;
+    const ac = pick(L); ac.doze = true; ac.lab = '💤 졸고 있음'; say(ac, 'Zzz…', 2.2, null, null);
+  }
   D.update = function (dt) {
     D.t += dt;
+    for (const ac of D.actors.values()) if (ac.doze) { if (ac.a && ac.a.state !== 'town') ac.doze = false; else { ac.lab = '💤 졸고 있음'; if (!ac.bubble || D.t > ac.bubble.until + 2.5) say(ac, 'Zzz…', 1.6, null, null); } }   // 졸음 유지 (깨우거나 떠나면 끝)
     for (let i = D.timers.length - 1; i >= 0; i--) if (D.timers[i].t <= D.t) { const f = D.timers[i].fn; D.timers.splice(i, 1); f(); }   // 대화 다음 줄
     for (const [id, ac] of D.actors) {
       if (ac.gl) { const G = ac.gl, len = Math.hypot(G.x, G.y), st = 420 * dt; ac.wf = (ac.wf || 0) + st / 150 * 30; if (len <= st) ac.gl = null; else { G.x -= G.x / len * st; G.y -= G.y / len * st; G.face = faceLeft(-G.x, G.face); } }
