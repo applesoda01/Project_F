@@ -1128,7 +1128,7 @@
       KL.left[d.name] = waste; KR[d.name] = waste >= 2 ? (KR[d.name] || 0) + 1 : 0;
       if (waste && menuOf(s, d).left === 'free') { const T = s.advs.filter(a => a.alive && a.state === 'town').sort((x, y) => x.attach - y.attach), A = s.cfg.econ.freeAttach != null ? s.cfg.econ.freeAttach : 1; let k = 0;   // 결정 47: 무료 식사 — 마을에 남은 모험가에게 (애착 낮은 사람부터)
         while (waste > 0 && k < T.length) { const a = T[k++]; a.attach = Math.min(100, a.attach + A); waste--; s.month.freeMeal = (s.month.freeMeal || 0) + 1; { const D = s.month.dishFree = s.month.dishFree || {}; D[d.name] = (D[d.name] || 0) + 1; } }   // 2026-11-20 장부: 요리별 무료 식사
-        if (k) log(s, `식당이 남은 ${d.name}을(를) 모험가 ${k}명에게 무료로 대접했습니다. (애착 +${A})`, 'guild'); }
+        if (k) log(s, `식당이 남은 ${J(d.name, '을', '를')} 모험가 ${k}명에게 무료로 대접했습니다. (애착 +${A})`, 'guild'); }
       if (waste) { s.month.waste = (s.month.waste || 0) + waste; const D = s.month.dishWaste = s.month.dishWaste || {}; D[d.name] = (D[d.name] || 0) + waste; }   // 2026-11-20 장부: 요리별 버린 그릇
       const mu = menuOf(s, d); let have = L.reduce((a, b) => a + b.n, 0); const KS = s.kShort = s.kShort || {}; KS[d.name] = false;   // kShort: 이번 주 재료 · 금고가 모자라 준비량을 못 채움 (품절 원인 구분용)
       while (have < mu.prep) {

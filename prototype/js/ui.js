@@ -869,7 +869,7 @@
       <div class="sl-chart"><div class="sl-ch">시세 기록 <small>최근 ${Gm.mktLogOf(s, m.id).length}주 · 마우스를 올리면 그 주 값</small></div>${priceChart(m.id, 420, 140)}</div>
       <div class="sl-btns"><button class="ux-btn" data-sone="${m.id}">1개 팔기</button><button class="ux-btn primary" data-sall="${m.id}">전부 팔기</button></div></div>` : '<div class="ux-muted">팔 소재가 없습니다.</div>';
     return `<div class="sell"><div class="kpan sl-left"><div class="ux-h">음식이 아닌 소재 <small>${nf.length}종 · ${sum(nf)} G</small></div><div class="kpantry">${nf.map(cell).join('') || '<span class="ux-muted">없음</span>'}</div>
-      <div class="ux-h" style="margin-top:16px">음식 소재 <small>요리 재료 · 팔면 요리를 못 만들 수 있음</small></div><div class="kpantry">${fd.map(cell).join('') || '<span class="ux-muted">없음</span>'}</div></div>
+      <div class="ux-h" style="margin-top:16px">음식 소재 <small>팔면 요리를 못 만들 수 있음</small></div><div class="kpantry">${fd.map(cell).join('') || '<span class="ux-muted">없음</span>'}</div></div>
       <div class="kpan sl-right">${detail}</div>
       <div class="sl-bar"><span>이번 달 판매액 <b>${Math.round(s.month.sell || 0)} G</b></span><button class="ux-btn primary" data-snf="1" ${nf.length ? '' : 'disabled'}>음식이 아닌 소재 모두 팔기 (${sum(nf)} G)</button></div></div>`;
   }
@@ -1184,7 +1184,7 @@
     renderPopup(); return true;
   }
   // 2026-11-20 떠돌이 상단 (결정 57~62): 왼쪽 = 상단 목록 (관계 · 오는 시기 · 지난 주문) / 오른쪽 = 머무는 상단 주문서 · 위탁 보관함
-  const CAR_LIKE = { farm: '요리 재료', smith: '광석 · 짐승 · 쇠붙이', herb: '약초 · 약재' };
+  const CAR_LIKE = { farm: '음식 소재', smith: '광석 · 짐승 · 쇠붙이', herb: '약초 · 약재' };
   function carHtml() {
     const E = s.cfg.econ, T = E.carRel || [200, 600], cf = E.consignFee != null ? E.consignFee : 0.1, keepW = E.consWeeks || 8, nt = E.carNotice != null ? E.carNotice : 2;
     const open = Gm.carOpenList(s), here = [];
@@ -1193,7 +1193,7 @@
       if (c.g > s.grade) { L += `<div class="od-card car-card lk"><span class="ic"><b class="gq-ki">🔒</b></span><div class="n"><b>${esc(c.name)}</b><div class="sub">${GR[c.g]}급 길드가 되면 들르기 시작합니다 · ${CAR_LIKE[c.id] || ''}</div></div></div>`; continue; }
       const st = Gm.carState(s, c), lv = Gm.carRelLv(s, st), lo = lv === 1 ? 0 : T[lv - 2], hi = T[lv - 1], left = st.next - s.week;
       if (st.here) here.push([c, st]);
-      const stt = st.here ? `<em class="od-on">마을에 머무는 중${st.until != null ? ` · ${Math.max(0, st.until - s.week)}주 뒤 떠남` : ''}</em>` : left <= nt ? `<em class="gq-hot">곧 옴 (${nt}주 안)</em>` : '<em class="od-off">언제 올지 모름</em>';
+      const stt = st.here ? `<em class="od-on">마을에 머무는 중${st.until != null ? ` · ${st.until - s.week > 0 ? (st.until - s.week) + '주 뒤 떠남' : '이번 주에 떠남'}` : ''}</em>` : left <= nt ? `<em class="gq-hot">곧 옴 (${nt}주 안)</em>` : '<em class="od-off">언제 올지 모름</em>';
       const last = Object.keys(st.last || {}).filter(m => MATS[m]);
       L += `<div class="od-card car-card${st.here ? ' here' : ''}"><span class="ic"><b class="gq-ki">${esc(c.name.slice(0, 1))}</b></span><div class="n"><b>${esc(c.name)} <em>관계 ${lv}단계</em></b><div class="sub">좋아하는 물건 · ${CAR_LIKE[c.id] || '여러 가지'} · ${stt}</div>`
         + `<div class="od-bar"><i style="width:${hi != null ? Math.min(100, (st.rel - lo) / (hi - lo) * 100).toFixed(1) : 100}%"></i></div><div class="sub">거래 ${fmt(st.rel)}G${hi != null ? ` · 다음 단계까지 ${fmt(hi - st.rel)}G` : ' · 최고 단계'}</div>`
@@ -1241,7 +1241,7 @@
     if (!mtSel || !list.includes(mtSel)) mtSel = list[0] || null;
     const h4 = (id, k) => ((s.sellHist || {})[id] || []).filter(x => x.w > s.week - 4).reduce((t, x) => t + (x[k] || 0), 0);
     const mT = id => Gm.SPICE.has(id) ? (E.mktTargetSpice || 15) : (E.mktTarget || 20), mM = id => Math.max(0, Math.round(((s.mkt || {})[id] != null ? s.mkt[id] : mT(id))));
-    const help = `<b>소재 매입:</b> 모험가가 주워 온 소재는 모험가 것입니다. 매입가가 시세의 기준 이상이면 길드에, 아니면 시장에 직접 팝니다 (기준 절약 ${Math.round(TH[0] * 100)} · 보통 ${Math.round(TH[1] * 100)} · 낭비 ${Math.round(TH[2] * 100)}%, 애착이 높으면 조금 싸게도 넘김). 금고가 모자라거나 창고가 가득(${cap}개)이면 시장으로 갑니다.${Gm.carOn(s) ? ' 지난 떠돌이 상단 값이 훨씬 높으면 길드에 맡겨(위탁) 상단에 팝니다.' : ''}<br><b>마을 시장 재고:</b> 마을 상점들이 가진 양입니다. 의뢰에서 나온 소재 · 길드가 판 소재가 들어오고, 마을 사람들이 매주 사 가며(인구가 많을수록 많이), 식당이 모자란 상시 재료를 사 가도 줄어듭니다. 재고가 적으면 시세가 오르고 많으면 내립니다.`;
+    const help = `<b>소재 매입:</b> 모험가가 주워 온 소재는 모험가 것입니다. 매입가가 시세의 기준 이상이면 길드에, 아니면 시장에 직접 팝니다 (기준 절약 ${Math.round(TH[0] * 100)} · 보통 ${Math.round(TH[1] * 100)} · 낭비 ${Math.round(TH[2] * 100)}%, 애착이 높으면 조금 싸게도 넘김). 금고가 모자라거나 창고가 가득(${cap}개)이면 시장으로 갑니다.${Gm.carOn(s) ? ' 지난 떠돌이 상단 값이 훨씬 높으면 길드에 맡겨(위탁) 상단에 팝니다.' : ''}<br><b>마을 시장 재고:</b> 마을 상점들이 가진 양입니다. 의뢰에서 나온 소재 · 길드가 판 소재가 들어오고, 마을 사람들이 매주 사 가며(인구가 많을수록 많이), 식당이 모자란 흔한 음식 소재를 사 가도 줄어듭니다. 재고가 적으면 시세가 오르고 많으면 내립니다.`;
     let L = `<div class="mt"><div class="ux-h">소재 관리 <small>판매 · 매입 · 시세</small><details class="tr-help"><summary title="도움말" aria-label="도움말">?</summary><div class="tr-help-b">${help}</div></details></div>
       <div class="mt-flt">${[['all', `전체 ${known.length}`], ['food', '음식 소재'], ['etc', '그 밖의 소재']].map(([k, t]) => `<button class="${mtFlt === k ? 'on' : ''}" data-mtf="${k}">${t}</button>`).join('')}</div><div class="mt-list gq-mp">`;
     for (const id of list) { const m = MATS[id], n = mats[id] || 0, fixed = Gm.buyGoldOf(s, id) != null, bp = Gm.matBuyPrice(s, id), t = Gm.mktTrend(s, id);
@@ -1253,8 +1253,8 @@
     if (mtSel) { const id = mtSel, m = MATS[id], n = mats[id] || 0, mp = Gm.matPrice(s, id), bp = Gm.matBuyPrice(s, id), mx = Gm.buyGoldMax(s, id), fixed = Gm.buyGoldOf(s, id) != null, food = m.line === 'food', st = Gm.isStaple(s, id), mm = mM(id), tg = mT(id);
       const nm = ids => ids.map(x => (s.advs.find(a => a.id === x) || {}).name).filter(Boolean), CN = k => (Gm.CARS.find(c => 'car:' + c.id === k) || {}).name || '떠돌이 상단';   // 2026-11-23 사용자: 누구에게서 · 개당 얼마에 샀는지
       const logs = (s.buyLog || []).filter(b => b.m === id).map(b => ({ w: b.w, n: b.n, g: b.g, who: b.ord ? '길드 의뢰' : '모험가', sub: nm(b.ids || []).join(' · ') }))
-        .concat((s.mkBuyLog || []).filter(b => b.m === id).map(b => ({ w: b.w, n: b.n, g: b.g, who: b.src === 'mk' ? '시장' : '상단', sub: b.src === 'mk' ? '식당 재료' : CN(b.src) }))).sort((a, b) => b.w - a.w).slice(0, 5);
-      R += `<div class="mt-top"><span class="big ux-slot" data-g="${GR.indexOf(m.grade)}">${matImg(m)}</span><div><div class="mt-tn">${badge(GR.indexOf(m.grade))}<b>${esc(m.name)}</b>${food ? `<span class="tg ${st ? 'st' : 'rare'}" title="${st ? '창고에 없으면 식당이 시장에서 삼' : '시장에 없음 — 모험가 매입으로만'}">${st ? '상시 재료' : '희귀 재료'}</span>` : ''}</div><p title="${esc(m.desc || '')}">${esc(m.desc || '')}</p></div></div>
+        .concat((s.mkBuyLog || []).filter(b => b.m === id).map(b => ({ w: b.w, n: b.n, g: b.g, who: b.src === 'mk' ? '시장' : '상단', sub: b.src === 'mk' ? '음식 소재' : CN(b.src) }))).sort((a, b) => b.w - a.w).slice(0, 5);
+      R += `<div class="mt-top"><span class="big ux-slot" data-g="${GR.indexOf(m.grade)}">${matImg(m)}</span><div><div class="mt-tn">${badge(GR.indexOf(m.grade))}<b>${esc(m.name)}</b>${food ? `<span class="tg ${st ? 'st' : 'rare'}" title="${st ? '창고에 없으면 식당이 시장에서 삼' : '시장에 없음 — 모험가 매입으로만'}">${st ? '흔한 음식 소재' : '귀한 음식 소재'}</span>` : ''}</div><p title="${esc(m.desc || '')}">${esc(m.desc || '')}</p></div></div>
         <div class="mt-ch"><div class="mt-per"><span class="mt-pl">최근 12주</span><em>지금 ${mp}G ${(t => t > 0 ? '<i class="mk-tr up">▲</i>' : t < 0 ? '<i class="mk-tr dn">▼</i>' : '')(Gm.mktTrend(s, id))}</em></div>${priceChart(id, 480, 128, 12, true)}
           <div class="mt-stock" title="마을 상점들이 가진 양 — 적으면 시세가 오름">마을 시장 재고 <span class="bar"><i style="width:${Math.min(100, Math.round(mm / (tg * 1.5) * 100))}%"></i><u style="left:${Math.round(100 / 1.5)}%"></u></span><b>${mm}개</b><small>보통 ${tg}개${mm < tg * 0.5 ? ' · 모자람' : mm > tg * 1.2 ? ' · 넉넉함' : ''}</small></div></div>
         <div class="mt-two">
@@ -1356,7 +1356,7 @@
   // ---------- 장부: 수입 · 지출 (지난달 | 이번 달) + 12개월 순이익 그래프 (docs/design/popup_ledger.md) ----------
   // 순이익 = 수입 − 지출(시설 건설비·기타). 관문 1의 "운영 순이익(m.net)"은 건설비를 빼고 계산하므로 따로 둠
   const LG_IN = [['fee', '의뢰 수수료'], ['resale', '소재 판매'], ['consign', '위탁 수수료'], ['car', '상단 판매'], ['meal', '식사 판매'], ['tavern', '주점 매출'], ['reqIn', '리퀘스트 보상'], ['subsidy', '왕국 보조금'], ['royal', '왕국 포상금']];
-  const LG_OUT = [['build', '시설 건설비'], ['matBuy', '소재 매입'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['order', '길드 의뢰 소재'], ['gq', '길드 의뢰'], ['carBuy', '상단 구매'], ['shop', '식당 재료 (시장 구매)'], ['gift', '장비 선물'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
+  const LG_OUT = [['build', '시설 건설비'], ['matBuy', '소재 매입 (모험가)'], ['scout', '지명 섭외비'], ['cpay', '계약 보수'], ['csup', '계약 지원'], ['order', '길드 의뢰 소재'], ['gq', '길드 의뢰'], ['carBuy', '상단 매입'], ['shop', '음식 소재 (시장 매입)'], ['gift', '장비 선물'], ['prep', '침공 대비 물약'], ['other', '기타']];   // 2026-11-17 V2: 계약 보수 · 지원
   const LG_OPT = { royal: 1, carBuy: 1, car: 1, consign: 1, cpay: 1, csup: 1, order: 1, gq: 1, gift: 1, prep: 1 };   // shop: 식당이 잡화 상인에게서 산 양념 (2026-11-19 결정 38)   // order: 길드 발주 선지급 − 거둔 돈 (2026-11-18 E8-4)
   const LG_EOM = { subsidy: 1 };   // 월말 결산 때 한꺼번에 들어오는 항목 (주점 매출은 2026-11-12부터 매주 술 1잔 단위라 제외)
   const lgIn = m => LG_IN.reduce((t, [k]) => t + (m[k] || 0), 0), lgOut = m => LG_OUT.reduce((t, [k]) => t + (m[k] || 0), 0), lgNet = m => lgIn(m) + lgOut(m);
@@ -1382,7 +1382,7 @@
     if (k === 'carBuy') return m.carBuy ? `떠돌이 상단에게서 <b>${m.carBuyN || 0}개</b> 삼 (경영 장 → 상단)` : '없음';   // 2026-11-20
     if (k === 'car') return m.car ? `창고 소재 <b>${m.carN || 0}개</b>를 떠돌이 상단에 판매 (경영 장 → 상단)` : '없음';   // 2026-11-20
     if (k === 'gq') return m.gq ? `길드 의뢰로 들어온 소재 <b>${m.gqN || 0}개</b> 값 (맡아 둔 돈에서 가져온 모험가에게 지급 · 리퀘스트 장 → 길드 의뢰)` : '없음';   // 2026-11-20
-    if (k === 'shop') return m.shop ? '식당이 요리를 만들 때 창고에 없는 상시 재료를 시장에서 산 값' : '없음';
+    if (k === 'shop') return m.shop ? '식당이 요리를 만들 때 창고에 없는 흔한 음식 소재를 시장에서 산 값' : '없음';
     if (k === 'cpay') return m.cpay ? '계약 모험가 월 보수 (근무한 주만큼, 월말 지급)' : '없음';
     if (k === 'csup') return m.csup ? '계약 모험가 식사 · 물약 지원 (약정 한도 안 실제 사용액)' : '없음';
     if (k === 'prep') return m.prepN ? `정비 때 물약 <b>${m.prepN}개</b>` : '없음';
@@ -2258,7 +2258,7 @@
       if (b.dataset.pm === 'move') { pmMenuClose(); UI.placeStart(it.id, it.uid); }
       else if (b.dataset.pm === 'del') {
         if (!b.classList.contains('sure')) { b.classList.add('sure'); pmMenu.querySelector('.pm-tip').textContent = '한 번 더 누르면 치웁니다 (환불 없음)'; pmMenu.classList.add('warn'); return; }
-        Gm.placeDestroy(s, it.uid); pmMenuClose(); hooks.changed(); toast(`${(Gm.DECO_BY[it.id] || {}).name}을(를) 치웠습니다. 다시 놓으려면 새로 사야 합니다.`, 'info');
+        Gm.placeDestroy(s, it.uid); pmMenuClose(); hooks.changed(); toast(`${josa((Gm.DECO_BY[it.id] || {}).name || '장식', '을', '를')} 치웠습니다. 다시 놓으려면 새로 사야 합니다.`, 'info');
       }
     });
     pmMenu.addEventListener('mouseover', e => { const b = e.target.closest('[data-pm]'); if (b && !pmMenu.classList.contains('warn')) pmMenu.querySelector('.pm-tip').textContent = b.dataset.tip; });
@@ -2378,7 +2378,7 @@
     pmMenu.classList.add('on');
   }
   function facCardAct(f, act) {
-    if (act === 'install') { if (Gm.build(s, f)) { hooks.changed(); root.Lobby.fxBuild && root.Lobby.fxBuild(f); toast(`${FAC_NAME[f] || f}을(를) 지었습니다.`, 'info'); facCard(f, [0, 0]); } return; }
+    if (act === 'install') { if (Gm.build(s, f)) { hooks.changed(); root.Lobby.fxBuild && root.Lobby.fxBuild(f); toast(`${josa(FAC_NAME[f] || f, '을', '를')} 지었습니다.`, 'info'); facCard(f, [0, 0]); } return; }
     if (act === 'upgrade') { if (Gm.upgrade(s, f)) { hooks.changed(); root.Lobby.fxUpgrade && root.Lobby.fxUpgrade(f); toast(`${FAC_NAME[f] || f} 업그레이드: ${FAC_UP[f]}`, 'info'); facCard(f, [0, 0]); } return; }
     if (act === 'open') { const op = FAC_OPEN[f]; if (!op) return; pmMenuClose(); UI.open(op[0]); }
   }
