@@ -1216,7 +1216,7 @@ p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 
 #foodChip.none{border-color:#df6150;background:rgba(90,30,22,.92)}#foodChip.none b{font-size:17px;padding:0 4px}
 body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 /* 2026-11-23 책 단순화 (사용자 확정): 모험가 상세 안 「경력 보기」 · 「계약 제안」 단추 · 장부 아래 「길드 기록」 단추 · 경영 펼침 메뉴에서 기록 뺌 */
-.av-acts{display:flex;gap:8px;margin:8px 0 2px}
+.av-acts{display:flex;gap:6px;margin:24px 0 2px}
 .av-acts button,.mg-more button{padding:4px 14px;border-radius:14px;border:1.5px solid #b88a4e;background:#fff6e2;color:#5a3a1e;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
 .av-acts button:hover,.mg-more button:hover{filter:brightness(1.05);background:#fff0d0}
 .av-acts button.p{background:#2f6a52;border-color:#2f6a52;color:#fff}
@@ -1228,3 +1228,8 @@ body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 .bk-av .ux-row .cond .ci.bad{border-radius:50%;background:rgba(200,50,40,.18);box-shadow:0 0 0 2px rgba(200,50,40,.65)}
 #condTip{position:absolute;z-index:9999;padding:6px 12px;border-radius:8px;background:#3b2a1c;color:#fbefd9;font-size:17px;line-height:1.5;white-space:nowrap;box-shadow:0 4px 10px rgba(0,0,0,.3);pointer-events:none}
 #condTip[hidden]{display:none}#condTip b{color:#ffd27a}#condTip em{font-style:normal;color:#ff9a8a;font-weight:700}
+/* 2026-11-23 상세 단추 = 성향 칸 크기 (사용자 시안 확정) · 되돌아가기 단추 (A안) */
+.bk-av .av-acts button{padding:2px 10px;border-radius:6px;border-width:1px;font-size:var(--av-tgfs,13px);line-height:1.4}
+.bk-back{margin:0 0 8px}
+.bk-back button{padding:2px 10px;border:1px solid rgba(110,72,36,.35);border-radius:6px;background:rgba(255,248,230,.7);color:#6b4a2a;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.bk-back button:hover{background:#fff0d0}

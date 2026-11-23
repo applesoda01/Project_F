@@ -422,7 +422,7 @@
       if (sub === 'advs' || sub === 'advs:career' || sub === 'advs:contract') { advView = sub === 'advs:career' ? 'career' : sub === 'advs:contract' ? 'contract' : 'detail'; if (popup === 'advs') { renderPopup(); bookSync('advs'); } else UI.open('advs'); return; }   // 모험가 장: 명부 ↔ 경력 (같은 팝업, 오른쪽 쪽만 바뀜)
       if (sub !== popup) UI.open(sub); };
     q('#bookSub').onclick = e => { const b = e.target.closest('[data-sub]'); if (b) subGo(b.dataset.sub); };
-    q('#popBody').addEventListener('click', e => { const b = e.target.closest('.av-acts [data-sub], .mg-more [data-sub]'); if (b) { e.stopPropagation(); subGo(b.dataset.sub); } });   // 2026-11-23 책 단순화: 상세 안 단추(경력 · 계약 제안) · 장부 아래 「길드 기록」
+    q('#popBody').addEventListener('click', e => { const b = e.target.closest('.av-acts [data-sub], .mg-more [data-sub], .bk-back [data-sub]'); if (b) { e.stopPropagation(); subGo(b.dataset.sub); } });   // 2026-11-23 책 단순화: 상세 안 단추(경력 · 계약 제안) · 장부 아래 「길드 기록」
     q('#bookRibbon').onclick = () => UI.closeFx();
   }
   function bookSync(name) {
@@ -431,8 +431,8 @@
     q('#bookTitle').textContent = c ? c.name : popTitle(name);
     { const on = q('#bookMarks [data-ch].on'); q('#bookSub').style.setProperty('--bm', on ? getComputedStyle(on).getPropertyValue('--bm') : '#8a6a46'); }   // 오른쪽 책갈피 색 = 지금 장 색
     // 2026-11-23 책 단순화 1 · 2 (사용자 확정): 모험가 = 명부 + (보는 중인) 경력 · 계약 제안 + 전직 제안(제안이 있을 때만) / 경영 = 장부 · 소재 관리 · 도감 + 상단(와 있을 때만), 기록은 장부 아래 단추
-    const avOn = v => name === 'advs' && advView === v, hasPromo = (s.proposals || []).length > 0 || name === 'promo', carNow = p => Gm.carOn(s) && (Gm.carHere(s).length > 0 || name === 'car');
-    const subs = c ? (c.id === 'adv' ? [['advs', avOn('detail')]].concat(avOn('career') ? [['advs:career', true]] : [], avOn('contract') ? [['advs:contract', true]] : [], hasPromo ? [['promo', name === 'promo']] : []) : c.pops.filter(p => (p !== 'car' || carNow(p)) && (p !== 'sell' || !Gm.gqOn(s)) && (p !== 'log' || name === 'log')).map(p => [p, p === name])) : [];   // 모험가 장: 명부 · 경력 · 전직 제안
+    const hasPromo = (s.proposals || []).length > 0 || name === 'promo', carNow = p => Gm.carOn(s) && (Gm.carHere(s).length > 0 || name === 'car');
+    const subs = c ? (c.id === 'adv' ? [['advs', name === 'advs']].concat(hasPromo ? [['promo', name === 'promo']] : []) : c.pops.filter(p => (p !== 'car' || carNow(p)) && (p !== 'sell' || !Gm.gqOn(s)) && p !== 'log').map(p => [p, p === name || (p === 'ledger' && name === 'log')])) : [];   // 모험가 장: 명부 · 경력 · 전직 제안
     q('#bookSub').innerHTML = subs.length > 1 ? subs.map(([p, on]) => `<button data-sub="${p}" class="${on ? 'on' : ''}">${subName(p).replace(/ /g, '')}</button>`).join('') : '';
   }
   // ---------- 책: 경영 장 정렬 (2026-11-13) — 기존 화면을 그대로 그린 뒤 왼쪽 / 오른쪽 쪽으로 나눠 담음 (쪽마다 원래 바깥 상자 class를 붙여 스타일 유지) ----------
@@ -449,7 +449,7 @@
       Rn = [mk('div', 'cdx-sum', `<div class="ux-h">도감 진행 <small>전체 ${tot[0]} / ${tot[1]}</small></div>` + rows.map(([i, t, g, n]) => `<button class="cs-row ${i === codexTab ? 'on' : ''}" data-ctab="${i}"><b>${t}</b><span class="ibar"><i class="f" style="width:${n ? g / n * 100 : 0}%;--w:${Math.max(1, n ? g / n * 100 : 0)}"></i></span><em>${g} / ${n}</em></button>`).join('') + '<p class="cs-note">의뢰에서 만난 몬스터 · 얻은 소재 · 찾은 직업 · 만든 요리 · 산 장비가 채워집니다.</p>')]; }
     else if (kind === 'log') { const g = $('.glog'); if (!g) return; inner = 'glog'; const list = $('.gl-list'), ms = [...list.children];
       const l1 = mk('div', 'gl-list'), l2 = mk('div', 'gl-list'); if (ms[0]) l1.appendChild(ms[0]); ms.slice(1).forEach(x => l2.appendChild(x));
-      L = [$('.gl-top'), l1]; Rn = [mk('div', 'ux-h gl-rh', '지난 기록'), l2]; }
+      L = [mk('div', 'bk-back', '<button data-sub="ledger">← 장부로</button>'), $('.gl-top'), l1]; Rn = [mk('div', 'ux-h gl-rh', '지난 기록'), l2]; }   // 2026-11-23 사용자 A안: 기록 탭 대신 「← 장부로」
     const w = mk('div', `bk2 bk-mg mg-${kind}`), l = mk('section', `bk-l ${inner}`), r = mk('section', `bk-r ${inner}`);
     L.forEach(x => x && l.appendChild(x)); Rn.forEach(x => x && r.appendChild(x)); w.append(l, r);
     const rest = [...b.children]; b.innerHTML = ''; b.appendChild(w); rest.forEach(x => { if (x.id || x.className.includes('tip')) w.appendChild(x); });   // 툴팁 등은 함께 옮김
@@ -1480,6 +1480,7 @@
   const stTag = a => { const k = stOf(a), w = Math.max(0, a.until - s.week); return `<span class="ux-tag ${k}">● ${ST_TXT[k]}${k === 'quest' ? (w ? ' ' + w + '주' : ' · 이번 주 귀환') : k === 'injured' ? ' ' + w + '주' : ''}</span>`; };   // 2026-11-12: 남은 0주 → "이번 주 귀환"
   const ITEMS_ = ((root.GAME_DATA || {}).content || {}).items || [];
   const gearItem = (type, g) => ITEMS_.find(i => i.kind === 'gear' && i.gtype === type && i.grade === GR[g]) || null;
+  const bkBack = (sub, t) => `<div class="bk-back"><button data-sub="${sub}">← ${t}</button></div>`;   // 2026-11-23 책: 들어간 화면에서 되돌아가는 단추 (탭 대신)
   let advView = 'detail';   // 책 모험가 장 오른쪽 쪽: 'detail'(명부) | 'career'(경력 책갈피) | 'contract'(계약 제안 책갈피, 2026-11-17 V2)
   let ctDraft = null;   // 계약 제안 양식 { aid, weeks, rate, pay, sup } — 다른 모험가를 고르면 기본값으로
   let advTab = 'skill';   // 아래 탭: 'skill'(기본) | 'path' | 'trait' | 'career' — 항상 하나가 펼쳐져 있음
@@ -1669,8 +1670,9 @@
     return `<div class="av-career"><div class="av-ch"><div class="ux-portrait xs"><i style="${faceStyle(a, 56, 140, 32)}"></i></div><div><b>${a.name}</b><span>${STAGE[a.stage]} ${a.cls}</span></div><em>의뢰 성공 <b>${a.done}</b>회</em></div><ul class="career">${a.career.slice().reverse().map(c => `<li${c.pal ? ' class="pal"' : ''}><span class="w">${Gm.dateLabel(c.week)}</span>${c.pal ? '<span>' + c.text.replace('♥', '<b class="ht">♥</b>') + '</span>' : c.text}</li>`).join('') || '<li class="none">아직 기록이 없습니다.</li>'}</ul></div>`;
   }
   function advDetail(a) {
-    if (document.getElementById('pop').classList.contains('book') && advView === 'career') return advCareerPage(a);
-    if (document.getElementById('pop').classList.contains('book') && advView === 'contract') return contractPage(a);
+    // 2026-11-23 사용자 A안: 경력 · 계약은 탭을 만들지 않고 맨 위 「← 명부로」 단추로 되돌아감
+    if (document.getElementById('pop').classList.contains('book') && advView === 'career') return bkBack('advs', '명부로') + advCareerPage(a);
+    if (document.getElementById('pop').classList.contains('book') && advView === 'contract') return bkBack('advs', '명부로') + contractPage(a);
     const G = s.cfg.growth, cap = Gm.lvCapOf(s, a), need = G.lvA * Math.pow(a.lv, G.lvB), xp = a.lv >= cap ? 100 : Math.min(100, a.xp / need * 100);
     const path = a.cls1 === a.cls ? a.cls : `${a.cls1} → ${a.cls}`;
     const BK = document.getElementById('pop').classList.contains('book');   // 책 펼침판: 애착·다음 장비 빼고 막대 안에 수치
