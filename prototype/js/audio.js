@@ -27,24 +27,16 @@
       .then(a => new Promise((res, rej) => ctx.decodeAudioData(a, res, rej))).catch(() => null);
     return bufs[u];
   }
-  // 2026-11-23 버그 3 (사용자: 반복 구간이 너무 이름 → 페이드 없이 곡 전체가 끝나면 처음부터): intro + loop를 한 곡으로 이어 붙여 통째로 반복
-  const whole = {};   // 곡 이름 → Promise<AudioBuffer|null>
-  function wholeOf(k) {
-    if (!whole[k]) whole[k] = Promise.all([load(url(k, 'intro')), load(url(k, 'loop'))]).then(([bi, bl]) => {
-      delete bufs[url(k, 'intro')]; delete bufs[url(k, 'loop')];
-      if (!bl) return null; if (!bi) return bl;
-      const ch = Math.max(bi.numberOfChannels, bl.numberOfChannels), sr = bl.sampleRate, out = ctx.createBuffer(ch, bi.length + bl.length, sr);
-      for (let c = 0; c < ch; c++) { const o = out.getChannelData(c); o.set(bi.getChannelData(Math.min(c, bi.numberOfChannels - 1)), 0); o.set(bl.getChannelData(Math.min(c, bl.numberOfChannels - 1)), bi.length); }
-      return out;
-    });
-    return whole[k];
-  }
+  // 2026-11-23 3차 B-음악: 「도입 1번 → 반복 파일만 반복」으로 되돌림. 반복 파일(*_loop.ogg)은 그 자체가 곡 한 바퀴이고 끝이 첫머리로 이어지게 다듬어져 있음
+  //   (끝 1초 ↔ 도입 끝 1초 닮음 타이틀 0.94 · 낮 0.93 · 가을 0.95 · 겨울 0.95 · 비 0.98). 1차 3번(도입+반복 통째 반복)은 첫머리가 두 번 나오고 이음매가 튀었음. 침공 곡도 같은 방식(도입 13초 + 반복 49.8초)
   function startWA(k) {
     const g = ctx.createGain(); g.gain.value = 0; g.connect(ctx.destination);
     const tr = { k, g, gain: 0, out: false, srcs: [] };
-    wholeOf(k).then(b => {
-      if (tr.out || !b) return;
-      const sl = ctx.createBufferSource(); sl.buffer = b; sl.loop = true; sl.connect(g); sl.start(ctx.currentTime + 0.05); tr.srcs.push(sl);
+    Promise.all([load(url(k, 'intro')), load(url(k, 'loop'))]).then(([bi, bl]) => {
+      if (tr.out || !bl) return;
+      let t = ctx.currentTime + 0.05;
+      if (bi) { const si = ctx.createBufferSource(); si.buffer = bi; si.connect(g); si.start(t); tr.srcs.push(si); t += bi.duration; }   // intro 끝나는 순간에 loop를 정확히 붙임
+      const sl = ctx.createBufferSource(); sl.buffer = bl; sl.loop = true; sl.connect(g); sl.start(t); tr.srcs.push(sl);
     });
     return tr;
   }
@@ -66,7 +58,7 @@
   function kill(tr) {
     if (!tr.g) { tr.intro.pause(); tr.loop.pause(); return; }
     stopWA(tr);
-    if (!Snd.cur || Snd.cur.k !== tr.k) { delete bufs[url(tr.k, 'intro')]; delete bufs[url(tr.k, 'loop')]; delete whole[tr.k]; }   // 풀어 둔 곡은 곡당 약 60MB → 지금 계절이 아니면 버림
+    if (!Snd.cur || Snd.cur.k !== tr.k) { delete bufs[url(tr.k, 'intro')]; delete bufs[url(tr.k, 'loop')]; }   // 풀어 둔 곡은 곡당 약 60MB → 지금 계절이 아니면 버림
   }
   function stop(tr) { tr.out = true; Snd.fade.push(tr); }
 

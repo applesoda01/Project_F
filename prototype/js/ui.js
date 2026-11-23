@@ -368,9 +368,13 @@
     if (rw.attach) got.push(`<span class="rq-chip">${rw.attach[0] === 'all' ? '모든 모험가' : rw.attach[0] === 'party' ? '참가자' : esc(giver)} 애착 +${rw.attach[1]}</span>`);
     for (const [m, k] of Object.entries(rw.mats || {})) got.push(rqMat(m, k));
     const m = Gm.mainView ? Gm.mainView(s) : null, prog = m && m.state === 'none' && s.grade === 0 ? `<div class="rqd-prog"><span>메인 퀘스트까지 리퀘스트 <b>${m.doneN} / ${m.need}</b></span><i><u style="width:${Math.round(Math.min(1, m.doneN / m.need) * 100)}%"></u></i></div>` : m && m.state === 'offer' ? '<div class="rqd-prog"><span><b>메인 퀘스트가 도착했어요!</b> 리퀘스트 장 맨 위를 보세요</span></div>' : '';
+    // 2026-11-23 3차 14번: 이 리퀘스트를 마쳐야 오는 다음 리퀘스트를 소문(hint)으로 알려 줌 (조건이 다 차면 「곧 찾아와요」, 아니면 남은 조건 수)
+    const RQ0 = Gm.reqOf(s), nxt = (Gm.NQ || []).filter(x => (x.cond || []).some(c => c[0] === 'done' && c[2] === L.rq.key) && !RQ0.done[x.id] && !RQ0.open.some(r => r.key === x.id)).slice(0, 2)
+      .map(x => { const [mt, tt] = Gm.reqProgress(s, x); return `<div class="rqd-li">${esc(x.hint || x.name.replace('{이름}', '모험가'))}<small>${mt >= tt ? '곧 찾아와요' : `조건 ${mt} / ${tt}`}</small></div>`; });
     rqdEl.innerHTML = `<div class="rqd-box">${rqdFace(L.rq.key, L.rq.who)}<div class="rqd-k">리퀘스트 완료</div><h2>「${esc(L.rq.name || d.name)}」</h2><div class="rqd-g">${esc(giver)}의 부탁을 들어주었어요</div>
       ${town.length ? `<div class="rqd-sec"><i>마을의 변화</i><div class="rqd-town">${town.join('')}</div></div>` : ''}
       ${got.length ? `<div class="rqd-sec"><i>받은 보상</i><div class="bk-rq rqd-got">${got.join('')}</div></div>` : ''}
+      ${nxt.length ? `<div class="rqd-sec"><i>다음 리퀘스트 소문</i>${nxt.join('')}</div>` : ''}
       ${prog}<i class="gup-bar" style="animation-duration:${RQD_MS}ms"></i></div>`;
     rqdEl.classList.remove('on'); void rqdEl.offsetWidth; rqdEl.classList.add('on');
     const pb = rqdEl.querySelector('.rqd-pop b');   // 인구 숫자가 올라감
@@ -2554,7 +2558,7 @@
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
     if (!Dlg.cur && Dlg.gap > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
     lkFx();   // 2026-11-23 메뉴 잠금: 열리는 연출
-    if (rqdQ.length && !rqdOn && !Dlg.cur) rqdNext();   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
+    if (rqdQ.length && !rqdOn && !Dlg.cur && !stage.ui.querySelector('.rq-stamp')) rqdNext();   // 2026-11-23 3차 14번: 「수락」 도장이 끝난 뒤에 (돈 내기 · 납품은 도장과 카드가 겹쳐 카드를 못 봤음)   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
     if (carOpenQ && !Dlg.cur && !Dlg.lines.length && !(Dlg.gap > 0) && !popup && !rqdOn) { carOpenQ = false; if (Gm.carHere(s).length) UI.open('car'); }   // 상단 도착 대화 뒤 상단 화면
     if (!Dlg.cur) return;
     blinkTick(dt);
@@ -2563,7 +2567,7 @@
     if (Dlg.shown < Dlg.cur.text.length) {
       Dlg.t += dt; const n = Math.min(Dlg.cur.text.length, Math.floor(Dlg.t * 28));
       if (n !== Dlg.shown) { Dlg.shown = n; q('#dlgText').textContent = Dlg.cur.text.slice(0, n); if (n >= Dlg.cur.text.length) q('#dlgNext').hidden = false; }
-    } else if ((Dlg.hold += dt) > 8) next();
+    }   // 2026-11-23 3차 4번: 글이 다 나와도 저절로 넘기지 않음 (전에는 8초 뒤 다음 줄) — 클릭 · 스페이스로만 넘김
   };
   UI.monthlyReport = function () { // 1차의 월간 보고 문장을 표정과 함께
     const m = s.lastMonth; if (!m) return;

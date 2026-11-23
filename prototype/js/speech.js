@@ -28,6 +28,10 @@
     const i = seed != null ? Math.abs(seed) % set.length : Math.floor(Math.random() * set.length);
     return set[i];
   }
+  // 2026-11-23 3차 8번 (사용자 확인 문구): 출발 전 식사 — 실제로 먹는 요리 이름을 넣은 주문 · 리나 대답. 요리를 모르면 예전 대사
+  const dishFill = (t, dish) => t.replace(/\{요리\}/g, dish);
+  function mealLine(a, dish) { const g = L.meal_dish; if (!dish || !g) return line(a, 'meal'); const t = g[tone(a)], set = t && t.length ? t : (g.plain || []); return set.length ? dishFill(set[Math.floor(Math.random() * set.length)], dish) : line(a, 'meal'); }
+  function linaMeal(dish) { const t = dish && lina('lina_meal_dish'); return t ? dishFill(t, dish) : lina('lina_meal'); }
   // 리나 말풍선 (lina_meal, lina_depart …)
   function lina(ev) { const set = SP.lina[ev] || []; return set.length ? set[Math.floor(Math.random() * set.length)] : ''; }
   // 모험가끼리 대화 (2026-11-13, docs/design/character_talk_v1.md): 말 거는 A의 말투에서 open, 대답하는 B의 말투에서 reply를 골라 이어 붙임
@@ -152,5 +156,5 @@
     const out = [fill(o), fill(r)].concat(c ? [fill(c)] : []); out.emo = [emoOf(o), emoOf(r), emoOf(c)];   // 채우기 전 글로 찾음
     return out;
   }
-  root.Speech = { line, lina, tone, talk, memTalk, joke, bind, TONE_NAME, emoOf };
+  root.Speech = { line, lina, mealLine, linaMeal, tone, talk, memTalk, joke, bind, TONE_NAME, emoOf };
 })(this);

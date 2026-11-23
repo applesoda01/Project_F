@@ -176,7 +176,7 @@
         if (!had) { T(ac, 'wait', { t: i * 0.5 }); enter(ac); } // 이번 주에 마을에 와서 바로 떠나는 경우: 입구에서 들어옴
         busy.add(a.id);
         if (x.ate && i < x.ate) { LAB(ac, '식사 중'); }
-        if (x.ate && i < x.ate) visitWindow(ac, 'meal', i === 0 ? { mode: 'talk', text: Speech.lina('lina_meal'), dur: SV } : null, Speech.line(a, 'meal'));
+        if (x.ate && i < x.ate) visitWindow(ac, 'meal', i === 0 ? { mode: 'talk', text: Speech.linaMeal ? Speech.linaMeal(x.dish) : Speech.lina('lina_meal'), dur: SV } : null, Speech.mealLine ? Speech.mealLine(a, x.dish) : Speech.line(a, 'meal'));   // 2026-11-23 3차 8번: 먹는 요리 이름 대사 (주문 · 리나 대답)
         LAB(ac, i === 0 ? '의뢰 수주 중' : '출발 준비');
         if (i === 0) visitWindow(ac, 'quest', { mode: 'paper', text: Speech.lina('lina_depart'), dur: SV, onStart: () => Board.take(qid) }, Speech.line(a, 'accept'));
         else if (party.length > 1) T(ac, 'hold', { fn: () => grp.goAt != null && D.t >= grp.goAt, max: 25 });   // ③ 대표의 출발 대화(대답 포함)를 기다림

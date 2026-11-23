@@ -59,6 +59,11 @@ meal,careful,든든히 먹고 가야죠.,식사 · 조심,smile
 meal,friendly,같이 먹자!,식사 · 다정,heart
 meal,loner,…밥.,식사 · 무뚝뚝,
 meal,plain,배부터 채우자!,식사 · 보통,note
+meal_dish,bold,{요리} 곱빼기로요!,식사 · 요리 이름 · 호탕 (2026-11-23 3차 8번),note
+meal_dish,careful,{요리} 하나 부탁드려요.,식사 · 요리 이름 · 조심,smile
+meal_dish,friendly,{요리} 하나요! 같이 먹자!,식사 · 요리 이름 · 다정,heart
+meal_dish,loner,…{요리}.,식사 · 요리 이름 · 무뚝뚝,
+meal_dish,plain,{요리} 하나 주세요!,식사 · 요리 이름 · 보통,note
 drink,bold,한 잔 더!,음료 · 호탕,note
 drink,careful,따뜻한 차 한 잔이요.,음료 · 조심,
 drink,friendly,다 같이 한잔해요!,음료 · 다정,note
@@ -85,6 +90,7 @@ rumor,*,옛 용사 파티 얘기 들었어?,소문 (잡담 중 30%),qex
 rumor,*,광산에서 이상한 빛이 났대,소문 (잡담 중 30%),qex
 rumor,*,왕국에서 보조금이 늘었다나 봐,소문 (잡담 중 30%),
 lina_meal,lina,오늘의 요리 나왔어요!,리나 말풍선,
+lina_meal_dish,lina,{요리} 나왔어요!,리나 말풍선 · 요리 이름 (2026-11-23 3차 8번),
 lina_drink,lina,음료 나왔어요!,리나 말풍선,
 lina_depart,lina,다녀오세요! 조심하시고요.,리나 말풍선,
 lina_first,lina,어서 오세요! 처음 오셨죠?,리나 말풍선,
