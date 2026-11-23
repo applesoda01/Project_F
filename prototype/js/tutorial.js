@@ -68,9 +68,10 @@
     for (const el of document.querySelectorAll('.tutGlow')) if (!want.has(el)) el.classList.remove('tutGlow');
     for (const el of want) el.classList.add('tutGlow');
     const s = getS(), t = s && s.tut, W = t && !t.base && WAIT[t.ph];
-    if (root.BookFX && root.BookFX.busy) return;   // 2026-11-23 버그 2: 책이 펼쳐지는 · 넘어가는 동안은 덮개를 그대로 둠 (켜고 끄지 않음)
     const cw = !!(later && bookOpen() && t && !t.base), sit = !!(t && t.base && t.sitSel && glowSel === t.sitSel);   // sit: 2026-11-23 2차 1번 C안 — 상황별 안내도 누를 때까지 암전 + 빛남   // 2026-11-23 2차 5 · 6: 「책을 닫으면 이어서 진행돼요」 동안은 닫기만 밝힘
     const can = (cw || sit || (W && W.dim !== false)) && !glowUntil && !document.querySelector('#placeLay.on') && !(root.UI.dlgBusy && root.UI.dlgBusy());
+    // 2026-11-23 버그 2: 책이 펼쳐지는 · 넘어가는 동안은 덮개를 새로 켜거나 구멍을 옮기지 않음. 3차 3번: 끄는 것(덮을 단계가 아님)은 책 연출 중에도 바로 — 책을 닫는 동안 옛 구멍이 남지 않게
+    if (root.BookFX && root.BookFX.busy && want.size && can) return;
     dimPaint(want.size && can ? [...want] : null, can && !!glowSel);
   }
 
@@ -179,7 +180,7 @@
     }
     if (!t || !t.on || t.base) { if (box.classList.contains('tut')) { box.classList.remove('tut'); goalKey = ''; if (root.UI.goalShow) root.UI.goalShow(); } return; }
     const i = goalIdx(t), busy = root.UI.dlgBusy && root.UI.dlgBusy();
-    const d = (!busy && later && bookOpen() ? '책을 닫으면 이어서 진행돼요' : '') || (!busy && W && W.hint && W.hint()) || (t.ph === 'week' ? '한 주가 지나면 이어서 진행돼요' : t.ph === 'away' ? '원정에서 돌아올 때까지 지켜봐 주세요' : '리나의 이야기를 들어 주세요');
+    const d = (!busy && later && bookOpen() && !(root.UI.fxBusy && root.UI.fxBusy()) ? '책을 닫으면 이어서 진행돼요' : '') || (!busy && W && W.hint && W.hint()) || (t.ph === 'week' ? '한 주가 지나면 이어서 진행돼요' : t.ph === 'away' ? '원정에서 돌아올 때까지 지켜봐 주세요' : '리나의 이야기를 들어 주세요');
     const key = i + '|' + d; if (key === goalKey && box.classList.contains('tut')) return; goalKey = key;
     box.classList.add('tut');
     box.innerHTML = `<div class="goal-k">튜토리얼 ${i + 1} / ${GOALS.length}</div><div class="goal-t">${GOALS[i]}</div><div class="goal-b"><i style="width:${Math.round(i / GOALS.length * 100)}%"></i></div><div class="goal-d new">${d}</div>`;
@@ -286,6 +287,7 @@
     if (t.pause && H.getSpeed && H.getSpeed() > 0 && !root.UI.popupName()) { t.sp = H.getSpeed(); H.setSpeed(0); }   // 기본 튜토리얼 안내 중에는 시간 멈춤 (그동안 누른 배속은 기억)
     if (!t.pause && t.resume && !root.UI.popupName() && H.getSpeed) { if (H.getSpeed() === 0) H.setSpeed(wantSp(t)); t.resume = false; }
     const W = WAIT[t.ph];
+    if (later && bookOpen() && !root.UI.dlgBusy() && root.UI.fxBusy && root.UI.fxBusy()) { hint(null); if (glowSel) unglow(); return; }   // 2026-11-23 3차 1 · 2: 요리 완성 · 수락 도장 연출이 끝난 뒤에 닫기 안내
     if (later && bookOpen() && !root.UI.dlgBusy()) { hint('책을 닫으면 이어서 진행돼요'); const cs = '#bookRibbon, #popClose'; if (glowSel !== cs) glow(cs); else paintGlow(); return; }   // 2026-11-23 2차 5 · 6: 닫기를 밝힘 (전엔 빛남만 끄고 덮개가 옛 칸에 남았음)
     if (!W || root.UI.dlgBusy()) { hint(null); if (glowSel) unglow(); return; }
     if (W.tick) W.tick();

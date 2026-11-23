@@ -335,6 +335,7 @@
     pop.appendChild(el); setTimeout(() => el.classList.add('out'), 1250); setTimeout(() => el.remove(), 1700);
   }
   UI.rqStamp = rqStamp;   // 시험용
+  UI.fxBusy = () => !!(kAnim || kSeq.length || document.querySelector('#pop .rq-stamp') || document.querySelector('.ktoast.on'));   // 2026-11-23 3차 1 · 2: 요리 완성 연출(솥 → 카드 → 리나 토스트) · 수락 도장이 끝날 때까지 튜토리얼 다음 안내(암전)를 미룸
   let carOpenQ = false, carSeen = '';   // 2026-11-20 사용자: 상단 도착 대화가 끝나면 상단 화면을 한 번 열고, 하단 경영 메뉴에 '상단' + 빨간 점
   const RQD_MS = 4500, rqdQ = [], rqAfter = []; let rqdEl = null, rqdTimer = 0, rqdOn = false;
   function rqdFace(key, who) {   // 의뢰인 얼굴: NPC 초상(눈 위치 기준으로 잘라 냄) 또는 모험가 SD 얼굴
