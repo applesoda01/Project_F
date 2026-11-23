@@ -178,6 +178,12 @@
       state: 'away', until: 0, joined: s.week, alive: true, done: 0,
       cls1: CLASS1[core], line: [core], fin: false, promoCool: 0, skills: [{ line: core, form: CLASS1[core] }], career: [{ week: s.week, text: '길드에 처음 옴' }]
     };
+    if (A.starOn) {   // 2026-11-23 모험가 개선작업 ③ 별 (사용자 20:40 「진행해줘」, 수치 [임시] · 선임 검토): ★1~3 = 레벨업 성장 배율, 창립 · 튜토리얼은 ★1
+      const P = A.starP || [0.65, 0.28, 0.07], h = ((a.id * 2654435761) ^ (s.week * 40503) ^ 0x9e37) >>> 0, u = (h % 10007) / 10007;   // 게임 난수(s.R)를 쓰지 않음 → 다른 결과가 흔들리지 않게
+      a.star = o.home ? 1 : u < P[0] ? 1 : u < P[0] + P[1] ? 2 : 3;
+      const L0 = o.home ? 1 : ((s.cfg.growth.gradeLv || [0, 4, 10, 18, 26, 35, 45])[s.grade] || 1);   // 합류 보정: 길드 등급의 최저 레벨로 옴 (F급 Lv 1 · E급 Lv 4 · D급 Lv 10)
+      while (a.lv < Math.max(1, L0)) { a.lv++; const gr = growthOf(a), m = starMul(s, a); for (let i = 0; i < 5; i++) a.stats[i] = Math.min(s.cfg.growth.statCap, a.stats[i] + gr[i] * m); }
+    }
     if (!o.home && QKr()) a.quirk = QKr().roll(s.R, a, s.cfg.quirk);   // 2026-11-20 버릇: 새로 오는 모험가의 30% [임시] (창립 · 튜토리얼 모험가는 없음). 영입할 때 공개 (사용자 결정)
     s.advs.push(a);
     if (!o.quiet) log(s, `${a.cls} ${J(a.name, '이', '가')} 길드를 처음 찾아왔습니다.${a.quirk ? ` (버릇: ${qkName(a.quirk)})` : ''}`, 'arrive', { who: [a.name] });
@@ -335,15 +341,17 @@
   function questP(s, party, q) { return isCombat(q) ? CB.predict(party.map(a => unitOf(s, a, 0)), q.seen, q.g, party[0].risk) : successP(s, party, q); }
   function perceived(s, a, p) { const err = Math.max(0, 0.10 - 0.02 * effN(s, '정보실')); return Math.min(1, p * [0.9, 1.0, 1.2][a.risk] + (s.R() * 2 - 1) * err); }
 
+  const starMul = (s, a) => s.cfg.adv.starOn ? ((s.cfg.adv.starMul || [1, 1.25, 1.5])[(a.star || 1) - 1] || 1) : 1;
+  const catchUp = (s, a) => { const A = s.cfg.adv; if (!A.starOn) return 0; const top = Math.max(...s.advs.filter(x => x.alive).map(x => x.lv)); return top - a.lv >= (A.catchGap || 3) ? (A.catchUp != null ? A.catchUp : 0.5) : 0; };   // 따라잡기: 길드 최고 레벨보다 3 이상 낮으면 경험치 +50% [임시]
   function gainXp(s, a, xp) {
-    const G = s.cfg.growth; a.xp += xp;
+    const G = s.cfg.growth, cu = catchUp(s, a); if (cu) { xp *= 1 + cu; a.cuW = s.week; } a.xp += xp;
     for (;;) {
       const need = G.lvA * Math.pow(a.lv, G.lvB);
       if (a.xp < need) break;
       if (a.lv >= lvCapOf(s, a)) { a.bank += a.xp; a.xp = 0; break; }
       a.xp -= need; a.lv++; if (a.lv % 5 === 0) remember(s, a, 'grow', { what: 'lv', lv: a.lv });
-      const gr = growthOf(a);
-      for (let i = 0; i < 5; i++) a.stats[i] = Math.min(G.statCap, a.stats[i] + gr[i]);
+      const gr = growthOf(a), sm = starMul(s, a);
+      for (let i = 0; i < 5; i++) a.stats[i] = Math.min(G.statCap, a.stats[i] + gr[i] * sm);
       // 같은 주에 여러 번 오르면 한 줄로 합침 (Lv 1 → 3)
       const lp = s.log.slice(0, 30).find(e => e.week === s.week && e.lvAdv === a.id);
       if (lp) { lp.lvTo = a.lv; lp.text = `${a.name}의 레벨이 올랐습니다. (Lv ${lp.lvFrom} → ${a.lv})`; }
