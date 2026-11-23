@@ -247,7 +247,11 @@
   }
   function drawScene(dt) {
     const v = view, e = entries().find(o => o.id === v.id); if (!e) { close(); return; }
-    const x = e.x, ok = x.dgP && !x.dgP.done ? true : x.ok != null ? x.ok : (x.fight ? x.fight.win : true), p = e.p, ph = phaseOf(p, !!x.fight);
+    // 2026-11-23 3차 16: 던전은 방마다 구간을 나눠(질문 지점 DG_AT 사이) 그 방 싸움을 구간 안에서 끝까지 보여 줌 → 「방 클리어!」 뒤에 선택지
+    const x = e.x, seg = dgSeg(x); let p = seg ? Math.max(0, Math.min(1, (e.p - seg[0]) / (seg[1] - seg[0]))) : e.p;
+    if (v.replay) { v.replay.t += realDt; p = Math.min(1, 0.3 + 0.7 * v.replay.t / DG_REPLAY); if (v.replay.t > DG_REPLAY + 0.8) v.replay.done = true; }   // 미니 뷰를 늦게 열었으면 그 방 싸움을 처음부터 다시 보여 준 뒤 질문
+    if (v.dgLp0 == null && seg) v.dgLp0 = p;
+    const ok = x.dgP && !x.dgP.done ? true : x.ok != null ? x.ok : (x.fight ? x.fight.win : true), ph = phaseOf(p, !!x.fight);
     if (ph !== v.phase && v.phaseT >= 0.5 / Math.max(speed, 1) || v.phase === null) {
       const was = v.phase; v.phase = ph; v.phaseT = 0;
       if (was && v.combat && !v.fresh) { const up = upOf(v), a = up[Math.floor(Math.random() * up.length)];   // ③ 교전 시작 · 결과 한마디
@@ -362,9 +366,10 @@
     let msg;
     if (!v.combat) { const dots = '.'.repeat(1 + Math.floor(v.t * 2) % 3);
       msg = P === 'move' ? '길을 따라 이동 중' : P === 'meet' ? '목적지에 도착했다' : P === 'fight' ? `${WORK[x.q.type]} 중${dots}` : ok ? '의뢰 완료! 길드로 돌아갑니다' : '성과 없이 돌아갑니다…'; }
-    else if (P === 'move') msg = '길을 따라 이동 중';
+    else if (P === 'move') msg = seg && x.dgP.ch.length ? '다음 방으로 이동 중' : '길을 따라 이동 중';
     else if (P === 'meet') msg = `${josa(en, '과', '와')} 조우!`;
     else if (P === 'fight') { const dn = v.actors.filter(a => a.down).map(a => a.name); msg = dn.length ? `${josa(dn.join(', '), '이', '가')} 쓰러졌다!` : `${josa(en, '과', '와')} 교전 중`; }
+    else if (seg && seg[1] < 1) msg = '방 클리어!';
     else if (ok) msg = downN.length ? `의뢰 성공! (${josa(downN.join(', '), '은', '는')} 부상)` : '의뢰 성공! 길드로 돌아갑니다';
     else if (x.fight && x.fight.result === 'wipe') msg = '전원 쓰러졌다…';
     else msg = downN.length ? `${josa(downN.join(', '), '이', '가')} 쓰러졌다… 후퇴!` : '더 버티기 어렵다… 후퇴!';
@@ -377,22 +382,27 @@
   // ---------- 던전 갈림길 · 계속/귀환 (2026-11-21 3단계 · 시안 dg_branch · dg_cont) ----------
   //   플레이어가 보낸 던전 원정은 방마다 이어서 판정(game_core dgChoose). 질문 k번째는 진행도 DG_AT[k]에 미니 뷰를 열고 묻는다.
   //   실제 시간 6초 안에 고르지 않으면 대장 성향대로 (사용자 결정 2026-11-21: 배속과 상관없이 6초) · 빛나는 쪽 = 대장이 고를 길
-  const DG_AT = [0.22, 0.44, 0.66], DG_MS = 6000;
-  let dgQ = null;   // { uid, k, kind, t0, lean }
+  const DG_AT = [0.22, 0.44, 0.66], DG_MS = 6000, DG_REPLAY = 4.5;   // DG_REPLAY: 방 싸움 다시 보기(실제 초)
+  function dgSeg(x) { if (!x || !x.dgP || x.dgP.done) return null; const k = x.dgP.ch.length; return [k ? DG_AT[k - 1] : 0, x.dgP.pend && DG_AT[k] != null ? DG_AT[k] : 1]; }   // 지금 방의 진행도 구간
+  let dgQ = null, dgHoldR = false, realDt = 0;   // { uid, k, kind, t0, lean }
   function dgAsk(s) {
     if (!Gm.dgPending) return; const P = Gm.dgPending(s);
+    if (dgHoldR && !dgQ && (!P.length || !view || !view.replay)) { dgHoldR = false; if (root.UI && root.UI.dgHold) root.UI.dgHold(false); }   // 다시 보기 중 귀환 · 미니 뷰 닫힘
     if (dgQ && !P.some(p => p.uid === dgQ.uid && p.k === dgQ.k)) dgClear();   // 귀환 등으로 사라짐
     if (dgQ) { const left = DG_MS - (performance.now() - dgQ.t0), bar = ev.querySelector('.dgAsk .tm u'); if (bar) bar.style.width = Math.max(0, left / DG_MS * 100) + '%'; const sm = ev.querySelector('.dgAsk .q small i'); if (sm) sm.textContent = Math.max(0, Math.ceil(left / 1000)); if (left <= 0) dgPick(dgQ.lean); return; }
     const p = P[0]; if (!p) return; const x = s.active.find(z => z.uid === p.uid); if (!x) return;
     const e = entries().find(o => o.x === x); if (!e || e.p < (DG_AT[p.k] != null ? DG_AT[p.k] : 0.7)) return;
     if (sel !== x.q.id) { if (sel != null) close(); open(x.q.id); }
-    dgQ = { uid: p.uid, k: p.k, kind: p.kind, t0: performance.now(), lean: !!p.lean };
+    // 2026-11-23 3차 16: 방 싸움을 못 본 채(미니 뷰를 늦게 열었거나 닫혀 있었음) 질문 시점이 되면 → 시계를 멈추고 그 방 싸움을 처음부터 보여 준 뒤 「방 클리어!」 → 질문
+    if (view && (view.dgLp0 == null || view.dgLp0 > 0.3) && !view.replay) { close(); open(x.q.id); if (view) { view.replay = { t: 0 }; view.dgLp0 = 0; } if (root.UI && root.UI.dgHold) root.UI.dgHold(true); dgHoldR = true; return; }
+    if (view && view.replay && !view.replay.done) return;
+    dgQ = { uid: p.uid, k: p.k, kind: p.kind, t0: performance.now(), lean: !!p.lean }; dgHoldR = false;
     if (root.UI && root.UI.dgHold) root.UI.dgHold(true);   // 묻는 동안 시계 멈춤 — 1주 원정 안에 질문 3개가 다 나오도록
     const lead = s.advs.find(a => a.id === x.party[0]), hp = p.hp;
     const box = document.createElement('div'); box.className = 'dgAsk';
     box.innerHTML = p.kind === 'path'
-      ? `<div class="q">갈림길 — 어느 길로?<small><i>6</i>초</small></div><div class="bt"><span class="rk ${p.lean ? 'lean' : ''}" data-v="1">좁은 통로 (위험)<em>적 강함 · 보상 +</em></span><span class="sf ${p.lean ? '' : 'lean'}" data-v="0">넓은 길 (안전)<em>적 약함</em></span></div><div class="tm"><u></u></div>`
-      : `<div class="q">대장이 있습니다 · 체력 ${hp}%<small><i>6</i>초</small></div><div class="bt"><span class="go ${p.lean ? 'lean' : ''}" data-v="1">계속<em>보스 · 보상 +</em></span><span class="bk ${p.lean ? '' : 'lean'}" data-v="0">귀환<em>얻은 것만 챙김</em></span></div><div class="tm"><u></u></div>`;
+      ? `<div class="tm"><u></u></div><div class="q">갈림길 — 어느 길로?<small><i>6</i>초</small></div><div class="bt"><span class="rk ${p.lean ? 'lean' : ''}" data-v="1">좁은 통로 (위험)<em>적 강함 · 보상 +</em></span><span class="sf ${p.lean ? '' : 'lean'}" data-v="0">넓은 길 (안전)<em>적 약함</em></span></div>`
+      : `<div class="tm"><u></u></div><div class="q">대장이 있습니다 · 체력 ${hp}%<small><i>6</i>초</small></div><div class="bt"><span class="go ${p.lean ? 'lean' : ''}" data-v="1">계속<em>보스 · 보상 +</em></span><span class="bk ${p.lean ? '' : 'lean'}" data-v="0">귀환<em>얻은 것만 챙김</em></span></div>`;
     box.addEventListener('pointerdown', ev_ => ev_.stopPropagation()); box.addEventListener('pointerup', ev_ => ev_.stopPropagation());
     box.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', ev_ => { ev_.stopPropagation(); dgPick(b.dataset.v === '1'); }));
     ev.appendChild(box);
@@ -404,7 +414,7 @@
   }
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   X.update = function (dt, weekFrac, sp) {
-    const s = getS(); frac = weekFrac; speed = sp; clock += dt;
+    const s = getS(); frac = weekFrac; speed = sp; clock += dt; realDt = dt;
     const hide = !!(root.Town && root.Town.active);   // 마을 화면에서는 숨김
     if (hide !== X.hidden) { X.hidden = hide; for (const id of ['#hudExp', '#expView', '#expTip']) ui.querySelector(id).style.visibility = hide ? 'hidden' : ''; }
     // 귀환 감지: 지난 프레임에 있던 원정이 사라지면 2.2초(배속 반영) 동안 "귀환"으로 남김
@@ -415,7 +425,7 @@
     known.clear(); for (const [id, x] of now) known.set(id, x);
     for (const [id, gh] of ghosts) if (clock - gh.doneAt > 2.2 / Math.max(1, sp)) { ghosts.delete(id); changed = true; if (sel === id) close(); }
     if (changed) render(); else if (Math.floor(clock * 4) !== Math.floor((clock - dt) * 4)) soft();
-    if (view) drawScene(sp > 0 ? dt * Math.min(3, sp) : 0);
+    if (view) drawScene(sp > 0 ? dt * Math.min(3, sp) : view.replay && !view.replay.done ? dt : 0);   // 다시 보기는 시계가 멈춰 있어도 움직임
     dgAsk(s);   // 2026-11-21 던전 갈림길 · 계속/귀환
   };
   root.Expedition = X;
