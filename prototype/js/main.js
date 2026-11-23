@@ -30,6 +30,7 @@
   function step() {
     const before = Director.snap(s), g0 = s.grade, top = s.log[0];
     Gm.stepWeek(s);
+    if (s.subPaid) { UI.toast(`왕국 보조금 +${s.subPaid}G`, 'info'); delete s.subPaid; }   // 2026-11-23 4차 13번
     Director.onWeek(before, s, Lobby.Board);
     const fresh = []; for (const L of s.log) { if (L === top) break; fresh.push(L); }
     UI.onLogs(fresh.reverse());

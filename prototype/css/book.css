@@ -1233,3 +1233,8 @@ body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 .bk-back{margin:0 0 8px}
 .bk-back button{padding:2px 10px;border:1px solid rgba(110,72,36,.35);border-radius:6px;background:rgba(255,248,230,.7);color:#6b4a2a;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .bk-back button:hover{background:#fff0d0}
+
+/* 2026-11-23 4차 7번 A안: 놓을 수 있는 설비는 원래 색 + 초록 가격 · 표시 (돈 모자란 칸은 흐림 + 빨간 가격 그대로) */
+.bk-fac .fc.can .fb-ic.empty img{opacity:1;filter:none}.bk-fac .fc.can small{color:#3f7a3a}
+.bk-fac .bk-l .fc.can .mk{color:#3f7a3a;background:rgba(63,122,58,.12);border-color:rgba(63,122,58,.5)}
+.bk-fac .fc.poorc .fb-ic img{opacity:.45;filter:grayscale(.6)}

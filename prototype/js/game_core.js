@@ -1546,7 +1546,8 @@
   function monthly(s) {
     const E = s.cfg.econ, A = s.cfg.adv, T = s.cfg.town, GE = s.cfg.gear;
     if (E.subsidyMode === 1) {   // 2026-11-17 V2 결정 13: 6 · 12월 말 반기 지급 = 반기 동안 성공한 외부 의뢰 기본 보상 합 × 50% [임시]
-      if ((s.week / WPM) % (E.subsidyEvery || 6) === 0) { /* 2026-11-18 결정 23: 지급 간격(달) — 1 = 4주마다 [임시], 6 = 반기 */ const pay = Math.floor((s.subHalf || 0) * (E.subsidyRate != null ? E.subsidyRate : 0.5) + 1e-9); s.gold += pay; s.month.subsidy += pay; s.month.subsidyBase = s.subHalf || 0; s.subHalf = 0; }
+      if ((s.week / WPM) % (E.subsidyEvery || 6) === 0) { /* 2026-11-18 결정 23: 지급 간격(달) — 1 = 4주마다 [임시], 6 = 반기 */ const pay = Math.floor((s.subHalf || 0) * (E.subsidyRate != null ? E.subsidyRate : 0.5) + 1e-9); s.gold += pay; s.month.subsidy += pay; s.month.subsidyBase = s.subHalf || 0; s.subHalf = 0;
+        if (pay > 0) { log(s, `왕국 보조금 ${pay}G가 들어왔습니다. (이번 달 성공한 의뢰 보상의 ${Math.round((E.subsidyRate != null ? E.subsidyRate : 0.5) * 100)}%)`, 'guild'); s.subPaid = pay; } }   // 2026-11-23 4차 13번: 받을 때 기록 · 알림 (전엔 장부 숫자만)
     } else { s.gold += E.subsidy[s.grade]; s.month.subsidy += E.subsidy[s.grade]; }   // 예전: 등급별 매달 고정
     if (s.settled) for (const k in s.settled) if (s.settled[k] < s.week - 12) delete s.settled[k];
     consignMonthly(s);   // 위탁품 판매 정산 (결정 12)
