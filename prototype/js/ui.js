@@ -1465,8 +1465,8 @@
     const C = s.cfg.contract, D = Gm.contractDefault(s);
     if (cmd === 'reset') { ctDraft = Object.assign({ aid: a.id }, D); renderPopup(); return; }
     if (cmd === 'go') { const r = Gm.contractPropose(s, a.id, { weeks: ctDraft.weeks, rate: ctDraft.rate, pay: ctDraft.pay, sup: ctDraft.sup });
-      if (r.ok) { UI.say([{ name: a.name, face: 'smile', text: r.line, adv: a }, { name: '리나', face: 'smile', text: `${a.name} 씨와 ${a.contract && a.contract.next ? '계약을 갱신했어요' : '계약을 맺었어요'}!` }]); advView = 'detail'; hooks.changed(); bookSync('advs'); }   // 2026-11-20 사용자: 알림 대신 대화
-      else if (r.line) UI.say([{ name: a.name, face: 'smile', text: r.line, adv: a }]); else toast(r.why, 'warn');
+      if (r.ok) { UI.say([{ name: a.name, face: 'smile', text: r.line, adv: a }, { name: '리나', face: 'smile', text: `${a.name} 씨와 ${a.contract && a.contract.next ? '계약을 갱신했어요' : '계약을 맺었어요'}!` }], { urgent: true }); advView = 'detail'; hooks.changed(); bookSync('advs'); }   // 2026-11-20 사용자: 알림 대신 대화
+      else if (r.line) UI.say([{ name: a.name, face: 'smile', text: r.line, adv: a }], { urgent: true }); else toast(r.why, 'warn');   // 2026-11-23 버그 12: 버튼에 대한 바로 반응이라 책이 열려 있어도 바로 보여 줌
       renderPopup(); return; }
     const [k, v] = cmd.split(':'), max = { pay: C.payMax, sup: C.supMax }[k];
     if (v === '+' || v === '-') ctDraft[k] = Math.max(0, Math.min(max, ctDraft[k] + (v === '+' ? C.step : -C.step)));
@@ -2384,9 +2384,11 @@
   // 2026-11-22 시안 6 반영: 책이 열려 있으면 대화를 미뤘다가 책을 닫을 때 보여 줌 (급한 것: 기본 튜토리얼 · 침공 중 · urgent 표시는 바로)
   const dlgLater = [];
   const dlgUrgent = () => (root.Tutorial && root.Tutorial.active && root.Tutorial.active() && s.tut && !s.tut.base) || (root.Invasion && root.Invasion.on);
-  const dlgHold = () => !!popup && !dlgUrgent();   // 장면 사이 쉼에서 책이 열려 있으면 다음 장면을 미룸
+  const dlgNextUrgent = () => { const L = Dlg.cur || Dlg.lines.find(x => !x.brk && !x.fn); return !!(L && L.urgent); };   // 지금 줄(없으면 다음 줄)이 urgent 인가
+  const dlgHold = () => !!popup && !dlgUrgent() && !dlgNextUrgent();   // 장면 사이 쉼 · 첫 줄 대기에서 책이 열려 있으면 미룸 (urgent 줄은 안 멈춤 — 2026-11-23 버그 12)
   UI.say = function (lines, opt) { // [{face:'smile', text:'…'}, …]
     if (!lines || !lines.length) return;
+    if (opt && opt.urgent) lines = lines.map(L => Object.assign({}, L, { urgent: true }));   // 줄마다 표시해 둬야 첫 줄 대기(Dlg.wait)에서 dlgHold 가 알아봄
     if (popup && !(opt && opt.urgent) && !dlgUrgent() && !Dlg.open) { dlgLater.push(lines); UI.reqBadge && UI.reqBadge(); return; }
     if (Dlg.cur || Dlg.lines.length || Dlg.gap > 0) Dlg.lines.push({ brk: true });   // 앞 장면이 아직 있으면 장면 나눔
     Dlg.lines.push(...lines);
