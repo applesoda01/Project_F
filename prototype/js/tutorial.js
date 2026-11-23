@@ -34,7 +34,7 @@
   // 2026-11-23 버그 2 (책을 펼칠 때 암전 깜빡임): 책이 펼쳐지는 동안 「밝힌 칸이 눌리는가」 결과가 프레임마다 바뀌며 켜짐 · 꺼짐을 오갔음
   //   → 켜고 끄는 결정은 같은 결과가 0.25초 이어질 때만 따름 (구멍 모양은 켜진 동안 매 프레임 갱신)
   let dimWant = false, dimSince = 0;
-  const dimStable = (on, ms) => { const now = performance.now(); if (on !== dimWant) { dimWant = on; dimSince = now; } return now - dimSince >= (ms || 250); };
+  const dimStable = (on, ms) => { const now = performance.now(); if (on !== dimWant) { dimWant = on; dimSince = now; } return now - dimSince >= (ms == null ? 250 : ms); };
   const dimOff = ms => { if (dimStable(false, ms) && dimOn) { dimEl.style.display = 'none'; dimOn = false; } };   // 밝힐 칸이 「아직 안 눌림」(창 · 책이 막 열리는 중)이면 1초까지 기다림
   function dimPaint(els, soft) {   // soft: 이번 단계는 덮는 단계인데 밝힐 칸이 잠깐 없음(창이 다시 그려지는 중) → 1초까지 그대로 둠
     const ui = layer();
@@ -43,7 +43,7 @@
       pth.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); if (hintEl) { hintEl.classList.remove('shake'); void hintEl.offsetWidth; hintEl.classList.add('shake'); } paintGlow(); });
     }
     if (!dimEl.isConnected) ui.appendChild(dimEl);
-    if (!els || !els.length) { dimOff(soft ? 1000 : 250); return; }
+    if (!els || !els.length) { dimOff(soft ? 1000 : 0); return; }   // 2026-11-23 2차 3 · 4 · 5 · 6: 덮을 단계가 아니면(대화 · 기다림) 바로 끔 — 0.25초 기다림은 깜빡임 방지용으로 「밝힐 칸이 잠깐 없음」(soft)에만
     const ur = ui.getBoundingClientRect(), k = ur.width / 1920 || 1;
     // 2026-11-19 안전장치: 밝힌 칸이 실제로 눌리는지(가운데를 찍어 그 요소가 맞는지) 보고, 하나도 안 눌리면 덮지 않음
     // 2026-11-23 버그 2 진짜 원인: 덮개 path는 CSS로 pointer-events가 따로 켜져 있어 svg만 끄면 검사 때 덮개 자신이 찍혔음 → 켜진 덮개의 구멍이 옛 자리면 「안 눌림」 → 꺼짐 → 다음 프레임 「눌림」 → 켜짐을 반복. path도 함께 끔
@@ -69,7 +69,8 @@
     for (const el of want) el.classList.add('tutGlow');
     const s = getS(), t = s && s.tut, W = t && !t.base && WAIT[t.ph];
     if (root.BookFX && root.BookFX.busy) return;   // 2026-11-23 버그 2: 책이 펼쳐지는 · 넘어가는 동안은 덮개를 그대로 둠 (켜고 끄지 않음)
-    const can = W && W.dim !== false && !glowUntil && !document.querySelector('#placeLay.on') && !(root.UI.dlgBusy && root.UI.dlgBusy());
+    const cw = !!(later && bookOpen() && t && !t.base), sit = !!(t && t.base && t.sitSel && glowSel === t.sitSel);   // sit: 2026-11-23 2차 1번 C안 — 상황별 안내도 누를 때까지 암전 + 빛남   // 2026-11-23 2차 5 · 6: 「책을 닫으면 이어서 진행돼요」 동안은 닫기만 밝힘
+    const can = (cw || sit || (W && W.dim !== false)) && !glowUntil && !document.querySelector('#placeLay.on') && !(root.UI.dlgBusy && root.UI.dlgBusy());
     dimPaint(want.size && can ? [...want] : null, can && !!glowSel);
   }
 
@@ -153,7 +154,7 @@
         const s = getS(), r = s.req && s.req.open.find(x => x.id === s.tut.rid), card = `[data-rq="${s.tut.rid}"]`; if (!r) return null;
         if (!document.querySelector(card + '.on')) return card;
         if (r.party.length && document.querySelector('[data-rqact="send"]:not([disabled]):not(.soft-off)')) return '[data-rqact="send"]';   // 2026-11-19: 조건을 못 채운 보내기(soft-off)는 밝히지 않고 모험가 줄을 밝힘 (암전 버그)
-        return '[data-rqnom]:not(.no)'; }, hint: () => '리퀘스트 장에서 들개 떼 리퀘스트에 모험가를 지명해 보내 주세요',
+        return '[data-rqnom]:not(.no)'; }, hint: () => '리퀘스트 장에서 모험가를 지명해 보내 주세요',
       test: () => { const s = getS(), r = s.req && s.req.open.find(x => x.id === s.tut.rid); return !r || r.state === 'queued' || r.state === 'active'; },
       done() { const t = getS().tut; t.ph = 'wait'; t.nomGo = true; whenClosed(() => say('FT0006', 3, () => { t.base = true; t.noGo = false; t.step = null; t.ph = null; hold(false); })); } }
   };
@@ -172,7 +173,7 @@
     const box = document.querySelector('#goalBox'); if (!box) return;
     if (t && firstReqWait()) {
       if (goalKey === 'req1' && box.classList.contains('tut')) return; goalKey = 'req1'; box.classList.add('tut'); const n = GOALS.length;
-      box.innerHTML = `<div class="goal-k">튜토리얼 ${n} / ${n}</div><div class="goal-t">${GOALS[n - 1]}</div><div class="goal-b"><i style="width:${Math.round((n - 1) / n * 100)}%"></i></div><div class="goal-d new">모험가가 리퀘스트를 마치고 돌아올 때까지 지켜봐 주세요</div>`;
+      box.innerHTML = `<div class="goal-k">튜토리얼 ${n} / ${n}</div><div class="goal-t">${GOALS[n - 1]}</div><div class="goal-b"><i style="width:${Math.round((n - 1) / n * 100)}%"></i></div><div class="goal-d new">모험가가 돌아올 때까지 지켜봐 주세요</div>`;
       return;
     }
     if (!t || !t.on || t.base) { if (box.classList.contains('tut')) { box.classList.remove('tut'); goalKey = ''; if (root.UI.goalShow) root.UI.goalShow(); } return; }
@@ -221,7 +222,7 @@
       if (!ok) continue;
       t.seen[id] = s.week; t.cur = who ? who(s) : null;
       if (fx) { fx(s); root.UI.hud(); }
-      say(id, 1, () => { t.cur = null; if (sel) glow(sel, 10); if (id === 'FT0007') t.ph = 'upg'; });
+      say(id, 1, () => { t.cur = null; if (sel) { t.sitSel = sel; glow(sel); } if (id === 'FT0007') t.ph = 'upg'; });   // 2026-11-23 2차 1번 C안: 10초 빛남 → 그 버튼을 누를 때까지 암전 + 빛남
       return true;
     }
     return false;
@@ -240,6 +241,8 @@
       after(1.2, () => go('FT0003'));
     };
     document.addEventListener('click', clickHook, true);
+    // 2026-11-23 2차 1번 C안: 상황별 안내로 빛나는 버튼을 누르면 암전 · 빛남을 끔
+    document.addEventListener('click', e => { const s = getS(), t = s && s.tut; if (!t || !t.sitSel || !e.target.closest) return; if (e.target.closest(bookSel(t.sitSel)) || e.target.closest(t.sitSel)) { t.sitSel = null; unglow(); } }, true);
   };
   // 새 게임용 설정: 시작 인원 0명 + 튜토리얼 상태
   T.fresh = function (ns) { ns.tut = { on: true, base: false, step: 'FT0001', ph: 'talk', seen: {}, wid: null, aid: null, noGo: false, pause: true }; return ns; };
@@ -265,19 +268,24 @@
   T.update = function (dt) {
     clock += dt;
     for (let i = timers.length - 1; i >= 0; i--) if (clock >= timers[i].at) { const f = timers[i].fn; timers.splice(i, 1); f(); }
+    // 2026-11-23 2차 3 · 4 · 5 · 6 원인: 빛낼 곳이 없어지면(unglow) 덮개 끄기를 한 번만 시도했는데, 끄기는 0.25초 같은 결과가 이어져야 해서 첫 시도에서 안 꺼짐 → 그 뒤로 다시 부르지 않아
+    //   덮개가 옛 구멍째로 남았음(바닥의 밝은 네모 흔적 · 대화창 · 캐릭터 암전 · 닫기 대신 옛 칸이 밝음). 덮개가 켜져 있고 빛낼 곳이 없으면 매 프레임 끄기 확인
+    if (dimOn && !glowSel) dimPaint(null);
     if (later && !bookOpen()) { const f = later; later = null; after(0.6, f); }
     const s = getS(), t = s && s.tut; goalPaint(t, t && WAIT[t.ph]); if (!t || !t.on) { if (glowSel) unglow(); return; }
     if (glowSel && glowUntil && clock > glowUntil) unglow();
     if (t.base && t.resume && !root.UI.popupName() && H.getSpeed) { if (H.getSpeed() === 0) H.setSpeed(wantSp(t)); t.resume = false; }   // 튜토리얼 끝(FT0006) 뒤 책을 닫으면 저절로 시작
     if (t.base) {
       if (t.ph === 'upg' && Gm.upg(s, '접수대') && !root.UI.dlgBusy()) { t.ph = null; say('FT0007', 2); }
-      hint(null); if (glowSel && !glowUntil) unglow(); else if (glowSel) paintGlow();
+      hint(null);
+      if (t.sitSel && !root.UI.dlgBusy()) { if (glowSel !== t.sitSel) glow(t.sitSel); else paintGlow(); }   // 누를 버튼이 안 보이면(창이 바뀜) 덮개 안전장치가 덮지 않음
+      else if (glowSel && !glowUntil) unglow(); else if (glowSel) paintGlow();
       return;
     }
     if (t.pause && H.getSpeed && H.getSpeed() > 0 && !root.UI.popupName()) { t.sp = H.getSpeed(); H.setSpeed(0); }   // 기본 튜토리얼 안내 중에는 시간 멈춤 (그동안 누른 배속은 기억)
     if (!t.pause && t.resume && !root.UI.popupName() && H.getSpeed) { if (H.getSpeed() === 0) H.setSpeed(wantSp(t)); t.resume = false; }
     const W = WAIT[t.ph];
-    if (later && bookOpen() && !root.UI.dlgBusy()) { hint('책을 닫으면 이어서 진행돼요'); if (glowSel) unglow(); return; }
+    if (later && bookOpen() && !root.UI.dlgBusy()) { hint('책을 닫으면 이어서 진행돼요'); const cs = '#bookRibbon, #popClose'; if (glowSel !== cs) glow(cs); else paintGlow(); return; }   // 2026-11-23 2차 5 · 6: 닫기를 밝힘 (전엔 빛남만 끄고 덮개가 옛 칸에 남았음)
     if (!W || root.UI.dlgBusy()) { hint(null); if (glowSel) unglow(); return; }
     if (W.tick) W.tick();
     const sel = W.glow ? W.glow() : null; if (sel !== glowSel) glow(sel); else paintGlow();

@@ -5,7 +5,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif}
 #game{position:fixed;inset:0}
-.stage-host{position:relative;overflow:hidden}
+.stage-host{position:relative;overflow:hidden;overflow:clip}   /* 2026-11-23: clip = 프로그램으로도 굴려지지 않음 (안 되는 브라우저는 hidden + stage.js 굴림 되돌리기) */
 .stage-box{position:absolute}
 .stage-canvas{position:absolute;left:0;top:0;display:block}
 .stage-ui{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;pointer-events:none;font-size:22px}
@@ -122,6 +122,7 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 #goalBox .goal-b{position:relative;height:8px;margin:7px 0 6px;border-radius:4px;background:rgba(110,72,36,.16);overflow:hidden}
 #goalBox .goal-b i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#d9a441,#e9c062)}
 #goalBox .goal-d{font:600 14px/1.45 "Malgun Gothic",sans-serif;color:#6b4a2c}
+#goalBox.tut{width:400px;min-width:0;max-width:none;box-sizing:border-box}#goalBox.tut .goal-d{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* 2026-11-23 2차 7: 튜토리얼 목표 칸 크기 고정 (글이 길어도 늘어나지 않음) */
 #goalBox .goal-d.warn{color:#b3361f;font-weight:800}
 #goalBox .goal-d.new{color:#2f7f7a;font-weight:800}
 #goalBox.main{border-color:rgba(176,52,30,.6)}

@@ -8,6 +8,8 @@
   function Stage(host) {
     this.host = host;
     host.classList.add('stage-host');
+    // 2026-11-23: 창이 화면 크기와 딱 같을 때(1920×1080) 브라우저가 안쪽 요소를 보이게 하려고 화면 칸(#game)을 위로 굴려 화면 전체가 186px 밀리던 것 → 굴림을 늘 0으로
+    host.addEventListener('scroll', () => { if (host.scrollTop || host.scrollLeft) { host.scrollTop = 0; host.scrollLeft = 0; } });
     this.box = document.createElement('div'); this.box.className = 'stage-box';
     this.canvas = document.createElement('canvas'); this.canvas.className = 'stage-canvas';
     this.ui = document.createElement('div'); this.ui.className = 'stage-ui';
