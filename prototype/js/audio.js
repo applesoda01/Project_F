@@ -27,14 +27,24 @@
       .then(a => new Promise((res, rej) => ctx.decodeAudioData(a, res, rej))).catch(() => null);
     return bufs[u];
   }
+  // 2026-11-23 버그 3 (사용자: 반복 구간이 너무 이름 → 페이드 없이 곡 전체가 끝나면 처음부터): intro + loop를 한 곡으로 이어 붙여 통째로 반복
+  const whole = {};   // 곡 이름 → Promise<AudioBuffer|null>
+  function wholeOf(k) {
+    if (!whole[k]) whole[k] = Promise.all([load(url(k, 'intro')), load(url(k, 'loop'))]).then(([bi, bl]) => {
+      delete bufs[url(k, 'intro')]; delete bufs[url(k, 'loop')];
+      if (!bl) return null; if (!bi) return bl;
+      const ch = Math.max(bi.numberOfChannels, bl.numberOfChannels), sr = bl.sampleRate, out = ctx.createBuffer(ch, bi.length + bl.length, sr);
+      for (let c = 0; c < ch; c++) { const o = out.getChannelData(c); o.set(bi.getChannelData(Math.min(c, bi.numberOfChannels - 1)), 0); o.set(bl.getChannelData(Math.min(c, bl.numberOfChannels - 1)), bi.length); }
+      return out;
+    });
+    return whole[k];
+  }
   function startWA(k) {
     const g = ctx.createGain(); g.gain.value = 0; g.connect(ctx.destination);
     const tr = { k, g, gain: 0, out: false, srcs: [] };
-    Promise.all([load(url(k, 'intro')), load(url(k, 'loop'))]).then(([bi, bl]) => {
-      if (tr.out || !bl) return;
-      let t = ctx.currentTime + 0.05;
-      if (bi) { const si = ctx.createBufferSource(); si.buffer = bi; si.connect(g); si.start(t); tr.srcs.push(si); t += bi.duration; }   // intro 끝나는 순간에 loop를 정확히 붙임
-      const sl = ctx.createBufferSource(); sl.buffer = bl; sl.loop = true; sl.connect(g); sl.start(t); tr.srcs.push(sl);
+    wholeOf(k).then(b => {
+      if (tr.out || !b) return;
+      const sl = ctx.createBufferSource(); sl.buffer = b; sl.loop = true; sl.connect(g); sl.start(ctx.currentTime + 0.05); tr.srcs.push(sl);
     });
     return tr;
   }
@@ -56,7 +66,7 @@
   function kill(tr) {
     if (!tr.g) { tr.intro.pause(); tr.loop.pause(); return; }
     stopWA(tr);
-    if (!Snd.cur || Snd.cur.k !== tr.k) { delete bufs[url(tr.k, 'intro')]; delete bufs[url(tr.k, 'loop')]; }   // 풀어 둔 곡은 곡당 약 60MB → 지금 계절이 아니면 버림
+    if (!Snd.cur || Snd.cur.k !== tr.k) { delete bufs[url(tr.k, 'intro')]; delete bufs[url(tr.k, 'loop')]; delete whole[tr.k]; }   // 풀어 둔 곡은 곡당 약 60MB → 지금 계절이 아니면 버림
   }
   function stop(tr) { tr.out = true; Snd.fade.push(tr); }
 
@@ -79,10 +89,16 @@
     }
   };
   // 브라우저는 사용자가 한 번 누르기 전에는 소리를 막는다 → 첫 클릭·키 입력에서 풀어 준다 (Web Audio도 이때 깨움)
+  // 2026-11-23 버그 1 (사용자: 타이틀 음악이 시작부터 나와야 함): 페이지를 열자마자 소리 엔진을 만들고 곡을 걸어 둠.
+  //   브라우저가 허락하면(이 사이트를 전에 눌러 본 적이 있는 등) 바로 들리고, 막으면 엔진이 멈춘 채 기다리다 첫 클릭 · 키 입력에서 이어서 들림
+  //   전에는 첫 입력 전까지 곡을 걸지도 않았고, 입력 전에 unlock이 불리면 멈춘 엔진을 다시 깨우지 못했음 → 입력마다 깨우고, 깨어나면 듣기를 그만둠
   const unlock = Snd.unlock = () => {   // 타이틀(iframe) 안을 눌러도 풀리게 main.js가 부름
-    if (Snd.unlocked) return;
-    Snd.unlocked = true; ensureCtx(); ['pointerdown', 'keydown'].forEach(e => root.removeEventListener(e, unlock, true)); };
+    Snd.unlocked = true; const c = ensureCtx();
+    if (!c || c.state === 'running') ['pointerdown', 'keydown'].forEach(e => root.removeEventListener(e, unlock, true));
+    else c.resume().then(() => { if (c.state === 'running') ['pointerdown', 'keydown'].forEach(e => root.removeEventListener(e, unlock, true)); }).catch(() => {});
+  };
   ['pointerdown', 'keydown'].forEach(e => root.addEventListener(e, unlock, true));
+  if (AC) { ensureCtx(); if (ctx) Snd.unlocked = true; }   // 바로 곡을 걸어 둠 (Web Audio가 있을 때만. 예전 <audio> 방식은 첫 입력을 기다림)
   Snd.set = function (k, v) { Opt[k] = v; save(); };
   // 효과음 음량 = 전체 × 효과음 (효과음은 아직 없음 — 효과음을 넣을 때 재생 음량에 이 값을 곱함)
   Snd.sfxVol = () => Opt.mute ? 0 : clamp(Opt.master == null ? 1 : Opt.master) * clamp(Opt.sfx == null ? 0.8 : Opt.sfx);

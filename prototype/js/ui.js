@@ -126,7 +126,8 @@
       rsz.addEventListener('dblclick', () => { setRows(DEF_ROWS); try { localStorage.removeItem(H_KEY); } catch (er) {} ll.scrollTop = ll.scrollHeight; });
     }
     // 위치: 왼쪽 아래 기본, 끌어서 이동 (왼쪽·아래 여백을 저장)
-    const clampPos = (x, b) => ({ x: Math.max(0, Math.min(1920 - 440, x)), b: Math.max(0, Math.min(1080 - 60, b)) });
+    // 2026-11-23 버그 4: 일시정지 · 배속 버튼(#hudTR, 왼쪽 아래 높이 64 + 배속 칩 펼침 약 300px)과 겹치지 않게 — 그 가로 범위에서는 버튼 위(아래 여백 96px)까지만 내려감. 예전에 저장한 위치도 같은 규칙으로 고침
+    const clampPos = (x, b) => { x = Math.max(0, Math.min(1920 - 440, x)); return { x, b: Math.max(x < 330 ? 96 : 0, Math.min(1080 - 60, b)) }; };
     const apply = p => { const c = clampPos(p.x, p.b); box.style.left = c.x + 'px'; box.style.bottom = c.b + 'px'; return c; };
     try { const sv = JSON.parse(localStorage.getItem(POS_KEY) || 'null'); if (sv && isFinite(sv.x) && isFinite(sv.b)) apply(sv); } catch (e) {}
     let drag = null;
@@ -211,7 +212,7 @@
         if (L.rq.ev === 'req' && fr && !(R0.first = R0.first || {})[L.rq.key]) { R0.first[L.rq.key] = 1; ls = ls.concat(rqLinesOf(L.rq.key, 'first', L.rq.who)); }
         ls = ls.concat(rqLinesOf(L.rq.key, L.rq.ev, L.rq.who));
         if (L.rq.ev === 'ok' && Gm.NQ_BY[L.rq.key].type === 'town') ls = ls.concat(rqLinesOf(L.rq.key, 'req2', L.rq.who));
-        if (ls.length) UI.say(ls);
+        if (ls.length) { if (L.rq.ev === 'req' && (rqdQ.length || rqdOn || rqAfter.length)) rqAfter.push(ls); else UI.say(ls); }   // 2026-11-23 버그 10: 완료 카드가 남아 있으면 새 리퀘스트 대사는 카드가 닫힌 뒤
         if (L.rq.ev === 'ok2' || L.rq.ev === 'ok_y2' || (L.rq.ev === 'ok' && Gm.NQ_BY[L.rq.key] && Gm.NQ_BY[L.rq.key].type !== 'town')) rqdShow(L);   // 완료 카드 (대사가 끝나면 뜸)
         if (popup === 'req') renderPopup(); else UI.reqBadge();
       }
@@ -270,7 +271,7 @@
   }
   UI.rqStamp = rqStamp;   // 시험용
   let carOpenQ = false, carSeen = '';   // 2026-11-20 사용자: 상단 도착 대화가 끝나면 상단 화면을 한 번 열고, 하단 경영 메뉴에 '상단' + 빨간 점
-  const RQD_MS = 4500, rqdQ = []; let rqdEl = null, rqdTimer = 0, rqdOn = false;
+  const RQD_MS = 4500, rqdQ = [], rqAfter = []; let rqdEl = null, rqdTimer = 0, rqdOn = false;
   function rqdFace(key, who) {   // 의뢰인 얼굴: NPC 초상(눈 위치 기준으로 잘라 냄) 또는 모험가 SD 얼굴
     const d = Gm.NQ_BY[key]; if (!d) return '';
     const a = who != null ? s.advs.find(x => x.id === who) : null;
@@ -282,7 +283,7 @@
   function rqdShow(L) { rqdQ.push(L); }
   function rqdNext() {
     clearTimeout(rqdTimer); const L = rqdQ.shift();
-    if (!L) { rqdOn = false; if (rqdEl) rqdEl.classList.remove('on'); return; }
+    if (!L) { rqdOn = false; if (rqdEl) rqdEl.classList.remove('on'); while (rqAfter.length) UI.say(rqAfter.shift()); return; }
     const d = Gm.NQ_BY[L.rq.key]; if (!d) { rqdNext(); return; }
     if (!rqdEl) { rqdEl = document.createElement('div'); rqdEl.id = 'rqdLay'; stage.ui.appendChild(rqdEl); rqdEl.addEventListener('pointerdown', () => rqdNext()); }
     rqdOn = true;
@@ -391,7 +392,7 @@
   // 목표 안내판 (2026-11-16 동료 피드백 "초반에 뭘 해야 할지 모르겠음" → 가안: 늘 보이는 작은 판). 누르면 리퀘스트 장
   function goalShow() {
     const box = q('#goalBox'); if (!box || !Gm.mainView) return;
-    if (root.Tutorial && root.Tutorial.active && root.Tutorial.active()) { if (root.Tutorial.goalPaint) root.Tutorial.goalPaint(); return; }   // 기본 튜토리얼 동안은 튜토리얼 목표 (tutorial.js goalPaint)
+    if (root.Tutorial && (root.Tutorial.goalOwn ? root.Tutorial.goalOwn() : root.Tutorial.active && root.Tutorial.active())) { if (root.Tutorial.goalPaint) root.Tutorial.goalPaint(); return; }   // 2026-11-23 버그 8: 첫 리퀘스트가 돌아올 때까지 포함 · 기본 튜토리얼 동안은 튜토리얼 목표 (tutorial.js goalPaint)
     const m = Gm.mainView(s), R = s.req ? s.req.open : [], cnt = st => R.filter(r => r.state === st).length;
     const nNew = R.filter(r => r.isNew).length, nOpen = cnt('open'), nGo = R.length - nOpen;
     let k = '다음 목표', t = '', bar = null, d = '', dc = '', main = false;
@@ -604,7 +605,7 @@
     if (act === 'send' && v.r.state === 'open' && Gm.reqSendWhy(s, v.r)) { rqShake(Gm.reqSendWhy(s, v.r)); return; }
     if (act === 'give') { if (!Gm.reqGive(s, v.r.id)) rqMsg = '아직 준비가 부족합니다.'; else rqStamp('수락', `「${v.name}」`); }   // 2026-11-17 사용자: 도장은 밤 원본(초록 '수락' + 「이름」)으로
     else if (act === 'refuse') Gm.reqRefuse(s, v.r.id);
-    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { rqMsg = Gm.reqWaitOf(s, v.r).length ? '' : '다음 주에 게시판 의뢰보다 먼저 떠나요'; rqStamp('수락', `「${v.name}」 · ${Gm.reqWaitOf(s, v.r).length ? '모이면 출발' : '다음 주 출발'}`); } }
+    else if (act === 'send') { if (Gm.reqSend(s, v.r.id)) { if (v.r.tut && Gm.reqLaunchTut && root.Tutorial && root.Tutorial.act && root.Tutorial.act(() => Gm.reqLaunchTut(s, v.r.id))) { rqMsg = '지금 바로 떠나요'; rqStamp('수락', `「${v.name}」 · 바로 출발`); } else { rqMsg = Gm.reqWaitOf(s, v.r).length ? '' : '다음 주에 게시판 의뢰보다 먼저 떠나요'; rqStamp('수락', `「${v.name}」 · ${Gm.reqWaitOf(s, v.r).length ? '모이면 출발' : '다음 주 출발'}`); } } }   // 2026-11-23 버그 9: 튜토리얼 리퀘스트는 보내기 즉시 출발
     else if (act === 'unsend') Gm.reqUnsend(s, v.r.id);
     else if (act === 'office') Gm.build(s, '집무실');
     rqFlush(top); hooks.changed(); renderPopup();
@@ -2129,7 +2130,7 @@
     if (PM.uid != null) { const uid = PM.uid; Gm.placeMove(s, uid, PM.at); UI.placeEnd(false); hooks.changed(); poofAt(uid); return; }
     const it = Gm.placeBuy(s, PM.id, PM.at); if (!it) { toast('놓지 못했습니다.', 'warn'); return; }
     hooks.changed(); poofAt(it.uid);
-    if (d.max > 1 && pmCanBuy(d)) { PM.at = null; PM.ok = false; UI.placeStart(PM.id, null); return; }   // 테이블은 이어서 더 놓을 수 있게
+    if (d.max > 1 && pmCanBuy(d) && !(s.tut && s.tut.on && !s.tut.base)) { PM.at = null; PM.ok = false; UI.placeStart(PM.id, null); return; }   // 테이블은 이어서 더 놓을 수 있게
     UI.placeEnd(false);
   }
   // 롤오버 (2026-11-12): 놓인 물건·시설 위에서 금빛 테두리 + 손가락 커서, 시설은 이름 툴팁 (짓지 않은 시설은 짓기 비용)
@@ -2241,6 +2242,19 @@
 
   stagePopClicks();
   function stagePopClicks() {
+    // 2026-11-23 버그 6 (사용자 의견): 요리 재료를 조리대로 끌어다 놓아도 올라감 (누르기와 같은 결과). 8px 넘게 움직이면 끌기로 보고, 놓은 뒤 눌림은 무시
+    { let kd = null; const kPan = () => { const k = q('.kslots'); return k && k.closest('.kpan'); };   // 조리대 칸 (메뉴판에도 kpan이 있어 조리대 칸으로 찾음)
+      document.addEventListener('pointerdown', e => { if (popup !== 'meals' || e.button) return; const b = e.target.closest && e.target.closest('[data-kmat]'); if (!b || kAnim) return; kd = { id: b.dataset.kmat, src: b, x: e.clientX, y: e.clientY, ghost: null }; });
+      document.addEventListener('pointermove', e => { if (!kd) return;
+        if (!kd.ghost) { if (Math.hypot(e.clientX - kd.x, e.clientY - kd.y) < 8) return; const im = kd.src.querySelector('.ux-slot') || kd.src; kd.ghost = im.cloneNode(true); const r = im.getBoundingClientRect();
+          kd.k = stage.ui.getBoundingClientRect().width / 1920 || 1; Object.assign(kd.ghost.style, { position: 'absolute', left: 0, top: 0, margin: 0, width: r.width / kd.k + 'px', height: r.height / kd.k + 'px', pointerEvents: 'none', zIndex: 9999, opacity: .9, filter: 'drop-shadow(0 6px 8px rgba(0,0,0,.35))' }); stage.ui.appendChild(kd.ghost); kd.w = r.width / kd.k; kd.h = r.height / kd.k; }
+        { const u = stage.ui.getBoundingClientRect(); kd.ghost.style.transform = `translate(${(e.clientX - u.left) / kd.k - kd.w / 2}px,${(e.clientY - u.top) / kd.k - kd.h / 2}px) scale(1.08)`; }
+        const pan = kPan(), r = pan && pan.getBoundingClientRect(), on = !!r && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; if (pan) pan.classList.toggle('kdrop', on); });
+      const kEnd = e => { if (!kd) return; const d = kd; kd = null; const pan = kPan(); if (pan) pan.classList.remove('kdrop'); if (!d.ghost) return; d.ghost.remove();
+        const r = pan && pan.getBoundingClientRect(), on = e && !!r && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+        const eat = ev => { ev.stopPropagation(); ev.preventDefault(); }; document.addEventListener('click', eat, { capture: true, once: true }); setTimeout(() => document.removeEventListener('click', eat, true), 0);
+        if (on && popup === 'meals' && !kAnim && kSel.length < 3 && !kSel.includes(d.id)) { kSel.push(d.id); kMsg = null; renderPopup(); } };
+      document.addEventListener('pointerup', kEnd); document.addEventListener('pointercancel', () => kEnd(null)); }
     document.addEventListener('click', e => {
       if (!popup) return;
       { const mt = e.target.closest('[data-mtsel], [data-mtf]'); if (mt && popup === 'trade') { if (mt.dataset.mtsel) mtSel = mt.dataset.mtsel; else mtFlt = mt.dataset.mtf; renderPopup(); return; } }

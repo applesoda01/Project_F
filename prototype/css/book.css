@@ -1175,3 +1175,7 @@ p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 
 #expView .dgAsk .bt .lean{box-shadow:0 0 0 2px #fff8,0 0 10px #ffd27a}
 #expView .dgAsk .tm{height:5px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}
 #expView .dgAsk .tm u{display:block;height:100%;width:100%;background:#f0c060}
+
+/* 2026-11-23 버그 6: 요리 재료 끌어다 놓기 — 조리대 위에 오면 점선 테두리, 재료 그림은 브라우저 기본 끌기 막음 */
+.kpan.kdrop{outline:3px dashed #e0a43a;outline-offset:4px;border-radius:12px}
+.kmat img{-webkit-user-drag:none;user-select:none}

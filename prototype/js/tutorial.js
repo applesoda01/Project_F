@@ -31,24 +31,30 @@
   //   어두운 정도 30% (11-19 시안 2: 80% → "너무 어둡다" → 30 · 45 · 60% 비교 뒤 사용자 결정 30%)
   //   화면 전체를 덮는 SVG 한 장에 빛나는 칸마다 구멍을 뚫음 (책 · 창 안의 칸도 됨). 배치 모드(테이블 놓기) · 대화 중 · 상황별 안내에서는 덮지 않음
   let dimEl = null, dimOn = false;
-  function dimPaint(els) {
+  // 2026-11-23 버그 2 (책을 펼칠 때 암전 깜빡임): 책이 펼쳐지는 동안 「밝힌 칸이 눌리는가」 결과가 프레임마다 바뀌며 켜짐 · 꺼짐을 오갔음
+  //   → 켜고 끄는 결정은 같은 결과가 0.25초 이어질 때만 따름 (구멍 모양은 켜진 동안 매 프레임 갱신)
+  let dimWant = false, dimSince = 0;
+  const dimStable = (on, ms) => { const now = performance.now(); if (on !== dimWant) { dimWant = on; dimSince = now; } return now - dimSince >= (ms || 250); };
+  const dimOff = ms => { if (dimStable(false, ms) && dimOn) { dimEl.style.display = 'none'; dimOn = false; } };   // 밝힐 칸이 「아직 안 눌림」(창 · 책이 막 열리는 중)이면 1초까지 기다림
+  function dimPaint(els, soft) {   // soft: 이번 단계는 덮는 단계인데 밝힐 칸이 잠깐 없음(창이 다시 그려지는 중) → 1초까지 그대로 둠
     const ui = layer();
     if (!dimEl) { dimEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); dimEl.id = 'tutDim'; dimEl.setAttribute('viewBox', '0 0 1920 1080');
       const pth = document.createElementNS('http://www.w3.org/2000/svg', 'path'); pth.setAttribute('fill', 'rgba(18,10,4,.3)'); pth.setAttribute('fill-rule', 'evenodd'); dimEl.appendChild(pth);
       pth.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); if (hintEl) { hintEl.classList.remove('shake'); void hintEl.offsetWidth; hintEl.classList.add('shake'); } paintGlow(); });
     }
     if (!dimEl.isConnected) ui.appendChild(dimEl);
-    if (!els || !els.length) { if (dimOn) { dimEl.style.display = 'none'; dimOn = false; } return; }
+    if (!els || !els.length) { dimOff(soft ? 1000 : 250); return; }
     const ur = ui.getBoundingClientRect(), k = ur.width / 1920 || 1;
     // 2026-11-19 안전장치: 밝힌 칸이 실제로 눌리는지(가운데를 찍어 그 요소가 맞는지) 보고, 하나도 안 눌리면 덮지 않음
-    { const pe = dimEl.style.pointerEvents; dimEl.style.pointerEvents = 'none';
+    // 2026-11-23 버그 2 진짜 원인: 덮개 path는 CSS로 pointer-events가 따로 켜져 있어 svg만 끄면 검사 때 덮개 자신이 찍혔음 → 켜진 덮개의 구멍이 옛 자리면 「안 눌림」 → 꺼짐 → 다음 프레임 「눌림」 → 켜짐을 반복. path도 함께 끔
+    { const pth = dimEl.firstChild, pe = dimEl.style.pointerEvents, pp = pth.style.pointerEvents; dimEl.style.pointerEvents = 'none'; pth.style.pointerEvents = 'none';
       const ok = els.some(el => { const r = el.getBoundingClientRect(); if (!r.width || !r.height) return false; const h = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!h && (h === el || el.contains(h)); });
-      dimEl.style.pointerEvents = pe;
-      if (!ok) { if (dimOn) { dimEl.style.display = 'none'; dimOn = false; } return; } }
+      dimEl.style.pointerEvents = pe; pth.style.pointerEvents = pp;
+      if (!ok) { dimOff(1000); return; } }
     let d = 'M0 0H1920V1080H0Z';
     for (const el of els) { const r = el.getBoundingClientRect(); if (!r.width) continue; const x = (r.left - ur.left) / k - 6, y = (r.top - ur.top) / k - 6, w = r.width / k + 12, h = r.height / k + 12;
       d += `M${x.toFixed(1)} ${y.toFixed(1)}h${w.toFixed(1)}v${h.toFixed(1)}h${(-w).toFixed(1)}Z`; }
-    dimEl.firstChild.setAttribute('d', d); if (!dimOn) { dimEl.style.display = 'block'; dimOn = true; }
+    dimEl.firstChild.setAttribute('d', d); if (dimStable(true) && !dimOn) { dimEl.style.display = 'block'; dimOn = true; }
   }
   function glow(sel, sec) { glowSel = sel; glowUntil = sec ? clock + sec : 0; paintGlow(); }
   function unglow() { glowSel = null; paintGlow(); }
@@ -62,7 +68,9 @@
     for (const el of document.querySelectorAll('.tutGlow')) if (!want.has(el)) el.classList.remove('tutGlow');
     for (const el of want) el.classList.add('tutGlow');
     const s = getS(), t = s && s.tut, W = t && !t.base && WAIT[t.ph];
-    dimPaint(want.size && W && W.dim !== false && !glowUntil && !document.querySelector('#placeLay.on') && !(root.UI.dlgBusy && root.UI.dlgBusy()) ? [...want] : null);
+    if (root.BookFX && root.BookFX.busy) return;   // 2026-11-23 버그 2: 책이 펼쳐지는 · 넘어가는 동안은 덮개를 그대로 둠 (켜고 끄지 않음)
+    const can = W && W.dim !== false && !glowUntil && !document.querySelector('#placeLay.on') && !(root.UI.dlgBusy && root.UI.dlgBusy());
+    dimPaint(want.size && can ? [...want] : null, can && !!glowSel);
   }
 
   // ---------- 대사 ----------
@@ -88,7 +96,11 @@
   function act(fn) { const s = getS(), D = root.Director, B = root.Lobby && root.Lobby.Board; const before = D && D.snap(s); const r = fn(); if (D && before && B) D.onWeek(before, s, B); root.UI.hud(); return r; }
 
   // ---------- 기본 튜토리얼 ----------
-  function go(step, ph) { const t = getS().tut; t.step = step; t.ph = ph || 'talk'; t.seen[step] = getS().week; RUN[step](); }
+  // 2026-11-23 버그 7: 책이 열려 있는 동안에는 다음 튜토리얼 장면(대화)을 시작하지 않음 → 책을 닫으면 0.6초 뒤 시작 (그동안 안내: 책을 닫아 주세요)
+  let later = null;
+  const bookOpen = () => !!(root.UI.popupName && root.UI.popupName());
+  function whenClosed(fn) { if (bookOpen()) later = fn; else fn(); }
+  function go(step, ph) { if (bookOpen()) { later = () => go(step, ph); return; } const t = getS().tut; t.step = step; t.ph = ph || 'talk'; t.seen[step] = getS().week; RUN[step](); }
   const RUN = {
     FT0001() { hold(true); say('FT0001', 1, () => {
       const s = getS(), t = s.tut;
@@ -136,14 +148,14 @@
     // 테스트 의견 4 (11-19 시안 2 확인): 고기 → 향신료 → 「만들어 보기」 차례로 한 칸씩만 밝힘. 다른 재료는 어두운 덮개에 막혀 못 누르므로 멧돼지 스테이크 정식만 나옴
     cook: { glow: () => { const k = COOK_ST(); return k === -2 ? '[data-pop="meals"]' : k < 0 ? null : ['[data-kmat="mat_x003"]', '[data-kmat="mat_x019"]', '[data-kcook]:not([disabled])'][k]; },
       hint: () => ({ 0: '① 멧돼지 고기를 눌러 조리대에 올려 주세요', 1: '② 이번엔 향신료를 올려 주세요', 2: '③ 「만들어 보기」를 눌러 주세요', '-2': '아래 「음식」을 눌러 요리를 이어서 해 주세요' })[COOK_ST()] || null, test: () => Object.keys(getS().dishes || {}).length > 0, tick() { give(getS(), true); }, done() { getS().tut.ph = 'wait'; after(1, () => go('FT0009')); } },
-    office: { glow: () => root.UI.popupName() === 'fac' ? '[data-build="집무실"]' : '[data-pop="fac"]', hint: () => '「시설」에서 집무실을 지어 주세요', test: () => !!getS().built['집무실'], done() { const t = getS().tut; t.ph = 'wait'; say('FT0006', 2, () => { t.ph = 'nom'; }); } },
+    office: { glow: () => root.UI.popupName() === 'fac' ? '[data-build="집무실"]' : '[data-pop="fac"]', hint: () => '「시설」에서 집무실을 지어 주세요', test: () => !!getS().built['집무실'], done() { const t = getS().tut; t.ph = 'wait'; whenClosed(() => say('FT0006', 2, () => { t.ph = 'nom'; })); } },
     nom: { glow: () => { if (root.UI.popupName() !== 'req') return '[data-pop="req"]';   // 리퀘스트 장 → 들개 떼 부탁 → 모험가 줄 → 보내기
         const s = getS(), r = s.req && s.req.open.find(x => x.id === s.tut.rid), card = `[data-rq="${s.tut.rid}"]`; if (!r) return null;
         if (!document.querySelector(card + '.on')) return card;
         if (r.party.length && document.querySelector('[data-rqact="send"]:not([disabled]):not(.soft-off)')) return '[data-rqact="send"]';   // 2026-11-19: 조건을 못 채운 보내기(soft-off)는 밝히지 않고 모험가 줄을 밝힘 (암전 버그)
         return '[data-rqnom]:not(.no)'; }, hint: () => '리퀘스트 장에서 들개 떼 리퀘스트에 모험가를 지명해 보내 주세요',
       test: () => { const s = getS(), r = s.req && s.req.open.find(x => x.id === s.tut.rid); return !r || r.state === 'queued' || r.state === 'active'; },
-      done() { const t = getS().tut; t.ph = 'wait'; t.nomGo = true; say('FT0006', 3, () => { t.base = true; t.noGo = false; t.step = null; t.ph = null; hold(false); }); } }
+      done() { const t = getS().tut; t.ph = 'wait'; t.nomGo = true; whenClosed(() => say('FT0006', 3, () => { t.base = true; t.noGo = false; t.step = null; t.ph = null; hold(false); })); } }
   };
   // 테스트 의견 (11-19 시안 8 → A안): 기본 튜토리얼 동안 왼쪽 위 목표 칸 = 「튜토리얼 n / 6」 · 지금 목표 · 막대 · 지금 할 일(가운데 안내와 같은 글)
   const GOALS = ['첫 의뢰 보내기', '첫 원정 지켜보기', '테이블 놓기', '첫 요리 만들기', '집무실 짓기', '리퀘스트 보내기'];
@@ -153,11 +165,19 @@
     if (t.step === 'FT0006') return t.ph === 'nom' || (t.ph === 'wait' && t.nomGo) ? 5 : 4;
     return m[t.step] != null ? m[t.step] : 0;
   }
+  // 2026-11-23 버그 8: 튜토리얼 중에는 튜토리얼 목표만. 기본 튜토리얼이 끝나도 첫 리퀘스트가 돌아올 때까지는 「리퀘스트 보내기」를 계속 보여 줌
+  const firstReqWait = () => { const s = getS(), t = s && s.tut; if (!t || !t.on || !t.base || !t.nomGo || t.req1Done) return false;
+    const r = s.req && s.req.open.find(x => x.id === t.rid); if (r && (r.state === 'queued' || r.state === 'active')) return true; t.req1Done = true; return false; };
   function goalPaint(t, W) {
     const box = document.querySelector('#goalBox'); if (!box) return;
+    if (t && firstReqWait()) {
+      if (goalKey === 'req1' && box.classList.contains('tut')) return; goalKey = 'req1'; box.classList.add('tut'); const n = GOALS.length;
+      box.innerHTML = `<div class="goal-k">튜토리얼 ${n} / ${n}</div><div class="goal-t">${GOALS[n - 1]}</div><div class="goal-b"><i style="width:${Math.round((n - 1) / n * 100)}%"></i></div><div class="goal-d new">모험가가 리퀘스트를 마치고 돌아올 때까지 지켜봐 주세요</div>`;
+      return;
+    }
     if (!t || !t.on || t.base) { if (box.classList.contains('tut')) { box.classList.remove('tut'); goalKey = ''; if (root.UI.goalShow) root.UI.goalShow(); } return; }
     const i = goalIdx(t), busy = root.UI.dlgBusy && root.UI.dlgBusy();
-    const d = (!busy && W && W.hint && W.hint()) || (t.ph === 'week' ? '한 주가 지나면 이어서 진행돼요' : t.ph === 'away' ? '원정에서 돌아올 때까지 지켜봐 주세요' : '리나의 이야기를 들어 주세요');
+    const d = (!busy && later && bookOpen() ? '책을 닫으면 이어서 진행돼요' : '') || (!busy && W && W.hint && W.hint()) || (t.ph === 'week' ? '한 주가 지나면 이어서 진행돼요' : t.ph === 'away' ? '원정에서 돌아올 때까지 지켜봐 주세요' : '리나의 이야기를 들어 주세요');
     const key = i + '|' + d; if (key === goalKey && box.classList.contains('tut')) return; goalKey = key;
     box.classList.add('tut');
     box.innerHTML = `<div class="goal-k">튜토리얼 ${i + 1} / ${GOALS.length}</div><div class="goal-t">${GOALS[i]}</div><div class="goal-b"><i style="width:${Math.round(i / GOALS.length * 100)}%"></i></div><div class="goal-d new">${d}</div>`;
@@ -223,14 +243,16 @@
   };
   // 새 게임용 설정: 시작 인원 0명 + 튜토리얼 상태
   T.fresh = function (ns) { ns.tut = { on: true, base: false, step: 'FT0001', ph: 'talk', seen: {}, wid: null, aid: null, noGo: false, pause: true }; return ns; };
-  T.start = function () { const s = getS(); if (!s || !s.tut || !s.tut.on) return false; timers = []; unglow(); hint(null); if (!s.tut.base) go(s.tut.step || 'FT0001', 'talk'); return true; };
+  T.start = function () { const s = getS(); if (!s || !s.tut || !s.tut.on) return false; timers = []; later = null; unglow(); hint(null); if (!s.tut.base) go(s.tut.step || 'FT0001', 'talk'); return true; };
   T.resume = function () {   // 불러오기: 기본 튜토리얼 도중이면 그 단계를 처음부터 다시 (만들어 둔 모험가 · 의뢰는 다시 만들지 않음)
-    timers = []; unglow(); hint(null);
+    timers = []; later = null; unglow(); hint(null);
     const s = getS(); if (!s || !s.tut || !s.tut.on || s.tut.base) return;
     const back = { board: 'FT0002', mini: 'FT0003', away: null, table: 'FT0004', week: null, meals: 'FT0008', cook: 'FT0008', office: 'FT0006', nom: 'FT0006', wait: s.tut.step, talk: s.tut.step };
     const step = back[s.tut.ph]; if (step) go(step); else hold(false);
   };
   T.active = () => { const s = getS(); return !!(s && s.tut && s.tut.on && !s.tut.base); };
+  T.goalOwn = () => T.active() || firstReqWait();   // 목표 칸을 튜토리얼이 쓰는 동안 (ui.js goalShow)
+  T.act = act;   // 2026-11-23 버그 9: 리퀘스트 장에서 튜토리얼 리퀘스트를 바로 출발시킬 때 출발 장면도 함께
   T.onWeek = function () {   // main.js step() 뒤
     const s = getS(), t = s && s.tut; if (!t || !t.on) return;
     if (!t.base) {
@@ -243,6 +265,7 @@
   T.update = function (dt) {
     clock += dt;
     for (let i = timers.length - 1; i >= 0; i--) if (clock >= timers[i].at) { const f = timers[i].fn; timers.splice(i, 1); f(); }
+    if (later && !bookOpen()) { const f = later; later = null; after(0.6, f); }
     const s = getS(), t = s && s.tut; goalPaint(t, t && WAIT[t.ph]); if (!t || !t.on) { if (glowSel) unglow(); return; }
     if (glowSel && glowUntil && clock > glowUntil) unglow();
     if (t.base && t.resume && !root.UI.popupName() && H.getSpeed) { if (H.getSpeed() === 0) H.setSpeed(wantSp(t)); t.resume = false; }   // 튜토리얼 끝(FT0006) 뒤 책을 닫으면 저절로 시작
@@ -254,6 +277,7 @@
     if (t.pause && H.getSpeed && H.getSpeed() > 0 && !root.UI.popupName()) { t.sp = H.getSpeed(); H.setSpeed(0); }   // 기본 튜토리얼 안내 중에는 시간 멈춤 (그동안 누른 배속은 기억)
     if (!t.pause && t.resume && !root.UI.popupName() && H.getSpeed) { if (H.getSpeed() === 0) H.setSpeed(wantSp(t)); t.resume = false; }
     const W = WAIT[t.ph];
+    if (later && bookOpen() && !root.UI.dlgBusy()) { hint('책을 닫으면 이어서 진행돼요'); if (glowSel) unglow(); return; }
     if (!W || root.UI.dlgBusy()) { hint(null); if (glowSel) unglow(); return; }
     if (W.tick) W.tick();
     const sel = W.glow ? W.glow() : null; if (sel !== glowSel) glow(sel); else paintGlow();

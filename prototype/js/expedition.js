@@ -166,7 +166,7 @@
   // 몬스터 SD (2026-11-16): 서 있기 · 공격 반복 / 쓰러짐 한 번. TH = 미니 뷰에서의 키(px), 예전 도트 키의 약 1.2배
   // boss_goblin: 고블린 대장(던전 보스) — 움직임 시트가 생기기 전까지 고블린 시트를 1.3배로 [임시] (그림 expedition_sd/mon_goblin_boss_still.png는 정지 1장)
   const MONSD = { boss_goblin: ['goblin', 74], mon_01: ['dog', 46], mon_02: ['thief', 64], mon_03: ['slime', 40], mon_04: ['wolf', 52], mon_05: ['wolf_alpha', 64], mon_06: ['goblin', 56], mon_07: ['boar', 54], mon_08: ['bandit', 70] };
-  const monSheet = (k, act) => ({ im: sdi('assets/expedition_sd/mon_' + k + '_' + act + '.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: act === 'idle' ? 10 : 16 });
+  const monSheet = (k, act) => ({ im: sdi('assets/expedition_sd/mon_' + k + '_' + act + '.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: act === 'idle' ? 10 : act === 'fall' ? 24 : 16 });   // 2026-11-23 버그 12: 쓰러짐 16 → 24fps (1초 → 0.67초)
   function sdSheet(k, anim) {
     if (anim === 'fall') return { im: sdi('assets/expedition_sd/' + k + '_fall.webp'), fw: 256, fh: 220, cols: 8, n: 16, ax: 128, ay: 197, st: 129, fps: 16, once: true };   // 쓰러짐: 한 번 재생 후 누운 채 유지
     if (anim === 'walk') return { im: sdi('assets/lobby_iso/chr/' + k + '_walk.webp'), fw: 160, fh: 200, cols: 12, n: 24, ax: 80, ay: 197, st: 129, fps: 24 };   // 로비 걷기 시트(오른쪽 3/4)
@@ -297,7 +297,7 @@
       if (P === 'move') m.x = 540 + i * 56; else if (XS[i] != null) m.x += (XS[i] - m.x) * Math.min(1, dt * 2.5);
       m.flash = Math.max(0, m.flash - dt); m.crit = Math.max(0, m.crit - dt); m.shown += (m.hp / m.maxHp - m.shown) * Math.min(1, dt * 8);
       m.mt += dt; if (m.hp <= 0 && m.sd && m.act !== 'fall') { m.act = 'fall'; m.mt = 0; } if (m.act === 'attack' && m.mt > 1) { m.act = 'idle'; m.mt = 0; }
-      if (m.hp <= 0 && !(m.sd && m.mt < 1.6)) m.alpha = Math.max(0, m.alpha - dt * 1.2); if (m.alpha <= 0) return;
+      if (m.hp <= 0 && !(m.sd && m.mt < 0.7 && ready(monSheet(m.sd[0], 'fall').im))) m.alpha = Math.max(0, m.alpha - dt * 2.5); if (m.alpha <= 0) return;   // 2026-11-23 버그 12: 체력 0 뒤 사라질 때까지 약 2.4초 → 약 1.1초 (쓰러짐 0.67초 + 흐려짐 0.4초). 쓰러짐 그림이 아직 없으면 서 있는 채로 두지 않고 바로 흐려짐
       const pic = ready(m.im), w = ws[i], h = m.sd ? Math.round(m.sd[1] * (m.boss ? 1.25 : 1)) : pic ? m.im.naturalHeight : Math.round(54 * m.scale / 100), xx = Math.round(m.x), y = (pic || m.sd ? SURF + 3 : SURF) - h - (i % 2 ? 4 : 0);
       g.globalAlpha = m.alpha;
       let ms = m.sd ? monSheet(m.sd[0], m.act) : null; if (ms && !ready(ms.im) && m.act !== 'idle') { const alt = monSheet(m.sd[0], 'idle'); if (ready(alt.im)) ms = alt; }   // 읽는 중이면 서 있기 시트로
