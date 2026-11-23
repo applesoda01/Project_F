@@ -98,10 +98,13 @@
       } else if (ap) ac.tasks.unshift({ k: 'walk', to: ap });
     }
   }
+  // 2026-11-23 쉬는 까닭 표시 (규칙 game_core departures 가 a.idle 에 적음 · 그 주에만)
+  const REST_LAB = { mates: '동료 기다림', noq: '맞는 의뢰 없음', fee: '수수료 고민', sleep: '늦잠', rain: '비 와서 쉼', req: '리퀘스트 대기', rest: '휴식 중' };
+  const restLab = a => (a && D.s && a.idleW >= D.s.week - 1 && REST_LAB[a.idle]) || '휴식 중';
   function settle(ac) { // 앉을 자리 → 서성일 자리 → 없으면 나감
     T(ac, 'do', { fn: () => {
       const s = freeSeat(ac);
-      if (s) { ac.lab = '휴식 중'; ac.tasks.unshift({ k: 'walk', to: s.ap }, ...(sheet(ac, 'sit') ? [{ k: 'walk', to: standPos(ac, s), zMin: s.z }] : []), { k: 'sit', seat: s }); return; }
+      if (s) { ac.lab = restLab(ac.a); ac.tasks.unshift({ k: 'walk', to: s.ap }, ...(sheet(ac, 'sit') ? [{ k: 'walk', to: standPos(ac, s), zMin: s.z }] : []), { k: 'sit', seat: s }); return; }
       const li = LOITER.findIndex(l => !l.by);
       if (li >= 0) { ac.lab = '구경 중'; LOITER[li].by = ac.id; ac.loiter = li; ac.tasks.unshift({ k: 'walk', to: LOITER[li] }); return; }
       ac.lab = '떠나는 중'; ac.tasks.unshift({ k: 'walk', to: EXIT }, { k: 'remove' });
@@ -174,6 +177,7 @@
         const had = D.actors.has(a.id), ac = actor(a, EXIT);
         setParty(ac, qid); if (!had) ac.lab = '도착';
         if (!had) { T(ac, 'wait', { t: i * 0.5 }); enter(ac); } // 이번 주에 마을에 와서 바로 떠나는 경우: 입구에서 들어옴
+        if (!before.adv.has(a.id)) { LAB(ac, '등록 중'); visitWindow(ac, 'quest', { mode: 'wave', text: Speech.lina('lina_first'), dur: 1.6 }, Speech.line(a, 'first')); }   // 2026-11-23 4차 4 (ⓑ): 처음 온 주에 바로 떠나도 먼저 등록 인사 → 그 뒤 의뢰 수주 · 출발
         busy.add(a.id);
         if (x.ate && i < x.ate) { LAB(ac, '식사 중'); }
         if (x.ate && i < x.ate) visitWindow(ac, 'meal', i === 0 ? { mode: 'talk', text: Speech.linaMeal ? Speech.linaMeal(x.dish) : Speech.lina('lina_meal'), dur: SV } : null, Speech.mealLine ? Speech.mealLine(a, x.dish) : Speech.line(a, 'meal'));   // 2026-11-23 3차 8번: 먹는 요리 이름 대사 (주문 · 리나 대답)
@@ -227,7 +231,7 @@
   D.init = function (s) { D.s = s;
     for (const a of s.advs) if (a.alive && a.state === 'town') {
       const ac = actor(a, INSIDE); const st = freeSeat(ac);
-      if (st) { const sp0 = standPos(ac, st); ac.seat = st; ac.x = sp0.x; ac.y = sp0.y; ac.pose = 'sit'; ac.lab = '휴식 중'; startSit(ac, st, 'idle'); } else settle(ac);
+      if (st) { const sp0 = standPos(ac, st); ac.seat = st; ac.x = sp0.x; ac.y = sp0.y; ac.pose = 'sit'; ac.lab = restLab(ac.a); startSit(ac, st, 'idle'); } else settle(ac);
     }
   };
 

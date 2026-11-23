@@ -162,7 +162,7 @@
       done() { const t = getS().tut; t.ph = 'wait'; t.nomGo = true; whenClosed(() => say('FT0006', 3, () => { t.base = true; t.noGo = false; t.step = null; t.ph = null; hold(false); })); } }
   };
   // 테스트 의견 (11-19 시안 8 → A안): 기본 튜토리얼 동안 왼쪽 위 목표 칸 = 「튜토리얼 n / 6」 · 지금 목표 · 막대 · 지금 할 일(가운데 안내와 같은 글)
-  const GOALS = ['첫 의뢰 보내기', '첫 원정 지켜보기', '테이블 놓기', '첫 요리 만들기', '집무실 짓기', '리퀘스트 보내기'];
+  const GOALS = ['첫 의뢰 보내기', '첫 원정 지켜보기', '테이블 놓기', '첫 요리 만들기', '집무실 짓기', '리퀘스트 보내기', '두 명 보내기'];   // 2026-11-23 사용자: 2명 리퀘스트를 7번째로
   let goalKey = '';
   function goalIdx(t) {
     const m = { FT0001: 0, FT0002: 0, FT0003: 1, FT0004: 2, FT0005: 3, FT0008: 3, FT0009: 4 };
@@ -172,13 +172,20 @@
   // 2026-11-23 버그 8: 튜토리얼 중에는 튜토리얼 목표만. 기본 튜토리얼이 끝나도 첫 리퀘스트가 돌아올 때까지는 「리퀘스트 보내기」를 계속 보여 줌
   const firstReqWait = () => { const s = getS(), t = s && s.tut; if (!t || !t.on || !t.base || !t.nomGo || t.req1Done) return false;
     const r = s.req && s.req.open.find(x => x.id === t.rid); if (r && (r.state === 'queued' || r.state === 'active')) return true; t.req1Done = true; return false; };
+  const req2Goal = () => { const s = getS(), t = s && s.tut; if (!t || !t.on || !t.base || !t.req1Done || t.req2Done) return null;
+    if (s.req && s.req.open.some(r => r.sure && r.state === 'open')) return '리퀘스트 장에서 모험가 2명을 지명해 보내 주세요';
+    if (s.reqNext2) return '다음 주에 새 리퀘스트가 와요'; return null; };
   function goalPaint(t, W) {
     const box = document.querySelector('#goalBox'); if (!box) return;
     if (t && firstReqWait()) {
       if (goalKey === 'req1' && box.classList.contains('tut')) return; goalKey = 'req1'; box.classList.add('tut'); const n = GOALS.length;
-      box.innerHTML = `<div class="goal-k">튜토리얼 ${n} / ${n}</div><div class="goal-t">${GOALS[n - 1]}</div><div class="goal-b"><i style="width:${Math.round((n - 1) / n * 100)}%"></i></div><div class="goal-d new">모험가가 돌아올 때까지 지켜봐 주세요</div>`;
+      box.innerHTML = `<div class="goal-k">튜토리얼 ${n - 1} / ${n}</div><div class="goal-t">${GOALS[n - 2]}</div><div class="goal-b"><i style="width:${Math.round((n - 2) / n * 100)}%"></i></div><div class="goal-d new">모험가가 돌아올 때까지 지켜봐 주세요</div>`;
       return;
     }
+    { const d2 = t && req2Goal(); if (d2) {   // 7 / 7 두 명 보내기 (1명 리퀘스트가 돌아온 뒤 ~ 2명 리퀘스트를 보낼 때까지)
+      const key = 'req2|' + d2; if (goalKey === key && box.classList.contains('tut')) return; goalKey = key; box.classList.add('tut'); const n = GOALS.length;
+      box.innerHTML = `<div class="goal-k">튜토리얼 ${n} / ${n}</div><div class="goal-t">${GOALS[n - 1]}</div><div class="goal-b"><i style="width:${Math.round((n - 1) / n * 100)}%"></i></div><div class="goal-d new">${d2}</div>`;
+      return; } }
     if (!t || !t.on || t.base) { if (box.classList.contains('tut')) { box.classList.remove('tut'); goalKey = ''; if (root.UI.goalShow) root.UI.goalShow(); } return; }
     const i = goalIdx(t), busy = root.UI.dlgBusy && root.UI.dlgBusy();
     const d = (!busy && later && bookOpen() && !(root.UI.fxBusy && root.UI.fxBusy()) ? '책을 닫으면 이어서 진행돼요' : '') || (!busy && W && W.hint && W.hint()) || (t.ph === 'week' ? '한 주가 지나면 이어서 진행돼요' : t.ph === 'away' ? '원정에서 돌아올 때까지 지켜봐 주세요' : '리나의 이야기를 들어 주세요');
@@ -292,7 +299,7 @@
     const step = back[s.tut.ph]; if (step) go(step); else hold(false);
   };
   T.active = () => { const s = getS(); return !!(s && s.tut && s.tut.on && !s.tut.base); };
-  T.goalOwn = () => T.active() || firstReqWait();   // 목표 칸을 튜토리얼이 쓰는 동안 (ui.js goalShow)
+  T.goalOwn = () => T.active() || firstReqWait() || !!req2Goal();   // 목표 칸을 튜토리얼이 쓰는 동안 (ui.js goalShow)
   T.act = act;   // 2026-11-23 버그 9: 리퀘스트 장에서 튜토리얼 리퀘스트를 바로 출발시킬 때 출발 장면도 함께
   T.onWeek = function () {   // main.js step() 뒤
     const s = getS(), t = s && s.tut; if (!t || !t.on) return;

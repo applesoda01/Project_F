@@ -69,7 +69,7 @@
     '헤르만': { key: 'npc_scholar', w: 499, h: 640, eye: [186, 101, 129, 65] },
     '대장장이': { key: 'npc_smith', w: 500, h: 640, eye: [186, 105, 130, 78] },
     '왕국 사자': { key: 'npc_envoy', w: 499, h: 640, eye: [171, 139, 113, 49] },   // 2026-11-20 던전 정복 왕국 포상
-    '마르타 (농산 상단)': { key: 'npc_marta', w: 499, h: 640, eye: [174, 150, 158, 59] }   // 2026-11-23 떠돌이 농산 상단 주인 (대사 화자 이름 그대로)
+    '마르타 (농산 상단)': { key: 'npc_marta', w: 499, h: 640, eye: [185, 96, 129, 48] }   // 2026-11-23 떠돌이 농산 상단 주인 (대사 화자 이름 그대로)
   };
   for (const n in root.NPC_PORTRAITS) { const P = root.NPC_PORTRAITS[n]; add(P.key + '_stand', 'npc/' + P.key + '_stand.webp', P.w, P.h, { optional: true }); add(P.key + '_blink', 'npc/' + P.key + '_blink.webp', P.eye[2] * 3, P.eye[3], { optional: true }); }
 
