@@ -167,6 +167,23 @@ body:has(#townUi.on) #goalBox{display:none}
 .mb .ic{width:var(--ic);height:var(--ic);display:block;margin:var(--icy) 0 -2px;pointer-events:none}
 .mb .cnt[hidden]{display:none}
 .mb .cnt{position:absolute;right:10px;top:2px;min-width:26px;height:26px;border-radius:13px;background:#c0392b;color:#fff;font-size:15px;display:grid;place-items:center;padding:0 6px}
+/* 2026-11-23 메뉴 잠금 (docs/design/메뉴_잠금_설계.md): 안 열린 칸 = 아이콘 · 글자 회색 + 오른쪽 위 자물쇠. 누르면 흔들림 + 조건 말풍선. 열릴 때 빛 번짐 + NEW */
+.mb.lk{color:#b3a48c;cursor:not-allowed}.mb.lk:hover{background:transparent}
+.mb.lk .ic{filter:grayscale(1) brightness(1.15) opacity(.55);transition:filter .6s}
+.mb.lk::after{content:"";position:absolute;right:8px;top:0;width:32px;height:32px;background:url(assets/ui/hud/lock_badge.png) 0 0/100% 100% no-repeat;pointer-events:none}
+.mb.lk .cnt{display:none}
+#hudBR .grp:has(>.mb.lk) .up{display:none}
+.mb.lkshake{animation:lkShake .3s}@keyframes lkShake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.mb .lkfx{position:absolute;left:50%;top:44%;width:150px;height:150px;margin:-75px 0 0 -75px;pointer-events:none;z-index:-1}
+.mb.lkin .ic{animation:lkIn 1s ease-out}@keyframes lkIn{0%{filter:grayscale(1) brightness(1.15) opacity(.55)}100%{filter:none}}
+.mb.nw::before{content:"NEW";position:absolute;right:2px;top:-4px;z-index:2;padding:1px 7px;border-radius:9px;background:#d63228;border:2px solid #fff;color:#fff;font-size:12px;font-weight:900;line-height:16px;pointer-events:none}
+.mb.nw .cnt{display:none}
+#lkTip{position:absolute;z-index:60;min-width:260px;max-width:420px;padding:10px 18px 12px;border-radius:14px;background:#3b2a1ef2;border:2px solid #ffd75e;color:#fff6dc;font-size:19px;line-height:1.35;pointer-events:none;opacity:0;transform:translateY(6px);transition:opacity .15s,transform .15s}
+#lkTip.on{opacity:1;transform:none}
+#lkTip b{display:flex;align-items:center;gap:6px;color:#ffe9b8;font-size:18px;margin-bottom:2px}#lkTip b img{width:24px;height:24px}
+#lkTip span{display:block}
+#lkTip:not(.side)::after{content:"";position:absolute;left:var(--ax,50%);bottom:-11px;margin-left:-10px;border:10px solid transparent;border-bottom:0;border-top-color:#ffd75e}
+#lkTip.side::after{content:"";position:absolute;left:-11px;top:50%;margin-top:-10px;border:10px solid transparent;border-left:0;border-right-color:#ffd75e}
 /* 왼쪽 아래: 개발 */
 #devToggle{position:absolute;right:22px;top:18px;padding:6px 14px;font-size:16px}
 /* 금고 증감 연출 (2026-11-16) */

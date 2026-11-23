@@ -1179,3 +1179,9 @@ p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 
 /* 2026-11-23 버그 6: 요리 재료 끌어다 놓기 — 조리대 위에 오면 점선 테두리, 재료 그림은 브라우저 기본 끌기 막음 */
 .kpan.kdrop{outline:3px dashed #e0a43a;outline-offset:4px;border-radius:12px}
 .kmat img{-webkit-user-drag:none;user-select:none}
+
+/* 2026-11-23 메뉴 잠금: 잠긴 장의 책갈피 = 회색 + 작은 자물쇠, 누르면 흔들림 + 말풍선(ui.js lkTip) */
+#bookMarks button.lk{filter:grayscale(1) brightness(1.08);cursor:not-allowed}
+#bookMarks button.lk:hover{transform:none}
+#bookMarks button.lk i::after{content:"";display:inline-block;width:20px;height:20px;margin-left:4px;vertical-align:-3px;background:url(../assets/ui/hud/lock_badge.png) 0 0/100% 100% no-repeat}
+#bookMarks button.lkshake{animation:lkShakeB .3s}@keyframes lkShakeB{25%{translate:-5px 0}75%{translate:5px 0}}

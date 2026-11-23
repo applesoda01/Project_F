@@ -101,6 +101,7 @@
   let later = null;
   const bookOpen = () => !!(root.UI.popupName && root.UI.popupName());
   function whenClosed(fn) { if (bookOpen()) later = fn; else fn(); }
+  const unlock = k => root.UI.menuUnlock && root.UI.menuUnlock(k);   // 2026-11-23 메뉴 잠금 (docs/design/메뉴_잠금_설계.md)
   function go(step, ph) { if (bookOpen()) { later = () => go(step, ph); return; } const t = getS().tut; t.step = step; t.ph = ph || 'talk'; t.seen[step] = getS().week; RUN[step](); }
   const RUN = {
     FT0001() { hold(true); say('FT0001', 1, () => {
@@ -114,14 +115,14 @@
       t.ph = 'board';
     }); },
     FT0003() { hold(true); say('FT0003', 1, () => { getS().tut.ph = 'mini'; hold(false); }); },   // 2026-11-19: 대화가 끝나면 바로 시간이 흐름 (원정 목록 누르기는 안내만)
-    FT0004() { hold(true); say('FT0004', 1, () => { getS().tut.ph = 'table'; }); },
+    FT0004() { hold(true); say('FT0004', 1, () => { unlock('fac'); getS().tut.ph = 'table'; }); },   // 2026-11-23 메뉴 잠금: 대화가 끝나면 시설 칸이 열림
     FT0005() {
       hold(true); const s = getS(), t = s.tut;
       if (t.aid == null || !s.advs.some(a => a.id === t.aid)) t.aid = act(() => Gm.tutSpawn(s, { core: 1 + Math.floor(s.R() * 4) })).id;
       t.cur = t.aid;
       after(2, () => say('FT0005', 1, () => { t.cur = null; t.ph = 'wait'; after(1, () => go('FT0008')); }));   // 2026-11-19 사용자: 한 주 기다림 없이 바로 요리 단계로 (전엔 다음 주까지 최대 30초 기다림)
     },
-    FT0008() { hold(true); say('FT0008', 1, () => { getS().tut.ph = 'meals'; }); },
+    FT0008() { hold(true); say('FT0008', 1, () => { unlock('meals'); getS().tut.ph = 'meals'; }); },   // 음식 칸이 열림
     FT0009() { hold(true); say('FT0009', 1, () => { getS().tut.ph = 'wait'; after(1, () => go('FT0006')); }); },   // 2026-11-19 사용자: 한 주 기다림 없이 바로 집무실 단계로
     FT0006() {
       hold(true); const s = getS(), t = s.tut;
@@ -149,7 +150,7 @@
     // 테스트 의견 4 (11-19 시안 2 확인): 고기 → 향신료 → 「만들어 보기」 차례로 한 칸씩만 밝힘. 다른 재료는 어두운 덮개에 막혀 못 누르므로 멧돼지 스테이크 정식만 나옴
     cook: { glow: () => { const k = COOK_ST(); return k === -2 ? '[data-pop="meals"]' : k < 0 ? null : ['[data-kmat="mat_x003"]', '[data-kmat="mat_x019"]', '[data-kcook]:not([disabled])'][k]; },
       hint: () => ({ 0: '① 멧돼지 고기를 눌러 조리대에 올려 주세요', 1: '② 이번엔 향신료를 올려 주세요', 2: '③ 「만들어 보기」를 눌러 주세요', '-2': '아래 「음식」을 눌러 요리를 이어서 해 주세요' })[COOK_ST()] || null, test: () => Object.keys(getS().dishes || {}).length > 0, tick() { give(getS(), true); }, done() { getS().tut.ph = 'wait'; after(1, () => go('FT0009')); } },
-    office: { glow: () => root.UI.popupName() === 'fac' ? '[data-build="집무실"]' : '[data-pop="fac"]', hint: () => '「시설」에서 집무실을 지어 주세요', test: () => !!getS().built['집무실'], done() { const t = getS().tut; t.ph = 'wait'; whenClosed(() => say('FT0006', 2, () => { t.ph = 'nom'; })); } },
+    office: { glow: () => root.UI.popupName() === 'fac' ? '[data-build="집무실"]' : '[data-pop="fac"]', hint: () => '「시설」에서 집무실을 지어 주세요', test: () => !!getS().built['집무실'], done() { const t = getS().tut; t.ph = 'wait'; whenClosed(() => say('FT0006', 2, () => { unlock('req'); t.ph = 'nom'; })); } },
     nom: { glow: () => { if (root.UI.popupName() !== 'req') return '[data-pop="req"]';   // 리퀘스트 장 → 들개 떼 부탁 → 모험가 줄 → 보내기
         const s = getS(), r = s.req && s.req.open.find(x => x.id === s.tut.rid), card = `[data-rq="${s.tut.rid}"]`; if (!r) return null;
         if (!document.querySelector(card + '.on')) return card;

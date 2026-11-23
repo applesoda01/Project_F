@@ -26,12 +26,12 @@
     // 기능 버튼 → 팝업
     stage.ui.querySelectorAll('[data-pop]').forEach(b => b.onclick = () => UI.open(b.dataset.pop));
     { const gb = q('#goalBox'); if (gb) gb.onclick = () => { if (root.Tutorial && root.Tutorial.active && root.Tutorial.active()) return; UI.open('req'); }; }   // 목표 안내판 → 리퀘스트 장
-    lbInit();
+    lbInit(); lkInit();
     q('#popClose').onclick = UI.close;
     q('#popBack').onclick = e => { if (e.target.id === 'popBack') UI.closeFx(); };
     // 메뉴
     // 하단 HUD 묶음(경영·옵션)은 마우스를 올리면 열림. 준비 중인 항목은 안내만
-    stage.ui.querySelectorAll('[data-act]').forEach(b => b.onclick = () => b.dataset.act === 'town' && hooks.town ? (root.Town && root.Town.active ? root.Town.close() : hooks.town()) : toast(b.dataset.act === 'town' ? '마을 화면은 준비 중입니다.' : '요리하기는 준비 중입니다.', 'info'));
+    stage.ui.querySelectorAll('[data-act]').forEach(b => b.onclick = () => (b.dataset.act === 'town' && lkSeen('town'), b.dataset.act === 'town' && hooks.town) ? (root.Town && root.Town.active ? root.Town.close() : hooks.town()) : toast(b.dataset.act === 'town' ? '마을 화면은 준비 중입니다.' : '요리하기는 준비 중입니다.', 'info'));
     const shut = () => q('#menu').classList.remove('open');
     q('#mSave').onclick = () => { shut(); hooks.save(); toast('게임을 저장했습니다.', 'info'); };
     q('#mLoad').onclick = () => { shut(); hooks.load(); };
@@ -62,8 +62,72 @@
   function carBadge() {   // 하단 경영 메뉴: 상단이 머무는 동안 '상단' 항목, 아직 안 열어 봤으면 빨간 점
     const b = document.getElementById('mCarBtn'), mg = document.getElementById('mgBtn'); if (!b || !s) return; const here = Gm.carOn(s) ? Gm.carHere(s) : [], key = here.map(c => c.id + ':' + s.car[c.id].until).join(',');
     b.hidden = !here.length; const red = !!key && key !== carSeen; b.classList.toggle('rdot', red); if (mg) mg.classList.toggle('rdot', red); }
+  // ---------- 메뉴 잠금 (2026-11-23 설계 docs/design/메뉴_잠금_설계.md · 사용자 확정: 안 열린 칸은 모두 회색 + 자물쇠) ----------
+  // 처음부터 열림: 의뢰 · 모험가 · 설정. 나머지는 튜토리얼 단계 대화가 끝날 때(시설 FT0004 · 음식 FT0008 · 리퀘스트 FT0006 집무실 뒤) · 첫 달 장부(경영) · 튜토리얼 뒤 첫 장부(마을)에 열림
+  // 튜토리얼 없는 판(예전 저장 · 자동 플레이 · 관문 1)은 처음부터 모두 열림. 저장: s.menuOpen{칸: 연 주} · s.menuSeen{칸: 1}(NEW를 뗀 칸)
+  const MLK = {
+    fac: { ch: 'fac', sel: '[data-pop="fac"]', tip: '테이블 세트를 놓을 차례가 되면 열려요', hi: '마스터, 시설 장이 열렸어요! 테이블을 놓아 볼까요?' },
+    meals: { ch: 'food', sel: '[data-pop="meals"]', tip: '첫 손님을 맞을 준비가 되면 열려요', hi: '음식 장이 열렸어요! 요리를 만들어 메뉴판에 올려 봐요.' },
+    req: { ch: 'req', sel: '[data-pop="req"]', tip: '마을 사람들이 길드를 찾아오면 열려요', hi: '리퀘스트 장이 열렸어요! 마을 사람들의 부탁이 여기로 모여요.' },
+    mgmt: { ch: 'mgmt', sel: '#mgBtn', tip: '첫 달이 지나면 장부가 열려요', hi: '경영 장이 열렸어요! 이번 달 장부를 같이 볼까요?' },
+    town: { ch: null, sel: '[data-act="town"]', tip: '길드가 자리를 잡으면 마을을 둘러볼 수 있어요', hi: '이제 마을을 둘러볼 수 있어요! 아래 「마을」을 눌러 보세요.' }
+  };
+  const MLK_STEP = ['FT0001', 'FT0002', 'FT0003', 'FT0004', 'FT0005', 'FT0008', 'FT0009', 'FT0006'];
+  const lkOn = () => !!(s && s.tut && s.tut.on);
+  const lkOpen = k => !lkOn() || !!(s.menuOpen && s.menuOpen[k] != null);
+  const lkOfCh = ch => Object.keys(MLK).find(k => MLK[k].ch === ch) || null;
+  const lkOfPop = name => { const c = chapterOf(name); return c ? lkOfCh(c.id) : null; };
+  const lkQ = []; let lkBusy = 0;
+  function lkSync() {   // 불러오기 · 예전 저장: 이미 지난 단계의 칸은 연출 없이 엶 + 모양 반영
+    if (!s || !stage) return;
+    if (lkOn()) {
+      const M = s.menuOpen = s.menuOpen || {}, t = s.tut, i = t.base ? 99 : MLK_STEP.indexOf(t.step), quiet = k => { if (M[k] == null) M[k] = s.week; };
+      if (t.base || i > 3 || (i === 3 && t.ph !== 'talk')) quiet('fac');
+      if (t.base || i > 5 || (i === 5 && t.ph !== 'talk')) quiet('meals');
+      if (t.base || (t.step === 'FT0006' && (t.ph === 'nom' || t.nomGo))) quiet('req');
+      if (t.base && s.week >= 5) { quiet('mgmt'); quiet('town'); }
+    }
+    const seen = s.menuSeen = s.menuSeen || {};
+    for (const k in MLK) { const el = q(MLK[k].sel); if (!el) continue; el.classList.toggle('lk', !lkOpen(k)); if (!lkOn() || seen[k]) el.classList.remove('nw');
+      const bm = MLK[k].ch && q(`#bookMarks [data-ch="${MLK[k].ch}"]`); if (bm) bm.classList.toggle('lk', !lkOpen(k)); }
+  }
+  UI.menuOpen = k => lkOpen(k);
+  UI.menuUnlock = function (k) {   // tutorial.js · 장부에서 부름: 바로 열고(누를 수 있게), 연출은 대화 · 책이 끝난 뒤
+    if (!MLK[k] || lkOpen(k)) return; (s.menuOpen = s.menuOpen || {})[k] = s.week; lkSync(); if (lkTipEl) lkTipEl.classList.remove('on');
+    const el = q(MLK[k].sel); if (el) el.classList.add('nw'); lkQ.push(k);
+  };
+  function lkFx() {   // UI.update 에서: 열리는 연출 하나씩 (빛 번짐 4장 0.25초씩 · 리나 말풍선 4초)
+    if (!lkQ.length || lkBusy > performance.now() || popup || UI.dlgBusy()) return;
+    const k = lkQ.shift(), el = q(MLK[k].sel); lkBusy = performance.now() + 1600; if (!el) return;
+    const fx = document.createElement('img'); fx.className = 'lkfx'; fx.alt = ''; el.appendChild(fx); el.classList.add('lkin');
+    [0, 1, 2, 3].forEach(i => setTimeout(() => { fx.src = `assets/ui/hud/unlock_burst_${i}.png`; }, i * 250)); setTimeout(() => { fx.remove(); el.classList.remove('lkin'); }, 1000);
+    if (root.Lina && root.Lina.say) root.Lina.say(MLK[k].hi, 4);
+  }
+  function lkSeen(k) { if (!k || !s) return; (s.menuSeen = s.menuSeen || {})[k] = 1; const el = q(MLK[k].sel); if (el) el.classList.remove('nw'); }
+  let lkTipEl = null, lkTipT = 0;
+  function lkTip(el, k) {   // 잠긴 칸을 누르면: 0.3초 흔들림 + 조건 말풍선 2.5초 (게임은 멈추지 않음)
+    el.classList.remove('lkshake'); void el.offsetWidth; el.classList.add('lkshake');
+    if (!lkTipEl) { lkTipEl = document.createElement('div'); lkTipEl.id = 'lkTip'; }
+    if (!lkTipEl.isConnected) stage.ui.appendChild(lkTipEl);
+    lkTipEl.innerHTML = `<b><img src="assets/ui/hud/lock_badge.png" alt="">${esc((el.textContent || '').replace(/\d+/g, '').trim())} · 잠김</b><span>${esc(MLK[k].tip)}</span>`;
+    const u = stage.ui.getBoundingClientRect(), r = el.getBoundingClientRect(), sc = u.width / 1920 || 1, inBook = !!el.closest('#bookMarks');
+    lkTipEl.classList.toggle('side', inBook); lkTipEl.classList.add('on');
+    const w = lkTipEl.offsetWidth, h = lkTipEl.offsetHeight;
+    let x = inBook ? (r.right - u.left) / sc + 14 : (r.left + r.width / 2 - u.left) / sc - w / 2, y = inBook ? (r.top + r.height / 2 - u.top) / sc - h / 2 : (r.top - u.top) / sc - h - 16;
+    x = Math.max(12, Math.min(1920 - w - 12, x)); lkTipEl.style.left = x + 'px'; lkTipEl.style.top = y + 'px';
+    if (!inBook) lkTipEl.style.setProperty('--ax', ((r.left + r.width / 2 - u.left) / sc - x) + 'px');
+    clearTimeout(lkTipT); lkTipT = setTimeout(() => lkTipEl.classList.remove('on'), 2500);
+  }
+  function lkInit() {
+    stage.ui.addEventListener('click', e => {
+      const el = e.target.closest && e.target.closest('.lk'); if (!el) return;
+      const k = Object.keys(MLK).find(x => el.matches(MLK[x].sel) || (MLK[x].ch && el.matches(`[data-ch="${MLK[x].ch}"]`))); if (!k) return;
+      e.stopPropagation(); e.preventDefault(); lkTip(el, k);
+    }, true);
+    lkSync();
+  }
   UI.hud = function () {
-    carBadge();
+    carBadge(); lkSync();
     { const sb = q('#mSellBtn'); if (sb) sb.classList.toggle('lock', !s.built['판매창구']); }   // 판매창구를 짓기 전에는 회색
     q('#hDate').textContent = Gm.dateLabel(s.week);
     q('#hGrade').style.backgroundImage = 'url(assets/ui/hud/badge_' + GR[s.grade] + '.png)'; hudTip(q('#hGrade'), '지금 길드는 ' + GR[s.grade] + '급이에요.\n' + (s.grade < 6 ? '길드의 등급이 상승하면, 최대로 활동할 수 있는 모험가가 늘어나요.\n' : '') + GUILD_UP[s.grade]);
@@ -218,6 +282,7 @@
       }
       UI.logLine(L.text, L.kind); // 로그박스로 흘려보냄 (알림은 전직 제안만 따로 띄움)
       if (L.kind === 'promo' && L.text.includes('제안합니다')) toast(L.text, L.kind);
+      if (L.kind === 'ledger' && lkOn()) { UI.menuUnlock('mgmt'); if (s.tut.base) UI.menuUnlock('town'); }   // 2026-11-23 메뉴 잠금: 첫 장부 = 경영, 튜토리얼 뒤 첫 장부 = 마을
       if (L.kind === 'ledger' && UI.autoReport && !(root.Tutorial && root.Tutorial.active())) UI.open('ledger');   // 2026-11-18: 기본 튜토리얼 중에는 열지 않음 (FT0010에서 장부 안내)   // 월말: 리나 브리핑 대신 장부 창을 보여 준다
       if (L.kind === 'promo' && L.text.includes('제안합니다')) { const nm = L.text.split(/[이가] \d차/)[0]; UI.say(UI.lines('promo_ready', { name: nm })); }
     }
@@ -340,7 +405,7 @@
     q('#bookRibbon').onclick = () => UI.closeFx();
   }
   function bookSync(name) {
-    bookInit(); const c = chapterOf(name);
+    bookInit(); lkSync(); const c = chapterOf(name);
     q('#bookMarks').querySelectorAll('[data-ch]').forEach(b => b.classList.toggle('on', !!c && b.dataset.ch === c.id));
     q('#bookTitle').textContent = c ? c.name : popTitle(name);
     { const on = q('#bookMarks [data-ch].on'); q('#bookSub').style.setProperty('--bm', on ? getComputedStyle(on).getPropertyValue('--bm') : '#8a6a46'); }   // 오른쪽 책갈피 색 = 지금 장 색
@@ -620,7 +685,8 @@
   UI.reqBadge = function () { goalShow(); const n = (s.req ? s.req.open : []).filter(r => r.isNew).length + (s.main && s.main.state === 'offer' ? 1 : 0) + (dgShown() && !s.dg.seen ? 1 : 0), b = q('#bookMarks [data-ch="req"]'); if (b) b.classList.toggle('alert', n > 0); const c = q('#bReq'); if (c) { c.textContent = n; c.hidden = !n; } return n; };
   const TITLES = { req: '리퀘스트', order: '길드 발주', trade: '매입 · 위탁', car: '떠돌이 상단', sell: '소재 판매 창구', promo: '전직 제안', board: '의뢰 게시판', ledger: '장부', advs: '모험가', fac: '건설', meals: '식당', log: '길드 기록', codex: '도감', verify: '관문 1 검증', opts: '설정' };
   UI.open = function (name) {
-    if (name === 'sell' && Gm.gqOn(s)) name = 'trade';   // 2026-11-20: 소재 판매는 소재 관리에 합침
+    if (name === 'sell' && Gm.gqOn(s)) name = 'trade';
+    { const k = lkOfPop(name); if (k && !lkOpen(k)) return; if (k) lkSeen(k); }   // 2026-11-23 메뉴 잠금: 잠긴 장은 열지 않음 · 처음 열면 NEW 뗌   // 2026-11-20: 소재 판매는 소재 관리에 합침
     if (name === 'sell' && !s.built['판매창구']) { toast('판매 창구를 먼저 지어야 합니다. (로비의 판매 창구를 눌러 설치)', 'info'); return; }
     if (name === 'car' && s && Gm.carOn(s)) { carSeen = Gm.carHere(s).map(c => c.id + ':' + s.car[c.id].until).join(','); setTimeout(carBadge, 0); }
     const wasOpen = q('#popBack').classList.contains('open'), prev = popup;
@@ -2486,6 +2552,7 @@
   };
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
     if (!Dlg.cur && Dlg.gap > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
+    lkFx();   // 2026-11-23 메뉴 잠금: 열리는 연출
     if (rqdQ.length && !rqdOn && !Dlg.cur) rqdNext();   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
     if (carOpenQ && !Dlg.cur && !Dlg.lines.length && !(Dlg.gap > 0) && !popup && !rqdOn) { carOpenQ = false; if (Gm.carHere(s).length) UI.open('car'); }   // 상단 도착 대화 뒤 상단 화면
     if (!Dlg.cur) return;
