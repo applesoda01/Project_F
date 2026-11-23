@@ -1251,3 +1251,7 @@ body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 .ks-det .kleft button,.ks-det .rs{font:inherit;font-size:.95em}
 .ks-det button{font:inherit;font-size:12px;font-weight:700;padding:1px 7px;border-radius:6px;border:1.5px solid #b9a385;background:#fffaf0;color:#5a3a22;cursor:pointer;margin:0 2px}.ks-det button.rs{border-style:dashed}
 .ks-det .kleft button.on{border-color:#1f5f5a;background:#2f7f7a;color:#fff}.ks-det .ksale,.ks-det .kwarn{color:#b42332}.ks-det .ksale{font-weight:700}.ks-det .kshop{color:#7a5f45}
+/* 2026-11-23 소재 관리 정리안 */
+.mt-per .mt-pl{color:#7a6a58;margin-right:8px}.mt-r>.mt-top p{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.mt-logf{margin-top:10px;border:0;background:none;font:inherit;font-size:.92em;color:#a8721a;cursor:pointer;padding:0}
+.mt-step button{touch-action:none}
