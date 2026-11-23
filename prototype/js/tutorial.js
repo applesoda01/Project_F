@@ -144,8 +144,8 @@
   // 단계별 기다림: 조건(test)을 매 프레임 확인, 그동안 빛낼 곳(glow) · 안내 문구(hint)
   const WAIT = {
     board: { glow: () => root.UI.popupName() === 'board' ? `.qcard[data-q="${getS().tut.qid}"]` : '[data-pop="board"]', hint: () => root.UI.popupName() === 'board' ? '「오늘 저녁 삼겹살」을 눌러 보내 주세요' : '아래 「의뢰」를 눌러 게시판을 여세요' },
-    mini: { dim: false, glow: () => '#hudExp', hint: () => '오른쪽 원정 목록의 줄을 눌러 보세요', test: () => !!document.querySelector('#expView.on') || WAIT.away.test(), done() { getS().tut.ph = 'away'; awayTalk(); } },
-    away: { test: () => { const s = getS(), t = s.tut, a = s.advs.find(x => x.id === t.wid); return !a || (a.state !== 'quest' && !s.active.some(x => x.party.includes(t.wid))); }, done() { getS().tut.ph = 'wait'; after(3.5, () => go('FT0004')); } },
+    mini: { dim: false, glow: () => '#hudExp', hint: () => '오른쪽 원정 목록의 줄을 눌러 보세요', test: () => !!document.querySelector('#expView.on') || WAIT.away.test(), done() { const t = getS().tut; t.ph = 'away'; awayTalk(); if (H.getSpeed && H.setSpeed && H.getSpeed() > 0 && H.getSpeed() < 2) { t.awaySp = H.getSpeed(); H.setSpeed(2); } } },   // 2026-11-23 빈 시간 2: 첫 원정 기다림(약 29초) 동안 2배속 → 약 15초
+    away: { test: () => { const s = getS(), t = s.tut, a = s.advs.find(x => x.id === t.wid); return !a || (a.state !== 'quest' && !s.active.some(x => x.party.includes(t.wid))); }, done() { const t = getS().tut; t.ph = 'wait'; if (t.awaySp && H.setSpeed) { H.setSpeed(t.awaySp); t.awaySp = null; } after(3.5, () => go('FT0004')); } },
     table: { glow: () => document.querySelector('#placeLay.on') ? null : root.UI.popupName() === 'fac' ? '[data-place="table"]' : '[data-pop="fac"]', hint: () => document.querySelector('#placeLay.on') ? '바닥의 초록 칸을 눌러 테이블 세트를 놓아 주세요' : '「시설」에서 테이블 세트를 놓아 주세요', /* 2026-11-22 시안 7 반영: 배치 중에는 「시설」을 빛내지 않고 안내를 바꿈 */ test: () => getS().place.items.some(i => i.id === 'table'), done() { getS().tut.ph = 'wait'; after(1.5, () => go('FT0005')); } },
     meals: { glow: () => '[data-pop="meals"]', hint: () => '아래 「음식」을 눌러 보세요', test: () => root.UI.popupName() === 'meals',
       done() { const s = getS(), t = s.tut; t.ph = 'wait'; say('FT0008', 2, () => { give(s); root.UI.repop(); t.ph = 'cook'; }); } },
@@ -188,7 +188,7 @@
       return; } }
     if (!t || !t.on || t.base) { if (box.classList.contains('tut')) { box.classList.remove('tut'); goalKey = ''; if (root.UI.goalShow) root.UI.goalShow(); } return; }
     const i = goalIdx(t), busy = root.UI.dlgBusy && root.UI.dlgBusy();
-    const d = (!busy && later && bookOpen() && !(root.UI.fxBusy && root.UI.fxBusy()) ? '책을 닫으면 이어서 진행돼요' : '') || (!busy && W && W.hint && W.hint()) || (t.ph === 'week' ? '한 주가 지나면 이어서 진행돼요' : t.ph === 'away' ? '원정에서 돌아올 때까지 지켜봐 주세요' : '리나의 이야기를 들어 주세요');
+    const d = (!busy && later && bookOpen() && !(root.UI.fxBusy && root.UI.fxBusy()) ? '책을 닫으면 이어서 진행돼요' : '') || (!busy && W && W.hint && W.hint()) || (t.ph === 'week' ? '한 주가 지나면 이어서 진행돼요' : t.ph === 'away' ? (t.awaySp ? '▶▶ 2배속 · 원정에서 돌아올 때까지 지켜봐 주세요' : '원정에서 돌아올 때까지 지켜봐 주세요') : '리나의 이야기를 들어 주세요');
     const key = i + '|' + d; if (key === goalKey && box.classList.contains('tut')) return; goalKey = key;
     box.classList.add('tut');
     box.innerHTML = `<div class="goal-k">튜토리얼 ${i + 1} / ${GOALS.length}</div><div class="goal-t">${GOALS[i]}</div><div class="goal-b"><i style="width:${Math.round(i / GOALS.length * 100)}%"></i></div><div class="goal-d new">${d}</div>`;

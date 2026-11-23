@@ -265,7 +265,7 @@
     const bt = document.createElement('span'); bt.className = 'bt'; bt.textContent = text;   // 따옴표 없음 (말풍선 모양이 대사임을 보여 줌)
     el.append(hd, bt); lbAdd(el);
   };
-  UI.logClear = function () { if (lb) lb.ll.innerHTML = ''; };
+  UI.logClear = function () { logStag = []; clearTimeout(logT); if (lb) lb.ll.innerHTML = ''; };
 
   // ---------- 알림 (전직 제안 등 꼭 알려야 할 것만) ----------
   const TOAST_KIND = { promo: 1, depart: 1, success: 1, fail: 1, unlock: 1, build: 1, warn: 1, arrive: 1 };
@@ -310,7 +310,13 @@
   }
   UI.toast = toast;
   UI.faceStyle = (...a) => faceStyle(...a);   // 대장간 창 등 다른 창에서 얼굴 그림을 씀
+  // 2026-11-23 빈 시간 개선 3 (사용자 21:35 「그렇게 하자」): 주가 바뀌는 순간 기록이 한꺼번에 쏟아지지 않게, 주 앞부분(1배속 약 9초)에 나눠 흘림. 규칙 · 수치는 그대로(화면만)
+  let logStag = [], logT = 0;
+  function logPump() { clearTimeout(logT); const n = logStag.length; if (!n) return; const [tx, k] = logStag.shift(); UI.logLine(tx, k);
+    if (logStag.length) logT = setTimeout(logPump, Math.max(250, Math.min(1500, 9000 / (n + 1) / Math.max(1, curSp || 1)))); }
+  UI.logFlush = () => { clearTimeout(logT); while (logStag.length) { const [tx, k] = logStag.shift(); UI.logLine(tx, k); } };
   UI.onLogs = function (logs) { // 새 기록들 (오래된 것부터)
+    UI.logFlush();   // 지난주 남은 줄은 바로 다 보여 주고 시작
     ctWatch();   // 2026-11-19 계약 갱신 알림 · 결산 카드 (테스트 의견 10 ⑤ ⑥)
     const gups = logs.filter(L => L.gup).map(L => L.gup); if (gups.length) gupShow(gups);   // 2026-11-12 모험가 승급 축하 카드
     for (const L of logs) { if (L.dgOpen) dgOpenScene(); if (L.dgRoyal) dgRoyalScene(); }   // 2026-11-21 던전 열림 대화 · 정복 왕국 포상 (시안 확정)
@@ -327,12 +333,13 @@
         if (L.rq.ev === 'ok2' || L.rq.ev === 'ok_y2' || (L.rq.ev === 'ok' && Gm.NQ_BY[L.rq.key] && Gm.NQ_BY[L.rq.key].type !== 'town')) rqdShow(L);   // 완료 카드 (대사가 끝나면 뜸)
         if (popup === 'req') renderPopup(); else UI.reqBadge();
       }
-      UI.logLine(L.text, L.kind); // 로그박스로 흘려보냄 (알림은 전직 제안만 따로 띄움)
+      logStag.push([L.text, L.kind]); // 로그박스로 흘려보냄 (알림은 전직 제안만 따로 띄움) — 2026-11-23 빈 시간 3: 한꺼번에 말고 주 앞부분에 나눠서
       if (L.kind === 'promo' && L.text.includes('제안합니다')) toast(L.text, L.kind);
       if (L.kind === 'ledger' && lkOn()) { UI.menuUnlock('mgmt'); if (s.tut.base) UI.menuUnlock('town'); }   // 2026-11-23 메뉴 잠금: 첫 장부 = 경영, 튜토리얼 뒤 첫 장부 = 마을
       if (L.kind === 'ledger' && UI.autoReport && !(root.Tutorial && root.Tutorial.active())) UI.open('ledger');   // 2026-11-18: 기본 튜토리얼 중에는 열지 않음 (FT0010에서 장부 안내)   // 월말: 리나 브리핑 대신 장부 창을 보여 준다
       if (L.kind === 'promo' && L.text.includes('제안합니다')) { const nm = L.text.split(/[이가] \d차/)[0]; UI.say(UI.lines('promo_ready', { name: nm })); }
     }
+    logPump();
   };
 
   // ---------- 모험가 승급 축하 카드 (2026-11-12) ----------

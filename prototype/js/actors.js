@@ -357,11 +357,11 @@
   function dozeTick() {   // 한 주에 한 번, 앉아서 쉬는 모험가 중 하나가 꾸벅꾸벅 (50%, [임시])
     const s = D.s; if (!s || Math.random() > 0.5) return;
     const L = [...D.actors.values()].filter(ac => ac.a && ac.a.alive && ac.a.state === 'town' && ac.pose === 'sit' && !ac.doze); if (!L.length) return;
-    const ac = pick(L); ac.doze = true; ac.lab = '💤 졸고 있음'; say(ac, 'Zzz…', 2.2, null, null);
+    const ac = pick(L); ac.doze = true; ac.lab = '💤 졸고 있음'; (ac.bubble = { text: 'Zzz…', until: D.t + 2.2, t0: D.t });
   }
   D.update = function (dt) {
     D.t += dt;
-    for (const ac of D.actors.values()) if (ac.doze) { if (ac.a && ac.a.state !== 'town') ac.doze = false; else { ac.lab = '💤 졸고 있음'; if (!ac.bubble || D.t > ac.bubble.until + 2.5) say(ac, 'Zzz…', 1.6, null, null); } }   // 졸음 유지 (깨우거나 떠나면 끝)
+    for (const ac of D.actors.values()) if (ac.doze) { if (ac.a && ac.a.state !== 'town') ac.doze = false; else { ac.lab = '💤 졸고 있음'; if (!ac.bubble || D.t > ac.bubble.until + 2.5) (ac.bubble = { text: 'Zzz…', until: D.t + 1.6, t0: D.t }); } }   // 졸음 유지 (깨우거나 떠나면 끝)
     for (let i = D.timers.length - 1; i >= 0; i--) if (D.timers[i].t <= D.t) { const f = D.timers[i].fn; D.timers.splice(i, 1); f(); }   // 대화 다음 줄
     for (const [id, ac] of D.actors) {
       if (ac.gl) { const G = ac.gl, len = Math.hypot(G.x, G.y), st = 420 * dt; ac.wf = (ac.wf || 0) + st / 150 * 30; if (len <= st) ac.gl = null; else { G.x -= G.x / len * st; G.y -= G.y / len * st; G.face = faceLeft(-G.x, G.face); } }
