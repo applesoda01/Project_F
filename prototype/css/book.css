@@ -1240,3 +1240,14 @@ body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 .bk-fac .fc.poorc .fb-ic img{opacity:.45;filter:grayscale(.6)}
 .mk5-fee b{white-space:nowrap}   /* 4차 2 B안: 「F급 기본 수수료」 한 줄 */
 .bkq-act small.two{line-height:1.45}
+/* 2026-11-23 메뉴판 정리안: 요리 카드 2줄 + 자세히 */
+.ks-r{display:flex;align-items:center;gap:10px;margin:4px 0;color:#4a321c;flex-wrap:wrap}
+.ks-r>button:not(.ks-more){min-width:26px;height:24px;border:1px solid rgba(110,72,36,.35);border-radius:6px;background:#fbf4e4;color:#4a321c;font:inherit;cursor:pointer;touch-action:none}
+.ks-r>button:disabled{opacity:.4;cursor:default}
+.ks-r b.v{min-width:44px;text-align:center;font-size:1.08em}.ks-r .lb{min-width:30px;color:#7a6a58}.ks-r .mut{color:#8a7a68;font-size:.92em}
+.ks-st{margin-left:auto;font-size:.92em;color:#6b4a2e}.ks-st b{font-size:1.1em}.ks-st.out{color:#b0321f;font-weight:700}
+.ks-more{margin-left:auto;border:0;background:none;font:inherit;font-size:.86em;color:#a8721a;cursor:pointer;padding:0 2px}
+.ks-det{margin-top:4px;padding:6px 8px;border-radius:6px;background:rgba(138,106,70,.08);font-size:.9em;color:#6b4a2e;display:flex;flex-direction:column;gap:4px}
+.ks-det .kleft button,.ks-det .rs{font:inherit;font-size:.95em}
+.ks-det button{font:inherit;font-size:12px;font-weight:700;padding:1px 7px;border-radius:6px;border:1.5px solid #b9a385;background:#fffaf0;color:#5a3a22;cursor:pointer;margin:0 2px}.ks-det button.rs{border-style:dashed}
+.ks-det .kleft button.on{border-color:#1f5f5a;background:#2f7f7a;color:#fff}.ks-det .ksale,.ks-det .kwarn{color:#b42332}.ks-det .ksale{font-weight:700}.ks-det .kshop{color:#7a5f45}

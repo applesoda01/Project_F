@@ -217,6 +217,7 @@
     ['FT0007', s => alive(s).length >= 5 && s.active.filter(x => x.start === s.week - 1).length >= 2 && !Gm.upg(s, '접수대'), null, '[data-pop="fac"]'],
     ['FT0015', s => Object.values(s.mats || {}).some(n => n > 10) || (s.consign || []).length > 0 || (Gm.carOn && Gm.carOn(s) && Gm.carHere(s).length > 0), null, 'g:mats'],   // 2026-11-23 3차 17: 상단이 처음 와도 이 안내(소재 관리 + 상단)
     ['FT0016', s => (s.req ? s.req.open : []).some(r => { const n = Gm.reqNeed(s, r); return Object.keys(n.mats || {}).length && !Gm.reqCanPay(s, r); }), null, 'g:gq'],   // 2026-11-23 4차 10: 길드 발주 → 길드 의뢰 (리퀘스트 → 길드 의뢰 책갈피까지)
+    ['FT0036', s => Object.keys(s.kRun || {}).some(k => s.kRun[k] >= 2 && s.dishes[k]), null, 'g:prep', s => Object.keys(s.kRun || {}).find(k => s.kRun[k] >= 2 && s.dishes[k])],   // 2026-11-23 메뉴판 정리안: 같은 요리가 2주 연속 남으면 준비량 줄이기 안내
     ['FT0014', s => !!s.built['집무실'] && Gm.contractOpen(s) && alive(s).some(a => !a.contract && !Gm.contractWhy(s, a)), null, 'g:contract', s => (alive(s).find(a => !a.contract && !Gm.contractWhy(s, a)) || {}).id],
     ['FT0011', s => alive(s).length >= Gm.advCap(s), null, null],
     ['FT0012', s => !!(s.main && s.main.state === 'offer'), null, '[data-pop="req"]'],
@@ -256,6 +257,9 @@
     board: { glow: g => { if (!g.st) { if (pop() === 'board') g.st = 1; else return '[data-pop="board"]'; } if (pop() !== 'board') return '[data-pop="board"]'; return g.st === 1 ? '.qb-bars' : '.mk5-fee .ct-seg button:not([disabled])'; },   // 잠긴 20% 칸은 눌리지 않으므로 열린 칸만 밝힘
       hint: g => !g.st ? '「의뢰」를 눌러 게시판을 열어 보세요' : g.st === 1 ? '의뢰 배분: 막대가 많을수록 그 등급 의뢰가 많이 붙어요 (눌러서 넘기기)' : '기본 수수료: 높으면 수입이 늘지만 돈이 급한 모험가는 잘 안 맡아요 (눌러서 끝)',
       click: (g, el) => { if (g.st === 1 && el.closest('.qb-bars')) g.st = 2; else if (g.st === 2 && el.closest('.mk5-fee')) g.st = 3; }, done: g => g.st >= 3 },
+    prep: { glow: g => pop() !== 'meals' ? '[data-pop="meals"]' : `[data-kpp="${CSS.escape(String(g.id))}:-1"]:not([disabled])`,   // 메뉴판 정리안: 그 요리 「준비 −」
+      hint: g => pop() !== 'meals' ? '「음식」을 열어 메뉴판을 보세요' : '「준비」를 줄이면 남는 그릇이 줄어요 (− 를 눌러 보세요)',
+      click: (g, el) => { if (el.closest('[data-kpp$=":-1"]')) g.st = 1; }, done: g => !!g.st || !document.querySelector('[data-pop="meals"]') },
     gq: { glow: () => pop() === 'req' ? '#bookSub [data-sub="order"]' : pop() === 'order' ? null : '[data-pop="req"]',   // 4차 10
       hint: () => '「리퀘스트」 → 「길드 의뢰」를 열어 보세요', done: () => pop() === 'order' },
     req2: { glow: () => { const s = getS(), r = req2Of(s); if (!r) return null; if (pop() !== 'req') return '[data-pop="req"]'; const card = `[data-rq="${r.id}"]`; if (!document.querySelector(card + '.on')) return card;
