@@ -126,6 +126,20 @@
     }, true);
     lkSync();
   }
+  // ---------- 리나 옆 남은 음식 (2026-11-23 3차 13번 B안, 사용자 확정): 접수대 위 작은 칩 = 요리 아이콘 × 남은 그릇. 0이면 「음식 없음」, 누르면 음식 장 ----------
+  let foodEl = null, foodKey = '';
+  function foodChip() {
+    if (!s || !stage || !root.Lina || !root.Lina.headPos) return;
+    if (!foodEl) { foodEl = document.createElement('button'); foodEl.id = 'foodChip'; foodEl.title = '남은 음식 (누르면 음식 장)'; foodEl.onclick = () => UI.open('meals'); }
+    if (!foodEl.isConnected) stage.ui.appendChild(foodEl);
+    const known = s.dishes && Object.keys(s.dishes).length, off = !known || (root.Town && root.Town.active) || (UI.menuOpen && !UI.menuOpen('meals'));
+    const B = s.bowls || {}, list = off ? [] : Gm.DISH.filter(d => s.dishes[d.name]).map(d => [d, (B[d.name] || []).reduce((t, b) => t + (b.n > 0 ? b.n : 0), 0)]).filter(x => x[1] > 0);
+    const key = off ? 'off' : list.map(([d, n]) => d.name + n).join('|') || 'none'; if (key === foodKey) return; foodKey = key;
+    foodEl.hidden = off; if (off) return;
+    const hp = root.Lina.headPos(); foodEl.style.left = (hp.x + 69) + 'px'; foodEl.style.top = (hp.y + 97) + 'px';
+    foodEl.classList.toggle('none', !list.length);
+    foodEl.innerHTML = list.length ? list.slice(0, 4).map(([d, n]) => `<span title="${esc(d.name)} ${n}그릇"><img src="assets/${esc(d.icon || '')}" alt="">×${n}</span>`).join('') + (list.length > 4 ? `<em>+${list.length - 4}</em>` : '') : '<b>음식 없음</b>';
+  }
   UI.hud = function () {
     carBadge(); lkSync();
     { const sb = q('#mSellBtn'); if (sb) sb.classList.toggle('lock', !s.built['판매창구']); }   // 판매창구를 짓기 전에는 회색
@@ -2561,6 +2575,7 @@
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
     if (!Dlg.cur && Dlg.gap > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
     lkFx();   // 2026-11-23 메뉴 잠금: 열리는 연출
+    foodChip();   // 2026-11-23 3차 13번: 리나 옆 남은 음식
     if (rqdQ.length && !rqdOn && !Dlg.cur && !stage.ui.querySelector('.rq-stamp')) rqdNext();   // 2026-11-23 3차 14번: 「수락」 도장이 끝난 뒤에 (돈 내기 · 납품은 도장과 카드가 겹쳐 카드를 못 봤음)   // 리퀘스트 완료 카드: 대사가 다 끝난 뒤
     if (carOpenQ && !Dlg.cur && !Dlg.lines.length && !(Dlg.gap > 0) && !popup && !rqdOn) { carOpenQ = false; if (Gm.carHere(s).length) UI.open('car'); }   // 상단 도착 대화 뒤 상단 화면
     if (!Dlg.cur) return;
