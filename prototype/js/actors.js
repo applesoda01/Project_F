@@ -32,7 +32,7 @@
     const map = new Map();   // 예전 자리 → 그대로 남은 새 자리
     for (const se of I.seatsFor(nTables)) {
       const inf = I.seatInfo(se), prev = old.find(o => same(o, se));
-      se.z = inf.ay + 1; se.ap = pt(P(se.cell[0] + .5, se.cell[1] + 3.2)); se.by = prev ? prev.by : null; D.seats.push(se);
+      se.z = inf.ay + 1; se.ap = pt(P(Math.min(13.2, Math.max(.8, se.cell[0] + .5)), Math.min(13.2, se.cell[1] + 3.2)));   /* 2026-11-23 3차 15: 바닥 가장자리 테이블은 다가가는 점이 바닥(14×14) 밖이라 벽 · 돌 턱을 넘어 걸었음 → 바닥 안으로 */ se.by = prev ? prev.by : null; D.seats.push(se);
       if (prev) map.set(prev, se);
     }
     // 2026-11-12 배치 모드: 테이블을 옮기거나 치우면 그 자리에 앉아 있던(가던) 모험가는 일어나 다른 자리를 찾음
