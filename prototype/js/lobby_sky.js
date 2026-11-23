@@ -42,7 +42,7 @@
   function calendar(s) {
     const week = Math.max(0, s.week || 0), monthAbs = Math.floor(week / 4), mo = (2 + monthAbs) % 12 + 1;
     const season = mo >= 3 && mo <= 8 ? 'day' : mo >= 9 && mo <= 11 ? 'autumn' : 'winter';
-    const rain = season === 'day' && hash(monthAbs * 7919 + 13 + ((s.seed >>> 0) % 100003) * 131) % 100 < 20;   // 판(seed) · 달마다 정해져 있어서 다시 열어도 같음. 2026-11-19 사용자: 10 → 20% (시험 중 비를 한 번도 못 봄 — 예전 식은 seed가 없어 모든 판에서 4년 동안 비 오는 달이 0개였음)
+    const rain = monthAbs > 0 && season === 'day' && hash(monthAbs * 7919 + 13 + ((s.seed >>> 0) % 100003) * 131) % 100 < 20;   // 2026-11-23 사용자: 게임 시작 첫 달(1~4주)은 비 없음 (combat.js QK.rainy 와 같이) · 판(seed) · 달마다 정해져 있어서 다시 열어도 같음. 2026-11-19 사용자: 10 → 20% (시험 중 비를 한 번도 못 봄 — 예전 식은 seed가 없어 모든 판에서 4년 동안 비 오는 달이 0개였음)
     return { key: rain ? 'rain' : season, phase: week % 4, month: mo };
   }
 

@@ -157,10 +157,10 @@
         return ok.length ? ok[Math.floor(R() * ok.length)].key : null;
       },
       risk(Qc, a, week, p) { if (!Qc || !a || week < (Qc.safeWeeks || 0)) return 0; return p * (a.attach >= Qc.homeAt ? Qc.homeMul : 1); },
-      rainy(seed, week) {   // 비 오는 달 (lobby_sky.js calendar 와 같은 식 — 그림과 규칙이 같은 달에 비)
+      rainy(seed, week) {   // 비 오는 달 (lobby_sky.js calendar 와 같은 식 — 그림과 규칙이 같은 달에 비) · 2026-11-23: 첫 달은 비 없음
         const h = n => { n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n ^= n >>> 4; n = Math.imul(n, 0x27d4eb2d); return (n ^ (n >>> 15)) >>> 0; };
         const w = Math.max(0, week || 0), mAbs = Math.floor(w / 4), mo = (2 + mAbs) % 12 + 1;
-        return mo >= 3 && mo <= 8 && h(mAbs * 7919 + 13 + ((seed >>> 0) % 100003) * 131) % 100 < 20;
+        return mAbs > 0 && mo >= 3 && mo <= 8 && h(mAbs * 7919 + 13 + ((seed >>> 0) % 100003) * 131) % 100 < 20;
       },
       xpMul(Qc, a, rivalHere) { if (!Qc || !a || !a.quirk) return 1; return 1 + (a.quirk === 'selfish' ? Qc.selfishXp : 0) + (a.quirk === 'rival' && rivalHere ? Qc.rivalXp : 0); },
       // 전투 직전: 상황에 따른 장점 · 리스크를 유닛에 적용하고, 터진 일(로그용)과 후퇴 기준(leaderRisk)을 돌려줌
