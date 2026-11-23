@@ -1215,3 +1215,10 @@ p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 
 #foodChip em{font-style:normal;font-size:15px;opacity:.85}
 #foodChip.none{border-color:#df6150;background:rgba(90,30,22,.92)}#foodChip.none b{font-size:17px;padding:0 4px}
 body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
+/* 2026-11-23 책 단순화 (사용자 확정): 모험가 상세 안 「경력 보기」 · 「계약 제안」 단추 · 장부 아래 「길드 기록」 단추 · 경영 펼침 메뉴에서 기록 뺌 */
+.av-acts{display:flex;gap:8px;margin:8px 0 2px}
+.av-acts button,.mg-more button{padding:4px 14px;border-radius:14px;border:1.5px solid #b88a4e;background:#fff6e2;color:#5a3a1e;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.av-acts button:hover,.mg-more button:hover{filter:brightness(1.05);background:#fff0d0}
+.av-acts button.p{background:#2f6a52;border-color:#2f6a52;color:#fff}
+.mg-more{display:flex;justify-content:flex-start;margin-top:14px}
+#hudBR #mgUp .btn[data-pop="log"]{display:none}

@@ -232,8 +232,8 @@
       done: g => { const s = getS(); return !!g.sell && (!(Gm.carOn && Gm.carOn(s) && Gm.carHere(s).length) || pop() === 'car'); } },
     injury: { glow: g => pop() !== 'advs' ? '[data-pop="advs"]' : `.ux-row[data-adv="${g.id}"]`, hint: () => '「모험가」 명부에서 다친 모험가를 눌러 상태를 보세요',
       done: g => { const s = getS(), a = s.advs.find(x => x.id === g.id); return !a || !a.alive || a.state !== 'injured' || (pop() === 'advs' && rowOn(g.id)); } },
-    contract: { glow: g => { if (pop() !== 'advs') return '[data-pop="advs"]'; if (!rowOn(g.id)) return `.ux-row[data-adv="${g.id}"]`; if (!document.querySelector('.ct-of')) return '#bookSub [data-sub="advs:contract"]'; return '[data-ct="go"]:not([disabled])'; },
-      hint: g => !document.querySelector('.ct-of') ? '「모험가」 명부에서 모험가를 고르고 「계약 제안」 책갈피를 눌러 보세요' : '기간 · 보수를 정하고 「제안하기」를 눌러 보세요',
+    contract: { glow: g => { if (pop() !== 'advs') return '[data-pop="advs"]'; if (!rowOn(g.id)) return `.ux-row[data-adv="${g.id}"]`; if (!document.querySelector('.ct-of')) return '.av-acts [data-sub="advs:contract"]';   /* 2026-11-23 책 단순화: 계약 제안은 상세 안 단추 */ return '[data-ct="go"]:not([disabled])'; },
+      hint: g => !document.querySelector('.ct-of') ? '「모험가」 명부에서 모험가를 고르고 「계약 제안」 단추를 눌러 보세요' : '기간 · 보수를 정하고 「제안하기」를 눌러 보세요',
       done: g => { const s = getS(), a = s.advs.find(x => x.id === g.id); return !a || !a.alive || !!a.contract; } },
     req2: { glow: () => { const s = getS(), r = req2Of(s); if (!r) return null; if (pop() !== 'req') return '[data-pop="req"]'; const card = `[data-rq="${r.id}"]`; if (!document.querySelector(card + '.on')) return card;
         return Gm.reqPartyOf(s, r).length >= 2 ? '[data-rqact="send"]:not([disabled])' : '[data-rqnom]:not(.no):not(.in)'; },
