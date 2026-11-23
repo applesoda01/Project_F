@@ -588,7 +588,7 @@
   UI.dgOpenScene = dgOpenScene; UI.dgRoyalScene = dgRoyalScene;   // 시험용
   // ---------- 던전 (2026-11-21 3단계 · 시안 docs/design/mockups/dungeon_1120/dg_req · dg_req_party) ----------
   //   리퀘스트 장 맨 위 던전 칸 → 오른쪽: 방 지도 · 정복 · 보상 · 파티 고르기(리퀘스트 표 모양) · 보내기(모두 돌아오면 출발, 게시판보다 먼저)
-  let dgSel = [], dgMsg = '';
+  let dgSel = [], dgMsg = '', dgMore = false;   // dgMore: 2026-11-23 3차 12번 B안 — 정복 · 보상 줄 펼침
   const dgShown = () => !!(Gm.dgOn && Gm.dgOn(s) && s.dg);
   const DGI_ = () => ((GD_.dungeons || {})[s.dg && s.dg.key] || null);
   function dgCardHtml() {
@@ -605,10 +605,12 @@
     R += `<div class="rq-say"><p>방 3개를 지나며 갈림길을 두 번 만납니다. 방 3 뒤에 <b class="kw">계속</b>을 고르면 고블린 대장이 기다립니다. 지면 그 자리에서 돌아옵니다. 갈림길은 원정 중 미니 뷰에서 고르고, 안 고르면 대장 성향대로 갑니다.</p></div>`;
     R += `<div class="dgmap"><div class="rm"><i>1</i>입구</div>${fk('2')}<div class="ln"></div><div class="rm"><i>2</i>통로</div>${fk('3')}<div class="ln"></div><div class="rm"><i>3</i>소굴</div><div class="ln"></div>${C.cont ? '<span class="cont">계속 / 귀환</span><div class="ln"></div><div class="rm boss"><i>☠</i>대장</div>' : ''}</div>`;
     const ok = C.progOk;
+    R += `<button class="dg-more" data-dgact="more">정복 · 보상 ${dgMore ? '접기 ▴' : '보기 ▾'}</button><div class="dg-info ${dgMore ? 'open' : ''}">`;   // 2026-11-23 3차 12번 B안: 평소엔 접어 두고 모험가 표를 넓게
     R += `<div class="rq-sec"><i>정복</i><div><span class="rq-chip">승산 여유 +${ok[0]}% · 팽팽 +${ok[1]}% · 위험 +${ok[2]}%</span><span class="rq-chip">위험한 길 +${C.progRisky}%</span>${C.cont ? `<span class="rq-chip">보스 +${C.progBoss}%</span>` : ''}<span class="rq-chip">실패 +${C.progFail}%</span></div></div>`;
     const lk = c => c ? 'dglock' : '', nextSet = C.set && !D.setRecipe, gotSet = C.set && D.setRecipe;
     R += `<div class="rq-sec"><i>보상</i><div><span class="rq-chip">매번: ${esc((MATS.mat_mine_E || {}).name || '광석')} · ${esc((MATS.mat_study_E || {}).name || '마석')}(가끔)</span>${C.set ? `<span class="rq-chip ${gotSet ? 'dgok' : nextSet ? 'dgnext' : ''}">${C.setAt}% 고블린 사냥꾼 세트 조합법${gotSet ? ' ✔' : ''}</span>` : ''}`
       + `${C.rare ? `<span class="rq-chip ${D.clear ? 'dgok' : lk(nextSet)} ${!nextSet && !D.clear ? 'dgnext' : ''}">100% 왕초의 금이빨 목걸이 (하나뿐)${D.clear ? ' ✔' : ''}</span>` : ''}${C.recipe ? `<span class="rq-chip ${D.clear ? 'dgok' : 'dglock'}">요리 조합법</span>` : ''}${C.title ? `<span class="rq-chip ${D.clear ? 'dgok' : 'dglock'}">칭호 「고블린 소탕꾼」</span>` : ''}${C.royal ? `<span class="rq-chip gold ${D.clear ? 'dgok' : 'dglock'}">왕국 포상 ${fmt(C.clearGold)}G · 명성 +${C.clearFame}</span>` : ''}</div></div>`;
+    R += '</div>';
     // 파티 · 행동
     const act = s.active.find(x => x.dgRun || x.dgP), plan = D.plan, done = D.clear && !C.keep;
     if (plan) dgSel = plan.party.slice();
@@ -642,6 +644,7 @@
     renderPopup();
   }
   function dgAct(act) {
+    if (act === 'more') { dgMore = !dgMore; renderPopup(); return; }
     dgMsg = '';
     if (act === 'send') { const party = dgSel.map(id => s.advs.find(a => a.id === id)), r = party.length < s.cfg.dungeon.party[0] ? { ok: false, why: `${s.cfg.dungeon.party[0]}명 이상 골라 주세요` } : Gm.dgPlan(s, dgSel, false);
       if (!r.ok) { rqShake(r.why); dgMsg = r.why; } else rqStamp('출발', `「${(DGI_() || {}).name || '던전'}」 · 모이면 출발`); }
