@@ -1,0 +1,86 @@
+<title>오프닝 잉크 패럴렉스</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Noto+Sans+KR:wght@400;600&display=swap">
+<style>
+:root{--bg:#15120e;--panel:#211c16;--line:#3a3127;--fg:#efe6d6;--mute:#a8987f;--accent:#d9a65a;--paper:#e9dcc3;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:"Noto Sans KR",system-ui,sans-serif;margin:0}
+.wrap{max-width:1200px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
+h1{font-family:"Nanum Myeongjo",serif;font-weight:700;font-size:clamp(20px,3vw,28px);margin:0;text-wrap:balance}
+.sub{color:var(--mute);font-size:13px;margin:0}
+.stage{position:relative;width:100%;aspect-ratio:16/9;max-width:100%;overflow:hidden;background:#000;border:1px solid var(--line);border-radius:6px}
+.ly{position:absolute;inset:0;transform-origin:50% 50%;will-change:transform}
+.ly img{position:absolute;display:block;max-width:none;user-select:none;pointer-events:none}
+.ly.bgl img{left:-6%;top:-6%;width:112%;height:112%;object-fit:cover}
+.debug .ly:not(.bgl) img{outline:2px dashed var(--accent)}
+.debug .ly.bgl{filter:brightness(.55)}
+.fade{position:absolute;inset:0;background:#000;opacity:1;pointer-events:none}
+.flash{position:absolute;inset:0;background:var(--paper);opacity:0;pointer-events:none}
+.cap{position:absolute;left:0;right:0;bottom:6%;text-align:center;font-family:"Nanum Myeongjo",serif;font-size:clamp(13px,2.1vw,22px);color:#f5ecdc;text-shadow:0 1px 3px #000,0 0 12px #000;padding:0 8%;opacity:0;transition:opacity .4s}
+.tag{position:absolute;left:10px;top:8px;font-size:12px;color:#f5ecdc;background:#000a;padding:2px 8px;border-radius:10px}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+button{font:inherit;font-size:13px;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+button.main{background:var(--accent);color:#1b140b;border-color:var(--accent);font-weight:600}
+.note{font-size:13px;color:var(--mute);line-height:1.6;max-width:70ch}
+.note b{color:var(--fg)}
+</style>
+<div class="wrap">
+  <h1>오프닝 v2 · 잉크 화풍 2.5D 패럴렉스 미리보기</h1>
+  <p class="sub">밤사이 생성한 레이어로 만든 가편집입니다. 소리 없음 · 13컷 약 52초. 컷 번호를 누르면 그 컷만 반복합니다.</p>
+  <div class="stage" id="st"><div id="lys"></div><div class="flash" id="fl"></div><div class="cap" id="cap"></div><div class="fade" id="fd"></div><div class="tag" id="tag">—</div></div>
+  <div class="bar" id="bar"><button class="main" id="all">▶ 처음부터 재생</button></div>
+  <div class="bar"><button id="dbg">레이어 경계 보기</button><button id="spd">속도 1×</button></div>
+  <p class="note"><b>보는 법</b> · 배경(뒤)은 조금, 인물 · 앞 소품은 많이 움직여 깊이가 생깁니다. 「레이어 경계 보기」를 켜면 잘라 낸 레이어의 테두리가 점선으로 보입니다.</p>
+</div>
+<script>
+const SH=[{"n": 1, "dur": 5, "cam": "push", "tx": "그날 우리는, 봉인이 약해지고 있다는 걸 알리러 가던 길이었다.", "L": [{"f": "op01_bg_s26112411.webp", "bg": 1, "d": 0.35, "ar": 1.7778}, {"f": "op01_mid_s26112421.webp", "x": 14, "y": 104, "h": 70, "d": 1.6, "flip": 0, "ar": 2.4}, {"f": "op01_ch_bram_s26112431.webp", "x": 36, "y": 86, "h": 36, "d": 0.9, "flip": 0, "ar": 0.6618}, {"f": "op01_ch_celine_s26112441.webp", "x": 44, "y": 86, "h": 32, "d": 0.9, "flip": 0, "ar": 0.6682}, {"f": "op01_ch_thomas_s26113003.webp", "x": 52, "y": 86, "h": 33, "d": 0.9, "flip": 0, "ar": 0.767}, {"f": "op01_ch_kyle_s26112462.webp", "x": 60, "y": 86, "h": 31, "d": 0.9, "flip": 0, "ar": 0.5924}, {"f": "op01_ch_master_s26112471.webp", "x": 68, "y": 86, "h": 33, "d": 0.9, "flip": 0, "ar": 0.4751}]}, {"n": 2, "dur": 3, "cam": "up", "tx": "", "L": [{"f": "op02_bg_s26112482.webp", "bg": 1, "d": 0.35, "ar": 1.7778}, {"f": "op02_mid_s26113014.webp", "x": 50, "y": 84, "h": 74, "d": 0.6, "flip": 0, "ar": 1.7059}, {"f": "op02_fg_s26113023.webp", "x": 84, "y": 106, "h": 46, "d": 1.4, "flip": 0, "ar": 1.9111}]}, {"n": 3, "dur": 4, "cam": "push", "tx": "막을 수 없었다.", "L": [{"f": "op03_bg_s26113034.webp", "bg": 1, "d": 0.35, "ar": 1.7778}, {"f": "op03_mid_s26113044.webp", "x": 50, "y": 78, "h": 85, "d": 0.55, "flip": 0, "ar": 1.7429}, {"f": "op03_ch_bram_s26112531.webp", "x": 14, "y": 108, "h": 62, "d": 1.1, "flip": 0, "ar": 0.7055}, {"f": "op03_ch_celine_s26112542.webp", "x": 32, "y": 108, "h": 56, "d": 1.1, "flip": 0, "ar": 0.6336}, {"f": "op03_ch_thomas_s26113053.webp", "x": 50, "y": 108, "h": 58, "d": 1.1, "flip": 0, "ar": 0.5281}, {"f": "op03_ch_kyle_s26112562.webp", "x": 68, "y": 108, "h": 54, "d": 1.1, "flip": 0, "ar": 0.766}, {"f": "op03_ch_master_s26112571.webp", "x": 86, "y": 108, "h": 58, "d": 1.1, "flip": 0, "ar": 0.6116}]}, {"n": 4, "dur": 3, "cam": "flash", "tx": "그리고… 정신을 잃었다.", "L": []}, {"n": 5, "dur": 3, "cam": "wake", "tx": "", "L": [{"f": "op05_bg_s26113063.webp", "bg": 1, "d": 0.5, "ar": 1.7778}]}, {"n": 6, "dur": 4, "cam": "push", "tx": "눈을 떴을 때, 한쪽 다리가 없었다.", "L": [{"f": "op06_bg_s26112591.webp", "bg": 1, "d": 0.35, "ar": 1.7778}, {"f": "op06_mid_s26113073.webp", "x": 50, "y": 104, "h": 58, "d": 1.2, "flip": 0, "ar": 2.362}]}, {"n": 7, "dur": 4, "cam": "side", "tx": "살아남은 건, 나 혼자였다.", "L": [{"f": "op07_bg_s26113105.webp", "bg": 1, "d": 0.3, "ar": 1.7778}, {"f": "op07_fg_s26112622.webp", "x": 50, "y": 100, "h": 100, "d": 1.3, "flip": 0, "cover": 1, "ar": 1.3623}]}, {"n": 8, "dur": 5, "cam": "push", "tx": "다리를 잃은 궁수는… 더 이상 모험가가 아니다.", "L": [{"f": "op08_bg_s26112632.webp", "bg": 1, "d": 0.2, "ar": 1.7778}, {"f": "op08_fg_s26113115.webp", "x": 50, "y": 104, "h": 96, "d": 1.2, "flip": 0, "ar": 0.7612}, {"f": "op08_badge_s26113302c.webp", "x": 47, "y": 66, "h": 22, "d": 1.25, "flip": 0, "ar": 0.9763}]}, {"n": 9, "dur": 4, "cam": "push", "tx": "그래도 이 마을을 떠날 수는 없었다.", "L": [{"f": "op09_bg_s26112652.webp", "bg": 1, "d": 0.2, "ar": 1.7778}, {"f": "op09_fg_s26113126.webp", "x": 50, "y": 100, "h": 88, "d": 1.3, "flip": 0, "ar": 0.7067}]}, {"n": 10, "dur": 5, "cam": "side", "tx": "이곳은, 마왕의 마지막 봉인이 잠든 곳이니까.", "L": [{"f": "op10_bg_s26112671.webp", "bg": 1, "d": 0.25, "ar": 1.7778}, {"f": "op10_mid_s26112682.webp", "x": 50, "y": 102, "h": 30, "d": 0.8, "flip": 0, "ar": 3.5935}, {"f": "op10_fg_s26113135.webp", "x": 50, "y": 108, "h": 34, "d": 1.6, "flip": 0, "ar": 2.3356}]}, {"n": 11, "dur": 5, "cam": "push", "tx": "내가 갈 수 없다면… 갈 사람을 키우면 된다.", "L": [{"f": "op11_bg_s26112701.webp", "bg": 1, "d": 0.35, "ar": 1.7778}, {"f": "op11_ch_master_s26112712.webp", "x": 50, "y": 98, "h": 52, "d": 1.1, "flip": 0, "ar": 0.5898}]}, {"n": 12, "dur": 4, "cam": "push", "tx": "리나: 여기가 새 길드죠? 저, 접수원 자리 보고 왔어요!", "L": [{"f": "op12_bg_s26113145.webp", "bg": 1, "d": 0.35, "ar": 1.7778}, {"f": "op12_ch_lina_s26112732.webp", "x": 34, "y": 102, "h": 70, "d": 1.1, "flip": 0, "ar": 0.5399}]}, {"n": 13, "dur": 3, "cam": "pull", "tx": "이번엔… 아무도 잃지 않는다.", "L": [{"f": "op13_bg_s26112742.webp", "bg": 1, "d": 0.35, "ar": 1.7778}, {"f": "op13_fg_s26113155.webp", "x": 30, "y": 108, "h": 34, "d": 1.5, "flip": 0, "ar": 2.8369}]}];
+const st=document.getElementById('st'),lys=document.getElementById('lys'),cap=document.getElementById('cap'),fd=document.getElementById('fd'),fl=document.getElementById('fl'),tag=document.getElementById('tag');
+let cur=null,t0=0,mode='all',idx=0,speed=1,raf=0;
+const bar=document.getElementById('bar');
+SH.forEach((s,i)=>{const b=document.createElement('button');b.textContent=s.n;b.dataset.i=i;b.onclick=()=>{mode='one';play(i)};bar.appendChild(b)});
+document.getElementById('all').onclick=()=>{mode='all';play(0)};
+document.getElementById('dbg').onclick=e=>{st.classList.toggle('debug');e.target.classList.toggle('on')};
+document.getElementById('spd').onclick=e=>{speed=speed===1?0.5:speed===0.5?2:1;e.target.textContent='속도 '+speed+'×'};
+// preload
+SH.forEach(s=>s.L.forEach(l=>{const im=new Image();im.src='layers/'+l.f}));
+function build(s){
+  lys.innerHTML='';
+  s.L.forEach(l=>{
+    const d=document.createElement('div');d.className='ly'+(l.bg?' bgl':'');const im=document.createElement('img');im.src='layers/'+l.f;im.alt='';
+    if(!l.bg){
+      if(l.cover){im.style.cssText='left:-4%;top:-4%;width:108%;height:108%;object-fit:cover'}
+      else{const H=l.h, Wp=H*l.ar*9/16; im.style.height=H+'%';im.style.width=Wp+'%';im.style.left=(l.x-Wp/2)+'%';im.style.top=(l.y-H)+'%'}
+      if(l.flip)im.style.transform='scaleX(-1)';
+    }
+    d.appendChild(im);d._l=l;lys.appendChild(d);
+  });
+}
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+function frame(now){
+  const s=SH[idx];const dur=s.dur*1000/speed;let t=(now-t0)/dur;
+  if(t>=1){ if(mode==='all'&&idx<SH.length-1){play(idx+1);return} if(mode==='one'){play(idx);return} t=1 }
+  const e=ease(Math.min(1,t)),k=s.cam;
+  for(const d of lys.children){const D=d._l.d;let sc=1,tx=0,ty=0,f='';
+    if(k==='push'){sc=1+0.12*e*D}
+    else if(k==='pull'){sc=1+0.14*(1-e)*D}
+    else if(k==='up'){ty=(e-0.5)*7*D;sc=1+0.04*e*D}
+    else if(k==='side'){tx=-(e-0.5)*7*D;sc=1.02+0.03*e*D}
+    else if(k==='wake'){sc=1.04+0.04*e;const bl=10*(1-e)+1.2;const br=0.25+0.6*e*(0.75+0.25*Math.abs(Math.sin(e*7)));f=`blur(${bl}px) brightness(${br})`}
+    d.style.transform=`translate(${tx}%,${ty}%) scale(${sc})`;d.style.filter=f;}
+  fl.style.opacity=k==='flash'?(t<0.35?t/0.35:Math.max(0,1-(t-0.55)/0.45)):0;
+  if(k==='flash'&&t<0.35)lys.style.opacity=1;
+  const edge=Math.min(t,1-t)*dur;fd.style.opacity=k==='flash'?0:Math.max(0,1-edge/280);
+  if(t<1)raf=requestAnimationFrame(frame);
+}
+function play(i){
+  cancelAnimationFrame(raf);idx=i;const s=SH[i];
+  if(s.L.length||s.cam!=='flash')build(s);
+  tag.textContent=s.n+'번 · '+({push:'밀고 들어감',pull:'뒤로 빠짐',up:'위로',side:'옆으로',flash:'하얗게',wake:'깨어남'}[s.cam]);
+  cap.textContent=s.tx;cap.style.opacity=s.tx?1:0;
+  [...bar.querySelectorAll('button[data-i]')].forEach(b=>b.classList.toggle('on',+b.dataset.i===i));
+  t0=performance.now();raf=requestAnimationFrame(frame);
+}
+build(SH[0]);fd.style.opacity=0;tag.textContent='▶를 눌러 재생';
+</script>
