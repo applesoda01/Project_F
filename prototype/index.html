@@ -130,8 +130,11 @@ html,body{margin:0;height:100%;background:#1b1410;color:#2b1e15;font-family:"Mal
 #goalBox.main .gk{color:#b3361f}
 body.bookOn #goalBox{transform:translateX(-480px);opacity:0;pointer-events:none}
 body:has(#townUi.on) #goalBox{display:none}
-.ux-face.star2,.ux-portrait.star2,.gcard .gf.star2{border-color:#a9b4c2!important;box-shadow:0 0 0 1.5px #e6ebf2,inset 0 0 0 2px rgba(255,255,255,.6)}
-.ux-face.star3,.ux-portrait.star3,.gcard .gf.star3{border-color:#e0a01c!important;box-shadow:0 0 0 1.5px #ffe7a0,0 0 10px 2px rgba(255,200,60,.6),inset 0 0 0 2px rgba(255,255,255,.6)}
+.ux-face.star2,.ux-portrait.star2,.gcard .gf.star2{border:3px solid #7f8ea6!important;box-shadow:0 0 0 1.5px #dfe6f0,0 0 8px 2px rgba(170,200,240,.75),inset 0 0 0 2px rgba(255,255,255,.6);animation:stGlow2 2.6s ease-in-out infinite}
+.ux-face.star3,.ux-portrait.star3,.gcard .gf.star3{border:3px solid #d08a00!important;box-shadow:0 0 0 1.5px #ffe08a,0 0 12px 4px rgba(255,190,40,.85),inset 0 0 0 2px rgba(255,255,255,.6);animation:stGlow3 2.2s ease-in-out infinite}
+@keyframes stGlow2{50%{box-shadow:0 0 0 1.5px #eef3fa,0 0 14px 4px rgba(190,215,250,.95),inset 0 0 0 2px rgba(255,255,255,.6)}}
+@keyframes stGlow3{50%{box-shadow:0 0 0 1.5px #fff0b8,0 0 20px 7px rgba(255,200,50,1),inset 0 0 0 2px rgba(255,255,255,.6)}}
+@media (prefers-reduced-motion: reduce){.ux-face.star2,.ux-face.star3,.ux-portrait.star2,.ux-portrait.star3,.gcard .gf.star2,.gcard .gf.star3{animation:none}}
 .astar{font-style:normal;margin-left:4px;font-size:.82em;letter-spacing:-1px;color:#c9a227;text-shadow:0 1px 0 rgba(90,60,10,.25);white-space:nowrap}.astar.s3{color:#e0a01c;text-shadow:0 0 4px rgba(255,200,60,.7)}.gcard .gcu{font-style:normal;color:#3f7a3a;font-weight:700}
 #growStack{position:absolute;right:24px;bottom:118px;display:flex;flex-direction:column-reverse;gap:10px;pointer-events:none;z-index:4}   /* 2026-11-23 모험가 개선작업 ②: 원정 뒤 성장 카드 */
 .gcard{width:300px;padding:10px 14px 9px;border-radius:12px;background:#fffaf0;border:2px solid #e9d7b0;box-shadow:0 4px 12px rgba(40,24,10,.3);color:#4a321c;font-size:13px;animation:gcIn .3s ease-out both}
