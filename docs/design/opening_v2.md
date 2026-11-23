@@ -71,3 +71,12 @@
 ## 잉크 화풍 시험 (2026-11-24, 참고 영상 분석 뒤)
 - 사용자 23:04: 참고 영상처럼 **잉크 화풍(색칠 없음)** 이어야 함 · 23:06: 오프닝은 이 v2 대본으로 바꾸기로 했던 것
 - 이미지 처리만으로 잉크 + 세피아 변환 시험: [3 · 11번](mockups/video_1124/오프닝v2_잉크변환_시험.jpg) — 11번(골목)은 잘 됨, 3번(붉은 하늘 실루엣)은 선이 없어 흐림 → 실루엣 · 하늘 위주 컷은 ComfyUI로 잉크 화풍 새로 그리기 필요
+
+### 잉크 화풍 생성 시험 (2026-11-24, ComfyUI)
+
+- 사용자 23:07: 필터 보정으로는 참고 영상 느낌이 안 남 → 새로 그리기. 23:11: LoRA 후보 Sketch Style XL · Ink Art XL · PenDrawing Memiha XL(받을 수 없음: Tensor.art 얼리 액세스, 작가의 볼펜 LoRA는 BOOTH 유료) 
+- **기준 설정 (11번으로 확정, 사용자 23:21 「11번 사용해도 좋을 것 같아」):** Illustrious-XL v1.0 + `InkArtXL_1.2` 1.0 · 원본 v2 그림 윤곽(Canny 0.15/0.35) → ControlNet union promax(canny) 강도 0.5 · 끝 0.7 · 1344×768 · 28스텝 · cfg 5.5 · euler_ancestral
+  - 화풍 태그: ink art, line art drawing, sketch, hatching (texture), heavy cross-hatching, ink (medium), traditional media, monochrome, sepia, parchment, rough lines, watercolor wash, dark shadows, chiaroscuro, high contrast, dramatic lighting
+  - 금지: color, colorful, vivid colors, (색 이름), photo, 3d, outline glow, white outline …
+  - 결과: [1장째](mockups/video_1124/잉크시험1_op11_inkart.jpg) (명암 약함 · 흰 테두리) → [2장째 11번 좋음](mockups/video_1124/잉크시험2_op11_op03.jpg)
+- **3번:** ControlNet 0.5에서 동료 넷 → 1명, 가슴에 십자가 모양 → 0.75 · 끝 0.6 + 「four adventurers … archer in hooded cloak」 · 금지 「cross」 → [3장째](mockups/video_1124/잉크시험3_op03.jpg): 십자가 없어짐 · 궁수와 활 나옴 · 하지만 여전히 2명이고 궁수가 흰 머리(마스터는 후드 · 얼굴 없음이어야 함)
