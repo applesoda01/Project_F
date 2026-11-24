@@ -215,8 +215,8 @@
   // 프롤로그 영상: 새 게임 첫 시작에만. 영상이 없거나 못 읽으면 바로 길드로 넘어감. Esc·건너뛰기로 중단
   const PROLOGUE_ON = false;   // 2026-11-24 사용자: 오프닝 영상이 완성될 때까지 프롤로그를 틀지 않음 (true로 바꾸면 다시 나옴)
   function playPrologue(next) {
-    if (!PROLOGUE_ON) { next(); return; }
-    const box = $('prologue'), v = $('prologueVid'), skip = $('prologueSkip'); if (!box || !v) { next(); return; }
+    if (!PROLOGUE_ON) { fadeTo(false, 600); next(); return; }   // 2026-11-24 14:57 사용자 「진행해줘」: 새 게임은 검은 덮개를 프롤로그가 걷어 내는데, 영상을 건너뛰면 덮개가 남아 화면이 계속 검었음 → 여기서 걷어 냄
+    const box = $('prologue'), v = $('prologueVid'), skip = $('prologueSkip'); if (!box || !v) { fadeTo(false, 600); next(); return; }
     let over = false;
     const key = e => { if (e.key === 'Escape') end(); };
     const end = async () => {
