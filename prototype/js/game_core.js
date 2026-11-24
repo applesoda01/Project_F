@@ -1145,6 +1145,54 @@
   function takeBowl(s, d) { const L = (s.bowls || {})[d.name] || []; L.sort((a, b) => a.w - b.w); const b = L.find(x => x.n > 0); if (b) b.n--; }
 
 
+  function departOne(s, a, idle, o) {   // 2026-11-24 출발 판정을 한 명 단위로 (departures 와 같은 규칙) · o.wake: 늦잠 깨우기(버릇 건너뜀 판정을 다시 하지 않음)
+    o = o || {}; const QC = s.cfg.quirk; let went = false;
+    if (a.state !== 'town') return false;
+    if (a.quirk && QC && !o.wake && qkSkip(s, a)) { a.idle = a.quirk === 'drunk' ? 'sleep' : 'rain'; return false; }   // 2026-11-20 버릇: 술꾼 늦잠 · 미신가 비 → 이번 주 게시판 의뢰를 맡지 않음
+    const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
+    let hi = Math.min(s.grade, a.grade + range[1]), lo = Math.min(hi, Math.max(0, a.grade + range[0]));   // 2026-11-12: 길드보다 1등급 높은 모험가도 길드 최고 등급 의뢰는 고름
+    let th = s.cfg.adv.departTh[a.risk], sneak = false;
+    if (a.quirk === 'bluff' && QC && s.R() < qkRisk(s, a, QC.bluffSneak)) { sneak = true; hi = Math.min(s.grade, hi + 1); th -= QC.bluffTh; }   // 허세꾼: 가끔 높은 등급 · 낮은 기준으로 몰래 고름
+    const cands = s.board.filter(q => (q.only == null || q.only === a.id) && q.g >= lo && q.g <= hi && !cPastEnd(s, a, q.weeks || s.cfg.quest.weeks[q.g])).sort(pickOrder(s, a));   // 결정 9: 계약 끝을 넘는 의뢰는 고르지 않음
+    const needy = needsMoney(s, a), base0 = feeBase0(s), K = s.cfg.econ.restK || 0;   // 2026-11-19: 기본 = feeBase (선택지 첫 칸이 5%가 됨)
+    a.idle = cands.length ? 'mates' : 'noq';
+    for (const q of cands) {
+      if (needy && lowBuySkip(s, q) > 0 && s.R() < lowBuySkip(s, q)) continue;   // 2026-11-19 결정 43: 매입가를 낮춘 소재가 나오는 의뢰는 돈이 필요한 모험가가 거름 (50% → 25%)
+      if (needy && K > 0 && a.quirk !== 'selfish') { const f = questFee(s, q); if (f > base0 + 1e-9 && s.R() < Math.min(1, (f - base0) / base0 * K)) { a.idle = 'fee'; continue; } }   // 2026-11-17 결정 22: 돈이 필요한 모험가는 수수료가 기본보다 높으면 확률로 거름(15% → 25%, 20% → 50%), 다 거르면 이번 주는 쉼
+      let party = [a];
+      const thq = isCombat(q) ? th : th - ((s.cfg.adv.ncDrop || [0, 0, 0])[a.risk] || 0);   // 2026-11-24 사용자 비전투 A: 비전투 의뢰는 출발 기준을 adv.ncDrop만큼 낮춤 [임시]
+      let pp = perceived(s, a, questP(s, party, q));
+      if (pp < s.cfg.adv.seekTh[a.social]) {
+        let mates = idle.filter(b => b !== a && b.state === 'town' && Math.abs(b.grade - q.g) <= 1 && !cPastEnd(s, b, q.weeks || s.cfg.quest.weeks[q.g]));
+        // 2026-11-19 사용자: 동료를 고를 때 친밀도도 봄 — 절대적이지 않게. 점수 = 친밀도 + 흔들림(±adv.relParty/2) [임시] 이 큰 순서로 4명까지 후보
+        //   예: relParty 30 → 친밀도가 30 넘게 차이 나면 늘 친한 쪽 먼저, 10 차이면 약 4번에 3번꼴. 0이면 예전처럼 명부 순서
+        const RP = s.cfg.adv.relParty || 0;
+        if (RP > 0 && mates.length > 1) mates = mates.map(b => ({ b, k: relOf(s, a.id, b.id) + (s.R() - 0.5) * RP })).sort((x, y) => y.k - x.k).map(x => x.b);
+        mates = mates.slice(0, 4);
+        for (const m of mates) { party.push(m); if (perceived(s, a, questP(s, party, q)) >= thq) break; }
+        pp = perceived(s, a, questP(s, party, q));
+      }
+      if (pp < thq) continue;
+      { const cw = QC && pp < 0.7 ? party.find(m => m.quirk === 'coward' && s.R() < qkRisk(s, m, QC.cowardQuit)) : null;   // 겁쟁이: 「팽팽」 · 「위험」 의뢰는 출발 직전에 빠짐 → 이번 주 출발 안 함
+        if (cw) { qkLog(s, cw, 'cowardQuit', `${J(cw.name, '이', '가')} 「${q.name || qn(q)}」 출발 직전에 빠졌습니다. (겁쟁이 · 이번 주는 출발하지 않음)`); break; } }
+      s.board.splice(s.board.indexOf(q), 1);
+      launchParty(s, q, party, pp); went = true;
+      if (sneak) qkLog(s, a, 'sneak', `${J(a.name, '이', '가')} 몰래 ${qn(q)} 의뢰를 골라 떠났습니다. (허세꾼)`);
+      break;
+    }
+    return went;
+  }
+  function wakeGo(s, aid) {   // 2026-11-24 사용자 「4번 진행하자」(idea_notes 11-23 ⑤): 늦잠 버릇(술꾼)으로 이번 주 쉬는 모험가를 로비에서 깨우면 의뢰를 다시 골라 바로 출발 (한 주 한 번) — 누를 때만이라 관문 · 시뮬레이터 영향 없음
+    const a = s.advs.find(x => x.id === aid);
+    if (!a || !a.alive || a.state !== 'town' || a.idle !== 'sleep' || !(a.idleW >= s.week - 1) || a.wokeW === s.week) return { ok: false };
+    if (mainBlocked(s)) return { ok: false, why: '침공 대비 중' };
+    a.wokeW = s.week;
+    const idle = s.advs.filter(b => b.alive && b.state === 'town' && !reqReserved(s, b));
+    log(s, `마스터가 깨우자 ${J(a.name, '이', '가')} 늦잠에서 일어났습니다.`, 'sys', { who: [a.name] });
+    const went = departOne(s, a, idle, { wake: true });
+    if (!went) log(s, `${J(a.name, '은', '는')} 이번 주에 맞는 의뢰가 없어 그대로 쉽니다.`, 'sys', { who: [a.name] });
+    return { ok: true, went };
+  }
   function departures(s) {
     const Q = s.cfg.quest, E = s.cfg.econ;   // s.seatUsed(이번 주 식사한 좌석 수)는 stepWeek에서 0으로 (지명 출발이 먼저 식사하므로)
     for (const a of s.advs) { if (!a.alive || a.state === 'quest') continue; if (a.state === 'injured' && s.week < a.until) continue; a.state = present(s, a) || reqReserved(s, a) ? 'town' : 'away'; if (a.state === 'town') a.lastSeen = s.week; }   // lastSeen: 마지막으로 길드에 온 주
@@ -1152,41 +1200,7 @@
     const idle = s.advs.filter(a => a.state === 'town' && !reqReserved(s, a));   // 지명 예약자는 게시판 의뢰를 받지 않음
     for (const a of s.advs) if (a.state === 'town') { a.idleW = s.week; a.idle = reqReserved(s, a) ? 'req' : 'rest'; }   // 2026-11-23 로비 표시용: 이번 주 출발하지 않은 까닭 (규칙 · 난수와 무관)
     const QC = s.cfg.quirk;
-    for (const a of idle) {
-      if (a.state !== 'town') continue;
-      if (a.quirk && QC && qkSkip(s, a)) { a.idle = a.quirk === 'drunk' ? 'sleep' : 'rain'; continue; }   // 2026-11-20 버릇: 술꾼 늦잠 · 미신가 비 → 이번 주 게시판 의뢰를 맡지 않음
-      const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
-      let hi = Math.min(s.grade, a.grade + range[1]), lo = Math.min(hi, Math.max(0, a.grade + range[0]));   // 2026-11-12: 길드보다 1등급 높은 모험가도 길드 최고 등급 의뢰는 고름
-      let th = s.cfg.adv.departTh[a.risk], sneak = false;
-      if (a.quirk === 'bluff' && QC && s.R() < qkRisk(s, a, QC.bluffSneak)) { sneak = true; hi = Math.min(s.grade, hi + 1); th -= QC.bluffTh; }   // 허세꾼: 가끔 높은 등급 · 낮은 기준으로 몰래 고름
-      const cands = s.board.filter(q => (q.only == null || q.only === a.id) && q.g >= lo && q.g <= hi && !cPastEnd(s, a, q.weeks || s.cfg.quest.weeks[q.g])).sort(pickOrder(s, a));   // 결정 9: 계약 끝을 넘는 의뢰는 고르지 않음
-      const needy = needsMoney(s, a), base0 = feeBase0(s), K = s.cfg.econ.restK || 0;   // 2026-11-19: 기본 = feeBase (선택지 첫 칸이 5%가 됨)
-      a.idle = cands.length ? 'mates' : 'noq';
-      for (const q of cands) {
-        if (needy && lowBuySkip(s, q) > 0 && s.R() < lowBuySkip(s, q)) continue;   // 2026-11-19 결정 43: 매입가를 낮춘 소재가 나오는 의뢰는 돈이 필요한 모험가가 거름 (50% → 25%)
-        if (needy && K > 0 && a.quirk !== 'selfish') { const f = questFee(s, q); if (f > base0 + 1e-9 && s.R() < Math.min(1, (f - base0) / base0 * K)) { a.idle = 'fee'; continue; } }   // 2026-11-17 결정 22: 돈이 필요한 모험가는 수수료가 기본보다 높으면 확률로 거름(15% → 25%, 20% → 50%), 다 거르면 이번 주는 쉼
-        let party = [a];
-        const thq = isCombat(q) ? th : th - ((s.cfg.adv.ncDrop || [0, 0, 0])[a.risk] || 0);   // 2026-11-24 사용자 비전투 A: 비전투 의뢰는 출발 기준을 adv.ncDrop만큼 낮춤 [임시]
-        let pp = perceived(s, a, questP(s, party, q));
-        if (pp < s.cfg.adv.seekTh[a.social]) {
-          let mates = idle.filter(b => b !== a && b.state === 'town' && Math.abs(b.grade - q.g) <= 1 && !cPastEnd(s, b, q.weeks || s.cfg.quest.weeks[q.g]));
-          // 2026-11-19 사용자: 동료를 고를 때 친밀도도 봄 — 절대적이지 않게. 점수 = 친밀도 + 흔들림(±adv.relParty/2) [임시] 이 큰 순서로 4명까지 후보
-          //   예: relParty 30 → 친밀도가 30 넘게 차이 나면 늘 친한 쪽 먼저, 10 차이면 약 4번에 3번꼴. 0이면 예전처럼 명부 순서
-          const RP = s.cfg.adv.relParty || 0;
-          if (RP > 0 && mates.length > 1) mates = mates.map(b => ({ b, k: relOf(s, a.id, b.id) + (s.R() - 0.5) * RP })).sort((x, y) => y.k - x.k).map(x => x.b);
-          mates = mates.slice(0, 4);
-          for (const m of mates) { party.push(m); if (perceived(s, a, questP(s, party, q)) >= thq) break; }
-          pp = perceived(s, a, questP(s, party, q));
-        }
-        if (pp < thq) continue;
-        { const cw = QC && pp < 0.7 ? party.find(m => m.quirk === 'coward' && s.R() < qkRisk(s, m, QC.cowardQuit)) : null;   // 겁쟁이: 「팽팽」 · 「위험」 의뢰는 출발 직전에 빠짐 → 이번 주 출발 안 함
-          if (cw) { qkLog(s, cw, 'cowardQuit', `${J(cw.name, '이', '가')} 「${q.name || qn(q)}」 출발 직전에 빠졌습니다. (겁쟁이 · 이번 주는 출발하지 않음)`); break; } }
-        s.board.splice(s.board.indexOf(q), 1);
-        launchParty(s, q, party, pp);
-        if (sneak) qkLog(s, a, 'sneak', `${J(a.name, '이', '가')} 몰래 ${qn(q)} 의뢰를 골라 떠났습니다. (허세꾼)`);
-        break;
-      }
-    }
+    for (const a of idle) departOne(s, a, idle);
     // 술 (2026-11-12): 이번 주 마을에 남은 모험가가 씀씀이 성향별 확률(식사와 같은 econ.mealBuyRate)로 1잔. 길드 마진 econ.drinkMargin[길드 등급]
     const DM = E.drinkMargin || [2, 3, 4, 5, 6, 7, 8]; s.drinks = [];
     for (const a of s.advs) if (a.alive && a.state === 'town' && s.R() < Math.min(1, E.mealBuyRate[a.spend] * (a.quirk === 'drunk' && QC ? QC.drunkDrink : 1))) { const m = (DM[s.grade] || DM[0]) + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += m; s.month.tavern += m; s.month.drinks = (s.month.drinks || 0) + 1; s.drinks.push(a.id); }
@@ -2118,6 +2132,6 @@
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
   const api = { live: false, reqSorted, dgWhy, dgLaunch, dgPlan, dgChoose, dgPending, dgLean, dgCancel, dgOdds, dgCraftWhy, dgCraft, dgGive, dgItems, dgOn, dgDef, hintPeek, hintSaid, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
-  Object.assign(api, { live: false, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, isStaple, canMarket, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carBuy, carWarePrice, carTalk, carEscort, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log });   // 2026-11-20 main 병합: 시장 · 길드 의뢰 · 상단 쪽 API
+  Object.assign(api, { live: false, wakeGo, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, isStaple, canMarket, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carBuy, carWarePrice, carTalk, carEscort, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log });   // 2026-11-20 main 병합: 시장 · 길드 의뢰 · 상단 쪽 API
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
