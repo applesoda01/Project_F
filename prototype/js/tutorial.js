@@ -116,7 +116,7 @@
       if (t.qid == null || !s.board.some(q => q.id === t.qid)) t.qid = Gm.tutPost(s, 'q_hunt_F_2').id;
       t.ph = 'board';
     }); },
-    FT0003() { hold(true); say('FT0003', 1, () => { getS().tut.ph = 'mini'; hold(false); }); },   // 2026-11-19: 대화가 끝나면 바로 시간이 흐름 (원정 목록 누르기는 안내만)
+    FT0003() { hold(true); say('FT0003', 1, () => { getS().tut.ph = 'mini'; hold(false); awayStart(); }); },   // 2026-11-19: 대화가 끝나면 바로 시간이 흐름 (원정 목록 누르기는 안내만)
     FT0004() { hold(true); say('FT0004', 1, () => { unlock('fac'); getS().tut.ph = 'table'; }); },   // 2026-11-23 메뉴 잠금: 대화가 끝나면 시설 칸이 열림
     FT0005() {
       hold(true); const s = getS(), t = s.tut;
@@ -138,15 +138,17 @@
     }
   };
   // 2026-11-22 야간 작업 1 (사용자 C안): 첫 원정을 기다리는 동안 리나 말풍선 2줄 (FT0003 구간 2). 대화창이 아니라 말풍선이라 시계는 그대로 흐름
+  // 2026-11-24 사용자 A안: 첫 원정 2배속 · 리나 안내는 미니뷰를 누르지 않아도 출발 직후부터 (전에는 누를 때만 → 안 누르면 약 30초 · 안내 없음)
+  function awayStart() { const t = getS().tut; awayTalk(); if (!t.awaySp && H.getSpeed && H.setSpeed && H.getSpeed() > 0 && H.getSpeed() < 2) { t.awaySp = H.getSpeed(); H.setSpeed(2); } }
   function awayTalk() {
     const L = lines('FT0003', 2); if (!L.length || !root.Lina || !root.Lina.say) return;
-    const still = () => { const t = getS().tut; return t && !t.base && t.step === 'FT0003' && t.ph === 'away'; };
+    const still = () => { const t = getS().tut; return t && !t.base && t.step === 'FT0003' && (t.ph === 'mini' || t.ph === 'away'); };
     L.forEach((l, i) => after(1.5 + i * 10.5, () => { if (still()) root.Lina.say(l.text, 6); }));
   }
   // 단계별 기다림: 조건(test)을 매 프레임 확인, 그동안 빛낼 곳(glow) · 안내 문구(hint)
   const WAIT = {
     board: { glow: () => root.UI.popupName() === 'board' ? `.qcard[data-q="${getS().tut.qid}"]` : '[data-pop="board"]', hint: () => root.UI.popupName() === 'board' ? '「오늘 저녁 삼겹살」을 눌러 보내 주세요' : '아래 「의뢰」를 눌러 게시판을 여세요' },
-    mini: { dim: false, glow: () => '#hudExp', hint: () => '오른쪽 원정 목록의 줄을 눌러 보세요', test: () => !!document.querySelector('#expView.on') || WAIT.away.test(), done() { const t = getS().tut; t.ph = 'away'; awayTalk(); if (H.getSpeed && H.setSpeed && H.getSpeed() > 0 && H.getSpeed() < 2) { t.awaySp = H.getSpeed(); H.setSpeed(2); } } },   // 2026-11-23 빈 시간 2: 첫 원정 기다림(약 29초) 동안 2배속 → 약 15초
+    mini: { dim: false, glow: () => '#hudExp', hint: () => (getS().tut.awaySp ? '▶▶ 2배속 · ' : '') + '오른쪽 원정 목록의 줄을 눌러 보세요', test: () => !!document.querySelector('#expView.on') || WAIT.away.test(), done() { getS().tut.ph = 'away'; } },   // 2배속 · 안내는 awayStart(출발 직후)에서   // 2026-11-23 빈 시간 2: 첫 원정 기다림(약 29초) 동안 2배속 → 약 15초
     away: { test: () => { const s = getS(), t = s.tut, a = s.advs.find(x => x.id === t.wid); return !a || (a.state !== 'quest' && !s.active.some(x => x.party.includes(t.wid))); }, done() { const t = getS().tut; t.ph = 'wait'; if (t.awaySp && H.setSpeed) { H.setSpeed(t.awaySp); t.awaySp = null; } after(3.5, () => go('FT0004')); } },
     table: { glow: () => document.querySelector('#placeLay.on') ? null : root.UI.popupName() === 'fac' ? '[data-place="table"]' : '[data-pop="fac"]', hint: () => document.querySelector('#placeLay.on') ? '바닥의 초록 칸을 눌러 테이블 세트를 놓아 주세요' : '「시설」에서 테이블 세트를 놓아 주세요', /* 2026-11-22 시안 7 반영: 배치 중에는 「시설」을 빛내지 않고 안내를 바꿈 */ test: () => getS().place.items.some(i => i.id === 'table'), done() { getS().tut.ph = 'wait'; after(1.5, () => go('FT0005')); } },
     meals: { glow: () => '[data-pop="meals"]', hint: () => '아래 「음식」을 눌러 보세요', test: () => root.UI.popupName() === 'meals',
