@@ -128,6 +128,7 @@
   }
   // ---------- 리나 옆 남은 음식 (2026-11-23 3차 13번 B안, 사용자 확정): 접수대 위 작은 칩 = 요리 아이콘 × 남은 그릇. 0이면 「음식 없음」, 누르면 음식 장 ----------
   let foodEl = null, foodKey = '';
+  const FOOD_EMPTY = '<svg class="fe" viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="18" rx="14" ry="8" fill="#e9dcc3" stroke="#8a6a46" stroke-width="2"/><ellipse cx="16" cy="17" rx="8" ry="4" fill="none" stroke="#b49b78" stroke-width="1.5"/></svg>';   // 빈 접시 (11-24 시안 A, 사용자 「그릇은 지금도 이미지 좋으니까 좋다」)
   function foodChip() {
     if (!s || !stage || !root.Lina || !root.Lina.headPos) return;
     if (!foodEl) { foodEl = document.createElement('button'); foodEl.id = 'foodChip'; foodEl.title = '남은 음식 (누르면 음식 장)'; foodEl.onclick = () => UI.open('meals'); }
@@ -137,8 +138,8 @@
     const key = off ? 'off' : list.map(([d, n]) => d.name + n).join('|') || 'none'; if (key === foodKey) return; foodKey = key;
     foodEl.hidden = off; if (off) return;
     const hp = root.Lina.headPos(); foodEl.style.left = (hp.x + 69) + 'px'; foodEl.style.top = (hp.y + 97) + 'px';
-    foodEl.classList.toggle('none', !list.length);
-    foodEl.innerHTML = list.length ? list.slice(0, 4).map(([d, n]) => `<span title="${esc(d.name)} ${n}그릇"><img src="assets/${esc(d.icon || '')}" alt="">×${n}</span>`).join('') + (list.length > 4 ? `<em>+${list.length - 4}</em>` : '') : '<b>음식 없음</b>';
+    foodEl.classList.toggle('none', false);   // 2026-11-24 사용자 A안: 0일 때도 같은 모양(빈 접시 ×0), 빨간 칩 없앰
+    foodEl.innerHTML = list.length ? list.slice(0, 4).map(([d, n]) => `<span title="${esc(d.name)} ${n}그릇"><img src="assets/${esc(d.icon || '')}" alt="">×${n}</span>`).join('') + (list.length > 4 ? `<em>+${list.length - 4}</em>` : '') : `<span title="남은 음식 없음 (누르면 음식 장)">${FOOD_EMPTY}×0</span>`;
   }
   UI.hud = function () {
     carBadge(); lkSync();
@@ -578,7 +579,8 @@
     if (goldOf !== s) { goldOf = s; goldTo = goldNow = to; cancelAnimationFrame(goldRaf); el.textContent = fmt(to); return; }
     if (to === goldTo) return;
     const d = to - goldTo, box = el.closest('.stat') || el.parentNode, f = document.createElement('i');
-    f.className = 'gfx ' + (d > 0 ? 'up' : 'down'); f.textContent = (d > 0 ? '+' : '−') + fmt(Math.abs(d)) + 'G'; f.style.setProperty('--gy', (goldFx++ % 3) * 16 + 'px');
+    f.className = 'gfx ' + (d > 0 ? 'up' : 'down'); f.textContent = (d > 0 ? '+' : '−') + fmt(Math.abs(d)) + 'G'; goldFx++;
+    { const br = box.getBoundingClientRect(), er = el.getBoundingClientRect(), k = box.offsetWidth ? br.width / box.offsetWidth : 1; f.style.left = ((er.left + er.width / 2 - br.left) / k) + 'px'; f.style.top = ((er.top + er.height / 2 - br.top) / k) + 'px'; }   // 2026-11-24 사용자: 숫자 자리에서 시작 · +는 초록으로 위로, −는 빨강으로 아래로 사라짐 (시안 fix_1124/2b)
     box.appendChild(f); setTimeout(() => f.remove(), 1300);
     // 로비의 접수대 위에도 같은 숫자를 띄움 (2026-11-16 15:28 사용자: "상단 HUD와 함께 보여지게"). 마을 화면 · 책이 펼쳐진 동안에는 띄우지 않음
     if (root.Iso && !(root.Town && root.Town.active) && !popup) { const c = document.createElement('i'), at = root.Iso.COUNTER_AT; c.className = 'gfx-desk ' + (d > 0 ? 'up' : 'down'); c.textContent = f.textContent; c.style.left = (at[0] + 105 + ((goldFx % 3) - 1) * 26) + 'px'; c.style.top = (at[1] - 8) + 'px'; stage.ui.appendChild(c); setTimeout(() => c.remove(), 1500); }

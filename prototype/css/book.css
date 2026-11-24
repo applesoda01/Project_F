@@ -1214,6 +1214,7 @@ p > .rq-pow{margin-left:2px;vertical-align:middle}   /* 메인 퀘스트 제안 
 #foodChip span{display:flex;align-items:center;gap:2px}#foodChip img{width:32px;height:32px}
 #foodChip em{font-style:normal;font-size:15px;opacity:.85}
 #foodChip.none{border-color:#df6150;background:rgba(90,30,22,.92)}#foodChip.none b{font-size:17px;padding:0 4px}
+#foodChip svg.fe{width:32px;height:32px}   /* 2026-11-24 A안: 남은 음식 0 = 빈 접시 ×0 */
 body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 /* 2026-11-23 책 단순화 (사용자 확정): 모험가 상세 안 「경력 보기」 · 「계약 제안」 단추 · 장부 아래 「길드 기록」 단추 · 경영 펼침 메뉴에서 기록 뺌 */
 .av-acts{display:flex;gap:6px;margin:24px 0 2px}
@@ -1259,3 +1260,16 @@ body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 .fb-fold{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;cursor:pointer;padding:0}.fb-fold i{font-style:normal;font-size:.8em;color:#a8721a;margin-left:6px}
 .qcard .dlw{width:auto!important;white-space:nowrap}
 .gq-k.lk{cursor:default}
+
+/* 2026-11-24 사용자 「반영해줘」 (시안 docs/design/mockups/fix_1124): ① 메뉴판 카드 = 글씨 16px · 세로줄 맞춤 · 값 칸 흰색(4자리+G 너비) ② 칩 3단계 공통 규칙 */
+.kmenuwrap .ks-r{display:grid;grid-template-columns:2.6em 1.8em 5.4ch 1.8em minmax(0,1fr) auto;column-gap:4px;align-items:center}
+.kmenuwrap .ks-r,.kmenuwrap .ks-r *,.kmenuwrap .kfx,.kmenuwrap .plus{font-size:16px!important;line-height:1.3}
+.kmenuwrap .ks-r .lb{min-width:0}
+.kmenuwrap .ks-r>button:not(.ks-more){width:1.8em;height:1.75em;padding:0;display:flex;align-items:center;justify-content:center}
+.kmenuwrap .ks-r b.v{font-weight:700;min-width:0;height:1.75em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:#fff;border:1.5px solid #d6c4a4;border-radius:6px;font-variant-numeric:tabular-nums;color:#3a2614}
+.kmenuwrap .ks-r>span:nth-of-type(2),.kmenuwrap .ks-r>.mut{margin-left:10px}
+.kmenuwrap .ks-st,.kmenuwrap .ks-more{margin-left:0;justify-self:end;text-align:right}
+/* 칩 3단계 (docs/reports/칩크기_점검_2026-11-24.md): 작은 태그 12px · 상태 칩 13px 알약 · 정보 칩 14px */
+.av-trt span,.rk,.sf,.cont,.gv,.ql-fog,.res-b{font-size:12px!important;font-weight:700!important;padding:2px 7px!important;border-radius:6px!important;line-height:1.45!important}
+.ux-tag,.ux-tag.town,.st.new,.mk,.qparty,.tg.st{font-size:13px!important;font-weight:700!important;padding:3px 9px!important;border-radius:999px!important;line-height:1.45!important}
+.rq-chip,.fd-chip,.car-last span{font-size:14px!important;padding:4px 10px!important;border-radius:12px!important;line-height:1.45!important}

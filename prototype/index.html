@@ -225,8 +225,11 @@ body:has(#townUi.on) #goalBox{display:none}
 #devToggle{position:absolute;right:22px;top:18px;padding:6px 14px;font-size:16px}
 /* 금고 증감 연출 (2026-11-16) */
 #hudTL .stat:has(#hGold){position:relative}
-#hudTL .gfx{position:absolute;left:calc(100% - 46px);top:calc(-2px + var(--gy,0px));font-style:normal;font-size:19px;font-weight:700;white-space:nowrap;pointer-events:none;text-shadow:0 0 3px #fff8e6,0 0 3px #fff8e6,0 0 8px #fff8e6;animation:gfxUp 1.25s ease-out forwards;z-index:2}
-#hudTL .gfx.up{color:#2f7a2a}#hudTL .gfx.down{color:#b5352a}
+#hudTL .gfx{position:absolute;left:50%;top:50%;font-style:normal;font-size:24px;font-weight:800;line-height:1;white-space:nowrap;pointer-events:none;-webkit-text-stroke:4px #fff8e6;paint-order:stroke fill;animation:gfxRise 1.2s ease-out both;z-index:2}   /* 2026-11-24 사용자: 숫자 자리에서 + 위로 · − 아래로 (시안 fix_1124/2b) */
+#hudTL .gfx.down{animation-name:gfxFall}
+#hudTL .gfx.up{color:#2f8a2a}#hudTL .gfx.down{color:#c0392b}
+@keyframes gfxRise{0%{opacity:0;transform:translate(-50%,-50%) scale(.9)}12%{opacity:1;transform:translate(-50%,calc(-50% - 4px)) scale(1.05)}100%{opacity:0;transform:translate(-50%,calc(-50% - 34px)) scale(1)}}
+@keyframes gfxFall{0%{opacity:0;transform:translate(-50%,-50%) scale(.9)}12%{opacity:1;transform:translate(-50%,calc(-50% + 4px)) scale(1.05)}100%{opacity:0;transform:translate(-50%,calc(-50% + 34px)) scale(1)}}
 @keyframes gfxUp{0%{opacity:0;transform:translateY(6px)}15%{opacity:1;transform:translateY(0)}70%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
 .gfx-desk{position:absolute;transform:translateX(-50%);font-style:normal;font-size:30px;font-weight:800;white-space:nowrap;pointer-events:none;z-index:3;-webkit-text-stroke:5px #fff8e6;paint-order:stroke fill;text-shadow:0 2px 0 rgba(60,36,14,.35);animation:gfxDesk 1.45s ease-out forwards}
 .gfx-desk.up{color:#2f7a2a}.gfx-desk.down{color:#b5352a}
