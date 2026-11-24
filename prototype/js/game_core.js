@@ -1834,8 +1834,8 @@
   function reqNominate(s, rid, aid) {   // 누르면 그 자리에서 수락 · 거절이 정해짐. 다시 누르면 파티에서 뺌
     const r = reqOf(s).open.find(x => x.id === rid), a = s.advs.find(x => x.id === aid); if (!r || !a || r.state !== 'open') return { ok: false, why: '지금은 바꿀 수 없습니다' };
     const d = NQ_BY[r.key]; if (!reqNominated(d)) return { ok: false, why: '지명이 필요 없는 리퀘스트입니다' };
+    if (r.party.includes(aid)) { if (aid === r.who) return { ok: false, why: '의뢰한 본인은 꼭 함께 갑니다' }; r.party = r.party.filter(x => x !== aid); return { ok: true, removed: true }; }   // 2026-11-24 버그: 계절이 지나 잠겨도 파티에서 뺄 수는 있게 (잠금 검사보다 먼저)
     const lock = reqLock(s, r); if (lock) return { ok: false, why: lock };
-    if (r.party.includes(aid)) { if (aid === r.who) return { ok: false, why: '의뢰한 본인은 꼭 함께 갑니다' }; r.party = r.party.filter(x => x !== aid); return { ok: true, removed: true }; }
     // 2026-11-16 예약 지명: 원정 중 · 부상 중인 모험가도 부탁할 수 있음(수락 판정 · 섭외비는 지금). '마을 밖'은 예전처럼 바로 부탁 가능(그 주 길드에 없을 뿐)
     { const o = reqOtherOf(s, r, aid); if (o) return { ok: false, why: `${a.name}: 「${reqName(s, o)}」에 가기로 했어요` }; }   // 2026-11-19: 한 모험가가 두 리퀘스트에 들어가지 않게 (섭외비 두 번도 막음)
     if (r.refused[aid] === s.week) return { ok: false, why: '이번 주는 힘들 것 같아요' };
@@ -1873,6 +1873,12 @@
   }
   function reqUnsend(s, rid) { const r = reqOf(s).open.find(x => x.id === rid); if (!r || r.state !== 'queued') return false; r.state = 'open'; return true; }
   function reqLaunch(s) {   // 주 진행: 보내기로 한 지명 파티가 게시판보다 먼저 출발
+    for (const r of reqOf(s).open) {   // 2026-11-24 버그 (사용자 12:37 「계절 리퀘스트에 모험가를 넣고 계절이 지나면 아무것도 할 수 없음」): 계절이 지나 잠긴 리퀘스트의 파티를 풀어 줌 — 섭외비는 이미 낸 것이라 돌려받지 않음
+      if ((r.state !== 'open' && r.state !== 'queued') || !NQ_BY[r.key] || !NQ_BY[r.key].season.length || NQ_BY[r.key].season.includes(seasonOf(s.week))) continue;
+      const keep = r.who != null ? [r.who] : [], gone = r.party.filter(id => !keep.includes(id)); if (!gone.length && r.state === 'open') continue;
+      r.party = keep.filter(id => r.party.includes(id)); r.state = 'open';
+      if (gone.length) log(s, `「${reqName(s, r)}」은 ${NQ_BY[r.key].season.map(x => SEASON_NAME[x]).join(' · ')}에만 할 수 있어 모였던 파티가 흩어졌습니다. 그 계절이 오면 다시 부탁해 주세요.`, 'sys');
+    }
     for (const r of reqOf(s).open) {
       if (r.state !== 'queued') continue;
       r.party = reqPartyOf(s, r).map(a => a.id);

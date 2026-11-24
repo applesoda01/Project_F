@@ -127,6 +127,26 @@
     lkSync();
   }
   // ---------- 리나 옆 남은 음식 (2026-11-23 3차 13번 B안, 사용자 확정): 접수대 위 작은 칩 = 요리 아이콘 × 남은 그릇. 0이면 「음식 없음」, 누르면 음식 장 ----------
+  // ---------- 마을 인구 팻말 (2026-11-24 사용자 「좋아」 · 시안 docs/design/mockups/pop_1124 시안 6): 마을 화면 오른쪽 위 · 인구 · 다음 단계 막대 · 집 부족 · 늘면 +N ----------
+  let popEl = null, popKey = '', popLast = null;
+  const POP_STAGE = ['개척촌', '마을', '읍', '도시', '성채 도시'];
+  function popPlq() {
+    if (!s || !stage) return;
+    const on = !!(root.Town && root.Town.active);
+    if (!popEl) { popEl = document.createElement('div'); popEl.id = 'hudPop'; stage.ui.appendChild(popEl); }
+    if (!popEl.isConnected) stage.ui.appendChild(popEl);
+    popEl.hidden = !on; if (!on) { popLast = null; return; }
+    const pop = Math.round(s.pop || 0), ST = (s.cfg.town && s.cfg.town.stages) || [300, 1000, 2000, 3500];
+    let k = 0; while (k < ST.length && pop >= ST[k]) k++;
+    const lo = k ? ST[k - 1] : 0, hi = ST[k], pc = hi ? Math.max(0, Math.min(100, (pop - lo) / (hi - lo) * 100)) : 100, full = !!s.housingFull;
+    const key = pop + '|' + k + '|' + full; if (key === popKey) return; popKey = key;
+    popEl.classList.toggle('full', full);
+    popEl.innerHTML = `<i class="pm"></i><i class="pl"></i><i class="pr"></i><div class="in"><div class="r1"><img src="assets/ui/hud/icon_pop.png" alt=""><span><span class="lb">마을 인구</span><b>${fmt(pop)}</b><small> 명</small></span></div><div class="pb"><i style="width:${pc.toFixed(1)}%"></i></div><div class="r3"><span class="st0">${POP_STAGE[k] || POP_STAGE[0]}</span>${full ? '<span class="ng">집이 부족해요</span>' : hi ? ` → <b>${POP_STAGE[k + 1]}</b>까지 ${fmt(hi - pop)}명` : ' 가장 큰 마을이에요'}</div></div>`;
+    popEl.title = full ? `인구 ${fmt(pop)}명에서 멈춤 · 민가가 고쳐 지어지거나 마을 단계가 오르면 다시 늘어요` : '';
+    if (popLast != null && pop > popLast) { const f = document.createElement('i'), b = popEl.querySelector('.r1 b'); f.className = 'gfx up'; f.textContent = '+' + fmt(pop - popLast);
+      if (b) { f.style.left = (b.offsetLeft + b.offsetWidth / 2 + 30) + 'px'; f.style.top = (b.offsetTop + 10) + 'px'; } popEl.appendChild(f); setTimeout(() => f.remove(), 1300); }
+    popLast = pop;
+  }
   let foodEl = null, foodKey = '';
   const FOOD_EMPTY = '<svg class="fe" viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="18" rx="14" ry="8" fill="#e9dcc3" stroke="#8a6a46" stroke-width="2"/><ellipse cx="16" cy="17" rx="8" ry="4" fill="none" stroke="#b49b78" stroke-width="1.5"/></svg>';   // 빈 접시 (11-24 시안 A, 사용자 「그릇은 지금도 이미지 좋으니까 좋다」)
   function foodChip() {
@@ -639,7 +659,7 @@
       Rr += `<div class="rq-party"><span class="pl">파티 ${party.length} / ${(Gm.reqPartyRange(s, r.id) || d.party)[1]}</span>${party.map(a => `<span class="pm" style="${faceStyle(a, 34, 178, 17)}" title="${esc(a.name)}"></span>`).join('') || '<em>아래에서 모험가를 눌러 부탁하세요 (부탁할 때마다 섭외비가 나갑니다)</em>'}${pTxt}</div>`;
       Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary ${why ? 'no-go' : ''}" data-rqact="send">보내기 <small>(${Gm.reqWaitOf(s, r).length ? '모두 돌아오면 출발' : '다음 주 출발'})</small></button>` : r.state === 'queued' ? `<button class="ux-btn" data-rqact="unsend">출발 취소</button>${Gm.reqWaitOf(s, r).length ? `<span class="rq-note">예약: ${esc(josa(Gm.reqWaitOf(s, r).map(a => a.name).join(' · '), '이', '가'))} 돌아오는 주에 바로 출발해요. 그동안 파티원은 게시판 의뢰를 받지 않아요.</span>` : ''}` : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}${(m => `<span class="rq-msg" title="${esc(m)}">${esc(m)}</span>`)(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</div>`;
       if (r.state !== 'active') {
-        Rr += `<div class="rq-nom ${r.state !== 'open' || v.lock ? 'off' : ''}"><div class="nh"><span>모험가</span><span>${d.req && d.req[0] >= 0 ? Gm.STATS[d.req[0]] : rows[0] && rows[0].stat != null ? '주력' : ''}</span><span>애착</span><span>수락</span><span>섭외비</span><span>상태</span></div>`;
+        Rr += `<div class="rq-nom ${r.state !== 'open' ? 'off' : ''} ${v.lock ? 'lk' : ''}"><div class="nh"><span>모험가</span><span>${d.req && d.req[0] >= 0 ? Gm.STATS[d.req[0]] : rows[0] && rows[0].stat != null ? '주력' : ''}</span><span>애착</span><span>수락</span><span>섭외비</span><span>상태</span></div>`;
         for (const x of rows) { const a = s.advs.find(z => z.id === x.id);
           const st = x.inParty ? (x.busy ? `<b class="ok">✔ 예약 (${x.busy})</b>` : '<b class="ok">✔ 함께 감</b>') : x.other ? `<b class="ng" title="「${esc(x.other)}」에 가기로 함">다른 리퀘스트</b>` : x.busy ? `${x.busy} · 예약 가능` : x.refused ? '<b class="ng">✖ 이번 주 거절</b>' : x.back ? '이번 주 귀환' : x.away ? '마을 밖' : '길드에 있음';
           Rr += `<button class="nr ${x.inParty ? 'in' : ''} ${x.refused || (x.other && !x.inParty) ? 'no' : ''}" data-rqnom="${x.id}"><span class="who"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span><b>${esc(x.name)}</b><em>${esc(x.cls)} Lv ${x.lv}${ctTag(a)}</em></span></span><span class="sv">${d.req ? (x.meets ? '<i class="star">★</i>' : '') : ''}${x.stat != null ? x.stat : ''}</span><span>${x.attach}</span><span class="ch ${!x.owner && Gm.cActive(s, a) && Gm.cCallsLeft(s, a) > 0 ? 'ct' : ''}">${x.owner ? '본인' : x.chance + '%'}</span><span class="fee ${!x.inParty && x.fee > s.gold ? 'lack' : ''}">${x.inParty || !x.fee ? '—' : x.fee + 'G'}</span><span class="stx">${st}</span></button>`; }
@@ -2678,6 +2698,7 @@
     else next();
   };
   UI.update = function (dt) { // 글자 타이핑: 초당 약 28자. 다 나오면 8초 뒤 자동으로 넘어감 (게임은 멈추지 않음)
+    popPlq();   // 2026-11-24 마을 인구 팻말
     if (!Dlg.cur && Dlg.gap > 0) { if (dlgHold()) { stage.ui.classList.remove('dlgOn'); return; } if ((Dlg.gap -= dt) <= 0) { Dlg.gap = 0; if (Dlg.lines.length) next(); } return; }   // 장면 사이 쉼
     lkFx();   // 2026-11-23 메뉴 잠금: 열리는 연출
     foodChip();   // 2026-11-23 3차 13번: 리나 옆 남은 음식
