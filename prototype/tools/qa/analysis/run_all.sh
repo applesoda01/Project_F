@@ -20,4 +20,5 @@ node exp_seat.js > $R/16_식당_자리_이용.txt 2>&1
 for r in now att3 att6 v1 v2 v3; do node exp_d1.js $r 100 > /dev/null 2>&1; done; node an_d1.js 100 > $R/17_D1_먹으면_더_자주_온다.txt 2>&1
 node exp_wallet.js 30 > $R/19_모험가_지갑.txt 2>&1
 node exp_grow.js 100 > $R/24_육성_기준값.txt 2>&1
+node exp_attach.js all 100 > /dev/null 2>&1; node exp_attach.js report 100 > $R/25_애착_패널티의_크기.txt 2>&1
 echo done
