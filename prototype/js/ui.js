@@ -2551,6 +2551,12 @@
   // ---------- 길드 승급 카드 (2026-11-19 사용자 결정 17 · 시안 docs/design/mockups/test_1119/6_grade.png) ----------
   //   침공 결과 창 「확인」 뒤 invasion.js가 부름. 배지 바뀜 · 리나 한마디 · 새로 열린 것 · 보상 → 「확인」을 누르면 배지가 왼쪽 위 등급 자리로 날아감. 그동안 시간 멈춤
   //   팡파르: 게임에 효과음 파일이 아직 없어 넣지 않음 (효과음이 생기면 여기서 재생)
+  const PROTO_END = [   // 2026-11-24 사용자: 길드 승급(E급)하면 프로토타입이 끝났다는 리나 대사 (A안: 대사 뒤 계속 플레이)
+    { name: '리나', face: 'laugh', text: '마스터, 정말 해냈어요! 우리 길드가 E급이 됐어요!' },
+    { name: '리나', face: 'serious', text: '…그리고 하나 말씀드릴 게 있어요. 지금 보고 계신 프로토타입은 여기까지예요.' },
+    { name: '리나', face: 'smile', text: '여기까지 길드를 키워 주셔서 정말 고마워요. 느낀 점을 들려주시면 다음 이야기에 꼭 담을게요!' },
+    { name: '리나', face: 'smile', text: '원하시면 지금 길드에서 계속 놀아 보셔도 괜찮아요. 새로운 일은 더 생기지 않지만요, 헤헤.' }
+  ];
   const GUP_LINA = ['', '해냈어요, 마스터! 이제 우리 길드도 어엿한 E급이에요!', '마스터, D급이래요! 마을 사람들이 우리 얘기만 해요!', 'C급… 이제 왕국에서도 우리 길드를 알아요!', 'B급이에요! 꿈만 같아요, 마스터.', 'A급… 마스터, 우리 정말 대단해요!', 'S급! 세상에서 제일 이름난 길드가 됐어요!'];
   UI.gradeUp = function (g) {
     if (!s || g < 1 || (s.gupShown || 0) >= g) return; s.gupShown = g; const old = g - 1, cap0 = Gm.advCap(Object.assign({}, s, { grade: old })), cap1 = Gm.advCap(s), R = (s.main && s.main.result) || {};
@@ -2569,6 +2575,7 @@
         stage.ui.appendChild(fly); requestAnimationFrame(() => { fly.style.left = (b.left - ur.left) / k + 'px'; fly.style.top = (b.top - ur.top) / k + 'px'; fly.style.width = b.width / k + 'px'; fly.style.height = b.height / k + 'px'; });
         setTimeout(() => { fly.remove(); to.classList.add('gupG-pop'); setTimeout(() => to.classList.remove('gupG-pop'), 700); UI.hud(); }, 750); }
       m.classList.remove('on'); setTimeout(() => m.remove(), 300); hooks.setSpeed && hooks.setSpeed(sp0 || 1);
+      if (g === 1 && !s.protoEnd) { s.protoEnd = s.week; setTimeout(() => UI.say(PROTO_END), 1100); }   // 2026-11-24 사용자 12:06 「A로 진행해줘」: E급 승급 = 프로토타입 끝 → 리나가 알리고 그대로 계속 플레이
     };
   };
   { const st_ = document.createElement('style'); st_.textContent = `.gupG{position:absolute;inset:0;z-index:45;background:rgba(18,10,4,.6);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}.gupG.on{opacity:1}
