@@ -16,4 +16,5 @@ node exp_rep.js > $R/12_의뢰_몬스터_반복.txt 2>&1
 node savechk.js > $R/13_저장_수치.txt 2>&1
 node exp_drift.js > $R/14_승급시점_최근변경.txt 2>&1
 node chk_donate.js > $R/15_첫해_지출_내역.txt 2>&1
+node exp_seat.js > $R/16_식당_자리_이용.txt 2>&1
 echo done
