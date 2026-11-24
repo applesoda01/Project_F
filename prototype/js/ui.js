@@ -453,6 +453,8 @@
     const [x, y, w, h] = P.eye, k = 104 / (w * 1.9), cx = (x + w / 2) * k, cy = (y + h / 2) * k;
     return `<span class="rqd-face" style="background-image:url(assets/npc/${P.key}_stand.webp);background-size:${Math.round(P.w * k)}px auto;background-position:${Math.round(52 - cx)}px ${Math.round(56 - cy)}px"></span>`;
   }
+  const RQD_DOTS = Array.from({ length: 8 }, (_, i) => { const r = i / 8 * Math.PI * 2; return `<i class="rs-dot" style="--dx:${Math.round(Math.cos(r) * 90)}px;--dy:${Math.round(Math.sin(r) * 90)}px"></i>`; }).join('');
+  const RQD_SPARK = Array.from({ length: 16 }, (_, i) => { const r = i / 16 * Math.PI * 2, d = 380 + (i % 3) * 70; return `<i class="sp" style="--dx:${Math.round(Math.cos(r) * d)}px;--dy:${Math.round(Math.sin(r) * d * .7)}px;animation-delay:${(.15 + (i % 4) * .06).toFixed(2)}s"></i>`; }).join('');
   function rqdShow(L) { rqdQ.push(L); }
   function rqdNext() {
     clearTimeout(rqdTimer); const L = rqdQ.shift();
@@ -479,7 +481,8 @@
     // 2026-11-23 3차 14번: 이 리퀘스트를 마쳐야 오는 다음 리퀘스트를 소문(hint)으로 알려 줌 (조건이 다 차면 「곧 찾아와요」, 아니면 남은 조건 수)
     const RQ0 = Gm.reqOf(s), nxt = (Gm.NQ || []).filter(x => (x.cond || []).some(c => c[0] === 'done' && c[2] === L.rq.key) && !RQ0.done[x.id] && !RQ0.open.some(r => r.key === x.id)).slice(0, 2)
       .map(x => { const [mt, tt] = Gm.reqProgress(s, x); return `<div class="rqd-li">${esc(x.hint || x.name.replace('{이름}', '모험가'))}<small>${mt >= tt ? '곧 찾아와요' : `조건 ${mt} / ${tt}`}</small></div>`; });
-    rqdEl.innerHTML = `<div class="rqd-box"><i class="rqd-stamp">완료</i>${rqdFace(L.rq.key, L.rq.who)}<div class="rqd-k">리퀘스트 완료</div><h2>「${esc(L.rq.name || d.name)}」</h2><div class="rqd-g">${esc(giver)}의 부탁을 들어주었어요</div>
+    const fxRing = '<i class="rs-ring"></i>' + RQD_DOTS, fxBg = `<div class="rqd-fx"><i class="ray"></i>${RQD_SPARK}</div>`;   // 2026-11-24 사용자: 완료 연출 A(도장 쾅 · 고리) + B(후광 1초 뒤 사라짐) + C(보상 칩 차례로)
+    rqdEl.innerHTML = fxBg + `<div class="rqd-box"><i class="rqd-stamp">완료${fxRing}</i>${rqdFace(L.rq.key, L.rq.who)}<div class="rqd-k">리퀘스트 완료</div><h2>「${esc(L.rq.name || d.name)}」</h2><div class="rqd-g">${esc(giver)}의 부탁을 들어주었어요</div>
       ${town.length ? `<div class="rqd-sec"><i>마을의 변화</i><div class="rqd-town">${town.join('')}</div></div>` : ''}
       ${got.length ? `<div class="rqd-sec"><i>받은 보상</i><div class="bk-rq rqd-got">${got.join('')}</div></div>` : ''}
       ${nxt.length ? `<div class="rqd-sec"><i>다음 리퀘스트 소문</i>${nxt.join('')}</div>` : ''}
