@@ -413,22 +413,22 @@
       + (q ? `<div class="arr-qk"><em>버릇 「${esc(q.name)}」</em>${esc(q.desc || '')}</div>` : '') + `<i class="arr-bar" style="animation-duration:${ARR_MS}ms"></i>`;
     arrEl.classList.remove('on'); void arrEl.offsetWidth; arrEl.classList.add('on'); arrTimer = setTimeout(arrNext, ARR_MS);
   }
-  function gupShow(list) { gupQ.push(list); if (!gupEl || !gupEl.classList.contains('on')) gupNext(); }
+  function gupShow(list) { for (const x of list) gupQ.push([x]); if (!gupEl || !gupEl.classList.contains('on')) gupNext(); }   // 2026-11-24 사용자 23:58: 여러 명이 한꺼번에 승급해도 한 사람씩 차례로 보여 주고 닫음
   function gupNext() {
     clearTimeout(gupTimer); const list = gupQ.shift(); if (!list) { if (gupEl) gupEl.classList.remove('on'); return; }
-    if (!gupEl) { gupEl = document.createElement('div'); gupEl.id = 'gupLay'; stage.ui.appendChild(gupEl); gupEl.addEventListener('pointerdown', e => { if (e.target === gupEl || e.target.closest('.gup-box')) gupNext(); }); }
+    if (!gupEl) { gupEl = document.createElement('div'); gupEl.id = 'gupLay'; stage.ui.appendChild(gupEl); gupEl.addEventListener('pointerdown', () => gupNext()); }
     const advs = list.map(x => Object.assign({ a: s.advs.find(b => b.id === x.id) }, x)).filter(x => x.a);
     if (!advs.length) { gupNext(); return; }
     const g = Math.max(...advs.map(x => x.g)), L = GR[g], bonus = advs[0].bonus, one = advs.length === 1 ? advs[0].a : null;
-    const people = advs.map(x => `<div class="gup-p"><span class="gup-face" style="${faceStyle(x.a, 72, 376, 36)}"></span><b>${esc(x.a.name)}</b><em>${esc(x.a.cls)} Lv ${x.a.lv}</em></div>`).join('');
-    const stats = STAT_NM.map((n, i) => `<span class="gup-st" style="animation-delay:${.55 + i * .09}s">${n}${one ? ` <i>${Math.round(one.stats[i] - bonus)}</i>→<b>${Math.round(one.stats[i])}</b>` : ''} <u>+${bonus}</u></span>`).join('');
-    const who = one ? `${esc(one.name)} 씨` : '여러분';
-    gupEl.innerHTML = `<div class="gup-box"><img class="gup-badge" src="assets/ui/hud/badge_${L}.png" alt="${L}">
-      <h2>${L}급 승급!</h2><div class="gup-ps">${people}</div>
-      <div class="gup-sub">능력치 5개에 각각 +${bonus}</div><div class="gup-sts">${stats}</div>
-      <p class="gup-lina"><span class="gup-lf"></span>축하해요, ${who}! 이제 ${L}급 모험가예요.</p>
-      <i class="gup-bar" style="animation-duration:${GUP_MS}ms"></i></div>`;
-    gupEl.classList.remove('on'); void gupEl.offsetWidth; gupEl.classList.add('on'); gupTimer = setTimeout(gupNext, GUP_MS);
+    // 2026-11-24 사용자 23:55: 리퀘스트 완료 카드와 같은 모양 — 양피지 · 도장 「승급」 · 후광 · 칩 차례로 (#rqdLay 꾸밈을 함께 씀, ui_kit.css)
+    const fxRing = '<i class="rs-ring"></i>' + RQD_DOTS, fxBg = `<div class="rqd-fx"><i class="ray"></i>${RQD_SPARK}</div>`;
+    const face = one ? `<span class="rqd-face" style="${faceStyle(one, 104, 260, 60)}"></span>` : `<img class="rqd-badge" src="assets/ui/hud/badge_${L}.png" alt="${L}">`;
+    const chips = one ? STAT_NM.map((n, i) => `<span class="rq-chip gup-c">${n} <i>${Math.round(one.stats[i] - bonus)}</i>→<b>${Math.round(one.stats[i])}</b><u>+${bonus}</u></span>`).join('') : advs.map(x => `<span class="rq-chip gup-c"><span class="gup-mf" style="${faceStyle(x.a, 26, 136, 13)}"></span>${esc(x.a.name)}</span>`).join('');
+    const was = one && one.st0 ? `<div class="rqd-sec"><i>처음 왔을 때와 지금</i><div class="rqd-town"><div class="rqd-pop"><span>${Gm.STATS[one.core]}</span><small>처음</small><em>${one.st0[one.core]}</em><span>→</span><b>${Math.round(one.stats[one.core])}</b></div><div class="rqd-li">길드에 온 지 <b>${Math.max(1, s.week - (one.joined || 0))}주</b> · 원정 <b>${one.done || 0}건</b></div></div></div>` : '';   // 2026-11-24 개선 26
+    gupEl.innerHTML = fxBg + `<div class="rqd-box"><i class="rqd-stamp">승급${fxRing}</i>${face}<div class="rqd-k">${L}급 모험가</div><h2>${one ? `${esc(one.name)}, ${L}급 승급!` : `${advs.length}명 ${L}급 승급!`}</h2><div class="rqd-g">${one ? `${esc(one.cls)} Lv ${one.lv} · 축하해요, ${esc(one.name)} 씨!` : `축하해요, 여러분!`}</div>
+      ${was}<div class="rqd-sec"><i>${one ? `능력치 5개에 각각 +${bonus}` : '승급한 모험가'}</i><div class="bk-rq rqd-got">${chips}</div></div>
+      <i class="gup-bar" style="animation-duration:${RQD_MS}ms"></i></div>`;
+    gupEl.classList.remove('on'); void gupEl.offsetWidth; gupEl.classList.add('on'); gupTimer = setTimeout(gupNext, RQD_MS);
   }
   UI.gupShow = gupShow;   // 시험용
 
@@ -1818,7 +1818,7 @@
     eq += '</div></div>';
     // 능력치: 10칸 × 10점 (상한 100). 칸 안은 아래에서부터 차오름. 주 능력치 = 주황, 장비 보너스 = 초록
     const anim = advAnimFor !== a.id; advAnimFor = a.id;
-    let st = `<div class="av-st${anim ? ' anim' : ''}"><div class="ux-h">능력치</div>`;
+    let st = `<div class="av-st${anim ? ' anim' : ''}"><div class="ux-h">능력치${a.st0 ? `<small class="s0-key"><i></i>처음 왔을 때 (${Math.max(0, s.week - (a.joined || 0))}주 전)</small>` : ''}</div>`;   // 2026-11-24 개선 26
     for (let i = 0; i < 5; i++) {
       const base = Math.min(s.cfg.growth.statCap, a.stats[i]), fin = Math.min(100, Gm.finalStat(s, a, i)), plus = fin - base, core = (a.line || [a.core]).includes(i);
       let cells = '';
@@ -1826,7 +1826,7 @@
         const lo = c * 10, fb = Math.max(0, Math.min(10, base - lo)) * 10, ft = Math.max(0, Math.min(10, fin - lo)) * 10;   // 이 칸의 바탕·장비 포함 채움(%)
         cells += `<span class="cell" style="--i:${c};--r:${i}">${ft > fb ? `<i class="bn" style="--t:${100 - ft}%;--b:${fb}%"></i>` : ''}${fb > 0 ? `<i class="${core ? 'cr' : 'gd'}" style="--t:${100 - fb}%"></i>` : ''}</span>`;
       }
-      if (BK) cells = `<span class="ibar"><i class="f" style="width:${base}%;--w:${Math.max(1, base)}"></i>${plus > 0 ? `<i class="p" style="left:${base}%;width:${plus}%"></i>` : ''}</span>`;   // 책: 물감 번짐 막대 (색은 능력치 100 기준으로 진해짐)
+      if (BK) cells = `<span class="ibar"><i class="f" style="width:${base}%;--w:${Math.max(1, base)}"></i>${plus > 0 ? `<i class="p" style="left:${base}%;width:${plus}%"></i>` : ''}${a.st0 && a.st0[i] < base - 0.5 ? `<i class="s0" style="left:${a.st0[i]}%"></i>` : ''}</span>`;   // 2026-11-24 개선 26: 처음 왔을 때 눈금   // 책: 물감 번짐 막대 (색은 능력치 100 기준으로 진해짐)
       st += `<div class="srow ${core ? 'core' : ''}"><span class="k">${Gm.STATS[i]}</span><span class="cells">${cells}</span><span class="v">${Math.round(base)}${plus > 0 ? `<span class="ux-plus"> +${Math.round(plus)}</span>` : ''}</span></div>`;
     }
     // 전투 수치 4개 (세부는 마우스 오버)

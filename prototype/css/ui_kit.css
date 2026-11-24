@@ -688,24 +688,24 @@ span.kslot{cursor:default}
 #pop .rq-stamp.out{opacity:0;transition:opacity .4s}
 @keyframes rqStamp{0%{transform:translate(-50%,-50%) rotate(-12deg) scale(2.2);opacity:0}60%{transform:translate(-50%,-50%) rotate(-12deg) scale(.94);opacity:.95}100%{transform:translate(-50%,-50%) rotate(-12deg) scale(1);opacity:.92}}
 @keyframes rsIn{0%{transform:rotate(-24deg) scale(2.2);opacity:0}70%{opacity:1}100%{transform:rotate(-12deg) scale(1);opacity:1}}
-#rqdLay{position:absolute;inset:0;z-index:61;display:none;place-items:center;background:rgba(30,18,8,.35)}
-#rqdLay.on{display:grid}
-#rqdLay .rqd-box{position:relative;min-width:640px;max-width:780px;padding:70px 40px 30px;border-radius:22px;text-align:center;color:var(--ux-ink);cursor:pointer;
+:is(#rqdLay,#gupLay){position:absolute;inset:0;z-index:61;display:none;place-items:center;background:rgba(30,18,8,.35)}
+:is(#rqdLay,#gupLay).on{display:grid}
+:is(#rqdLay,#gupLay) .rqd-box{position:relative;min-width:640px;max-width:780px;padding:70px 40px 30px;border-radius:22px;text-align:center;color:var(--ux-ink);cursor:pointer;
   background:radial-gradient(circle at 50% 0%,#f6fff4 0,#eef6e4 50%,#e2ecd0 100%);border:3px solid #5f8f5a;box-shadow:0 0 0 6px rgba(47,90,60,.3),0 18px 40px rgba(0,0,0,.45);animation:gupIn .38s cubic-bezier(.2,1.4,.4,1) both}
-#rqdLay .rqd-face{position:absolute;left:50%;top:-54px;width:104px;height:104px;margin-left:-52px;border-radius:50%;background-color:#efe2cf;background-repeat:no-repeat;border:4px solid #5f8f5a;box-shadow:0 3px 8px rgba(0,0,0,.3);animation:gupStamp .5s .12s cubic-bezier(.3,1.6,.5,1) both}
-#rqdLay .rqd-k{font:800 15px/1 "Malgun Gothic",sans-serif;letter-spacing:.12em;color:#3f7a3a;margin-bottom:8px}
-#rqdLay h2{margin:0 0 6px;font:800 34px/1.25 "MaruBuri","Malgun Gothic",serif;color:#2f4a26;word-break:keep-all}
-#rqdLay .rqd-g{font-size:16px;color:#5a6a48;margin-bottom:16px}
-#rqdLay .rqd-sec{display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 0 14px}
-#rqdLay .rqd-sec>i{font:700 14px/1 "Malgun Gothic",sans-serif;font-style:normal;color:#6b7a58;letter-spacing:.06em}
-#rqdLay .rqd-town{display:flex;flex-direction:column;align-items:center;gap:6px}
-#rqdLay .rqd-pop{display:flex;align-items:baseline;gap:10px;padding:8px 18px;border-radius:12px;background:#fffdf4;border:2px solid #b9d39a;animation:gupPop .35s .4s both}
-#rqdLay .rqd-pop span{font-size:16px;color:#5a6a48}#rqdLay .rqd-pop b{font:800 30px/1 "MaruBuri",serif;color:#2f4a26;min-width:70px}#rqdLay .rqd-pop i{font-style:normal;font-weight:800;color:#3b8a2a;font-size:18px}#rqdLay .rqd-pop small{font-size:13px;color:#8a9474}
-#rqdLay .rqd-li{font-size:17px;color:#3a4a2c;animation:gupPop .35s .55s both}#rqdLay .rqd-li b{color:#2f6f2a}#rqdLay .rqd-li small{margin-left:6px;font-size:13px;color:#8a9474}
-#rqdLay .rqd-got{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
-#rqdLay .rqd-prog{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:4px;font-size:15px;color:#5a6a48}#rqdLay .rqd-prog b{color:#2f4a26}
-#rqdLay .rqd-prog i{display:block;width:260px;height:8px;border-radius:4px;background:rgba(60,90,50,.15);overflow:hidden}#rqdLay .rqd-prog u{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#d9a441,#e9c062)}
-#rqdLay .gup-bar{position:absolute;left:40px;right:40px;bottom:14px;height:4px;border-radius:2px;background:rgba(63,122,58,.55);transform-origin:left center;animation:gupBar linear forwards}
+:is(#rqdLay,#gupLay) .rqd-face{position:absolute;left:50%;top:-54px;width:104px;height:104px;margin-left:-52px;border-radius:50%;background-color:#efe2cf;background-repeat:no-repeat;border:4px solid #5f8f5a;box-shadow:0 3px 8px rgba(0,0,0,.3);animation:gupStamp .5s .12s cubic-bezier(.3,1.6,.5,1) both}
+:is(#rqdLay,#gupLay) .rqd-k{font:800 15px/1 "Malgun Gothic",sans-serif;letter-spacing:.12em;color:#3f7a3a;margin-bottom:8px}
+:is(#rqdLay,#gupLay) h2{margin:0 0 6px;font:800 34px/1.25 "MaruBuri","Malgun Gothic",serif;color:#2f4a26;word-break:keep-all}
+:is(#rqdLay,#gupLay) .rqd-g{font-size:16px;color:#5a6a48;margin-bottom:16px}
+:is(#rqdLay,#gupLay) .rqd-sec{display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 0 14px}
+:is(#rqdLay,#gupLay) .rqd-sec>i{font:700 14px/1 "Malgun Gothic",sans-serif;font-style:normal;color:#6b7a58;letter-spacing:.06em}
+:is(#rqdLay,#gupLay) .rqd-town{display:flex;flex-direction:column;align-items:center;gap:6px}
+:is(#rqdLay,#gupLay) .rqd-pop{display:flex;align-items:baseline;gap:10px;padding:8px 18px;border-radius:12px;background:#fffdf4;border:2px solid #b9d39a;animation:gupPop .35s .4s both}
+:is(#rqdLay,#gupLay) .rqd-pop span{font-size:16px;color:#5a6a48}:is(#rqdLay,#gupLay) .rqd-pop b{font:800 30px/1 "MaruBuri",serif;color:#2f4a26;min-width:70px}:is(#rqdLay,#gupLay) .rqd-pop i{font-style:normal;font-weight:800;color:#3b8a2a;font-size:18px}:is(#rqdLay,#gupLay) .rqd-pop small{font-size:13px;color:#8a9474}
+:is(#rqdLay,#gupLay) .rqd-li{font-size:17px;color:#3a4a2c;animation:gupPop .35s .55s both}:is(#rqdLay,#gupLay) .rqd-li b{color:#2f6f2a}:is(#rqdLay,#gupLay) .rqd-li small{margin-left:6px;font-size:13px;color:#8a9474}
+:is(#rqdLay,#gupLay) .rqd-got{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+:is(#rqdLay,#gupLay) .rqd-prog{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:4px;font-size:15px;color:#5a6a48}:is(#rqdLay,#gupLay) .rqd-prog b{color:#2f4a26}
+:is(#rqdLay,#gupLay) .rqd-prog i{display:block;width:260px;height:8px;border-radius:4px;background:rgba(60,90,50,.15);overflow:hidden}:is(#rqdLay,#gupLay) .rqd-prog u{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#d9a441,#e9c062)}
+:is(#rqdLay,#gupLay) .gup-bar{position:absolute;left:40px;right:40px;bottom:14px;height:4px;border-radius:2px;background:rgba(63,122,58,.55);transform-origin:left center;animation:gupBar linear forwards}
 /* 2026-11-19 파티 의뢰 꼬리표 (게시판 카드 둘째 줄, 사용자 확정) */
 .qparty{font-style:normal;font:700 12px/1 var(--hf);color:#2f4f7a;background:#e4edf8;border:1.5px solid #6f8fbf;border-radius:999px;padding:2px 6px 1px;margin:0 4px;white-space:nowrap;flex:none}
 .qcard .r2 .dlw{white-space:nowrap}
@@ -721,36 +721,46 @@ span.kslot{cursor:default}
 #arrCard .arr-bar{position:absolute;left:0;bottom:0;height:4px;width:100%;background:#c9963e;transform-origin:left;animation:arrBar linear forwards}
 @keyframes arrBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 /* 2026-11-24 리퀘스트 완료 카드 B안 (사용자 확정 13:22): 양피지 + 붉은 리본 + 「완료」 도장 · 보상 칩 아이콘 · 갈색 글자 · 금색 막대 */
-#rqdLay .rqd-box{background:url(../assets/ui/pop/panel_paper.png) center/100% 100% no-repeat;border:none;border-radius:0;box-shadow:none;filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));padding:80px 60px 40px;min-width:680px}
-#rqdLay .rqd-face{border-color:#c98a2a;box-shadow:0 0 0 4px #fff3d6,0 4px 10px rgba(0,0,0,.3)}
-#rqdLay .rqd-k{display:inline-block;padding:6px 26px;margin-bottom:10px;background:#7a3b2a;color:#fff3d6;letter-spacing:.2em;clip-path:polygon(0 0,100% 0,94% 50%,100% 100%,0 100%,6% 50%)}
-#rqdLay h2{display:inline-block;margin:2px auto 8px;padding:14px 60px 12px;background:url(../assets/ui/pop/title.png) center/100% 100% no-repeat;color:#5a3a1e;font-size:30px}   /* 사용자 13:3x: A안의 장식 제목 판도 넣음 */
-#rqdLay .rqd-k{display:table;margin-left:auto;margin-right:auto}#rqdLay .rqd-g{color:#7a5a3a}
-#rqdLay .rqd-sec>i{color:#8a6a46;letter-spacing:.08em;display:flex;align-items:center;gap:10px}#rqdLay .rqd-sec>i::before,#rqdLay .rqd-sec>i::after{content:"";width:60px;height:1px;background:rgba(138,106,70,.45)}
-#rqdLay .rqd-li{color:#4a3420}#rqdLay .rqd-li small{color:#9a8466}
-#rqdLay .rqd-pop{background:#fffaf0;border-color:#d9b98a}#rqdLay .rqd-pop span{color:#7a5a3a}#rqdLay .rqd-pop b{color:#5a3a1e}
-#rqdLay .rq-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;border-radius:999px;background:#fff7e6;border:2px solid #c9a76a;color:#5a3a1e;font-size:17px;font-weight:700;line-height:1}#rqdLay .rq-chip img{width:26px;height:26px;object-fit:contain}
-#rqdLay .rqd-prog{color:#7a5a3a}#rqdLay .rqd-prog b{color:#5a3a1e}#rqdLay .rqd-prog i{background:rgba(110,72,36,.15);height:10px;border-radius:5px}#rqdLay .rqd-prog u{background:linear-gradient(#f2c14e,#d08a1c)}
-#rqdLay .gup-bar{left:60px;right:60px;bottom:24px;background:rgba(160,110,50,.55)}
-#rqdLay .rqd-stamp{position:absolute;right:34px;top:26px;font:900 26px/1 "MaruBuri","Malgun Gothic",serif;font-style:normal;letter-spacing:4px;color:#b8322a;padding:8px 12px 6px 16px;border:4px double rgba(184,50,42,.85);border-radius:10px;transform:rotate(12deg);background:rgba(255,245,235,.4);animation:rqdStamp .45s .25s ease-out both;pointer-events:none}
+:is(#rqdLay,#gupLay) .rqd-box{background:url(../assets/ui/pop/panel_paper.png) center/100% 100% no-repeat;border:none;border-radius:0;box-shadow:none;filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));padding:80px 60px 40px;min-width:680px}
+:is(#rqdLay,#gupLay) .rqd-face{border-color:#c98a2a;box-shadow:0 0 0 4px #fff3d6,0 4px 10px rgba(0,0,0,.3)}
+:is(#rqdLay,#gupLay) .rqd-k{display:inline-block;padding:6px 26px;margin-bottom:10px;background:#7a3b2a;color:#fff3d6;letter-spacing:.2em;clip-path:polygon(0 0,100% 0,94% 50%,100% 100%,0 100%,6% 50%)}
+:is(#rqdLay,#gupLay) h2{display:inline-block;margin:2px auto 8px;padding:14px 60px 12px;background:url(../assets/ui/pop/title.png) center/100% 100% no-repeat;color:#5a3a1e;font-size:30px}   /* 사용자 13:3x: A안의 장식 제목 판도 넣음 */
+:is(#rqdLay,#gupLay) .rqd-k{display:table;margin-left:auto;margin-right:auto}:is(#rqdLay,#gupLay) .rqd-g{color:#7a5a3a}
+:is(#rqdLay,#gupLay) .rqd-sec>i{color:#8a6a46;letter-spacing:.08em;display:flex;align-items:center;gap:10px}:is(#rqdLay,#gupLay) .rqd-sec>i::before,:is(#rqdLay,#gupLay) .rqd-sec>i::after{content:"";width:60px;height:1px;background:rgba(138,106,70,.45)}
+:is(#rqdLay,#gupLay) .rqd-li{color:#4a3420}:is(#rqdLay,#gupLay) .rqd-li small{color:#9a8466}
+:is(#rqdLay,#gupLay) .rqd-pop{background:#fffaf0;border-color:#d9b98a}:is(#rqdLay,#gupLay) .rqd-pop span{color:#7a5a3a}:is(#rqdLay,#gupLay) .rqd-pop b{color:#5a3a1e}
+:is(#rqdLay,#gupLay) .rq-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;border-radius:999px;background:#fff7e6;border:2px solid #c9a76a;color:#5a3a1e;font-size:17px;font-weight:700;line-height:1}:is(#rqdLay,#gupLay) .rq-chip img{width:26px;height:26px;object-fit:contain}
+:is(#rqdLay,#gupLay) .rqd-prog{color:#7a5a3a}:is(#rqdLay,#gupLay) .rqd-prog b{color:#5a3a1e}:is(#rqdLay,#gupLay) .rqd-prog i{background:rgba(110,72,36,.15);height:10px;border-radius:5px}:is(#rqdLay,#gupLay) .rqd-prog u{background:linear-gradient(#f2c14e,#d08a1c)}
+:is(#rqdLay,#gupLay) .gup-bar{left:60px;right:60px;bottom:24px;background:rgba(160,110,50,.55)}
+:is(#rqdLay,#gupLay) .rqd-stamp{position:absolute;right:34px;top:26px;font:900 26px/1 "MaruBuri","Malgun Gothic",serif;font-style:normal;letter-spacing:4px;color:#b8322a;padding:8px 12px 6px 16px;border:4px double rgba(184,50,42,.85);border-radius:10px;transform:rotate(12deg);background:rgba(255,245,235,.4);animation:rqdStamp .45s .25s ease-out both;pointer-events:none}
 @keyframes rqdStamp{from{opacity:0;transform:rotate(12deg) scale(1.8)}to{opacity:1;transform:rotate(12deg) scale(1)}}
 /* 2026-11-24 사용자 14:13: 완료 연출 A+B+C — A 도장이 크게 날아와 쾅 + 도장 가운데서 고리 · 잉크 점 + 카드 흔들림 / B 카드 뒤 빛줄기 · 반짝이(1초 뒤 사라짐) / C 보상 칩 차례로 · 금화 반짝 */
-#rqdLay .rqd-box{z-index:1;animation:gupIn .38s cubic-bezier(.2,1.4,.4,1) both,rqdShake .22s .62s 1}
-#rqdLay .rqd-stamp{font-size:40px;padding:10px 18px 8px 24px;border-width:6px;right:26px;top:18px;animation:rqdSlam .5s .35s cubic-bezier(.2,.8,.3,1.2) both}
+:is(#rqdLay,#gupLay) .rqd-box{z-index:1;animation:gupIn .38s cubic-bezier(.2,1.4,.4,1) both,rqdShake .22s .62s 1}
+:is(#rqdLay,#gupLay) .rqd-stamp{font-size:40px;padding:10px 18px 8px 24px;border-width:6px;right:26px;top:18px;animation:rqdSlam .5s .35s cubic-bezier(.2,.8,.3,1.2) both}
 @keyframes rqdSlam{0%{opacity:0;transform:rotate(12deg) scale(3.2)}55%{opacity:1;transform:rotate(12deg) scale(.9)}75%{transform:rotate(12deg) scale(1.08)}100%{opacity:1;transform:rotate(12deg) scale(1)}}
 @keyframes rqdShake{0%,100%{translate:0 0}25%{translate:3px 4px}55%{translate:-3px -2px}80%{translate:1px 1px}}
-#rqdLay .rs-ring{position:absolute;left:50%;top:50%;width:150px;height:150px;border-radius:50%;border:5px solid rgba(184,50,42,.75);animation:rqdRing .7s .62s ease-out both;pointer-events:none}
+:is(#rqdLay,#gupLay) .rs-ring{position:absolute;left:50%;top:50%;width:150px;height:150px;border-radius:50%;border:5px solid rgba(184,50,42,.75);animation:rqdRing .7s .62s ease-out both;pointer-events:none}
 @keyframes rqdRing{0%{opacity:.9;transform:translate(-50%,-50%) scale(.4)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}
-#rqdLay .rs-dot{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:rgba(184,50,42,.7);animation:rqdSpk .6s .62s ease-out both;pointer-events:none}
+:is(#rqdLay,#gupLay) .rs-dot{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:rgba(184,50,42,.7);animation:rqdSpk .6s .62s ease-out both;pointer-events:none}
 @keyframes rqdSpk{0%{opacity:0;transform:translate(0,0) scale(.3)}30%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1)}}
-#rqdLay .rqd-fx{position:absolute;left:50%;top:50%;width:0;height:0;z-index:0;pointer-events:none}
-#rqdLay .rqd-fx .ray{position:absolute;left:0;top:0;width:1100px;height:1100px;border-radius:50%;background:repeating-conic-gradient(rgba(255,226,140,.55) 0 8deg,rgba(255,226,140,0) 8deg 24deg);-webkit-mask:radial-gradient(circle,#000 20%,transparent 68%);mask:radial-gradient(circle,#000 20%,transparent 68%);animation:rqdRayIn .5s ease-out both,rqdRaySpin 2s linear .5s 1,rqdRayOut .5s 1s ease-in forwards}
+:is(#rqdLay,#gupLay) .rqd-fx{position:absolute;left:50%;top:50%;width:0;height:0;z-index:0;pointer-events:none}
+:is(#rqdLay,#gupLay) .rqd-fx .ray{position:absolute;left:0;top:0;width:1100px;height:1100px;border-radius:50%;background:repeating-conic-gradient(rgba(255,226,140,.55) 0 8deg,rgba(255,226,140,0) 8deg 24deg);-webkit-mask:radial-gradient(circle,#000 20%,transparent 68%);mask:radial-gradient(circle,#000 20%,transparent 68%);animation:rqdRayIn .5s ease-out both,rqdRaySpin 2s linear .5s 1,rqdRayOut .5s 1s ease-in forwards}
 @keyframes rqdRayIn{from{opacity:0;transform:translate(-50%,-50%) scale(.4)}to{opacity:.9;transform:translate(-50%,-50%) scale(1)}}
 @keyframes rqdRaySpin{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(40deg)}}
 @keyframes rqdRayOut{to{opacity:0}}
-#rqdLay .rqd-fx .sp{position:absolute;left:0;top:0;width:30px;height:30px;margin:-15px;background:radial-gradient(circle,#fff 0 20%,#ffd56a 40%,transparent 70%);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:rqdSpk .9s ease-out both}
+:is(#rqdLay,#gupLay) .rqd-fx .sp{position:absolute;left:0;top:0;width:30px;height:30px;margin:-15px;background:radial-gradient(circle,#fff 0 20%,#ffd56a 40%,transparent 70%);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:rqdSpk .9s ease-out both}
 @keyframes rqdChip{0%{opacity:0;transform:translateY(14px) scale(.6)}60%{opacity:1;transform:translateY(-4px) scale(1.12)}100%{opacity:1;transform:none}}
 @keyframes rqdShine{0%{background-position:-120% 0}100%{background-position:220% 0}}
-#rqdLay .rqd-got>*{animation:rqdChip .4s .7s cubic-bezier(.2,.8,.3,1.3) both}
-#rqdLay .rqd-got>*:nth-child(2){animation-delay:.85s}#rqdLay .rqd-got>*:nth-child(3){animation-delay:1s}#rqdLay .rqd-got>*:nth-child(n+4){animation-delay:1.15s}
-#rqdLay .rqd-got>.rq-chip.gold{background-image:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.95) 50%,transparent 70%);background-size:60% 100%;background-repeat:no-repeat;animation:rqdChip .4s .7s cubic-bezier(.2,.8,.3,1.3) both,rqdShine .7s 1.15s ease-out both}
+:is(#rqdLay,#gupLay) .rqd-got>*{animation:rqdChip .4s .7s cubic-bezier(.2,.8,.3,1.3) both}
+:is(#rqdLay,#gupLay) .rqd-got>*:nth-child(2){animation-delay:.85s}:is(#rqdLay,#gupLay) .rqd-got>*:nth-child(3){animation-delay:1s}:is(#rqdLay,#gupLay) .rqd-got>*:nth-child(n+4){animation-delay:1.15s}
+:is(#rqdLay,#gupLay) .rqd-got>.rq-chip.gold{background-image:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.95) 50%,transparent 70%);background-size:60% 100%;background-repeat:no-repeat;animation:rqdChip .4s .7s cubic-bezier(.2,.8,.3,1.3) both,rqdShine .7s 1.15s ease-out both}
+
+/* 2026-11-24 개선 26: 승급 팝업 — 처음 왔을 때와 견주기 */
+#gupLay .gup-was{margin:4px 0 2px;font:400 15px var(--hf);color:#6a4a2a}#gupLay .gup-was b{font-weight:700;color:#3a2412}#gupLay .gup-was i{font-style:normal;color:#9a7a5a}
+
+/* 2026-11-24 승급 카드 (리퀘스트 완료 카드와 같은 틀) */
+#gupLay{z-index:60}
+#gupLay .rqd-badge{position:absolute;left:50%;top:-56px;width:108px;margin-left:-54px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
+#gupLay .gup-c{font-weight:400}#gupLay .gup-c i{font-style:normal;color:#9a7a5a}#gupLay .gup-c b{font-weight:800}#gupLay .gup-c u{text-decoration:none;color:#3b8a2a;font-weight:800;margin-left:4px}
+#gupLay .gup-mf{width:26px;height:26px;border-radius:50%;background-color:#efe2cf;background-repeat:no-repeat}
+#gupLay .rqd-pop small{font-size:13px;color:#9a8466}#gupLay .rqd-pop em{font:800 22px/1 "MaruBuri",serif;font-style:normal;color:#9a7a5a}

@@ -370,6 +370,8 @@
 .bk-av .av-st .ibar .f{left:0;border-radius:4px;background:linear-gradient(90deg,rgba(138,106,70,.35),#6e4e30) 0 0/calc(100% * 100 / var(--w)) 100% no-repeat}
 .bk-av .av-st .srow.core .ibar .f{background-image:linear-gradient(90deg,rgba(214,128,70,.4),#a8401c)}
 .bk-av .av-st .ibar .p{border-radius:0 4px 4px 0;background:#7fb36a}
+.bk-av .av-st .ibar .s0{z-index:1;width:2px;margin-left:-1px;background:#c9632a}   /* 2026-11-24 개선 26: 처음 왔을 때 눈금 */
+.bk-av .av-st .s0-key{margin-left:8px;font:400 12px var(--hf);color:var(--ux-muted)}.bk-av .av-st .s0-key i{display:inline-block;width:2px;height:10px;margin-right:4px;vertical-align:-1px;background:#c9632a}
 .bk-av .av-st .ibar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(246,234,208,.9) calc(10% - 1px) 10%)}
 .bk-av .av-st.anim .ibar i{animation:bkBarIn .45s ease-out both;transform-origin:left}
 @keyframes bkBarIn{from{transform:scaleX(0)}to{transform:none}}

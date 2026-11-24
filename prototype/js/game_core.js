@@ -185,6 +185,7 @@
       while (a.lv < Math.max(1, L0)) { a.lv++; const gr = growthOf(a), m = starMul(s, a); for (let i = 0; i < 5; i++) a.stats[i] = Math.min(s.cfg.growth.statCap, a.stats[i] + gr[i] * m); }
     }
     if (!o.home && QKr()) a.quirk = QKr().roll(s.R, a, s.cfg.quirk);   // 2026-11-20 버릇: 새로 오는 모험가의 30% [임시] (창립 · 튜토리얼 모험가는 없음). 영입할 때 공개 (사용자 결정)
+    a.st0 = a.stats.map(v => Math.round(v));   // 2026-11-24 개선 26: 처음 왔을 때 능력치 (승급 팝업 · 모험가 상세에서 견줌 · 표시만, 예전 저장에는 없음)
     s.advs.push(a);
     if (!o.quiet) log(s, `${a.cls} ${J(a.name, '이', '가')} 길드를 처음 찾아왔습니다.${a.quirk ? ` (버릇: ${qkName(a.quirk)})` : ''}`, 'arrive', { who: [a.name] });
     return a;
