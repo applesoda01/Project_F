@@ -695,6 +695,7 @@
 .bk-rq .rq-p{margin-left:auto;font:400 15px var(--hf)}.bk-rq .rq-p b{font-size:19px}.bk-rq .rq-p.ok b{color:#3f7a3a}.bk-rq .rq-p.mid b{color:#b07a16}.bk-rq .rq-p.bad b{color:#b5452f}
 .bk-rq .rq-nom{display:flex;flex-direction:column;border-top:1.5px solid rgba(110,72,36,.3)}
 .bk-rq .rq-nom.off{opacity:.6;pointer-events:none}
+.bk-rq .rq-nom.lk .nr:not(.in){opacity:.55}   /* 2026-11-24: 계절이 지나 잠겨도 파티에 든 사람은 눌러서 뺄 수 있음 */
 .bk-rq .rq-nom .nh,.bk-rq .rq-nom .nr{display:grid;grid-template-columns:minmax(0,1fr) 58px 44px 50px 58px 118px;align-items:center;gap:6px;padding:4px 6px}
 .bk-rq .rq-nom .nh{font:700 13px var(--hf);color:var(--ux-wood)}
 .bk-rq .rq-nom .nr{text-align:left;cursor:pointer;background:none;border:0;border-bottom:1px solid rgba(110,72,36,.18);font:400 15px var(--hf);color:var(--ux-ink)}
