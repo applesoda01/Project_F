@@ -178,7 +178,7 @@
       state: 'away', until: 0, joined: s.week, alive: true, done: 0,
       cls1: CLASS1[core], line: [core], fin: false, promoCool: 0, skills: [{ line: core, form: CLASS1[core] }], career: [{ week: s.week, text: '길드에 처음 옴' }]
     };
-    if (A.starOn !== 0) {   // 2026-11-23 모험가 개선작업 ③ 별 (21:14 사용자 「진행하자」 → 기본 켬, 끄려면 adv.starOn = 0) (사용자 20:40 「진행해줘」, 수치 [임시] · 선임 검토): ★1~3 = 레벨업 성장 배율, 창립 · 튜토리얼은 ★1
+    if (A.starOn !== 0) {   // 2026-11-23 모험가 개선작업 ③ 별 (21:14 사용자 「진행하자」 → 기본 켬, 끄려면 adv.starOn = 0) (사용자 20:40 「진행해줘」, 수치 [임시] · 한석님 검토): ★1~3 = 레벨업 성장 배율, 창립 · 튜토리얼은 ★1
       const P = A.starP || [0.65, 0.28, 0.07], h = ((a.id * 2654435761) ^ (s.week * 40503) ^ 0x9e37) >>> 0, u = (h % 10007) / 10007;   // 게임 난수(s.R)를 쓰지 않음 → 다른 결과가 흔들리지 않게
       a.star = o.home ? 1 : u < P[0] ? 1 : u < P[0] + P[1] ? 2 : 3;
       const L0 = o.home ? 1 : ((s.cfg.growth.gradeLv || [0, 4, 10, 18, 26, 35, 45])[s.grade] || 1);   // 합류 보정: 길드 등급의 최저 레벨로 옴 (F급 Lv 1 · E급 Lv 4 · D급 Lv 10)
