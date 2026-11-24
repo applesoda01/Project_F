@@ -322,7 +322,7 @@ function drawMenu(){gMenu.innerHTML='';const y=menuY(),gapX=+document.getElement
 function showMenu(v){gMenu.style.display=v?'':'none';if(v)drawMenu();}
 function menuPick(i){const [,act]=MENU[i];if(act==='load'&&!hasSave())return;MSEL=i;
  if(act==='new'||act==='load'){try{parent.postMessage({collegium:'title',act:act},'*');}catch(e){}}   /* 게임 본편: 저장 칸 선택은 게임의 시작 화면이 맡음 */
- else if(act==='opt'){openOpt();} /* 종료: 지금은 반응 없음 */}
+ else if(act==='opt'){if(window.parent!==window){try{parent.postMessage({collegium:'title',act:'opt'},'*');}catch(e){}}else openOpt();} /* 2026-11-24: 게임 안에서는 옵션도 게임이 책 창으로 띄움 · 종료: 지금은 반응 없음 */}
 function openOpt(){OPT=true;showMenu(false);back.style.display='';gOpt=el('g',{});const w=620,hh=380,x=CX-w/2,y=170;slotFrame(gOpt,x,y,w,hh,true);
  TX(gOpt,CX,y+90,'옵션',36,{'text-anchor':'middle','font-weight':700,'letter-spacing':8});TX(gOpt,CX,y+200,'준비 중입니다',24,{'text-anchor':'middle',opacity:.7});}
 function closeOpt(){OPT=false;if(gOpt)gOpt.remove();gOpt=null;back.style.display='none';showMenu(true);}
