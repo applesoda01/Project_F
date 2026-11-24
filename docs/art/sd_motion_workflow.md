@@ -1,14 +1,60 @@
 # SD 모션 제작 작업 기록 (이어하기용)
 
-> 최종 갱신: 2026-11-12 23:58 · 작성: Claude
+> 최종 갱신: 2026-11-25 01:08 (0장 SD 캐릭터 만들기 추가) / 2026-11-12 23:58 · 작성: Claude
 > **새 세션은 SD 스프라이트·모션·Gemini·ComfyUI 작업을 시작하기 전에 이 문서를 먼저 읽습니다.** 대화 기록이 요약되거나 세션이 바뀌어도 이 문서만 보면 이어서 할 수 있어야 합니다.
 > 작업을 하면서 바뀐 방식·현황·결정은 **그 자리에서 이 문서에 적습니다.** (규칙: `docs/working_rules.md`, 할 일 전체: `docs/todo.md`)
 
 ## 요약
+- **새 캐릭터는 0장 순서로 만듭니다: 디자인(일러스트 · 생김새 한 줄) → 우리 LoRA `pcr_hi_l_7200`으로 SD 캐릭터 → 모션.** VilStyle은 옛 방식이라 쓰지 않습니다.
 - 모션은 **ComfyUI(LTX 2.5)로 동작 초안 → 쓸 만하면 Gemini로 영상 재생성 또는 그대로 후처리 → 마젠타 크로마키 → 정렬·프레임 선택 → 시트/프레임 저장** 순서입니다.
 - Gemini 영상은 **계정당 하루 3개, 계정 2개 = 하루 최대 6개**. 사용자가 직접 Gemini에서 만들고 다운로드 폴더에 둡니다.
 - 지금 진행 중: **달리기**(전사 남만 Gemini 완료, 7직업 Gemini 묶음 전달, 마법사 여·전사 여는 LTX 재생성 필요)와 **공격**(전사 남 가로 베기 완료, 나머지 직업 대기).
 - 책 UI 펼침면 워터마크는 ComfyUI Qwen 편집으로 제거 완료(아래 6장).
+
+---
+
+## 0. SD 캐릭터 만들기 — 지금 방식 (2026-11-09 확정, 11-25 기록)
+
+> 사용자 2026-11-25 00:44: 「VilStyle로는 지금 캐릭터 디자인을 만들 수 없어. 그건 옛날 방식이야.」 · 00:45 「문서에 적어 줄래? 많이 사용할 거 같아.」
+> 근거: PC ComfyUI 출력 `output/pf/n_<캐릭터>_sNNN`(11-09, 모험가 10종 × 시드 24 · 리나) · `output/pf_redo_warrior_m_NNNN`(11-09, 전사 남 다시 만들기) 그림의 생성 설정(PNG `prompt`).
+
+### 순서
+| 단계 | 하는 일 | 결과 |
+| --- | --- | --- |
+| ① 디자인 | 일러스트(또는 사용자 설명)에서 생김새를 **영어 한 줄**로 정함 — 머리 모양 · 색, 눈 색, 옷 위에서 아래로, 소품 | 디자인 설명 한 줄 |
+| ② SD 캐릭터 | 아래 그래프로 시드 여러 개(모험가는 24개) 생성 → 그림 **왼쪽에 조립된 SD 캐릭터만 잘라** 씀 (오른쪽 부위 조각은 쓰지 않음) | 서 있는 SD 캐릭터 (시작 이미지) |
+| ③ 모션 | 시작 이미지를 마젠타 배경 · 정렬 규격(4장)에 맞춘 뒤 LTX 2.5로 걷기 · 앉기 · 먹기 · 맥주 등 (3장), 서 있기는 후처리 (4장) | 게임 시트 |
+
+### ② 그래프 (노드 8개, 단순 txt2img)
+| 노드 | 값 |
+| --- | --- |
+| CheckpointLoaderSimple | `Illustrious-XL-v1.0.safetensors` |
+| LoraLoader | **`pcr_hi_l_7200_steps_00001_.safetensors`** · 모델 1.0 · CLIP 1.0 (우리가 11-07 ~ 11-08에 학습한 부위 시트 LoRA의 마지막 단계) |
+| EmptyLatentImage | **1536 × 704**, 배치 1 |
+| KSampler | 28스텝 · cfg 6.0 · `euler` · `normal` · denoise 1.0 · 시드 캐릭터마다 연속 번호 (예: 401 ~ 424) |
+| 부정 프롬프트 | `lowres, blurry, text, watermark` |
+| SaveImage | `pf/n_<캐릭터>_s<시드>` |
+
+**프롬프트 틀 (`<디자인>` 자리만 바꿈):**
+```
+character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: <디자인>. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression
+```
+- `<디자인>` 예 (전사 남, 지금 게임): `short messy dark red-brown hair, purple eyes, grey cloak, small silver chest armor, blue tunic, dark navy pants, brown boots, brown belt`
+- 예 (전사 남 다시 만들기 `pf_redo`): `short spiky dark brown hair, purple eyes, silver plate armor with silver shoulder guards, short silver armored skirt, brown belt, silver greaves and boots, short sword at the hip`
+- 한 장 약 20초 (RX 9070 XT). 캐릭터 2명 × 24장 ≈ 15분.
+
+### 고르는 기준 (사용자가 없을 때 Claude가 고름 — 나머지 후보도 모두 남김)
+1. 왼쪽 캐릭터가 정면으로 곧게 서 있음 (모션 시작 이미지가 되므로)
+2. 손 · 발이 온전하고 부위 조각과 겹치지 않음
+3. 디자인 설명의 옷 · 색이 그대로 나옴
+4. 머리가 큰 SD 비율이 모험가 10종과 비슷함
+
+### 아직 기록이 없는 것 (다음에 할 때 정해서 여기에 적음)
+- 왼쪽 캐릭터를 잘라 마젠타 배경 · 키 516px로 옮기는 정확한 방법(잘라낼 범위 · 배경 처리). 그림의 배경이 연회색이라 크로마키 대신 잘라낸 뒤 배경 제거(rembg 등)가 필요할 수 있음.
+- 우리 LoRA 학습 기록(학습 자료 · 단계별 차이). 파일: `models/loras/pcr_*` 15개 (`pcr_sheet_v1` 1600 → `pcr_hi_a ~ l` 4100 ~ 7200 단계), 시험 출력 `output/pcr_gen_*`.
+
+### 옛 방식 — 쓰지 않음
+- 10-20 ~ 10-23: 일러스트(Illustrious + susamix 0.8 + Kyoto Animation 0.4) → **VilStyle** LoRA로 SD (`output/sd1 ~ sd7_*`, `job1_*`, `job2_*`). 지금 캐릭터 디자인과 그림체가 달라 쓰지 않음 (사용자 11-25).
 
 ---
 
