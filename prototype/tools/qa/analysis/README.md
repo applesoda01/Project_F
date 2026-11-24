@@ -35,6 +35,7 @@ python3 prototype/tools/qa/analysis/charts.py docs/reports/qa_1124/analysis   # 
 | `exp_cook_long.js` | 등급별 요리 값과 3년 동안의 식당 손익 |
 | `exp_cook_grade.js` | 요리의 등급 제한을 풀었을 때 (훑어보기) |
 | `exp_attach.js` | 애착 패널티의 크기 — 「애착이 낮으면 길드에 잘 안 옴」 규칙을 12가지로 바꿔 봄. `node exp_attach.js all 100` 뒤 `node exp_attach.js report 100` |
+| `exp_attach2.js` | 모험가마다 애착이 10 · 20 · 35 · 50 · 75 · 100에 닿는 때 (지금 규칙 · 패널티 없음) |
 | `exp_grow.js` | 육성 기준값 — 첫해 레벨 · 능력치가 자라는 빠르기, 리퀘스트의 능력치 조건이 막는 비율 |
 | `patch_d1.js` · `exp_d1.js` · `an_d1.js` | 「먹은 모험가가 더 자주 온다」(D1) · 「쉬는 모험가도 먹는다」(D7) 규칙 시험. `node exp_d1.js <규칙> <판 수> [봇]` 뒤 `node an_d1.js <판 수> [규칙,…]`. 30판은 훑어보기(±약 25G), 100판은 확인용. 규칙은 읽어 들인 글을 메모리에서만 바꿔 흉내 냄 (게임 파일은 그대로) |
 | `ux_cap.js` | 화면 14개를 해상도별로 캡처하고 실제 글자 크기 · 누르는 것의 수와 크기를 잼 (시험 사본 · Playwright 필요) |

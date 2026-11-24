@@ -21,4 +21,5 @@ for r in now att3 att6 v1 v2 v3; do node exp_d1.js $r 100 > /dev/null 2>&1; done
 node exp_wallet.js 30 > $R/19_모험가_지갑.txt 2>&1
 node exp_grow.js 100 > $R/24_육성_기준값.txt 2>&1
 node exp_attach.js all 100 > /dev/null 2>&1; node exp_attach.js report 100 > $R/25_애착_패널티의_크기.txt 2>&1
+node exp_attach2.js 100 96 > $R/26_애착_문턱에_닿는_때.txt 2>&1
 echo done
