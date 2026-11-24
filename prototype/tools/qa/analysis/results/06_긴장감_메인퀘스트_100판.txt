@@ -1,0 +1,22 @@
+bot(예상60%↑) tries avg 1.08 dist {"1":92,"2":8} first-try win% 92 E med 40 p90 47 castle used(last)% 53 offer med 33 down(last) avg 4.9 n(last) 7.9
+  y1 fail      avg 5.26 games with ≥1: 99%
+  y1 late      avg 2.24 games with ≥1: 81%
+  y1 rqFail    avg 0.25 games with ≥1: 20%
+  y1 rqN       avg 9.43 games with ≥1: 100%
+  y1 down      avg 3.36 games with ≥1: 91%
+  y1 exp       avg 9.05 games with ≥1: 100%
+  y1 inj       avg 3.28 games with ≥1: 91%
+  y1 dead      avg 0.09 games with ≥1: 8%
+  y1 defMo     avg 0.13 games with ≥1: 13%
+  y1 lowGold   avg 0.83 games with ≥1: 52%
+  y1 lowGold2  avg 1.49 games with ≥1: 47%
+  y1 goldDrop  avg 12.00 games with ≥1: 100%
+  fail n 526 avg reward 118 avg party 1.48 combat% 59 pm>1 % 17 avg shown rate 89
+  ok n 5963 avg shown rate 95
+  shown 0-60 n 63 actual 46.0 combat% 0
+  shown 60-70 n 128 actual 55.5 combat% 15
+  shown 70-80 n 447 actual 78.3 combat% 13
+  shown 80-90 n 1530 actual 91.4 combat% 28
+  shown 90-96 n 2631 actual 95.2 combat% 52
+  shown 96-101 n 6997 actual 93.4 combat% 77
+바로 받기 tries avg 1.68 dist {"1":63,"2":19,"3":8,"4":7,"5":3} first-try win% 63 E med 39 p90 53 castle used(last)% 58 offer med 33 down(last) avg 4.9 n(last) 7.9

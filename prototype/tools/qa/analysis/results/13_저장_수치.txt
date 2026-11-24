@@ -1,0 +1,2 @@
+불러온 뒤 quest.ncBase = undefined (오늘 기본값 0.7)  adv.ncDrop = undefined  growth.xpBase = 999 (기본 240)
+save bytes 8158 cfg bytes 6073 log bytes 73
