@@ -635,7 +635,7 @@
 #bookRibbon{right:var(--rb-r);top:var(--rb-t);width:var(--rb-w);height:var(--rb-h)}
 #bookRibbon:hover{height:calc(var(--rb-h) + 12px)}
 #bookMarks button i{left:calc(var(--tb-cx) - 70px);right:auto;width:140px;top:calc(50% + var(--tb-ly));text-align:center;transform:translateY(-50%);font-size:var(--tb-fs)}   /* 글자 가운데 = 버튼 왼쪽에서 --tb-cx (글자 수와 관계없이 같은 가운데) */
-#bookRibbon span{left:50%;right:auto;top:var(--rb-ty);transform:translateX(-50%);width:auto;margin:0}
+#bookRibbon span{left:0;right:0;top:var(--rb-ty);transform:none;width:1.1em;margin:0 auto;writing-mode:horizontal-tb;word-break:break-all;line-height:1.15;text-align:center;text-shadow:0 1px 1px rgba(60,10,16,.55)}   /* 2026-11-24 사용자 「이것도 신경 써 줄래?」: 세로쓰기(vertical-rl)는 글꼴 · 브라우저에 따라 오른쪽으로 밀려 잘림 → 가로쓰기 한 글자씩 줄바꿈으로 가운데 고정 */
 #bookMarks button[data-ch="req"] i{font-size:var(--tb-rfs);letter-spacing:-.5px}
 #bookSub button{font-size:var(--tb-sfs)}
 /* 오른쪽 책갈피 글자: 접힌 띠(왼쪽 약 20%)를 뺀 천 부분 가운데 (닫기 끈 글자처럼) */
