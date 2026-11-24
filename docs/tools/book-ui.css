@@ -17,6 +17,10 @@
 [data-book-version="v4"] { --book-change-color: #1a7f37; --book-change-fill: #effaf1; }
 [data-book-version="v4"].navy, [data-book-version="v4"].coal, [data-book-version="v4"].ayu { --book-change-color: #7ee2a0; --book-change-fill: #1e3326; }
 [data-book-version="v4"].rust { --book-change-color: #1a6b30; --book-change-fill: #e3f1e5; }
+/* 2026-11-24 V5: V4 대비 변경(경영 · 육성 개편안)은 보라색 */
+[data-book-version="v5"] { --book-change-color: #6f42c1; --book-change-fill: #f4effc; }
+[data-book-version="v5"].navy, [data-book-version="v5"].coal, [data-book-version="v5"].ayu { --book-change-color: #c4a7ff; --book-change-fill: #2a2140; }
+[data-book-version="v5"].rust { --book-change-color: #5a32a3; --book-change-fill: #ebe4f6; }
 .chapter li a.book-toc-change:link,
 .chapter li a.book-toc-change:visited,
 .chapter li a.book-toc-change.active,
