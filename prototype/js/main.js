@@ -103,7 +103,7 @@
     // 2026-11-19 사용자: 스페이스 = 대사 넘기기(대사 중, ui.js) · 일시정지/재생(쓰던 배속으로) / 1 · 2 · 3 = 1 · 2 · 4배속. 글 입력 칸에서는 안 먹음
     const tag = document.activeElement ? document.activeElement.tagName : '';
     if (/INPUT|TEXTAREA|SELECT/.test(tag) || e.ctrlKey || e.metaKey || e.altKey) return;
-    const block = document.querySelector('#placeLay.on, #popBack.open, #slotPick.on'), talk = UI.dlgBusy && UI.dlgBusy();
+    const block = document.querySelector('#placeLay.on, #popBack.open, #slotPick.on, #optPick.on'), talk = UI.dlgBusy && UI.dlgBusy();
     if (e.code === 'Space') { e.preventDefault(); if (e.repeat || talk || block) return; setSpeed(speed ? 0 : lastSp); return; }   // 눌린 단추가 스페이스로 다시 눌리지 않게 막음
     const k = { Digit1: 1, Digit2: 2, Digit3: 4, Numpad1: 1, Numpad2: 2, Numpad3: 4 }[e.code];
     if (k && !block) { e.preventDefault(); setSpeed(k); }
@@ -118,32 +118,35 @@
     catch (e) { return { raw: t, bad: true }; }
   }
   // mode: 'new'(새 게임: 빈 칸·덮어쓰기) · 'load'(이어하기: 저장된 칸만) · 없음(예전처럼 둘 다). back: 타이틀로 돌아가는 함수
-  function slotPick(done, mode, back) {
+  function slotPick(done, mode, back, pre) {   // pre(새로 시작?): 고른 뒤 게임으로 넘어가기 전에 할 일 (2026-11-24: 타이틀 위에 띄운 경우 타이틀 닫기)
     const root = $('slotPick'); if (!root) { done(); return; }
+    root.classList.toggle('top', !!pre);
     const prevSpeed = speed; setSpeed(0);
     const arm = {};   // 삭제·덮어쓰기는 두 번 눌러야 한다
     const fmtPlay = sec => { const m = Math.floor((sec || 0) / 60), h = Math.floor(m / 60); return h ? `${h}시간 ${m % 60}분` : `${m}분`; };
-    const msg = root.querySelector('p');
-    if (msg) msg.textContent = mode === 'load' ? '이어서 할 저장 슬롯을 골라 주세요.' : mode === 'new' ? '새로 시작할 슬롯을 골라 주세요. 고른 슬롯에 자동으로 저장됩니다.' : '저장 슬롯을 골라 주세요. 고른 슬롯에 자동으로 저장됩니다.';
-    let bk = root.querySelector('.sp-back'); if (bk) bk.remove();
-    if (back) { bk = document.createElement('button'); bk.className = 'ux-btn sp-back'; bk.dataset.sp = 'back'; bk.textContent = '← 타이틀로 (Esc)'; root.querySelector('.sp-box').appendChild(bk); }
+    const msg = root.querySelector('.note'), tt = root.querySelector('.tt');   // 2026-11-24: 책 펼침면 (왼쪽 = 제목 · 안내 · 도장 / 오른쪽 = 슬롯 3칸, 닫기 리본 = 타이틀로)
+    if (tt) tt.textContent = mode === 'load' ? '이어하기' : mode === 'new' ? '새 게임' : '저장 슬롯';
+    if (msg) msg.innerHTML = (mode === 'load' ? '이어서 할 저장 슬롯을 골라 주세요.' : '새로 시작할 슬롯을 골라 주세요.') + '<br>게임은 매달 초에 고른 칸에 자동 저장됩니다.';
+    const rib = root.querySelector('.rib'); if (rib) rib.hidden = !back;
     const draw = () => {
-      const last = newest();
+      const last = newest(); let used = 0;
       root.querySelector('.sp-list').innerHTML = [1, 2, 3].map(n => {
-        const i = slotInfo(n), d = i && i.ts ? new Date(i.ts) : null, when = d ? `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : '';
-        const newBtn = (label, cls) => `<button class="ux-btn ${cls || ''}" data-sp="new" data-n="${n}">${label}</button>`;
-        if (!i) return mode === 'load'
-          ? `<div class="sp-card empty"><b class="sp-no">슬롯 ${n}</b><span class="sp-ph">비어 있음</span></div>`
-          : `<div class="sp-card empty"><b class="sp-no">슬롯 ${n}</b><span class="sp-ph">비어 있음</span>${newBtn('새로 시작', 'primary')}</div>`;
-        if (i.bad) return `<div class="sp-card"><b class="sp-no">슬롯 ${n}</b><span class="sp-ph">읽을 수 없는 저장</span>${mode === 'load' ? '' : newBtn('새로 시작')}<button class="ux-btn sp-del ${arm['d' + n] ? 'arm' : ''}" data-sp="del" data-n="${n}">${arm['d' + n] ? '한 번 더 누르면 삭제' : '삭제'}</button></div>`;
-        const info = `<span class="sp-d">${i.date}</span><span class="sp-s">${i.grade}급 · ${i.gold.toLocaleString()}G · 모험가 ${i.advs}명</span><span class="sp-w">플레이 ${fmtPlay(i.playSec)}${when ? ' · ' + when + ' 저장' : ''}</span>`;
-        const head = `<b class="sp-no">슬롯 ${n}${last === n ? ' <i>최근</i>' : ''}</b>`;
-        if (mode === 'new') return `<div class="sp-card ${last === n ? 'recent' : ''}">${head}${info}<span class="sp-ph">이 칸의 기록이 지워집니다</span><button class="ux-btn ${arm['o' + n] ? 'sp-del arm' : ''}" data-sp="ovw" data-n="${n}">${arm['o' + n] ? '정말 지우고 새로 시작' : '덮어쓰고 새로 시작'}</button></div>`;
-        return `<div class="sp-card ${last === n ? 'recent' : ''}">${head}${info}<button class="ux-btn primary" data-sp="load" data-n="${n}">이어하기</button><button class="ux-btn sp-del ${arm['d' + n] ? 'arm' : ''}" data-sp="del" data-n="${n}">${arm['d' + n] ? '한 번 더 누르면 삭제' : '삭제'}</button></div>`;
+        const i = slotInfo(n), d = i && i.ts ? new Date(i.ts) : null, when = d ? `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : ''; if (i) used++;
+        const head = `<h4>${n}번 슬롯${i && last === n ? '<em>최근</em>' : ''}</h4>`, del = `<button class="ux-btn sp-del ${arm['d' + n] ? 'arm' : ''}" data-sp="del" data-n="${n}">${arm['d' + n] ? '한 번 더 누르면 삭제' : '삭제'}</button>`;
+        let info, bt;
+        if (!i) { info = '<div class="emp">빈 칸</div>'; bt = mode === 'load' ? '' : `<button class="ux-btn primary" data-sp="new" data-n="${n}">새로 시작</button>`; }
+        else if (i.bad) { info = '<div class="emp">읽을 수 없는 저장</div>'; bt = (mode === 'load' ? '' : `<button class="ux-btn" data-sp="new" data-n="${n}">새로 시작</button>`) + del; }
+        else {
+          info = `<div class="i1">${i.date}<span>${i.grade}급 · ${i.gold.toLocaleString()}G · 모험가 ${i.advs}명</span></div><div class="i2">플레이 ${fmtPlay(i.playSec)}${when ? ' · ' + when + ' 저장' : ''}</div>`;
+          if (mode === 'new') { info += arm['o' + n] ? '<div class="warn">이 칸의 기록이 지워집니다</div>' : ''; bt = `<button class="ux-btn ${arm['o' + n] ? 'arm' : ''}" data-sp="ovw" data-n="${n}">${arm['o' + n] ? '정말 지우고 새로 시작' : '덮어쓰고 새로 시작'}</button>`; }
+          else bt = `<button class="ux-btn primary" data-sp="load" data-n="${n}">이어하기</button>` + del;
+        }
+        return `<div class="sl ${i && last === n ? 'cur' : ''}"><div>${head}${info}</div><div class="bt">${bt}</div></div>`;
       }).join('');
+      const cnt = root.querySelector('.sp-cnt'); if (cnt) cnt.textContent = `${used} / 3칸`;
     };
     const finish = () => { setSpeed(prevSpeed || 1); done(); };
-    const close = fresh => { root.classList.remove('on'); document.removeEventListener('keydown', onKey); if (fresh) playPrologue(finish); else finish(); };
+    const close = async fresh => { root.classList.remove('on'); document.removeEventListener('keydown', onKey); if (pre) await pre(fresh); root.classList.remove('top'); if (fresh) playPrologue(finish); else finish(); };
     const goBack = () => { root.classList.remove('on'); document.removeEventListener('keydown', onKey); setSpeed(prevSpeed); back(); };
     const onKey = e => { if (e.key === 'Escape' && back) { e.preventDefault(); goBack(); } };
     root.onclick = e => {
@@ -161,6 +164,25 @@
     draw(); root.classList.add('on');
   }
 
+  // ---------- 타이틀 옵션 (2026-11-24 사용자 「반영해줘」, 시안 docs/design/mockups/title_opt_1124 책톤_옵션): 왼쪽 소리 · 오른쪽 화면, 게임 안 설정과 같은 값(Snd.opt) ----------
+  function optPick(onClose) {
+    const root = $('optPick'), S = window.Snd; if (!root) return;
+    const o = () => (S ? S.opt : {});
+    const rg = (k, n, sm) => { const v = Math.round((o()[k] == null ? (k === 'sfx' ? 0.8 : k === 'bgm' ? 0.6 : 1) : o()[k]) * 100); return `<div class="row"><span class="nm">${n}${sm ? `<small>${sm}</small>` : ''}</span><input type="range" min="0" max="100" value="${v}" data-ov="${k}" style="--v:${v}%"><span class="v" data-ovv="${k}">${v}%</span></div>`; };
+    const sw = (k, n, on, sm) => `<div class="row"><span class="nm">${n}${sm ? `<small>${sm}</small>` : ''}</span><button class="ux-btn sw ${on ? 'primary' : ''}" data-oc="${k}">${on ? '켜짐' : '꺼짐'}</button></div>`;
+    const draw = () => {
+      root.querySelector('.op-l').innerHTML = rg('master', '전체 음량') + rg('bgm', '배경음악') + rg('sfx', '효과음', '효과음은 준비 중') + sw('mute', '음소거', !!o().mute);
+      root.querySelector('.op-r').innerHTML = sw('fx', '화면 효과', o().fx !== false, '별가루 · 낙엽 · 쪽지 흔들림') + sw('report', '월말 장부 자동 표시', o().report !== false, '달이 바뀌면 장부를 띄움') + sw('full', '전체 화면', !!document.fullscreenElement, 'F11과 같음');
+    };
+    const close = () => { root.classList.remove('on'); document.removeEventListener('keydown', onKey); root.oninput = root.onclick = null; if (onClose) onClose(); };
+    const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); close(); } };
+    root.oninput = e => { const k = e.target.dataset && e.target.dataset.ov; if (!k || !S) return; const v = +e.target.value; S.set(k, v / 100); e.target.style.setProperty('--v', v + '%'); const t = root.querySelector(`[data-ovv="${k}"]`); if (t) t.textContent = v + '%'; };
+    root.onclick = e => { if (e.target.closest('[data-op="close"]')) { close(); return; } const b = e.target.closest('[data-oc]'); if (!b) return; const c = b.dataset.oc;
+      if (c === 'full') { const p = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); Promise.resolve(p).catch(() => {}).then(() => setTimeout(draw, 120)); return; }
+      if (S) S.set(c, c === 'fx' || c === 'report' ? o()[c] === false : !o()[c]); if (c === 'report' && window.UI) UI.autoReport = o().report !== false; draw(); };
+    document.addEventListener('keydown', onKey); draw(); root.classList.add('on');
+  }
+
   // ---------- 타이틀 → 저장 칸 → (새 게임이면) 프롤로그 → 길드 (2026.11) ----------
   const fadeEl = () => $('fadeBlack');
   const fadeTo = (on, ms) => new Promise(r => { const f = fadeEl(); if (!f) { r(); return; } f.classList.toggle('on', on); setTimeout(r, ms || 700); });
@@ -169,15 +191,18 @@
     setSpeed(0);
     const has = !!newest();
     const skip = $('titleSkip'); let left = false;
-    const leave = async (mode, ms) => {   // 타이틀을 닫고 저장 칸 고르기로
+    const leave = (mode, ms) => {   // 2026-11-24 사용자 「예전 버전이 더 좋아」 → 「타이틀 위에 슬롯 창」: 검은 전환 없이 타이틀 위에 저장 칸 창을 띄우고, 고른 뒤에 타이틀을 닫음. 「타이틀로」는 창만 닫음
       if (left) return; left = true;
-      window.removeEventListener('message', onMsg); if (skip) skip.onclick = null;
-      await fadeTo(true, ms);
-      lay.classList.remove('on'); fr.src = 'about:blank';   // 타이틀 애니메이션을 멈춘다
-      slotPick(done, mode, () => titleThenPick(done));
-      await fadeTo(false, ms);
+      try { fr.blur(); window.focus(); } catch (er) { /* 무시 */ }   // Esc가 타이틀 iframe에 먹히지 않게
+      slotPick(done, mode, () => { left = false; try { fr.contentWindow.focus(); } catch (er) { /* 무시 */ } }, async fresh => {
+        window.removeEventListener('message', onMsg); if (skip) skip.onclick = null;
+        await fadeTo(true, ms);
+        lay.classList.remove('on'); fr.src = 'about:blank';   // 타이틀 애니메이션을 멈춘다
+        if (!fresh) await fadeTo(false, ms);   // 새로 시작은 프롤로그가 검은 화면에서 이어 받음
+      });
     };
     const onMsg = e => { const d = e.data; if (!d || d.collegium !== 'title') return; if (d.act === 'touch') { if (window.Snd && window.Snd.unlock) window.Snd.unlock(); return; }   // 2026-11-19 타이틀 안을 처음 누르면 소리를 풀어 타이틀 곡이 나오게
+      if (d.act === 'opt') { if (!left) { try { fr.blur(); window.focus(); } catch (er) { /* 무시 */ } optPick(() => { try { fr.contentWindow.focus(); } catch (er) { /* 무시 */ } }); } return; }   // 2026-11-24 타이틀 옵션 = 책 창
       leave(d.act === 'load' ? 'load' : 'new', 600); };
     window.addEventListener('message', onMsg);
     if (skip) skip.onclick = () => leave(has ? 'load' : 'new', 150);   // 개발자 전용 SKIP: 저장 기록이 있으면 바로 이어하기 칸 고르기 (2026-11-16)

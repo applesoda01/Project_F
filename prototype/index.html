@@ -258,20 +258,37 @@ body.bookOn #hudTR,body.bookOn #hudBR{transform:translateY(180px);pointer-events
 #dev.open{display:flex}
 #dev .tag{color:var(--muted);font-size:15px;align-self:center}
 /* 팝업 */
-#slotPick{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(20,12,6,.72);backdrop-filter:blur(3px)}#slotPick.on{display:flex}
-#slotPick .sp-box{width:1180px;max-width:94%;padding:34px 40px 30px;border-radius:22px;background:linear-gradient(#fff6e2,#f4e3bd);border:4px solid #7a5230;box-shadow:0 12px 40px rgba(0,0,0,.45);text-align:center}
-#slotPick h1{margin:0 0 6px;font:700 40px var(--hf);color:#5a3a22}#slotPick p{margin:0 0 24px;font:600 19px var(--hf);color:#8a6a48}
-.sp-list{display:flex;gap:22px;justify-content:center}.sp-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 16px 20px;border-radius:16px;background:#fffaf0;border:3px solid #d9c7a3;min-height:270px}
-.sp-card.recent{border-color:#c8963a;box-shadow:0 0 0 3px rgba(232,178,79,.35)}.sp-card.empty{background:repeating-linear-gradient(45deg,#f6ecd6 0 10px,#f0e3c7 10px 20px);border-style:dashed}
-.sp-no{font:700 24px var(--hf);color:#5a3a22}.sp-no i{font-style:normal;font-size:14px;color:#fff;background:#c8963a;border-radius:10px;padding:2px 8px;margin-left:6px;vertical-align:middle}
-.sp-d{font:700 26px var(--hf);color:#3d2a18;margin-top:6px}.sp-s{font:600 17px var(--hf);color:#6a4c30;line-height:1.5}.sp-w{font:500 15px var(--hf);color:#9a8264;min-height:20px}.sp-ph{font:600 20px var(--hf);color:#a99577;margin:30px 0 22px}
+/* 2026-11-24 사용자 「창 톤이 책하고 안 맞아 · 글꼴도」 → 타이틀의 저장 슬롯 · 옵션 창 = 게임 안 책과 같은 펼침면 (크기 · 위치 · 리본 같게, 시안 docs/design/mockups/title_opt_1124) */
+.bkWin{position:absolute;inset:0;z-index:45;display:none;background:rgba(20,12,6,.5);backdrop-filter:blur(3px)}.bkWin.on{display:block}
+.bkWin .bw{position:absolute;left:988px;top:540px;width:1600px;height:879px;transform:translate(-50%,-50%) scale(1.12);background:url(assets/ui/book/book_paper.png) center/100% 100% no-repeat;filter:drop-shadow(0 18px 26px rgba(30,16,6,.5));font-family:var(--hf,"MaruBuri","Malgun Gothic",serif);color:#4a2e18}
+.bkWin .orn{position:absolute;inset:0;background:url(assets/ui/book/book_ornament.png) 0 0/100% 100% no-repeat;pointer-events:none}
+.bkWin .pg{position:absolute;top:116px;height:640px;display:flex;flex-direction:column}.bkWin .pl{left:157px;width:588px}.bkWin .pr{left:856px;width:561px}
+.bkWin .tt{position:absolute;left:157px;width:588px;top:72px;text-align:center;font-size:34px;font-weight:700;letter-spacing:4px;color:#4a2e17}
+.bkWin .tt:before,.bkWin .tt:after{content:"";display:inline-block;width:70px;height:2px;background:rgba(110,72,36,.45);vertical-align:middle;margin:0 16px}
+.bkWin .hh{font-size:21px;font-weight:700;text-align:center;margin:26px 0 12px;color:#5a3a22}
+.bkWin .note{margin:0;font-size:16px;line-height:1.7;color:#6b4a2e;text-align:center;padding:0 30px}
+.bkWin .seal{margin:26px auto 0;width:200px;height:200px;background:url(assets/ui/book/seal_frame.png) center/contain no-repeat;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:700;color:#7a4a22;opacity:.9}
+.bkWin .rh{font-size:24px;font-weight:700;text-align:center;margin:-36px 0 18px;letter-spacing:2px}.bkWin .rh small{font-size:15px;color:#9a8266;margin-left:8px;letter-spacing:0}
+.bkWin .sl{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:14px;padding:14px;border-bottom:1px solid rgba(110,72,36,.25)}
+.bkWin .sl.cur{background:linear-gradient(90deg,rgba(214,160,60,.22),rgba(214,160,60,0));box-shadow:inset 4px 0 0 #6a4785}
+.bkWin .sl h4{margin:0 0 4px;font-size:21px}.bkWin .sl h4 em{font-style:normal;font-size:13px;font-weight:700;color:#6a4785;margin-left:8px}
+.bkWin .sl .i1{font-size:17px;font-weight:700}.bkWin .sl .i1 span{font-size:15px;font-weight:400;color:#5a3a20;margin-left:8px}.bkWin .sl .i2{font-size:14px;color:#8a7258;margin-top:3px}
+.bkWin .sl .emp{font-size:16px;color:#9a8266}.bkWin .sl .warn{font-size:13px;color:#b5483a;margin-top:3px}
+.bkWin .bt{display:flex;flex-direction:column;gap:7px}.bkWin .bt .ux-btn{min-width:150px}.bkWin .bt .sp-del{font-size:14px;padding:3px 10px;color:#8a5a3a}.bkWin .bt .arm{background:#f3c9c0;border-color:#b5483a;color:#7a1f14}
+.bkWin .rib{position:absolute;right:129px;top:-14px;width:56px;height:124px;border:0;padding:0;cursor:pointer;background:url(assets/ui/book/ribbon_close.png) 0 0/100% 100% no-repeat,#a33343;background-blend-mode:multiply;-webkit-mask-image:url(assets/ui/book/ribbon_close.png);mask-image:url(assets/ui/book/ribbon_close.png);-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.bkWin .rib:hover{height:136px}.bkWin .rib[hidden]{display:none}
+.bkWin .rib span{position:absolute;left:0;right:0;top:38px;width:1.1em;margin:0 auto;color:#ffe9c9;font:700 15px var(--hf,"MaruBuri",serif);word-break:break-all;line-height:1.15;text-align:center;text-shadow:0 1px 1px rgba(60,10,16,.55)}
+.bkWin .row{display:flex;align-items:center;gap:14px;padding:13px 4px;border-bottom:1px solid rgba(110,72,36,.2)}.bkWin .nm{flex:1;font-size:18px;font-weight:700}.bkWin .nm small{display:block;font-size:13px;font-weight:400;color:#9a8266}
+.bkWin input[type=range]{-webkit-appearance:none;appearance:none;width:220px;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(138,106,70,.35),#6e4e30) 0 0/var(--v,60%) 100% no-repeat,rgba(138,106,70,.14);outline:none}
+.bkWin input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#f4e6c6;border:2px solid #8a6a46;cursor:pointer}
+.bkWin input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#f4e6c6;border:2px solid #8a6a46}
+.bkWin .v{width:52px;text-align:right;font-size:16px;font-weight:700;color:#6b4a2e}
+.bkWin .sw{min-width:80px}.bkWin .sw:not(.primary){background:none;border:1px solid rgba(110,72,36,.35);color:#9a8266;box-shadow:none}
 #titleLay{position:fixed;inset:0;z-index:40;background:#000;display:none}#titleLay.on{display:block}#titleLay iframe{width:100%;height:100%;border:0;display:block}
 #titleSkip{position:absolute;left:18px;bottom:16px;z-index:1;padding:5px 12px;font:700 13px/1 inherit;letter-spacing:1px;color:#e9dcc0;background:rgba(20,14,8,.55);border:1px solid rgba(233,220,192,.45);border-radius:6px;cursor:pointer;opacity:.55}#titleSkip:hover{opacity:1}   /* 개발자 전용 (2026-11-16): 타이틀 건너뛰고 바로 이어하기 */
 #prologue{position:fixed;inset:0;z-index:45;background:#000;display:none}#prologue.on{display:block}#prologue video{width:100%;height:100%;object-fit:contain;background:#000}
 #prologueSkip{position:absolute;top:22px;right:26px;opacity:0;pointer-events:none;transition:opacity .6s}#prologueSkip.show{opacity:.85;pointer-events:auto}
 #fadeBlack{position:fixed;inset:0;z-index:50;background:#000;opacity:0;pointer-events:none;transition:opacity .9s}#fadeBlack.on{opacity:1;pointer-events:auto}
-.sp-back{position:absolute;left:22px;top:20px;font-size:15px;padding:5px 12px}.sp-box{position:relative}
-.sp-card .ux-btn{width:80%;margin-top:auto}.sp-card .sp-del{margin-top:0;font-size:14px;padding:4px 10px;opacity:.75}.sp-card .sp-del.arm{background:#f3c9c0;border-color:#b5483a;color:#7a1f14;opacity:1}
 #hudBR .up #mSellBtn.lock .cb{filter:grayscale(1) brightness(.85);opacity:.7}
 .op-wrap{padding:8px 18px;display:flex;flex-direction:column;gap:14px}.op-sec{background:rgba(255,250,238,.7);border:2px solid var(--ux-line2,#d9c7a3);border-radius:14px;padding:10px 16px}
 .op-sec h3{margin:0 0 8px;background:none;border:0;box-shadow:none;padding:0;width:auto;text-align:left;font:700 18px var(--hf);color:#5a3a22}.op-row{display:flex;align-items:center;gap:14px;padding:7px 0;border-top:1px dashed rgba(90,58,34,.2)}.op-row:first-of-type{border-top:0}
@@ -482,7 +499,8 @@ body:not(.dev) #devToggle,body:not(.dev) #dev,body:not(.dev) #titleSkip,body:not
     <button class="btn" id="dWeek">다음 주</button><button class="btn" id="dMonth">다음 달</button><button class="btn" id="dGrade">등급 올리기</button><button class="btn" id="dGold">+5,000G</button><button class="btn" id="dPromo">전직 시험</button><button class="btn" id="dWalk">걷기 시연</button><button class="btn" id="dX2">2배 의뢰 보기</button>
     <button class="btn" id="dLayer">레이어 경계</button><button class="btn" id="dStill">쪽지 흔들림 끄기</button><button class="btn" id="dTemp"></button><button class="btn" id="dVerify">관문 1 검증</button><button class="btn" id="dKitchen">식당 시험</button><button class="btn" id="dUnlock">설비 보상 열기</button>
     <span class="tag" id="dAssets"></span></div>
-  <div id="slotPick"><div class="sp-box"><h1>모험가 길드</h1><p>저장 슬롯을 골라 주세요. 고른 슬롯에 자동으로 저장됩니다.</p><div class="sp-list"></div></div></div>
+  <div id="slotPick" class="bkWin"><div class="bw"><div class="tt">저장 슬롯</div><div class="pg pl"><div class="hh">저장 슬롯</div><p class="note"></p><div class="seal">길드</div></div><div class="pg pr"><div class="rh">저장 슬롯<small class="sp-cnt"></small></div><div class="sp-list"></div></div><div class="orn"></div><button class="rib" data-sp="back" title="타이틀로 (Esc)"><span>닫기</span></button></div></div>
+  <div id="optPick" class="bkWin"><div class="bw"><div class="tt">옵션</div><div class="pg pl"><div class="hh">소리</div><div class="op-l"></div></div><div class="pg pr"><div class="hh" style="margin-top:-10px">화면</div><div class="op-r"></div><p class="note" style="margin-top:24px">바꾼 설정은 바로 적용되고,<br>게임 안 설정과 같이 저장됩니다.</p></div><div class="orn"></div><button class="rib" data-op="close" title="닫기 (Esc)"><span>닫기</span></button></div></div>
   <div id="titleLay"><iframe id="titleFrame" title="타이틀" allow="autoplay"></iframe><button id="titleSkip" type="button" title="개발자 전용: 타이틀을 건너뛰고 이어하기로">SKIP ▸</button></div><div id="prologue"><video id="prologueVid" playsinline preload="auto"></video><button id="prologueSkip" class="ux-btn">건너뛰기 (Esc)</button></div><div id="fadeBlack"></div>
   <div id="dlg"><img id="dlgFace" alt="리나"><canvas id="dlgStand" width="341" height="640" hidden></canvas><div class="plate" id="dlgBox"><span id="dlgName">리나</span><span id="dlgText"></span><span id="dlgNext" hidden>▼</span></div></div>
   <div id="popBack"><div class="plate book" id="pop" role="dialog" aria-modal="true" aria-labelledby="popTitle"><div id="bookMarks"></div><div id="bookTitle"></div><div id="bookSub"></div><button id="bookRibbon" aria-label="닫기"><span>닫기</span></button><div id="popHead"><h2 id="popTitle"></h2><button class="btn" id="popClose" aria-label="닫기">✕</button></div><div id="popBody"></div><div id="bookOrn"></div></div></div>
