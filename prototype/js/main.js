@@ -118,8 +118,9 @@
     catch (e) { return { raw: t, bad: true }; }
   }
   // mode: 'new'(새 게임: 빈 칸·덮어쓰기) · 'load'(이어하기: 저장된 칸만) · 없음(예전처럼 둘 다). back: 타이틀로 돌아가는 함수
-  function slotPick(done, mode, back) {
+  function slotPick(done, mode, back, pre) {   // pre(새로 시작?): 고른 뒤 게임으로 넘어가기 전에 할 일 (2026-11-24: 타이틀 위에 띄운 경우 타이틀 닫기)
     const root = $('slotPick'); if (!root) { done(); return; }
+    root.classList.toggle('top', !!pre);
     const prevSpeed = speed; setSpeed(0);
     const arm = {};   // 삭제·덮어쓰기는 두 번 눌러야 한다
     const fmtPlay = sec => { const m = Math.floor((sec || 0) / 60), h = Math.floor(m / 60); return h ? `${h}시간 ${m % 60}분` : `${m}분`; };
@@ -143,7 +144,7 @@
       }).join('');
     };
     const finish = () => { setSpeed(prevSpeed || 1); done(); };
-    const close = fresh => { root.classList.remove('on'); document.removeEventListener('keydown', onKey); if (fresh) playPrologue(finish); else finish(); };
+    const close = async fresh => { root.classList.remove('on'); document.removeEventListener('keydown', onKey); if (pre) await pre(fresh); root.classList.remove('top'); if (fresh) playPrologue(finish); else finish(); };
     const goBack = () => { root.classList.remove('on'); document.removeEventListener('keydown', onKey); setSpeed(prevSpeed); back(); };
     const onKey = e => { if (e.key === 'Escape' && back) { e.preventDefault(); goBack(); } };
     root.onclick = e => {
@@ -169,13 +170,15 @@
     setSpeed(0);
     const has = !!newest();
     const skip = $('titleSkip'); let left = false;
-    const leave = async (mode, ms) => {   // 타이틀을 닫고 저장 칸 고르기로
+    const leave = (mode, ms) => {   // 2026-11-24 사용자 「예전 버전이 더 좋아」 → 「타이틀 위에 슬롯 창」: 검은 전환 없이 타이틀 위에 저장 칸 창을 띄우고, 고른 뒤에 타이틀을 닫음. 「타이틀로」는 창만 닫음
       if (left) return; left = true;
-      window.removeEventListener('message', onMsg); if (skip) skip.onclick = null;
-      await fadeTo(true, ms);
-      lay.classList.remove('on'); fr.src = 'about:blank';   // 타이틀 애니메이션을 멈춘다
-      slotPick(done, mode, () => titleThenPick(done));
-      await fadeTo(false, ms);
+      try { fr.blur(); window.focus(); } catch (er) { /* 무시 */ }   // Esc가 타이틀 iframe에 먹히지 않게
+      slotPick(done, mode, () => { left = false; try { fr.contentWindow.focus(); } catch (er) { /* 무시 */ } }, async fresh => {
+        window.removeEventListener('message', onMsg); if (skip) skip.onclick = null;
+        await fadeTo(true, ms);
+        lay.classList.remove('on'); fr.src = 'about:blank';   // 타이틀 애니메이션을 멈춘다
+        if (!fresh) await fadeTo(false, ms);   // 새로 시작은 프롤로그가 검은 화면에서 이어 받음
+      });
     };
     const onMsg = e => { const d = e.data; if (!d || d.collegium !== 'title') return; if (d.act === 'touch') { if (window.Snd && window.Snd.unlock) window.Snd.unlock(); return; }   // 2026-11-19 타이틀 안을 처음 누르면 소리를 풀어 타이틀 곡이 나오게
       leave(d.act === 'load' ? 'load' : 'new', 600); };
