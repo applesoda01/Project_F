@@ -358,7 +358,7 @@
       logStag.push([L.text, L.kind]); // 로그박스로 흘려보냄 (알림은 전직 제안만 따로 띄움) — 2026-11-23 빈 시간 3: 한꺼번에 말고 주 앞부분에 나눠서
       if (L.kind === 'promo' && L.text.includes('제안합니다')) toast(L.text, L.kind);
       if (L.kind === 'ledger' && lkOn()) { UI.menuUnlock('mgmt'); if (s.tut.base) UI.menuUnlock('town'); }   // 2026-11-23 메뉴 잠금: 첫 장부 = 경영, 튜토리얼 뒤 첫 장부 = 마을
-      if (L.kind === 'ledger' && UI.autoReport && !(root.Tutorial && root.Tutorial.active())) UI.open('ledger');   // 2026-11-18: 기본 튜토리얼 중에는 열지 않음 (FT0010에서 장부 안내)   // 월말: 리나 브리핑 대신 장부 창을 보여 준다
+      if (L.kind === 'ledger' && UI.autoReport && !(root.Tutorial && root.Tutorial.active())) { lgSel = '@adv'; UI.open('ledger'); }   // 2026-11-24 개선 1: 월말에 저절로 열릴 때는 오른쪽에 모험가 성장 (왼쪽은 돈)   // 2026-11-18: 기본 튜토리얼 중에는 열지 않음 (FT0010에서 장부 안내)   // 월말: 리나 브리핑 대신 장부 창을 보여 준다
       if (L.kind === 'promo' && L.text.includes('제안합니다')) { const nm = L.text.split(/[이가] \d차/)[0]; UI.say(UI.lines('promo_ready', { name: nm })); }
     }
     logPump();
@@ -1447,6 +1447,19 @@
       <p class="gd-rw">승급하면: ${fmt(m.gold)}G · 명성 +${m.fame} · 모험가 관리소 해금 · ${GR[m.grade + 1]}급 의뢰</p></div>`;
   }
   let lgSel = null;   // 2026-11-20 사용자: 왼쪽 항목을 누르면 오른쪽에 상세, 요약(12개월 그래프 · 승급)은 버튼으로
+  function lgAdvHtml(m) {   // 2026-11-24 개선 1 (사용자 18:09 「리포트에 모험가의 성장 요소를 보여 주기」): 지난달 결산 때 적은 모험가 성장
+    const R = m && m.advs ? m.advs.map(x => Object.assign({ a: s.advs.find(b => b.id === x.id) }, x)).filter(x => x.a) : null;
+    let h = `<section class="lg-chart lg-adv"><div class="ux-h">${m ? Gm.dateLabel(m.week != null ? m.week - 1 : s.week - 1).replace(/ \d+주$/, '').replace(/^\d+년차 /, '') + ' ' : ''}모험가 <small>지난 결산 때의 한 달</small></div>`;
+    if (!R || !R.length) return h + '<p class="muted">첫 결산 뒤에 보입니다.</p></section>';
+    const lvN = R.filter(x => x.lv > x.lv0).length, gN = R.filter(x => x.g > x.g0).length, nN = R.filter(x => x.nw).length, dN = R.reduce((t, x) => t + Math.max(0, x.done), 0);
+    h += `<div class="la-sum"><span>레벨 업 <b>${lvN}</b>명</span><span>승급 <b>${gN}</b>명</span><span>새 얼굴 <b>${nN}</b>명</span><span>성공한 원정 <b>${dN}</b>건</span></div><div class="la-list">`;
+    R.sort((x, y) => (y.g - y.g0) - (x.g - x.g0) || (y.lv - y.lv0) - (x.lv - x.lv0) || y.done - x.done);
+    for (const x of R) { const a = x.a, up = x.st.map((v, i) => [v, i]).filter(t => t[0] > 0).sort((p, q) => q[0] - p[0]).slice(0, 2);
+      h += `<div class="la-r"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span class="nm"><b>${esc(a.name)}</b><em>${esc(a.cls)}${x.nw ? ' · <i class="nw">새 얼굴</i>' : ''}</em></span>`
+        + `<span class="lv ${x.lv > x.lv0 ? 'up' : ''}">${x.lv > x.lv0 ? `Lv ${x.lv0} → <b>${x.lv}</b>` : `Lv ${x.lv}`}</span>${x.g > x.g0 ? `<span class="gu">${GR[x.g]}급 승급</span>` : '<span class="gu off"></span>'}`
+        + `<span class="la-dn">원정 <b>${Math.max(0, x.done)}</b>건</span><span class="st">${up.map(([v, i]) => `${STAT_NM[i]} <b>+${v}</b>`).join(' · ') || '—'}</span></div>`; }
+    return h + '</div></section>';
+  }
   function ledgerHtml() {
     const cur = s.month, prev = s.lastMonth; lgTips = [];
     const tipId = html => { lgTips.push(html); return lgTips.length - 1; };
@@ -1456,7 +1469,7 @@
       return `<td class="n ${eom ? 'eom' : v < 0 ? 'neg' : ''}" data-lt="${tipId(lgTip(k, m, isCur))}">${eom ? '월말' : v ? gG(v) : '0G'}</td>`;
     };
     let h = `<div class="lg-book"><table class="lg"><colgroup><col><col class="c"><col class="c"></colgroup>
-      <tr class="hd"><th><button class="lg-sum-btn${lgSel ? '' : ' on'}" data-lgk="">요약 보기</button></th><th class="n">지난달</th><th class="n">이번 달</th></tr>
+      <tr class="hd"><th><button class="lg-sum-btn${lgSel ? '' : ' on'}" data-lgk="">요약 보기</button><button class="lg-sum-btn${lgSel === '@adv' ? ' on' : ''}" data-lgk="@adv">모험가 보기</button></th><th class="n">지난달</th><th class="n">이번 달</th></tr>
       <tr class="sec in"><th colspan="3">수입</th></tr>`;
     const lgShow = k => ['fee', 'meal', 'subsidy'].includes(k) || (prev && prev[k]) || cur[k];   // 2026-11-23 책 정리: 두 달 모두 0G인 줄은 숨김 (핵심 수입 3줄은 늘 보임)   // 2026-11-17: 쓸 때만 보이는 줄 (위탁 · 계약 · 침공 물약) — 장부가 책 한 쪽을 넘지 않게
     for (const [k, n] of LG_IN) if (lgShow(k)) h += `<tr class="lg-k${lgSel === k ? ' on' : ''}" data-lgk="${k}"><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
@@ -1467,7 +1480,8 @@
       <tr class="tot"><td>순이익</td><td class="n ${prev && lgNet(prev) < 0 ? 'neg' : 'pos'}">${prev ? gG(lgNet(prev)) : '—'}</td><td class="n ${lgNet(cur) < 0 ? 'neg' : 'pos'}">${gG(lgNet(cur))}</td></tr></table>`;
     // 그래프: 최근 12개월 순이익 (건설비 포함). 0 기준선 위 = 이익, 아래 = 손해
     const hist = s.history.slice(-12);
-    if (lgSel) {   // 항목 상세 (오른쪽 쪽)
+    if (lgSel === '@adv') h += lgAdvHtml(prev);   // 2026-11-24 개선 1: 지난달 모험가의 성장
+    else if (lgSel) {   // 항목 상세 (오른쪽 쪽)
       const nm = ([...LG_IN, ...LG_OUT].find(x => x[0] === lgSel) || [, lgSel])[1], isIn = LG_IN.some(x => x[0] === lgSel), rows = hist.map(m => [m, m[lgSel] || 0]), mx = Math.max(1, ...rows.map(r => Math.abs(r[1])), Math.abs(cur[lgSel] || 0));
       h += `<section class="lg-chart lg-det"><div class="ux-h">${esc(nm)} <small>${isIn ? '수입' : '지출'}</small></div>`
         + `<div class="ld-two"><div class="ld-box"><b>이번 달</b><em class="${(cur[lgSel] || 0) < 0 ? 'neg' : ''}">${gG(cur[lgSel] || 0)}</em><div class="ld-tx">${lgTip(lgSel, cur, true)}</div></div>`

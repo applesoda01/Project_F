@@ -1606,7 +1606,11 @@
     proposeClasses(s);
     const net = s.month.fee + s.month.resale + s.month.meal + s.month.tavern + s.month.subsidy + s.month.upkeep + s.month.other + (s.month.reqIn || 0) + (s.month.scout || 0) + (s.month.prep || 0) + (s.month.cpay || 0) + (s.month.csup || 0) + (s.month.matBuy || 0) + (s.month.consign || 0) + (s.month.order || 0) + (s.month.gq || 0) + (s.month.car || 0) + (s.month.carBuy || 0) + (s.month.gift || 0) + (s.month.shop || 0) + (s.month.royal || 0);   // 2026-11-20 왕국 포상금 (던전 정복, main)   // 4단계: 소재 매입(음수) · 위탁 수수료   // 2026-11-17 V2: 계약 보수 · 지원(음수)   // 2026-11-16: 리퀘스트 보상(납품 금화) · 지명 섭외비 포함
     s.month.net = net; s.month.grade = s.grade; s.month.feeRate = feeRate(s);
-    s.lastMonth = s.month; s.history.push(Object.assign({ week: s.week }, s.month));
+    s.month.advs = s.advs.filter(a => a.alive).map(a => {   // 2026-11-24 개선 1 (사용자 18:09): 달마다 모험가의 성장 — 달 초 값(a.m0)과 견줌. 화면에만 씀 (규칙 · 난수와 무관)
+      const now = { lv: a.lv, g: a.grade, done: a.done || 0, st: a.stats.map(v => Math.round(v)) }, m0 = a.m0 || { lv: 1, g: 0, done: 0, st: a.st0 || now.st, nw: true };
+      a.m0 = now; return { id: a.id, lv0: m0.lv, lv: now.lv, g0: m0.g, g: now.g, done: now.done - m0.done, st: now.st.map((v, i) => v - (m0.st[i] != null ? m0.st[i] : v)), nw: !!m0.nw && (a.joined || 0) > 0 };
+    });
+    s.lastMonth = s.month; s.history.push(Object.assign({ week: s.week }, s.month)); delete s.history[s.history.length - 1].advs;   // 모험가 성장은 지난달 것만 둠 (저장 크기)
     log(s, `${dateLabel(s.week)} 결산: 운영 순이익 ${Math.round(net)}G (의뢰 ${s.month.quests}건, 성공 ${s.month.success}건)`, 'ledger', { net: Math.round(net), nq: s.month.quests, nok: s.month.success });
     s.month = blankLedger();
   }
