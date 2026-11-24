@@ -36,7 +36,7 @@
   let dimWant = false, dimSince = 0;
   const dimStable = (on, ms) => { const now = performance.now(); if (on !== dimWant) { dimWant = on; dimSince = now; } return now - dimSince >= (ms == null ? 250 : ms); };
   const dimOff = ms => { if (dimStable(false, ms) && dimOn) { dimEl.style.display = 'none'; dimOn = false; } };   // 밝힐 칸이 「아직 안 눌림」(창 · 책이 막 열리는 중)이면 1초까지 기다림
-  function dimPaint(els, soft) {   // soft: 이번 단계는 덮는 단계인데 밝힐 칸이 잠깐 없음(창이 다시 그려지는 중) → 1초까지 그대로 둠
+  function dimPaint(els, soft, joinEls) {   // joinEls: 이 요소들을 감싸는 한 덩어리 구멍을 더 뚫음 (2026-11-24 경영 하위 메뉴: 마우스가 지나는 길이 덮이지 않게)   // soft: 이번 단계는 덮는 단계인데 밝힐 칸이 잠깐 없음(창이 다시 그려지는 중) → 1초까지 그대로 둠
     const ui = layer();
     if (!dimEl) { dimEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); dimEl.id = 'tutDim'; dimEl.setAttribute('viewBox', '0 0 1920 1080');
       const pth = document.createElementNS('http://www.w3.org/2000/svg', 'path'); pth.setAttribute('fill', 'rgba(18,10,4,.3)'); pth.setAttribute('fill-rule', 'evenodd'); dimEl.appendChild(pth);
@@ -54,6 +54,10 @@
     let d = 'M0 0H1920V1080H0Z';
     for (const el of els) { const r = el.getBoundingClientRect(); if (!r.width) continue; const x = (r.left - ur.left) / k - 6, y = (r.top - ur.top) / k - 6, w = r.width / k + 12, h = r.height / k + 12;
       d += `M${x.toFixed(1)} ${y.toFixed(1)}h${w.toFixed(1)}v${h.toFixed(1)}h${(-w).toFixed(1)}Z`; }
+    if (joinEls && joinEls.length) { const rs = joinEls.map(el => el.getBoundingClientRect()).filter(r => r.width && r.height);
+      if (rs.length) { const L = Math.min(...rs.map(r => r.left)), T = Math.min(...rs.map(r => r.top)), Rr = Math.max(...rs.map(r => r.right)), B = Math.max(...rs.map(r => r.bottom));
+        const x = (L - ur.left) / k - 6, y = (T - ur.top) / k - 6, w = (Rr - L) / k + 12, h = (B - T) / k + 12;
+        d = 'M0 0H1920V1080H0Z' + `M${x.toFixed(1)} ${y.toFixed(1)}h${w.toFixed(1)}v${h.toFixed(1)}h${(-w).toFixed(1)}Z`; } }
     dimEl.firstChild.setAttribute('d', d); if (dimStable(true) && !dimOn) { dimEl.style.display = 'block'; dimOn = true; }
   }
   function glow(sel, sec) { glowSel = sel; glowUntil = sec ? clock + sec : 0; paintGlow(); }
@@ -73,7 +77,10 @@
     // 2026-11-23 버그 2: 책이 펼쳐지는 · 넘어가는 동안은 덮개를 새로 켜거나 구멍을 옮기지 않음. 3차 3번: 끄는 것(덮을 단계가 아님)은 책 연출 중에도 바로 — 책을 닫는 동안 옛 구멍이 남지 않게
     if (root.BookFX && root.BookFX.busy && cw) { dimPaint(null); return; }   // 3차 3번 (찰나의 흔적): 닫기를 누르면 표지가 덮이는 연출(약 0.5초) 동안 책이 아직 열린 상태라 닫기 구멍이 남았음 → 연출이 시작되면 바로 끔
     if (root.BookFX && root.BookFX.busy && want.size && can) return;
-    dimPaint(want.size && can ? [...want] : null, can && !!glowSel);
+    // 2026-11-24 제보 영상: 「경영 → 장부」에서 하위 메뉴가 열리면 장부만 밝히고 경영 칸을 덮어서, 마우스 아래 덮개가 생겨 메뉴(마우스를 올린 동안만 열림)가 닫힘 → 다시 경영을 밝힘 → 무한 반복.
+    //   하위 메뉴를 가리킬 때는 경영 칸 + 하위 메뉴 전체를 한 덩어리로 밝혀 둠 (빛나는 테두리는 가리킨 칸에만)
+    const join = glowSel && /#mgUp/.test(glowSel) ? [document.getElementById('mgBtn'), ...document.querySelectorAll('#mgUp .btn')].filter(el => el && el.getBoundingClientRect().width) : null;
+    dimPaint(want.size && can ? [...want] : null, can && !!glowSel, join);
   }
 
   // ---------- 대사 ----------
