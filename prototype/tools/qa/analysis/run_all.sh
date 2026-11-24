@@ -18,4 +18,5 @@ node exp_drift.js > $R/14_승급시점_최근변경.txt 2>&1
 node chk_donate.js > $R/15_첫해_지출_내역.txt 2>&1
 node exp_seat.js > $R/16_식당_자리_이용.txt 2>&1
 for r in now att3 att6 v1 v2 v3; do node exp_d1.js $r 100 > /dev/null 2>&1; done; node an_d1.js 100 > $R/17_D1_먹으면_더_자주_온다.txt 2>&1
+node exp_wallet.js 30 > $R/19_모험가_지갑.txt 2>&1
 echo done
