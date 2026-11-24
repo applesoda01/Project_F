@@ -1,0 +1,16 @@
+{
+ "m": {
+  "walk": "walk_m_2101",
+  "idle": "idle_m",
+  "sit": "sit_m_3101",
+  "eat": "eat_m_9105",
+  "beer": "beer_m_9101"
+ },
+ "f": {
+  "walk": "walk_f_2101",
+  "idle": "idle_f",
+  "sit": "sit_f_3105",
+  "eat": "eat_f_9105",
+  "beer": "beer_f_9103"
+ }
+}
