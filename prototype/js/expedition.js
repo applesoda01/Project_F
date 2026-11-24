@@ -431,5 +431,6 @@
     if (view) drawScene(sp > 0 ? dt * Math.min(3, sp) : view.replay && !view.replay.done ? dt : 0);   // 다시 보기는 시계가 멈춰 있어도 움직임
     dgAsk(s);   // 2026-11-21 던전 갈림길 · 계속/귀환
   };
+  X.prog = uid => { const s = getS(), x = s && s.active.find(e => e.uid === uid); return x ? entry(s, x, false).p : null; };   // 2026-11-24 개선 2: 책 의뢰 장의 진행 중인 의뢰 막대가 미니 뷰와 같은 값을 쓰게
   root.Expedition = X;
 })(this);

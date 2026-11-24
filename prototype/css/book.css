@@ -71,6 +71,19 @@
 .qcard.bk.sel{border-color:#b0802e;box-shadow:0 0 0 3px rgba(214,160,60,.55),0 4px 10px rgba(60,36,16,.2);transform:translateX(4px)}
 .bkq-nc{font-size:13px;color:var(--ux-muted)}
 .bkq-slot{height:var(--bkq-h);border:2px dashed rgba(120,82,44,.28);border-radius:8px}
+/* 2026-11-24 개선 2: 진행 중인 의뢰 칸 */
+.qcard.bk.act{background:rgba(238,231,214,.75);border-style:dashed}
+.qcard.bk.act .act-tag{margin-left:auto;padding:1px 7px;border-radius:4px;background:#5d7a4a;color:#fff;font:700 12px/18px var(--hf)}
+.qcard.bk.act .act-p{display:flex;gap:2px}.qcard.bk.act .act-p .ux-face{width:26px;height:26px;border-radius:50%;background-color:#efe2cf;background-repeat:no-repeat;border:1.5px solid rgba(110,72,36,.5)}
+.qcard.bk.act .act-w{margin-left:auto;font:700 14px var(--hf);color:#5d7a4a}
+.bkq-det .act-box{margin:6px 0 12px;padding:10px 12px;border-radius:8px;background:rgba(93,122,74,.1);border:1.5px solid rgba(93,122,74,.35)}
+.bkq-det .act-box .ah{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}.bkq-det .act-box .ah>b{font:700 17px var(--hf);color:#3f5a30}.bkq-det .act-box .ah span{font-size:15px}
+.bkq-det .act-box .am{display:flex;align-items:center;gap:8px;padding:3px 0}.bkq-det .act-box .am .ux-face{width:34px;height:34px;border-radius:50%;background-color:#efe2cf;background-repeat:no-repeat;border:1.5px solid rgba(110,72,36,.5)}.bkq-det .act-box .am em{font-style:normal;font-size:14px;color:var(--ux-muted)}
+.qcard.bk.act{position:relative}.qcard.bk.act .ap-tip{position:absolute;right:6px;bottom:8px;padding:2px 8px;border-radius:5px;background:#3f5a30;color:#fff;font:400 13px/18px var(--hf);opacity:0;pointer-events:none;transition:opacity .12s}.qcard.bk.act .ap-tip b{font-weight:700}.qcard.bk.act:hover .ap-tip{opacity:1}   /* 마우스를 올리면 진행 % (사용자 23:35) */
+.qcard.bk.act .qdl.ap i{background:#5d7a4a}
+.bkq-det .act-box .apct{margin-left:auto;font:700 16px var(--hf);color:#3f5a30}
+.bkq-det .act-box .apbar{height:8px;margin:2px 0 8px;border-radius:4px;background:rgba(93,122,74,.2);overflow:hidden}.bkq-det .act-box .apbar i{display:block;height:100%;background:#5d7a4a;transition:width .2s linear}
+.bkq-det .act-box .an{margin-top:6px;font-size:14px;color:var(--ux-muted)}
 /* 오른쪽 쪽: 마우스 오버 창 내용을 크게 */
 .bk-r{display:flex;flex-direction:column}
 .bkq-det{flex:1;font-size:var(--bkq-fs);color:var(--ux-ink);padding-top:6px}

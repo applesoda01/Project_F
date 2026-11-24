@@ -193,6 +193,7 @@
   UI.weekBar = p => {
     q('#hWeekBar').style.width = (p * 100).toFixed(1) + '%';
     wkFrac = p;
+    if (popup === 'board') { for (const el of document.querySelectorAll('#popBody [data-ap]')) el.style.width = apW(+el.dataset.ap) + '%'; for (const el of document.querySelectorAll('#popBody [data-apt]')) el.textContent = apW(+el.dataset.apt, 0) + '%'; }   // 2026-11-24 개선 2: 진행 중인 의뢰 막대도 시계와 함께
     if (popup === 'board') for (const el of document.querySelectorAll('#popBody .qdl i[data-dl]')) { const bq = s.board.find(x => x.id === +el.dataset.dl); if (bq) { const v = dlLeft(bq, p); el.style.width = (v * 100).toFixed(1) + '%'; el.classList.toggle('low', v <= 0.25); } }
     const ic = q('#hTime'); if (!ic) return;
     const ph = ((s && s.week) || 0) % 4, key = ph === 3 ? 'moon' : 'sun';
@@ -1018,9 +1019,11 @@
     if (qHover != null) showTip(b);   // 다시 그린 뒤에도 보고 있던 카드면 유지
   }
   // 책 펼침 (2026-11-13 단계 ③): 왼쪽 쪽 = 의뢰 배분 + 게시된 의뢰 목록 / 오른쪽 쪽 = 고른 의뢰 상세 (마우스 오버 창 대신)
+  const apW = (uid, dp = 1) => { const v = root.Expedition && root.Expedition.prog ? root.Expedition.prog(uid) : null; return v == null ? 0 : (v * 100).toFixed(dp); };   // 2026-11-24 개선 2: 원정 진행 % (미니 뷰 값)
   function renderBoardBook(b) {
     const cap = Gm.boardCap(s);
-    if (!s.board.some(x => x.id === qSel)) qSel = s.board.length ? s.board[0].id : null;
+    const ACT = s.active.filter(x => x.q && x.q.tid != null && !x.q.dg);   // 2026-11-24 개선 2 (사용자 18:10 「진행 중인 퀘스트가 여기에서 사라져서 모험가가 어떤 퀘스트를 하는지 이해가 안 돼」 · 안 A): 게시판 의뢰로 떠난 원정
+    if (!s.board.some(x => x.id === qSel) && !ACT.some(x => 'a' + x.uid === qSel)) qSel = s.board.length ? s.board[0].id : ACT.length ? 'a' + ACT[0].uid : null;
     // 의뢰 배분 = 등급마다 막대 3개 (없음 0 · 적게 1 · 보통 2 · 우선 3), 7등급 한 줄. 아직 안 열린 등급은 자물쇠 (2026-11-13 결정)
     let L = '<div class="ux-h">의뢰 배분 <small>막대가 많을수록 그 등급 의뢰를 많이 받습니다</small></div><div class="qb-bars">';
     for (let g = 0; g < GR.length; g++) {
@@ -1047,12 +1050,21 @@
         <div class="r2">${sk}${foe}${q.party ? `<em class="qparty" title="파티 의뢰 — 적이 많아 ${q.party}명 이상이 함께 가야 이길 만해요">파티 ${q.party}+</em>` : ''}<span class="gold"><i></i>${fmt(q.reward * (q.x2 ? 2 : 1))}G</span>${(() => { const n = Gm.questEta(s, q); return `<span class="mk5-eta" title="지금 게시판 · 마을 모험가 수로 본 예상 처리 (어림)">예상 ${n >= 4 ? '4주+' : n + '주'}</span>`; })()}<span class="dlw${qWkLeft(q) <= 1 ? ' low' : ''}">${qWkLeft(q) > 0 ? '기한 ' + qWkLeft(q) + '주' : '이번 주까지'}</span></div>
         <div class="qdl" title="남은 기한"><i data-dl="${q.id}" style="width:${(dlLeft(q, wkFrac) * 100).toFixed(1)}%"></i></div></div>`;
     }
-    for (let k = s.board.length; k < Math.min(cap, 14); k++) L += '<div class="bkq-slot"></div>';   // 빈 칸 = 점선 자리 (한 쪽에 보이는 14칸까지)
+    if (!ACT.length) for (let k = s.board.length; k < Math.min(cap, 14); k++) L += '<div class="bkq-slot"></div>';   // 빈 칸 = 점선 자리 (한 쪽에 보이는 14칸까지) · 진행 중인 의뢰가 있으면 그 칸을 보여 줌
     L += '</div>';
+    if (ACT.length) {   // 2026-11-24 개선 2: 진행 중인 의뢰 — 파티 얼굴 · 돌아오는 주 · 승산
+      L += `<div class="ux-h qb-h">진행 중인 의뢰 <small>${ACT.length}건 · 모험가가 맡아 떠난 의뢰</small></div><div class="bkq-list ${root.BOOK_CARD_STYLE || 'st-d'}">`;
+      for (const x of ACT) { const q = x.q, left = Math.max(0, x.back - s.week), P = s.advs.filter(a => x.party.includes(a.id));
+        L += `<div class="qcard bk act${'a' + x.uid === qSel ? ' sel' : ''}" data-q="a${x.uid}"><div class="r1">${gradeImg(q.g, 'sm')}<b>${esc(cleanName(q))}</b><span class="act-tag">진행 중</span></div>
+        <div class="r2"><span class="act-p">${P.map(a => `<span class="ux-face" style="${faceStyle(a, 26, 178, 13)}" title="${esc(a.name)}"></span>`).join('')}</span><span class="act-w">${left ? left + '주 뒤 귀환' : '이번 주 귀환'}</span></div><div class="qdl ap"><i data-ap="${x.uid}" style="width:${apW(x.uid)}%"></i></div><span class="ap-tip">원정 진행 <b data-apt="${x.uid}">${apW(x.uid, 0)}%</b></span></div>`; }
+      L += '</div>';
+    }
     let R;
-    const q = s.board.find(x => x.id === qSel);
+    const q = s.board.find(x => x.id === qSel), xa = ACT.find(x => 'a' + x.uid === qSel);
     let A = '';   // 의뢰 취소 버튼: 오른쪽 쪽 안이 아니라 책 그림 좌표에 고정 (--bkc-x, --bkc-y)
     if (q) { const G = gqOf(q); R = `<div class="bkq-det">${qDetailHtml(q, !G)}</div>`; A = G ? `<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">길드 의뢰 거두기</button><small>위약금 없음 · 남은 ${fmt(G.hold)}G는 금고로</small></div>` : `${feeOpen ? qFeeHtml(q) : ''}<div class="bkq-act"><button class="ux-btn danger" data-wd="${q.id}">의뢰 취소</button><small class="two">${(w => w > 0 ? `기한 <b>${w}주</b> 남음` : '<b>이번 주까지</b>')(Gm.expireWeeks(s) - (s.week - q.posted))} (지나면 신뢰도 −${s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1})<br>취소하면 위약금 ${fmt(Math.round(q.reward * 0.10))}G, 신뢰도 −2</small></div>`; }   // 2026-11-23 4차 2 B안: 기한도 단추 옆으로 (상세 맨 아래 줄 없앰)   // 2026-11-20 길드 의뢰 카드: 수수료 칸 없음 · 거두면 남은 돈을 돌려받음
+    else if (xa) { const P = s.advs.filter(a => xa.party.includes(a.id)), left = Math.max(0, xa.back - s.week);   // 2026-11-24 개선 2: 진행 중인 의뢰 상세 — 누가 언제 떠나 언제 돌아오나 (결과는 돌아와야 보임)
+      R = `<div class="bkq-det"><div class="act-box"><div class="ah"><b>원정 중</b><span>${xa.start}주에 떠남 · ${left ? `<b>${left}주 뒤</b> 귀환 (${xa.back}주)` : '<b>이번 주</b> 귀환'}</span><span class="apct" data-apt="${xa.uid}">${apW(xa.uid, 0)}%</span></div><div class="apbar"><i data-ap="${xa.uid}" style="width:${apW(xa.uid)}%"></i></div>${P.map(a => `<div class="am"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><b>${esc(a.name)}</b><em>${esc(a.cls)} Lv ${a.lv}</em></div>`).join('')}<div class="an">결과는 돌아오면 귀환 보고로 알려 드려요.</div></div>${qDetailHtml(xa.q, false)}</div>`; }
     else R = '<div class="bkq-none"><b>게시된 의뢰가 없습니다</b>의뢰는 매주 게시판에 들어옵니다.</div>';
     b.innerHTML = `<div class="bk2"><section class="bk-l">${L}</section><section class="bk-r">${R}</section>${A}</div>`;
     b.onclick = e => {
@@ -1065,7 +1077,7 @@
         if (!Gm.setFilter(s, w)) { toast('적어도 한 등급은 의뢰를 받아야 합니다.', 'warn'); return; }
         hooks.changed(); return;
       }
-      const c = e.target.closest('.qcard'); if (c) { if (+c.dataset.q !== qSel) feeOpen = false; qSel = +c.dataset.q; renderBoardBook(b); }
+      const c = e.target.closest('.qcard'); if (c) { const v = c.dataset.q[0] === 'a' ? c.dataset.q : +c.dataset.q; if (v !== qSel) feeOpen = false; qSel = v; renderBoardBook(b); }
     };
     b.onmouseover = b.onmouseout = null;
   }
