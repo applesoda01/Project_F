@@ -16,3 +16,4 @@ c_brave     y1 434(+18±24)   y2 844(-0±22)     done 71/120 succ 87.0/88.9 E 39
 c_sub25     y1 229(-187±18)  y2 487(-357±19)   done 66/114 succ 88.6/90.5 E 42 gold 1149/3774 advs48 10.3 lv 6.6/11.0 inj 13.4 dead 0.12 cpay 0 fee 107 kitchen -53
 c_reward15  y1 416(+0±0)     y2 844(+0±0)      done 67/117 succ 88.7/90.3 E 40 gold 2313/10042 advs48 10.7 lv 6.7/11.3 inj 13.1 dead 0.07 cpay 0 fee 109 kitchen -51
 c_noLate    y1 428(+12±22)   y2 875(+30±26)    done 67/116 succ 92.2/93.1 E 38 gold 2149/10491 advs48 10.9 lv 6.8/11.4 inj 13.7 dead 0.05 cpay 0 fee 113 kitchen -54
+c_cap16     y1 429(+13±10)   y2 892(+48±16)    done 68/122 succ 88.5/89.5 E 38 gold 2335/10699 advs48 12.7 lv 6.4/10.1 inj 15.4 dead 0.13 cpay 0 fee 112 kitchen -44
