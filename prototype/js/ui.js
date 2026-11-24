@@ -1702,6 +1702,34 @@
     else ctDraft[k] = +v;
     renderPopup();
   }
+  // 2026-11-25 개선 27: 명부 보기 책갈피 탭 (00:21 B안 결정) — 기본 · 능력치 · 애착 · 일정. 마지막 고른 보기를 기억
+  let rosView = (() => { try { return localStorage.getItem('pf.rosView') || 'base'; } catch (e) { return 'base'; } })(), rosStat = -1;   // rosStat: 능력치 보기 정렬 기준 (-1 = 주력 능력치)
+  const ROS_V = [['base', '기본'], ['stat', '능력치'], ['att', '애착'], ['sched', '일정']];
+  const ROS_IDLE = { mates: '동료 기다림', noq: '맞는 의뢰 없음', fee: '수수료 고민', sleep: '늦잠', rain: '비 와서 쉼', req: '리퀘스트 대기', rest: '쉬는 중' };
+  const rosFS = (a, i) => Math.round(Gm.finalStat(s, a, i));
+  const rosVisit = a => { if (a.home || a.attach >= 100) return 1; const iv = s.cfg.adv.visitBaseWeeks * (1 + (100 - a.attach) / 50); return Math.min(1, 2 / iv); };
+  const rosVisitTxt = a => { const p = rosVisit(a); return p >= 1 ? '<b class="ok">늘 길드에 옴</b>' : p >= 0.6 ? '<b>자주</b> 들름' : p >= 0.4 ? '<b>가끔</b> 들름' : '<b>드물게</b> 들름'; };   // 확률 숫자 대신 말 세 단계 (00:21 결정 · 애착 50↑ 자주 · 25↑ 가끔)
+  const rosAvail = a => { const k = stOf(a), w = Math.max(0, a.until - s.week); return k === 'town' ? 0 : k === 'quest' ? 1 + w : k === 'injured' ? 20 + w : 40 + (1 - rosVisit(a)) * 10; };
+  function rosSortList(list) {
+    const by = rosView === 'stat' ? (a => rosStat < 0 ? rosFS(a, a.core) : rosFS(a, rosStat)) : rosView === 'att' ? (a => a.attach) : (a => -rosAvail(a));
+    list.sort((x, y) => by(y) - by(x) || y.lv - x.lv || x.id - y.id); }
+  const rosBar = () => `<div class="ros-bar">${ROS_V.map(([k, n]) => `<button class="${rosView === k ? 'on' : ''}" data-rview="${k}">${n}</button>`).join('')}</div>`;
+  function rosCols() {
+    if (rosView === 'stat') return `<div class="ros-cols rc-stat"><span></span><span>이름</span><button class="${rosStat < 0 ? 'on' : ''}" data-rsort="-1" title="각자 주력 능력치로 정렬">주력${rosStat < 0 ? ' ▼' : ''}</button>${['힘', '민첩', '지력', '정신', '기교'].map((n, i) => `<button class="${rosStat === i ? 'on' : ''}" data-rsort="${i}">${n}${rosStat === i ? ' ▼' : ''}</button>`).join('')}</div>`;
+    if (rosView === 'att') return `<div class="ros-cols rc-att"><span></span><span>이름</span><span>애착 단계</span><span>애착</span><span>관계</span></div>`;
+    if (rosView === 'sched') return `<div class="ros-cols rc-sched"><span></span><span>이름</span><span>지금</span><span>언제 쓸 수 있나</span></div>`;
+    return ''; }
+  function rosRow(a, pc, ttl) {
+    const k = stOf(a), w = Math.max(0, a.until - s.week), cap = s.cfg.growth.statCap || 100;
+    const head = `<span class="ux-face${starCls(a)}" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${k}"></i>${buffIco(a, 1)}</span><span><span class="nm">${a.name}${starTag(a)}</span><span class="sub">${a.cls} · Lv ${a.lv}</span></span>`;
+    let body = '';
+    if (rosView === 'stat') { const core = [0, 1, 2, 3, 4].map(i => rosFS(a, i));
+      body = `<span class="rs core">${core[a.core]}<em>${['힘', '민첩', '지력', '정신', '기교'][a.core]}</em></span>` + core.map((v, i) => `<span class="rs ${i === a.core ? 'mine' : ''} ${i === rosStat ? 'srt' : ''}"><b>${v}</b><i class="trk"><i style="width:${Math.min(100, v / cap * 100)}%"></i></i></span>`).join(''); }
+    else if (rosView === 'att') body = `${attMini(a)}<span class="rn"><b>${Math.round(a.attach)}</b><small>/100</small></span><span class="rl">${a.contract ? '<em class="ct-tag">계약</em>' : ''}${relIcons(a) || (a.contract ? '' : '<small class="mu">—</small>')}</span>`;
+    else { const lab = k === 'town' ? (a.idleW >= s.week - 1 && ROS_IDLE[a.idle]) || '쉬는 중' : k === 'quest' ? '원정 중' : k === 'injured' ? '부상 회복' : '마을 밖';
+      const when = k === 'town' ? '<b class="ok">지금 바로</b>' : k === 'quest' ? (w ? `<b>${w}주 뒤</b> 귀환` : '<b>이번 주</b> 귀환') : k === 'injured' ? (w ? `<b>${w}주 뒤</b> 회복` : '<b>이번 주</b> 회복') : rosVisitTxt(a);
+      body = `<span class="rt2 ${k}"><i class="dot ${k}"></i>${lab}</span><span class="rw">${when}</span>`; }
+    return `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${pc ? 'pty' : ''}" data-adv="${a.id}"${pc ? ` style="--pc:${pc}"` : ''}>${head}${body}</button>`; }
   function advsBookHtml() {
     const pty = new Map(); (s.active || []).forEach((x, qi) => x.party.forEach((id, pi) => pty.set(id, { qi, pi, col: root.Director && root.Director.partyColor ? root.Director.partyColor(x.q.id) : null })));
     const list = s.advs.filter(a => a.alive).sort((x, y) => { const px = pty.get(x.id), py = pty.get(y.id);
@@ -1709,10 +1737,12 @@
       return y.stage - x.stage || y.lv - x.lv || x.id - y.id; });
     if (openAdv == null || !list.some(a => a.id === openAdv)) openAdv = list[0] && list[0].id;
     const promo = new Set((s.proposals || []).map(p => p.id));
-    let h = `<div class="bk2 bk-av ${root.BOOK_ATT || 'att-b'}"><section class="bk-l"><div class="ux-h">모험가 명부 <small>${list.length} / ${Gm.advCap(s)}명</small></div><div class="av-list ${root.BOOK_ADV_LIST || 'st-d'}">`;
+    if (rosView !== 'base') rosSortList(list);
+    let h = `<div class="bk2 bk-av ros-b ${root.BOOK_ATT || 'att-b'}"><section class="bk-l"><div class="ux-h">모험가 명부 <small>${list.length} / ${Gm.advCap(s)}명</small></div>${rosBar()}<div class="av-list ${root.BOOK_ADV_LIST || 'st-d'} rv-${rosView}">${rosCols()}`;
     for (const a of list) { const pc = pty.get(a.id) && pty.get(a.id).col, on = sampleOn(a), t = ttlName(on);
+      if (rosView !== 'base') { h += rosRow(a, pc, t); continue; }
       h += `<button class="ux-row ${openAdv === a.id ? 'on' : ''} ${stOf(a) === 'injured' || stOf(a) === 'quest' ? stOf(a) : ''} ${pc ? 'pty' : ''} ${promo.has(a.id) ? 'promo' : ''}" data-adv="${a.id}"${pc ? ` style="--pc:${pc}"` : ''}><span class="ux-face${starCls(a)}" style="${faceStyle(a, 44, 230, 22)}"><i class="dot ${stOf(a)}"></i>${promo.has(a.id) ? '<i class="star" title="전직 제안">★</i>' : ''}${buffIco(a, 1)}</span>
-      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}${starTag(a)}${qkOf(a) ? `<i class="qk1">${esc(qkOf(a).name[0])}</i>` : ''}${a.contract ? `<em class="ct-tag" title="계약 모험가 · ${a.contract.end + 1}주까지 (체결 주 ~ 체결 주 + 기간 − 1)">계약</em>` : ''}</span><span class="sub">${a.contract ? `계약 ${Math.max(0, Math.min(a.contract.weeks, s.week - a.contract.start + 1))}/${a.contract.weeks}주<i class="ct-bar ${a.contract.end - s.week <= 1 ? 'end' : ''}" title="${a.contract.end - s.week <= 1 ? '곧 끝남 — 계약 제안에서 갱신할 수 있어요' : '계약 진행'}"><i style="width:${Math.round(Math.max(0, Math.min(1, (s.week - a.contract.start + 1) / a.contract.weeks)) * 100)}%"></i></i>` : `${a.cls} · ${ST_SHORT[stOf(a)]}${stOf(a) === 'injured' ? ' ' + Math.max(0, a.until - s.week) + '주' : ''}`}${relIcons(a)}</span></span><i class="ux-grade av-gr" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)" title="${GR[a.grade]}급"></i>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
+      <span><span class="nm">${t ? `<em class="ttl">${t}</em>` : ''}${a.name}${starTag(a)}${qkOf(a) ? `<i class="qk1">${esc(qkOf(a).name[0])}</i>` : ''}${a.contract ? `<em class="ct-tag" title="계약 모험가 · ${a.contract.end + 1}주까지 (체결 주 ~ 체결 주 + 기간 − 1)">계약</em>` : ''}</span><span class="sub">${a.contract ? `계약 ${Math.max(0, Math.min(a.contract.weeks, s.week - a.contract.start + 1))}/${a.contract.weeks}주<i class="ct-bar ${a.contract.end - s.week <= 1 ? 'end' : ''}" title="${a.contract.end - s.week <= 1 ? '곧 끝남 — 계약 제안에서 갱신할 수 있어요' : '계약 진행'}"><i style="width:${Math.round(Math.max(0, Math.min(1, (s.week - a.contract.start + 1) / a.contract.weeks)) * 100)}%"></i></i>` : `${a.cls} · ${ST_SHORT[stOf(a)]}${stOf(a) === 'injured' ? (a.until > s.week ? ' ' + (a.until - s.week) + '주' : ' · 이번 주 회복') : ''}`}${relIcons(a)}</span></span><i class="ux-grade av-gr" style="background-image:url(assets/ui/hud/badge_${GR[a.grade]}.png)" title="${GR[a.grade]}급"></i>${condIcons(a)}${attMini(a)}<span class="rt"><b>Lv ${a.lv}</b></span></button>`; }
     const a = s.advs.find(x => x.id === openAdv);
     return h + `</div></section><section class="bk-r av-main">${a ? advDetail(a) : '<div class="ux-empty">모험가가 없습니다.</div>'}</section><div class="qtip avtip" id="avTip"></div></div>`;
   }
@@ -2510,7 +2540,7 @@
       { const kd = e.target.closest('[data-kdet]'); if (kd) { kDet = kDet === kd.dataset.kdet ? null : kd.dataset.kdet; renderPopup(); return; } }
       const kb = e.target.closest('[data-kpr], [data-kpp]'); if (kb) { if (kb.disabled) return; const [n, v] = (kb.dataset.kpr || kb.dataset.kpp).split(':'), d = Gm.DISH.find(x => x.name === n); if (d) { const mu = Gm.menuOf(s, d), r = kb.dataset.kpr ? Gm.setMenu(s, n, v === 'base' ? Gm.dishBase(s, d) : Math.max(1, Math.min(Gm.dishBase(s, d) * 3, mu.price + +v)), null) : Gm.setMenu(s, n, null, mu.prep + +v); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); } return; } }   // 2026-11-19 결정 37 · 39: 메뉴 가격 · 준비량
       { const c = e.target.closest('[data-ct]'); if (c && popup === 'advs') { if (!c.disabled) contractClick(c.dataset.ct); return; } }
-      const t = e.target.closest('[data-dgnom], [data-dgact], [data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs], [data-rq], [data-rqact], [data-rqnom], [data-rqmore]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
+      const t = e.target.closest('[data-rview], [data-rsort], [data-dgnom], [data-dgact], [data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs], [data-rq], [data-rqact], [data-rqnom], [data-rqmore]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
       if (t.dataset.rq) { rqSel = t.dataset.rq; rqMsg = ''; rqNomMore = false; renderPopup(); return; }
       if (t.dataset.rqmore) { rqNomMore = !rqNomMore; renderPopup(); return; }
       if (t.dataset.rqact) { rqAct(t.dataset.rqact); return; }
@@ -2547,6 +2577,8 @@
       if (t.dataset.upg) { Gm.upgrade(s, t.dataset.upg); hooks.changed(); }
       else if (t.dataset.promo) decide(+t.dataset.promo, t.dataset.cls);
       else if (t.dataset.hold) decide(+t.dataset.hold, null);
+      else if (t.dataset.rview) { rosView = t.dataset.rview; try { localStorage.setItem('pf.rosView', rosView); } catch (e) {} renderPopup(); }
+      else if (t.dataset.rsort) { rosStat = +t.dataset.rsort; renderPopup(); }
       else if (t.dataset.adv) { openAdv = +t.dataset.adv; renderPopup(); }
     });
   }

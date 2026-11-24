@@ -1306,3 +1306,39 @@ body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 .kdish.kflash{animation:kFlash .6s ease-in-out 3}
 @keyframes kFlash{50%{box-shadow:0 0 0 4px rgba(240,190,80,.85),0 0 14px rgba(240,190,80,.7);background-color:rgba(255,236,180,.6)}}
 .kmat.unk{cursor:help}
+
+/* 2026-11-25 개선 27: 명부 보기 책갈피 탭 (B안) */
+.bk-av .ros-bar{display:flex;gap:6px;margin:2px 2px 8px}
+.bk-av .ros-bar button{flex:1;font:700 14px/1 inherit;font-family:inherit;padding:7px 0;border-radius:6px;border:1px solid rgba(110,72,36,.45);background:rgba(255,250,236,.5);color:#6b4a2b;cursor:pointer}
+.bk-av .ros-bar button.on{background:#8e2f3a;border-color:#8e2f3a;color:#fff6e4}
+.bk-av.ros-b .ux-h{margin-bottom:6px}
+.bk-av.ros-b .ros-bar{gap:0;margin:0 0 6px;border-bottom:2px solid rgba(110,72,36,.55);padding-left:4px}
+.bk-av.ros-b .ros-bar button{flex:0 0 auto;padding:8px 18px 7px;border-radius:8px 8px 0 0;border:1px solid rgba(110,72,36,.45);border-bottom:0;margin-right:-1px;background:rgba(214,190,150,.45);font-size:14px}
+.bk-av.ros-b .ros-bar button.on{background:#f4e6c8;color:#8e2f3a;border-color:rgba(110,72,36,.7);position:relative;top:2px;padding-bottom:9px;font-size:15px}
+.bk-av .ros-cols{display:grid;align-items:end;gap:6px;padding:0 8px 4px;font-size:12px;color:#8a6a48;border-bottom:1px solid rgba(110,72,36,.35)}
+.bk-av .ros-cols button{font:inherit;background:none;border:0;color:inherit;cursor:pointer;padding:2px 0;border-radius:4px}
+.bk-av .ros-cols button:hover{background:rgba(214,160,60,.2)}
+.bk-av .ros-cols button.on{color:#8e2f3a;font-weight:700}
+.bk-av .av-list.rv-stat .ux-row,.bk-av .ros-cols.rc-stat{grid-template-columns:52px minmax(0,1fr) 44px repeat(5,40px)}
+.bk-av .av-list.rv-att .ux-row,.bk-av .ros-cols.rc-att{grid-template-columns:52px minmax(0,1fr) 120px 56px 70px}
+.bk-av .av-list.rv-sched .ux-row,.bk-av .ros-cols.rc-sched{grid-template-columns:52px minmax(0,1fr) 120px 150px}
+.bk-av .ros-cols.rc-stat{grid-template-columns:52px minmax(0,1fr) 44px repeat(5,40px)}
+.bk-av .ros-cols span,.bk-av .ros-cols button{text-align:center}
+.bk-av .ros-cols span:nth-child(2){text-align:left}
+.bk-av .rs{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:14px;color:#5a3d22}
+.bk-av .rs b{font-weight:600}
+.bk-av .rs.mine b{color:#8e2f3a;font-weight:800}
+.bk-av .rs.srt{background:rgba(214,160,60,.16);border-radius:4px}
+.bk-av .rs .trk{display:block;width:30px;height:4px;border-radius:2px;background:rgba(110,72,36,.18);overflow:hidden}
+.bk-av .rs .trk i{display:block;height:100%;background:#b0763a}
+.bk-av .rs.mine .trk i{background:#8e2f3a}
+.bk-av .rs.core{font-weight:800;font-size:17px;color:#8e2f3a}
+.bk-av .rs.core em{font-style:normal;font-size:10px;font-weight:600;color:#8a6a48}
+.bk-av .rn{text-align:center;font-size:16px;color:#5a3d22}.bk-av .rn small{font-size:10px;color:#8a6a48}
+.bk-av .rl{display:flex;gap:3px;justify-content:center;align-items:center}
+.bk-av .rl .mu{color:#a08a70}
+.bk-av .rt2{font-size:13px;color:#5a3d22;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.bk-av .rt2 .dot{position:static;display:inline-block;width:8px;height:8px;border-radius:50%}
+.bk-av .rw{font-size:13px;color:#6b4a2b;white-space:nowrap}
+.bk-av .rt2 .dot.town{background:var(--ux-green)}.bk-av .rt2 .dot.quest{background:#4a78b8}.bk-av .rt2 .dot.injured{background:#c0473a}.bk-av .rt2 .dot.away{background:#9a8a78}
+.bk-av .rw b{color:#5a3d22}.bk-av .rw b.ok{color:#2f7a3a}
