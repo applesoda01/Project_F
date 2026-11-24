@@ -99,7 +99,7 @@
     }
   }
   // 2026-11-23 쉬는 까닭 표시 (규칙 game_core departures 가 a.idle 에 적음 · 그 주에만)
-  const REST_LAB = { mates: '동료 기다림', noq: '맞는 의뢰 없음', fee: '수수료 고민', sleep: '늦잠', rain: '비 와서 쉼', req: '리퀘스트 대기', rest: '휴식 중' };
+  const REST_LAB = { mates: '동료 기다림', noq: '맞는 의뢰 없음', fee: '수수료 고민', sleep: '늦잠 · 눌러서 깨우기', rain: '비 와서 쉼', req: '리퀘스트 대기', rest: '휴식 중' };
   const restLab = a => (a && D.s && a.idleW >= D.s.week - 1 && REST_LAB[a.idle]) || '휴식 중';
   function settle(ac) { // 앉을 자리 → 서성일 자리 → 없으면 나감
     T(ac, 'do', { fn: () => {
@@ -348,6 +348,18 @@
     if (root.Town && root.Town.active) return false;
     const best = D.hitAt(p); if (!best) return false;
     const a = best.a; let text, emo;
+    const G = root.GuildGame;
+    if (G && G.wakeGo && a.idle === 'sleep' && a.idleW >= s.week - 1 && a.wokeW !== s.week) {   // 2026-11-24 늦잠 깨우기 → 바로 출발 (idea_notes 11-23 ⑤)
+      const before = D.snap(s), top = s.log[0], r = G.wakeGo(s, a.id);
+      if (r.ok) {
+        best.doze = false; if (a.tapW !== s.week) { a.tapW = s.week; a.attach = Math.min(100, (a.attach || 0) + 1); }
+        best.hop = D.t; say(best, r.went ? pick(['으앗, 늦잠! 지금 바로 다녀올게요!', '깨워 주셔서 다행이에요, 다녀오겠습니다!', '…으음, 정신 차렸어요. 의뢰 받고 올게요!']) : '일어나긴 했는데… 갈 만한 의뢰가 없네요.', 2.6, null, r.went ? 'qex' : 'sweat');
+        const fresh = []; for (const L of s.log) { if (L === top) break; fresh.push(L); }
+        if (root.UI && root.UI.onLogs) root.UI.onLogs(fresh.reverse());
+        if (r.went && root.Lobby && root.Lobby.Board) D.onWeek(before, s, root.Lobby.Board);
+        if (root.UI && root.UI.hud) root.UI.hud(); return true;
+      }
+    }
     if (best.doze) { best.doze = false; best.lab = restLab(a); [text, emo] = [pick(TAP_WAKE), 'qex']; }
     else if (a.tapW !== s.week) [text, emo] = [Math.random() < 0.5 ? pick(TAP_HI) : tapLine(a, s)[0], 'heart'];
     else [text, emo] = tapLine(a, s);

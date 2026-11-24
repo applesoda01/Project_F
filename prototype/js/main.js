@@ -202,6 +202,7 @@
       });
     };
     const onMsg = e => { const d = e.data; if (!d || d.collegium !== 'title') return; if (d.act === 'touch') { if (window.Snd && window.Snd.unlock) window.Snd.unlock(); return; }   // 2026-11-19 타이틀 안을 처음 누르면 소리를 풀어 타이틀 곡이 나오게
+      if (d.act === 'click') { if (window.Snd && window.Snd.click) window.Snd.click(); return; }   // 2026-11-24 타이틀 메뉴 클릭 소리
       if (d.act === 'opt') { if (!left) { try { fr.blur(); window.focus(); } catch (er) { /* 무시 */ } optPick(() => { try { fr.contentWindow.focus(); } catch (er) { /* 무시 */ } }); } return; }   // 2026-11-24 타이틀 옵션 = 책 창
       leave(d.act === 'load' ? 'load' : 'new', 600); };
     window.addEventListener('message', onMsg);

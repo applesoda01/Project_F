@@ -320,7 +320,8 @@ function drawMenu(){gMenu.innerHTML='';const y=menuY(),gapX=+document.getElement
    el('line',{x1:x-half+12,y1:y+12,x2:x+half-12,y2:y+12,stroke:'#05070c','stroke-width':4,opacity:.45},g);el('line',{x1:x-half+12,y1:y+12,x2:x+half-12,y2:y+12,stroke:'#eef3fb','stroke-width':2,filter:'url(#glow)'},g);}
   g.onmouseenter=()=>{if(!dis&&MSEL!==i){MSEL=i;drawMenu();}};g.onclick=()=>menuPick(i);});}
 function showMenu(v){gMenu.style.display=v?'':'none';if(v)drawMenu();}
-function menuPick(i){const [,act]=MENU[i];if(act==='load'&&!hasSave())return;MSEL=i;
+function tclick(){try{if(window.parent!==window)parent.postMessage({collegium:'title',act:'click'},'*');}catch(e){}}   /* 2026-11-24: 타이틀 메뉴를 누르면 게임과 같은 클릭 소리 (소리는 게임 쪽 Snd.click) */
+function menuPick(i){const [,act]=MENU[i];if(act==='load'&&!hasSave())return;MSEL=i;tclick();
  if(act==='new'||act==='load'){try{parent.postMessage({collegium:'title',act:act},'*');}catch(e){}}   /* 게임 본편: 저장 칸 선택은 게임의 시작 화면이 맡음 */
  else if(act==='opt'){if(window.parent!==window){try{parent.postMessage({collegium:'title',act:'opt'},'*');}catch(e){}}else openOpt();} /* 2026-11-24: 게임 안에서는 옵션도 게임이 책 창으로 띄움 · 종료: 지금은 반응 없음 */}
 function openOpt(){OPT=true;showMenu(false);back.style.display='';gOpt=el('g',{});const w=620,hh=380,x=CX-w/2,y=170;slotFrame(gOpt,x,y,w,hh,true);
@@ -330,7 +331,7 @@ function closeOpt(){OPT=false;if(gOpt)gOpt.remove();gOpt=null;back.style.display
 function titleTo(s1,ms){const s0=+document.getElementById('tsc').value,t0=performance.now();
  (function st(t){const k=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-k,3),s=s0+(s1-s0)*e;titleScale(s);document.getElementById('tsc').value=s.toFixed(2);if(k<1)requestAnimationFrame(st);})(t0);}
 window.__openMenu=()=>{UI='menu';press.style.display='none';MSEL=0;showMenu(true);gMenu.animate([{opacity:0},{opacity:1}],{duration:350});};
-back.onclick=()=>{if(OPT)closeOpt();else closeSlots();};
+back.onclick=()=>{tclick();if(OPT)closeOpt();else closeSlots();};
 addEventListener('keydown',e=>{if(UI!=='menu'||SV!=='0'||OPT)return;
  if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const d=e.key==='ArrowRight'?1:-1;let n=MSEL;for(let t=0;t<4;t++){n=(n+d+4)%4;if(!(MENU[n][1]==='load'&&!hasSave()))break;}MSEL=n;drawMenu();e.preventDefault();}
  else if(e.key==='Enter'){menuPick(MSEL);e.preventDefault();} /* Esc·오른쪽: 메인 메뉴에서는 반응 없음 */});
