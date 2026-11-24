@@ -553,7 +553,7 @@
   }
   // ---------- 책: 리퀘스트 장 (2026-11-16, docs/design/sub_quest_F_v1.md · nomination_v1.md) ----------
   // 왼쪽 = 받은 리퀘스트 목록 + 소문(힌트) / 오른쪽 = 고른 리퀘스트: 사연 · 요구 · 보상 · 돈 내기/납품 또는 지명 창
-  let rqSel = null, rqMsg = '';
+  let rqSel = null, rqMsg = '', rqNomMore = false;   // rqNomMore: 2026-11-24 개선 4 — 1명짜리 리퀘스트에서 조건에 못 미치는 모험가 펼침
   const RQ_TYPE = { hunt: '전투', search: '탐색', deliver: '납품', donate: '돈 내기', install: '설치 요청', town: '마을 건물' }, RQ_GIVER = { adventurer: '모험가', resident: '마을 사람', outsider: '외지인' };
   const RQ_STATE = { queued: '다음 주 출발', active: '원정 중' };   // queued인데 예약자가 아직 밖이면 '모이면 출발' (stTxt)
   const rqMat = (id, n, have) => { const m = MATS[id] || { name: id }; return `<span class="rq-chip ${have != null ? (have < n ? 'need no' : 'need ok') : ''}">${m.icon ? `<img src="assets/${m.icon}" alt="">` : ''}${esc(m.name)} ${have != null ? `<b>${Math.min(have, 999)}</b>/` : '×'}${n}</span>`; };
@@ -664,9 +664,13 @@
       Rr += `<div class="rq-act">${r.state === 'open' ? `<button class="ux-btn primary ${why ? 'no-go' : ''}" data-rqact="send">보내기 <small>(${Gm.reqWaitOf(s, r).length ? '모두 돌아오면 출발' : '다음 주 출발'})</small></button>` : r.state === 'queued' ? `<button class="ux-btn" data-rqact="unsend">출발 취소</button>${Gm.reqWaitOf(s, r).length ? `<span class="rq-note">예약: ${esc(josa(Gm.reqWaitOf(s, r).map(a => a.name).join(' · '), '이', '가'))} 돌아오는 주에 바로 출발해요. 그동안 파티원은 게시판 의뢰를 받지 않아요.</span>` : ''}` : '<span class="rq-note">원정 중입니다. 돌아오면 결과가 나옵니다.</span>'}${(m => `<span class="rq-msg" title="${esc(m)}">${esc(m)}</span>`)(rqMsg || (r.state === 'open' && party.length ? why || '' : ''))}</div>`;
       if (r.state !== 'active') {
         Rr += `<div class="rq-nom ${r.state !== 'open' ? 'off' : ''} ${v.lock ? 'lk' : ''}"><div class="nh"><span>모험가</span><span>${d.req && d.req[0] >= 0 ? Gm.STATS[d.req[0]] : rows[0] && rows[0].stat != null ? '주력' : ''}</span><span>애착</span><span>수락</span><span>섭외비</span><span>상태</span></div>`;
-        for (const x of rows) { const a = s.advs.find(z => z.id === x.id);
+        // 2026-11-24 개선 4 (사용자 18:12 「1명 퀘스트인데 조건에 맞는 모험가만 보여 주는 게 맞는 것 같아」 · 안 A): 남은 자리가 하나이고 파티에 조건을 채운 사람이 없으면(1명짜리 · 2명 이상에서 앞사람이 조건 미달 — 사용자 23:25) 맞는 사람만 보이고 나머지는 접어 둠
+        const one = d.req && d.req[0] !== -1 && !rows.some(x => x.inParty && x.meets) && (Gm.reqPartyRange(s, r.id) || d.party)[1] - party.length === 1, hid = one ? rows.filter(x => !x.meets && !x.inParty) : [], shown = one && !rqNomMore ? rows.filter(x => x.meets || x.inParty) : rows;
+        if (one && !rows.some(x => x.meets || x.inParty)) Rr += `<div class="nom-note">조건(${esc(d.req[0] >= 0 ? Gm.STATS[d.req[0]] : '주력 능력치')} ${d.req[1]} 이상)에 맞는 모험가가 아직 없어요.</div>`;   // 목록이 비었을 때만 (거절 · 다른 일은 줄의 상태 칸에 이미 보임 — 사용자 23:23)
+        for (const x of shown) { const a = s.advs.find(z => z.id === x.id);
           const st = x.inParty ? (x.busy ? `<b class="ok">✔ 예약 (${x.busy})</b>` : '<b class="ok">✔ 함께 감</b>') : x.other ? `<b class="ng" title="「${esc(x.other)}」에 가기로 함">다른 리퀘스트</b>` : x.busy ? `${x.busy} · 예약 가능` : x.refused ? '<b class="ng">✖ 이번 주 거절</b>' : x.back ? '이번 주 귀환' : x.away ? '마을 밖' : '길드에 있음';
           Rr += `<button class="nr ${x.inParty ? 'in' : ''} ${x.refused || (x.other && !x.inParty) ? 'no' : ''}" data-rqnom="${x.id}"><span class="who"><span class="ux-face" style="${faceStyle(a, 34, 178, 17)}"></span><span><b>${esc(x.name)}</b><em>${esc(x.cls)} Lv ${x.lv}${ctTag(a)}</em></span></span><span class="sv">${d.req ? (x.meets ? '<i class="star">★</i>' : '') : ''}${x.stat != null ? x.stat : ''}</span><span>${x.attach}</span><span class="ch ${!x.owner && Gm.cActive(s, a) && Gm.cCallsLeft(s, a) > 0 ? 'ct' : ''}">${x.owner ? '본인' : x.chance + '%'}</span><span class="fee ${!x.inParty && x.fee > s.gold ? 'lack' : ''}">${x.inParty || !x.fee ? '—' : x.fee + 'G'}</span><span class="stx">${st}</span></button>`; }
+        if (hid.length) Rr += `<button class="nr-more" data-rqmore="1">조건에 못 미치는 모험가 ${hid.length}명 ${rqNomMore ? '접기 ▴' : '보기 ▸'}</button>`;
         Rr += '</div>';
       }
     }
@@ -2480,8 +2484,9 @@
       { const kd = e.target.closest('[data-kdet]'); if (kd) { kDet = kDet === kd.dataset.kdet ? null : kd.dataset.kdet; renderPopup(); return; } }
       const kb = e.target.closest('[data-kpr], [data-kpp]'); if (kb) { if (kb.disabled) return; const [n, v] = (kb.dataset.kpr || kb.dataset.kpp).split(':'), d = Gm.DISH.find(x => x.name === n); if (d) { const mu = Gm.menuOf(s, d), r = kb.dataset.kpr ? Gm.setMenu(s, n, v === 'base' ? Gm.dishBase(s, d) : Math.max(1, Math.min(Gm.dishBase(s, d) * 3, mu.price + +v)), null) : Gm.setMenu(s, n, null, mu.prep + +v); if (!r.ok) toast(r.why, 'warn'); hooks.changed(); renderPopup(); } return; } }   // 2026-11-19 결정 37 · 39: 메뉴 가격 · 준비량
       { const c = e.target.closest('[data-ct]'); if (c && popup === 'advs') { if (!c.disabled) contractClick(c.dataset.ct); return; } }
-      const t = e.target.closest('[data-dgnom], [data-dgact], [data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs], [data-rq], [data-rqact], [data-rqnom]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
-      if (t.dataset.rq) { rqSel = t.dataset.rq; rqMsg = ''; renderPopup(); return; }
+      const t = e.target.closest('[data-dgnom], [data-dgact], [data-psel], [data-lf], [data-build], [data-upg], [data-adv], [data-promo], [data-hold], [data-ctab], [data-atab], [data-kmat], [data-kslot], [data-kcook], [data-opensell], [data-ssel], [data-sone], [data-sall], [data-snf], [data-ftab], [data-place], [data-pmove], [data-tsel], [data-tpick], [data-fbs], [data-rq], [data-rqact], [data-rqnom], [data-rqmore]'); if (!t) { const o = document.querySelector('.av-ttl.open'); if (o && !e.target.closest('.av-ttl')) o.classList.remove('open'); return; }
+      if (t.dataset.rq) { rqSel = t.dataset.rq; rqMsg = ''; rqNomMore = false; renderPopup(); return; }
+      if (t.dataset.rqmore) { rqNomMore = !rqNomMore; renderPopup(); return; }
       if (t.dataset.rqact) { rqAct(t.dataset.rqact); return; }
       if (t.dataset.rqnom) { rqNom(+t.dataset.rqnom); return; }
       if (t.dataset.dgnom) { dgNom(+t.dataset.dgnom); return; }   // 2026-11-21 던전 파티 고르기

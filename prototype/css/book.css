@@ -710,6 +710,8 @@
 .bk-rq .rq-nom .ok{color:#3f7a3a}.bk-rq .rq-nom .ng{color:#b5452f}
 #bookMarks [data-ch].alert::after{content:"";position:absolute;right:6px;top:4px;width:12px;height:12px;border-radius:50%;background:#e2503a;border:2px solid #fff3d6}
 #dlg{z-index:10}   /* 2026-11-16: 책이 펼쳐져 있어도 리퀘스트 대사가 보이게 (책 #popBack z-index 9와 같은 층, 뒤에 놓여 위에 그려짐) */
+.bk-rq .rq-nom .nr-more{margin:2px 0 0;padding:7px 6px;border:0;background:none;text-align:left;font:700 14px var(--hf);color:#8a6a44;cursor:pointer}.bk-rq .rq-nom .nr-more:hover{color:var(--ux-ink);background:rgba(255,243,207,.8)}   /* 2026-11-24 개선 4 */
+.bk-rq .nom-note{margin:2px 0 6px;padding:6px 10px;border-radius:6px;background:rgba(255,243,207,.7);font:400 14px/1.4 var(--hf);color:#6a4a2a}
 .bk-rq .rq-nom .fee{color:#7a5032}.bk-rq .rq-nom .fee.lack{color:#b5452f}
 /* 메인 퀘스트(침공) 카드 (2026-11-16) */
 .bk-rq .rq-main{position:relative;margin:0 0 12px;padding:10px 14px 12px;border:2px solid #a8402f;border-radius:10px;background:linear-gradient(#fff6e6,#fbe9cf);color:#4a2f1c;font-size:14px;line-height:1.5}
