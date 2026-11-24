@@ -332,6 +332,7 @@
     }
 
     function gainXp(a, xp) {
+      { const T = cfg.adv.newXp != null ? cfg.adv.newXp : [[4, 3], [8, 2], [12, 1.5]], age = s.week - (a.joined || 0); if (T && !a.home && Array.isArray(T)) { const t = T.find(x => age < x[0]); if (t) xp *= t[1]; } }   // 2026-11-24 신입 경험치 (게임 game_core.js NEWXP와 같음)
       a.xp += xp;
       for (;;) {
         const need = G.lvA * Math.pow(a.lv, G.lvB);

@@ -342,9 +342,12 @@
   function perceived(s, a, p) { const err = Math.max(0, 0.10 - 0.02 * effN(s, '정보실')); return Math.min(1, p * [0.9, 1.0, 1.2][a.risk] + (s.R() * 2 - 1) * err); }
 
   const starMul = (s, a) => s.cfg.adv.starOn !== 0 ? ((s.cfg.adv.starMul || [1, 1.25, 1.5])[(a.star || 1) - 1] || 1) : 1;
+  const NEWXP = [[4, 3], [8, 2], [12, 1.5]];   // 2026-11-24 낮은 레벨 몰림 대책 A안 (30판: 나중 합류 1년 평균 Lv 4.87 → 5.73, 순이익 · 성공률 변화 없음) [임시]
   const catchUp = (s, a) => { const A = s.cfg.adv; if (A.starOn === 0) return 0; const top = Math.max(...s.advs.filter(x => x.alive).map(x => x.lv)); return top - a.lv >= (A.catchGap || 3) ? (A.catchUp != null ? A.catchUp : 0.5) : 0; };   // 따라잡기: 길드 최고 레벨보다 3 이상 낮으면 경험치 +50% [임시]
   function gainXp(s, a, xp) {
-    const G = s.cfg.growth, cu = catchUp(s, a); if (cu) { xp *= 1 + cu; a.cuW = s.week; } a.xp += xp;
+    const G = s.cfg.growth, cu = catchUp(s, a); if (cu) { xp *= 1 + cu; a.cuW = s.week; }
+    { const A = s.cfg.adv, age = s.week - (a.joined || 0), T = A.newXp != null ? A.newXp : NEWXP; if (T && !a.home) { if (Array.isArray(T)) { const t = T.find(x => age < x[0]); if (t) xp *= t[1]; } else if (age < (A.newWeeks || 4)) xp *= T; } }   // 2026-11-24 신입 경험치 (사용자 약한 단계 ①): 합류 뒤 1~4주 ×3 · 5~8주 ×2 · 9~12주 ×1.5, 창립 멤버 제외. 끄려면 adv.newXp = 0
+    a.xp += xp;
     for (;;) {
       const need = G.lvA * Math.pow(a.lv, G.lvB);
       if (a.xp < need) break;
