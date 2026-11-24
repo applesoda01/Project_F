@@ -1,0 +1,5 @@
+base    net 418 (+0±0) done 68.8 succ 89.9 E med 40 E≤48 91% advs 10.7 #1 Lv11.0/36건 #3 Lv7.5/11건 #5 Lv6.5/7건 #8 Lv4.6/3건 나중합류 평균 Lv 5.9 · 4.6건 · 애착 19 dead 0.09 expired 9.1
+stay8   net 465 (+46±18) done 75.5 succ 88.9 E med 39 E≤48 89% advs 11.0 #1 Lv11.0/35건 #3 Lv7.8/13건 #5 Lv6.8/9건 #8 Lv5.2/5건 나중합류 평균 Lv 6.1 · 6.6건 · 애착 25 dead 0.06 expired 5.1
+stay12  net 498 (+79±16) done 78.2 succ 89.6 E med 38 E≤48 98% advs 11.3 #1 Lv10.9/35건 #3 Lv7.7/14건 #5 Lv6.6/9건 #8 Lv5.4/6건 나중합류 평균 Lv 6.1 · 6.9건 · 애착 26 dead 0.07 expired 4.5
+att30   net 464 (+45±14) done 73.2 succ 89.9 E med 39 E≤48 95% advs 11.2 #1 Lv11.0/35건 #3 Lv8.3/13건 #5 Lv7.1/8건 #8 Lv5.2/4건 나중합류 평균 Lv 6.3 · 5.5건 · 애착 51 dead 0.04 expired 7.1
+att50   net 493 (+74±16) done 76.2 succ 89.3 E med 38 E≤48 96% advs 11.2 #1 Lv11.0/35건 #3 Lv8.9/16건 #5 Lv7.5/9건 #8 Lv5.4/4건 나중합류 평균 Lv 6.6 · 6.3건 · 애착 72 dead 0.03 expired 5.7

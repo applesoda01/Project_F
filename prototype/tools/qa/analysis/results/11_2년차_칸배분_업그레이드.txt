@@ -1,0 +1,10 @@
+base       y1 416           y2 844            done2 117 E급비중 51% succ2 90.3 lv96 11.3 gold96 10042 inj 13.1 dead 0.07 expired(y2) 5.3
+filtE      y1 418(+2±5)     y2 896(+52±19)    done2 113 E급비중 80% succ2 88.3 lv96 11.6 gold96 10950 inj 16.1 dead 0.17 expired(y2) 4.0
+filtF      y1 417(+1±6)     y2 794(-50±19)    done2 123 E급비중 24% succ2 92.2 lv96 10.7 gold96 9264 inj 11.4 dead 0.10 expired(y2) 3.3
+filtEonly  y1 421(+5±5)     y2 947(+103±24)   done2 111 E급비중 98% succ2 89.3 lv96 11.8 gold96 11684 inj 15.9 dead 0.20 expired(y2) 1.5
+up_board   y1 422(+6±16)    y2 852(+8±23)     done2 118 E급비중 51% succ2 90.0 lv96 11.2 gold96 9737 inj 13.6 dead 0.12 expired(y2) 4.1
+up_desk    y1 412(-4±13)    y2 828(-17±16)    done2 116 E급비중 51% succ2 90.2 lv96 11.1 gold96 9276 inj 13.7 dead 0.18 expired(y2) 4.9
+up_tavern  y1 442(+26±11)   y2 915(+71±23)    done2 116 E급비중 52% succ2 89.9 lv96 11.2 gold96 10677 inj 13.7 dead 0.08 expired(y2) 5.9
+up_sell    y1 414(-2±13)    y2 843(-1±17)     done2 115 E급비중 51% succ2 90.4 lv96 11.1 gold96 9460 inj 13.8 dead 0.17 expired(y2) 5.3
+fac_mgr    y1 416(+0±2)     y2 841(-3±14)     done2 117 E급비중 52% succ2 90.1 lv96 11.3 gold96 7998 inj 13.8 dead 0.07 expired(y2) 5.2
+fee15E     y1 425(+9±6)     y2 886(+42±18)    done2 114 E급비중 53% succ2 89.6 lv96 11.2 gold96 10628 inj 14.5 dead 0.12 expired(y2) 6.6
