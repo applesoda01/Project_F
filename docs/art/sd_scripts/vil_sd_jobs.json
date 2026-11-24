@@ -1,0 +1,5097 @@
+{
+ "note": "2026-11-25 마을 주민 더미(성인 남녀) SD 캐릭터 — sd_motion_workflow.md 0장 그래프. test=true 4건이 시험분",
+ "design": {
+  "villager_m": "adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor",
+  "villager_f": "adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor"
+ },
+ "jobs": [
+  {
+   "name": "n_villager_m_s601",
+   "test": true,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 601,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s601",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s602",
+   "test": true,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 602,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s602",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s603",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 603,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s603",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s604",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 604,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s604",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s605",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 605,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s605",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s606",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 606,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s606",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s607",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 607,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s607",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s608",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 608,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s608",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s609",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 609,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s609",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s610",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 610,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s610",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s611",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 611,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s611",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s612",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 612,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s612",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s613",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 613,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s613",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s614",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 614,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s614",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s615",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 615,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s615",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s616",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 616,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s616",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s617",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 617,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s617",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s618",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 618,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s618",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s619",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 619,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s619",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s620",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 620,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s620",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s621",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 621,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s621",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s622",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 622,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s622",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s623",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 623,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s623",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_m_s624",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult man villager, short brown hair, brown eyes, cream linen shirt with rolled-up sleeves, brown vest, beige work trousers, brown leather boots, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 624,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_m_s624",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s701",
+   "test": true,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 701,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s701",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s702",
+   "test": true,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 702,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s702",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s703",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 703,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s703",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s704",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 704,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s704",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s705",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 705,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s705",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s706",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 706,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s706",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s707",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 707,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s707",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s708",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 708,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s708",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s709",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 709,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s709",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s710",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 710,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s710",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s711",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 711,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s711",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s712",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 712,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s712",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s713",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 713,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s713",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s714",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 714,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s714",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s715",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 715,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s715",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s716",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 716,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s716",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s717",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 717,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s717",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s718",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 718,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s718",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s719",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 719,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s719",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s720",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 720,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s720",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s721",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 721,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s721",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s722",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 722,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s722",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s723",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 723,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s723",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "n_villager_f_s724",
+   "test": false,
+   "prompt": {
+    "1": {
+     "class_type": "CheckpointLoaderSimple",
+     "inputs": {
+      "ckpt_name": "Illustrious-XL-v1.0.safetensors"
+     }
+    },
+    "2": {
+     "class_type": "LoraLoader",
+     "inputs": {
+      "lora_name": "pcr_hi_l_7200_steps_00001_.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     }
+    },
+    "3": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "character parts sheet, chibi game character assembled on the left, separated body part layers in fixed slots on the right, flat anime style. The character: adult woman villager, chestnut brown hair tied back, brown eyes, light cloth headscarf, plain green dress, white apron, brown shoes, no weapon, no armor. top row: back hair, front hair; second row: back of head, front upper arm, head base, front forearm and hand, back upper arm; third row: back forearm and hand, torso, belt, front thigh, back thigh; bottom row: front shin, back shin, face expression",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "4": {
+     "class_type": "CLIPTextEncode",
+     "inputs": {
+      "text": "lowres, blurry, text, watermark",
+      "clip": [
+       "2",
+       1
+      ]
+     }
+    },
+    "5": {
+     "class_type": "EmptyLatentImage",
+     "inputs": {
+      "width": 1536,
+      "height": 704,
+      "batch_size": 1
+     }
+    },
+    "6": {
+     "class_type": "KSampler",
+     "inputs": {
+      "seed": 724,
+      "steps": 28,
+      "cfg": 6.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 1.0,
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "5",
+       0
+      ]
+     }
+    },
+    "7": {
+     "class_type": "VAEDecode",
+     "inputs": {
+      "samples": [
+       "6",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     }
+    },
+    "8": {
+     "class_type": "SaveImage",
+     "inputs": {
+      "filename_prefix": "pf/vil/n_villager_f_s724",
+      "images": [
+       "7",
+       0
+      ]
+     }
+    }
+   }
+  }
+ ]
+}
