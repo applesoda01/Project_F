@@ -3326,11 +3326,12 @@
 항목별 세부 기획은 2026-11-25부터 이 장 아래에 한 쪽씩 씁니다.</p>
 </blockquote>
 <p><strong>핵심 재미는 경영과 육성 두 기둥입니다.</strong> 지금 프로토타입은 둘 다 플레이어가 손댈 곳이 적고, 손대도 뚫리는 것이 없습니다. V5는 이미 설계에 있던 장치들을 F급 40주 안으로 당겨 와, 「막힘이 먼저 보이고 → 내가 골라서 → 뚫는다」가 되풀이되게 합니다.</p>
-<h2 id="한눈에--15항목"><a class="header" href="#한눈에--15항목">한눈에 — 15항목</a></h2>
+<h2 id="한눈에--16항목"><a class="header" href="#한눈에--16항목">한눈에 — 16항목</a></h2>
 <p><strong>공통</strong></p>
 <div class="table-wrapper"><table><thead><tr><th>#</th><th>항목</th><th>한 줄</th><th>세부 기획</th></tr></thead><tbody>
 <tr><td>01</td><td>원칙 넷</td><td>돈은 모험가에게 있다 · 처음부터 남게 · 불이 먼저 · 자동화보다 선택</td><td>예정</td></tr>
 <tr><td>02</td><td>40주 진행표</td><td>막힘 9칸에 의뢰인 넷과 모험가의 고비를 겹친 한 줄</td><td>예정</td></tr>
+<tr><td>16</td><td>막힘 알림</td><td>지금 있는 막힘(자리 · 짝 · 빈자리)이 생긴 그 순간 토스트로 보임. 진행표의 1 · 2 · 6칸을 먼저 시험</td><td>예정</td></tr>
 </tbody></table>
 </div>
 <p><strong>경영</strong></p>
@@ -3484,6 +3485,15 @@
 <li><strong>정해진 것:</strong> 따로 일을 벌이지 않고 10번과 함께 풉니다.</li>
 <li><strong>세부 기획에서 정할 것:</strong> 지금 틀 10가지를 의뢰인별로 나누는 표</li>
 </ul>
+<h3 id="16-막힘-알림"><a class="header" href="#16-막힘-알림">16. 막힘 알림</a></h3>
+<ul>
+<li><strong>무엇:</strong> 지금 게임에 이미 있는 막힘 세 가지를 생긴 그 순간 토스트 메시지로 보여 줍니다. ① 자리가 없어 못 먹고 떠난 손님 ② 짝이 없어 이번 주를 쉰 모험가 ③ 이번 주 시설의 빈자리.</li>
+<li><strong>왜:</strong> 「불이 먼저」(01)를 가장 싸게 시험하는 방법입니다. 표시만이라 경제 수치를 건드리지 않습니다. 측정값은 테이블 1세트일 때 자리가 다 차는 주 43% · 창립 멤버 첫 12주에 짝이 없어 쉬는 주 22% · 테이블 2세트(4석)에 한 주 식사 1.36명입니다.</li>
+<li><strong>정해진 것 (사용자 2026-11-25 00:24):</strong> 순간순간 그때 보여 줌 — 토스트 메시지. 보일 곳은 로비 말풍선과 월말 결산의 「놓친 것」 칸.</li>
+<li><strong>Claude 제안 (논의 때 확인):</strong> 같은 종류의 토스트는 한 주에 처음 한 번만 — 그 뒤는 세어 두었다가 결산의 「놓친 것」에 합침. 뚫을 것이 아직 없는 ② · ③도 보이되, ②에는 리퀘스트 지명으로 가는 단추를 붙임(개선 3-A 「쉬는 까닭이 눈에 잘 안 들어옴」과 함께 풀림).</li>
+<li><strong>세부 기획에서 정할 것:</strong> 토스트 문구 · 한 주 한도 · ② · ③을 해법(09 수행 · 06 마을 손님)이 생기기 전에도 보일지</li>
+<li><strong>처음 나온 곳:</strong> 개선 · 버그 목록 19번 → 2026-11-25 00:25 V5로 옮김 (사용자 「토스트까지 정해서, v5로 옮겨줘」)</li>
+</ul>
 <h2 id="판단에-쓴-숫자"><a class="header" href="#판단에-쓴-숫자">판단에 쓴 숫자</a></h2>
 <div class="table-wrapper"><table><thead><tr><th>숫자</th><th>값</th></tr></thead><tbody>
 <tr><td>첫해 월 순수입</td><td>418G</td></tr>
@@ -3519,7 +3529,7 @@
 </div>
 <h2 id="이-목록에-없는-것"><a class="header" href="#이-목록에-없는-것">이 목록에 없는 것</a></h2>
 <ul>
-<li><strong>바로 처리할 개선 · 버그</strong> 6건은 <code>docs/todo1124.md</code>에 있습니다: 결산에 모험가 성장 · 진행 중인 의뢰 보이기 · 1명 지명 목록 · 쉬는 까닭 보여 주기 · 지금 있는 막힘을 보이게 · 합류 때와 지금 견주기.</li>
+<li><strong>바로 처리할 개선 · 버그</strong>는 <code>docs/todo1124.md</code>에 있습니다: 결산에 모험가 성장 · 진행 중인 의뢰 보이기 · 1명 지명 목록 · 쉬는 까닭 보여 주기 · 합류 때와 지금 견주기 · 모험가 명부 보기. (「지금 있는 막힘을 보이게」는 16번으로 옮김)</li>
 <li>대화가 흘러간 순서와 측정 전체는 <code>docs/design/경영_설계_대화_2026-11-24.md</code>에 있습니다.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="개발-순서와-완료-기준"><a class="header" href="#개발-순서와-완료-기준">개발 순서와 완료 기준</a></h1>
@@ -4229,7 +4239,7 @@
         </script>
 
     </div>
-    <script type="application/json" id="book-change-data" data-book-root="./" data-from="V4" data-to="V5">{"index.html":{"title":"들어가며","items":[{"before":"기존 「들어가며」 설명","after":"「들어가며」 안내를 보완했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"versions.html":{"title":"버전 이력","items":[{"before":"기존 「버전 이력」 설명","after":"「버전 이력」 안내를 보완했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/index.html":{"title":"V5 경영 · 육성 개편안 — 항목 목록","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 — 15항목 · 무엇이 문제였나 · 원칙 넷 (01) 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]}}</script>
+    <script type="application/json" id="book-change-data" data-book-root="./" data-from="V4" data-to="V5">{"index.html":{"title":"들어가며","items":[{"before":"기존 「들어가며」 설명","after":"「들어가며」 안내를 보완했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"versions.html":{"title":"버전 이력","items":[{"before":"기존 「버전 이력」 설명","after":"「버전 이력」 안내를 보완했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/index.html":{"title":"V5 경영 · 육성 개편안 — 항목 목록","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 — 16항목 · 무엇이 문제였나 · 원칙 넷 (01) 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]}}</script>
 <dialog id="book-change-dialog" aria-labelledby="book-change-title"><button type="button" class="dialog-close" aria-label="변경 요약 닫기">×</button><h2 id="book-change-title">V4 대비 변경 요약</h2><div id="book-change-body"></div><div class="dialog-actions"><a id="book-change-open" href="print.html">문서 열기</a><a href="changes.html">전체 변경 비교표</a></div></dialog><script src="../_book-ui.js"></script>
 </body>
 </html>
