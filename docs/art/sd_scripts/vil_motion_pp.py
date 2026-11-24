@@ -20,6 +20,9 @@ def key(rgb,bg):
         sz=ndimage.sum(m,lab,range(1,nn+1)); keep=np.isin(lab,[i+1 for i,s in enumerate(sz) if s>=300]); keep=ndimage.binary_dilation(keep,iterations=2); al=np.where(keep,al,0)
     R,G,B=col[...,0],col[...,1],col[...,2]; mm=np.minimum(R,B)-G; sp=(mm>35)&(R>110)
     col=np.dstack([np.where(sp,R-mm*0.8,R),G,np.where(sp,B-mm*0.8,B)])
+    # 가장자리 4px 안의 녹색 번짐만 누름 (초록 원피스 같은 안쪽 색은 그대로)
+    inner=ndimage.binary_erosion(al>0.5,iterations=4); edge=(al>0)&~inner
+    mx=np.maximum(col[...,0],col[...,2]); g=np.where(edge,np.minimum(col[...,1],mx*1.02+4),col[...,1]); col[...,1]=g
     return np.clip(col,0,255),al
 def bbox(al):
     ys,xs=np.nonzero(al>0.5); return xs.min(),xs.max(),ys.min(),ys.max()
@@ -52,8 +55,14 @@ else:
         sitdir=sys.argv[4]; ref=np.array(Image.open(os.path.join(sitdir,'f_%02d.png'%34)))[...,3]/255
         rx0,rx1,ry0,ry1=bbox(ref); s=(ry1-ry0+1)/(y1-y0+1)
         M=np.float32([[s,0,(rx0+rx1)/2-s*(x0+x1)/2],[0,s,ry1-s*y1]])
+    # 색 보정: 첫 장의 캐릭터 색을 시작 이미지(REF) 색에 맞춤 (LTX가 녹색 · 어둡게 끌어가는 것)
+    gain=np.ones(3,np.float32)
+    ref=os.environ.get('REF')
+    if ref:
+        r=np.array(Image.open(ref).convert('RGBA')).astype(np.float32); ra=r[...,3]>200
+        fa=al0>0.98; gain=np.clip(r[...,:3][ra].mean(0)/np.maximum(col0[fa].mean(0),1),0.8,1.25); print('gain',gain.round(3))
     for i in sel:
-        col,al=key(fr[i],bg); frames.append(place(col,al,M))
+        col,al=key(fr[i],bg); frames.append(place(np.clip(col*gain,0,255),al,M))
     json.dump({'src':os.path.basename(src),'T':T,'sel':sel,'M':M.tolist()},open(os.path.join(out,'meta.json'),'w'))
 for i,f in enumerate(frames): Image.fromarray(f,'RGBA').save(os.path.join(out,'f_%02d.png'%i))
 cw,ch=W//4,H//4; rows=math.ceil(N/COLS); sh=Image.new('RGBA',(cw*COLS,ch*rows),(0,0,0,0))
