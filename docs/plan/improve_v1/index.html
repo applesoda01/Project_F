@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>개선 기획서 v1 | 이세계 모험가 길드</title><style>
+:root{--g:#8a5a2b;--y:#e0a526;--r:#c0504d;--bg:#f7f5f1;--card:#fff;--ink:#231f1a;--sub:#6a6158;--line:#e3ddd4;--th:#f3ece2;--code:#f1ede7}
+@media (prefers-color-scheme:dark){:root{--g:#d39a5c;--bg:#171512;--card:#201d19;--ink:#ece6de;--sub:#a89e92;--line:#363029;--th:#2a241d;--code:#29241e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;word-break:keep-all}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 80px}
+header.doc{background:var(--card);border:1px solid var(--line);border-left:10px solid var(--g);border-radius:10px;padding:20px 24px;margin-bottom:28px}
+.line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);flex-wrap:wrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:3px solid var(--g);background:var(--card);font-weight:700;color:var(--ink);flex:none}
+.tag{border:1px solid var(--line);border-radius:999px;padding:1px 10px}
+.tag.v{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.tag.money{border-color:var(--r);color:var(--r)}
+h1{font-size:28px;margin:10px 0 4px;line-height:1.3}
+header.doc p{margin:0;color:var(--sub)}
+h2{font-size:20px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--g)}
+h3{font-size:16px;margin:22px 0 6px}
+p,ul,ol{margin:8px 0}ul,ol{padding-left:22px}li{margin:3px 0}
+a{color:var(--g)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:14.5px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--th);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+.note{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);border-radius:6px;padding:10px 14px;color:var(--sub)}
+.warn{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--r);border-radius:6px;padding:10px 14px}
+code,pre{background:var(--code);border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:13.5px}
+code{padding:1px 5px}pre{padding:12px 14px;overflow-x:auto;line-height:1.5}
+nav.foot{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.list a{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0;text-decoration:none;color:var(--ink)}
+.list a:hover{border-color:var(--g)}
+.list b{display:block}.list span.d{color:var(--sub);font-size:14px}
+.list .tag{margin-left:auto;font-size:12px;color:var(--sub);white-space:nowrap}
+.list .tag.ok{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.list .tag.money{border-color:var(--r);color:var(--r)}
+.grp{font-size:13px;color:var(--sub);margin:22px 0 4px;font-weight:700;letter-spacing:.02em}
+.st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12.5px;font-weight:700;white-space:nowrap;border:1px solid var(--line)}
+.st.ok{background:var(--g);border-color:var(--g);color:#fff}.st.wait{color:var(--sub)}.st.ask{background:var(--y);border-color:var(--y);color:#231f1a}.st.money{border-color:var(--r);color:var(--r)}
+@media (max-width:600px){.list a{flex-wrap:wrap}.list .tag{margin-left:48px}h1{font-size:24px}}
+</style></head>
+<body><div class="wrap">
+<header class="doc"><div class="line"><span>이세계 모험가 길드 (가칭)</span><span class="tag v">v1</span><span class="tag">초안 2026-11-24</span></div>
+<h1>개선 기획서 v1</h1><p>정밀 분석(11-24)과 저녁 설계 대화에서 나온 개선안을 기획서 14건으로 나눠, 그 현황과 결정할 것을 이 한 장에서 관리합니다. 각 문서는 목적, 지금 상태(측정), 규칙(안), 수치, 연동, 검증, 미결 사항의 순서로 씁니다. <b>수치는 모두 조정 전 가정값</b>이고, 경제 수치는 선임 검토 전까지 고정이므로 수치가 걸린 안은 「선임 안건」으로 표시합니다.</p>
+<p style="margin-top:8px">함께 보는 문서: <a href="../../reports/게임_정밀분석_2026-11-24.md">게임 정밀 분석</a> (측정 원자료) · <a href="../../design/경영_설계_대화_2026-11-24.md">경영 설계 대화</a> (결론 32개 · 측정 3-1~3-9장) · <a href="../../todo1124.md">todo1124.md</a> (화면 할 일 7건) · <a href="DECISIONS.md">DECISIONS.md</a> (결정 기록)</p></header>
+
+<p class="note">태그 읽는 법: <b>방향 동의</b> = 사용자가 방향에 동의함 · <b>제안</b> = 결정 전 · <span style="color:var(--r)">선임 안건</span> = 경제 수치가 바뀜 · <b>표시만</b> = 규칙과 수치는 그대로 · <b>후순위</b> = 프로토타입(E급 승급, 약 40주) 뒤</p>
+
+<div class="list">
+<div class="grp">틀</div>
+<a href="01_principles_v1.html"><span class="num">01</span><span><b>개선 원칙과 검증 기준</b><span class="d">무엇을 고치고 무엇을 지킬지, 안이 통과하는 숫자 기준</span></span><span class="tag">제안</span></a>
+
+<div class="grp">경영 ① 돈이 지나가는 길목 — 지금 집중하는 것</div>
+<a href="02_restaurant_v1.html"><span class="num">02</span><span><b>식당 개편</b><span class="d">주문할 때 재료 소진, 간판 메뉴, 두 그릇 주문, 한 그릇 값, 재료 조달</span></span><span class="tag ok">방향 동의</span></a>
+<a href="03_maintenance_v1.html"><span class="num">03</span><span><b>정비 시설 (손질)</b><span class="d">출발 전 손질로 그 원정 동안 강화 +1, 길드가 소재를 대는 유료 시설</span></span><span class="tag ok">방향 동의</span></a>
+<a href="04_purchase_v1.html"><span class="num">04</span><span><b>구매 목록 재편</b><span class="d">살 것 15가지를 수입의 곱셈 자리에 다시 붙이기, 부족 신호와 회수 표시</span></span><span class="tag money">선임 안건</span></a>
+<a href="05_subsidy_contract_v1.html"><span class="num">05</span><span><b>보조금 분기 계약</b><span class="d">분기마다 왕국과 계약을 골라 달성하면 보조금 보너스</span></span><span class="tag money">선임 안건</span></a>
+
+<div class="grp">경영 ② 결정의 무게</div>
+<a href="06_departure_approval_v1.html"><span class="num">06</span><span><b>출발 승인</b><span class="d">승산이 낮은 출발에만 뜨는 카드: 보낸다 / 같이 보낸다 / 말린다</span></span><span class="tag">제안</span></a>
+<a href="07_quest_variation_v1.html"><span class="num">07</span><span><b>의뢰 변주와 정보</b><span class="d">같은 의뢰에 붙는 변수 태그, 흐린 승산과 정찰</span></span><span class="tag">제안</span></a>
+<a href="08_decision_cleanup_v1.html"><span class="num">08</span><span><b>결정 정리</b><span class="d">고를 이유가 없는 선택지를 숨기고 묶고 E급 뒤로 미루기</span></span><span class="tag">표시만</span></a>
+<a href="09_monthly_report_v1.html"><span class="num">09</span><span><b>월말 결산 개편</b><span class="d">구매가 번 돈, 모험가의 성장, 내 결정의 결과를 한 장에</span></span><span class="tag">표시만</span></a>
+
+<div class="grp">육성 (경영의 보조)</div>
+<a href="10_newcomer_v1.html"><span class="num">10</span><span><b>신입 정착</b><span class="d">합류 뒤 상주, 명성에 따라 오는 모험가의 레벨, 첫 원정 동행</span></span><span class="tag money">선임 안건</span></a>
+<a href="11_idle_adventurer_v1.html"><span class="num">11</span><span><b>노는 모험가</b><span class="d">왜 노는지 보여 주기, 짜인 파티에 끼어 가기, 시킬 방법</span></span><span class="tag">제안</span></a>
+<a href="12_growth_direction_v1.html"><span class="num">12</span><span><b>의뢰 종류 = 육성 방향</b><span class="d">이미 있는 「종류별 능력치 +2」를 보이게, 종류 칭호</span></span><span class="tag">제안</span></a>
+<a href="13_failure_story_v1.html"><span class="num">13</span><span><b>실패 · 부상의 이야기와 리나 대사</b><span class="d">실패를 「날씨」가 아니라 사연으로, 상황별 대사</span></span><span class="tag">표시만</span></a>
+
+<div class="grp">프로토타입 뒤</div>
+<a href="14_later_ideas_v1.html"><span class="num">14</span><span><b>2년 차 이후 아이디어</b><span class="d">의뢰 영업, 라이벌 길드, 시설 특화, 예고된 위기, 스카우트, 은퇴 등 14가지</span></span><span class="tag">후순위</span></a>
+</div>
+
+<h2>한눈에 보기</h2>
+<div class="tw"><table>
+<tr><th>문서</th><th>겨냥하는 문제 (측정)</th><th>수치 변경</th><th>측정</th><th>크기</th></tr>
+<tr><td>02 식당</td><td>만든 그릇의 61%가 안 팔림 · 한 그릇 22G · 식당의 값 월 +38G</td><td>있음</td><td>묶음 +292 ± 20G (100판)</td><td>중</td></tr>
+<tr><td>03 정비</td><td>모험가 지갑이 금고의 2.4배 · 길드 시설에서 쓰는 돈 16%</td><td>있음</td><td>어림셈만 (+43 → +167G)</td><td>중</td></tr>
+<tr><td>04 구매</td><td>살 것 15가지 중 프로토타입 안에 본전 1개 · 잘 사는 봇 ÷ 안 사는 봇 1.15배</td><td>있음</td><td>부분 (D1 · D6)</td><td>상</td></tr>
+<tr><td>05 계약</td><td>보조금 53~66%가 자동 · 플레이어가 움직이는 수입 11%</td><td>있음</td><td>안 함</td><td>중</td></tr>
+<tr><td>06 출발 승인</td><td>실패를 막을 수단 없음 · 실패의 30%가 주사위(늦장)</td><td>작음</td><td>상한 어림셈 월 +31G</td><td>중</td></tr>
+<tr><td>07 변주</td><td>F급 10종을 24주에 다 봄 · 「96%」가 실제 93.4%</td><td>작음</td><td>안 함</td><td>중</td></tr>
+<tr><td>08 정리</td><td>결정 13가지 중 7가지가 ±20G 안쪽</td><td>없음</td><td>있음 (1-1 · 1-3)</td><td>하</td></tr>
+<tr><td>09 결산</td><td>돌아온 돈 · 성장이 보이는 곳이 없음</td><td>없음</td><td>—</td><td>하</td></tr>
+<tr><td>10 신입</td><td>신입이 합류 뒤 12주의 61% 부재 · 모두 Lv 1</td><td>있음</td><td>상주 12주 +79 ± 16G</td><td>중</td></tr>
+<tr><td>11 노는 사람</td><td>길드에 있는데 못 나간 주 22% (짝 없음)</td><td>안에 따라</td><td>원인만</td><td>하~중</td></tr>
+<tr><td>12 육성 방향</td><td>규칙은 있는데 보이지 않음</td><td>없음 ~ 작음</td><td>—</td><td>하</td></tr>
+<tr><td>13 이야기</td><td>리나 배웅 · 귀환 대사가 각 한 줄 · 첫해 출발 약 79번</td><td>없음</td><td>—</td><td>하</td></tr>
+</table></div>
+
+<h2>제안 도입 순서 (초안)</h2>
+<p class="note">Claude가 처음 제안하는 순서입니다. 실제 순서는 결정되는 대로 <code>DECISIONS.md</code>와 아래 「진행 현황」에 적습니다.</p>
+<ol>
+<li><b>수치를 바꾸지 않는 것</b> — 09 결산, 08 결정 정리, 11 노는 모험가(A안), 12 육성 방향(표시), 13 대사. 시안 → 확인 → 반영. 선임 검토와 상관없이 진행할 수 있음</li>
+<li><b>지금 집중하는 것</b> — 02 식당, 03 정비. 규칙 시안과 30판 훑어보기까지 하고, 수치는 선임 안건으로 묶어 올림</li>
+<li><b>선임 검토 뒤</b> — 04 구매 목록, 05 보조금 계약, 10 신입 정착 (모두 수입 구조가 바뀜)</li>
+<li><b>결정의 무게</b> — 06 출발 승인 → 07 의뢰 변주 (06이 07의 판단 거리를 씀)</li>
+<li><b>프로토타입 뒤</b> — 14</li>
+</ol>
+
+<h2>진행 현황</h2>
+<div class="tw"><table>
+<tr><th>순서</th><th>문서</th><th>상태</th><th>비고</th></tr>
+<tr><td>1</td><td>09 · 08 · 11A · 12 · 13</td><td><span class="st wait">대기</span></td><td>기획서 피드백 뒤 시안부터</td></tr>
+<tr><td>2</td><td>02 식당 · 03 정비</td><td><span class="st ask">미결 정리 중</span></td><td>방향은 사용자 동의(11-24 18:28 · 18:41 · 18:51 · 18:54 · 18:55)</td></tr>
+<tr><td>3</td><td>04 · 05 · 10</td><td><span class="st money">선임 안건</span></td><td>회사 공유 반응(11-24 17:16) 뒤</td></tr>
+<tr><td>4</td><td>06 · 07</td><td><span class="st wait">대기</span></td><td></td></tr>
+<tr><td>5</td><td>14</td><td><span class="st wait">후순위</span></td><td></td></tr>
+</table></div>
+
+<h2>검토 중인 제안 (결정 대기)</h2>
+<p class="note">기획자의 결정을 기다리는 큰 갈림길입니다. 결정되면 <code>DECISIONS.md</code>에 적고 해당 문서에 반영한 뒤 이 표에서 뺍니다.</p>
+<div class="tw"><table>
+<tr><th>#</th><th>갈림길</th><th>선택지</th><th>Claude 추천</th><th>문서</th></tr>
+<tr><td>1</td><td>식당의 역할</td><td>① 단골을 만드는 곳 (먹으면 2주 꼭 옴, 월 +82G) ② 원정의 성공 · 보상에 닿는 곳 ③ 「모험가 지갑이 지나가는 곳」 — 파는 것으로 버는 곳</td><td>③을 바탕으로 ①을 덤으로. 측정상 값이 가장 큰 손잡이는 한 그릇 값(+105G)과 묶음(+254G)</td><td>02</td></tr>
+<tr><td>2</td><td>투자 회수 기준</td><td>구매마다 12주 / 24주 / 정하지 않음</td><td>24주 안 [임시] — 프로토타입(약 40주) 안에 둘째 구매까지 본전이 보이게</td><td>01 · 04</td></tr>
+<tr><td>3</td><td>정비 시설의 효과</td><td>강화 +1이 ① 전투 공격 ② 방어 · 부상 ③ 성공률 전반</td><td>② — 식사(공격 · 비전투 성공)와 역할이 겹치지 않음</td><td>03</td></tr>
+<tr><td>4</td><td>보조금</td><td>① 지금대로 ② 분기 계약 ③ 수수료에 합침</td><td>②</td><td>05</td></tr>
+<tr><td>5</td><td>플레이어의 개입 선</td><td>모험가의 출발에 손댈 수 있는가 (설계 원칙 「모험가는 스스로 판단」)</td><td>승산이 낮은 출발에만 「승인」으로. 의뢰를 직접 배정하지는 않음</td><td>06 · 11</td></tr>
+</table></div>
+
+<h2>문서 사이의 관계</h2>
+<div class="tw"><table>
+<tr><th>묶음</th><th>문서</th><th>역할</th></tr>
+<tr><td>틀</td><td>01</td><td>잣대 — 결정의 무게, 투자 회수, 측정 순서</td></tr>
+<tr><td>돈이 들어오는 길</td><td>02 식당, 03 정비, 04 구매, 05 계약</td><td>모험가의 지갑과 왕국의 보조금이 「내가 지은 것 · 내가 고른 것」을 지나가게</td></tr>
+<tr><td>결정</td><td>06 출발 승인, 07 변주, 08 정리</td><td>결정의 수를 줄이고 하나하나에 「준비 → 판정 → 값」을</td></tr>
+<tr><td>보이기</td><td>09 결산, 13 이야기</td><td>번 돈 · 큰 사람 · 내 결정의 결과가 눈에 들어오게</td></tr>
+<tr><td>사람</td><td>10 신입, 11 노는 사람, 12 육성 방향</td><td>첫해 수입을 묶는 「오는 사람 수와 출석」을 풀기</td></tr>
+</table></div>
+<pre>
+ 받아 오는 의뢰 ── 05 계약 · 07 변주 (무엇을 받을까)
+        │
+ 누구를 어떻게 보낼까 ── 06 승인 · 03 손질 · 02 식사 · 10 신입 · 11 노는 사람
+        │                         └ 모험가의 지갑이 길드를 지나감 → 금고
+ 누가 어떻게 크나 ── 12 육성 방향 · 13 사연
+        │
+ 무엇을 지을까 (모자란 금고로 순서 고르기) ── 04 구매 ──┐
+        └──────────────────────────────────────────────┘  09 결산에서 돌아온 돈을 봄
+</pre>
+
+<h2>기획 밖 할 일 (이 문서에서 다루지 않음)</h2>
+<p>정밀 분석 6장 A의 기술 · 화면 할 일은 기획 결정이 필요 없어 따로 처리합니다: A3 작은 화면 글자 · A4 저장에서 수치 표 떼기 · A5 올리기 전 점검 · A6 측정 봇 보정 · A7 멈춘 사본 정리. 화면 할 일 2 · 4번(진행 중인 의뢰 보이기 · 1명 지명 목록)은 <a href="../../todo1124.md">todo1124.md</a>에서 관리합니다.</p>
+
+<h2>미결 사항 결정 방식</h2>
+<ul>
+<li>각 문서 끝의 <b>미결 사항</b>은 이 문서에서 확정하지 않습니다.</li>
+<li>순서: ① Claude가 미결 사항을 코드 현황과 함께 정리 → ② 항목마다 선택지 2~3개, 추천안, 근거(구현 비용 · 플레이 영향 · 측정값) → ③ 기획자가 결정하거나 다른 안 제시 → ④ <code>DECISIONS.md</code>에 기록하고 문서 본문 수정 → ⑤ 구현.</li>
+<li>측정은 「어림셈 → 30판 훑어보기 → 100판 확인」 순서로 하고, <b>시뮬레이션은 돌리기 전에 먼저 여쭙습니다</b> (11-24 18:36).</li>
+<li>경제 수치가 바뀌는 안은 선임 검토 안건으로 모아 한 번에 올립니다.</li>
+</ul>
+
+<h2>수정 기록</h2>
+<div class="tw"><table>
+<tr><th>날짜</th><th>내용</th></tr>
+<tr><td>2026-11-24</td><td>v1 초안 작성 — 정밀 분석 · 경영 설계 대화(결론 32개) · todo1124 · Claude 제안(M1~M11 · G1~G10 · C1~C2)을 14건으로 정리</td></tr>
+</table></div>
+</div></body></html>

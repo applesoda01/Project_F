@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>03 정비 시설 v1 | 이세계 모험가 길드</title><style>
+:root{--g:#8a5a2b;--y:#e0a526;--r:#c0504d;--bg:#f7f5f1;--card:#fff;--ink:#231f1a;--sub:#6a6158;--line:#e3ddd4;--th:#f3ece2;--code:#f1ede7}
+@media (prefers-color-scheme:dark){:root{--g:#d39a5c;--bg:#171512;--card:#201d19;--ink:#ece6de;--sub:#a89e92;--line:#363029;--th:#2a241d;--code:#29241e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;word-break:keep-all}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 80px}
+header.doc{background:var(--card);border:1px solid var(--line);border-left:10px solid var(--g);border-radius:10px;padding:20px 24px;margin-bottom:28px}
+.line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);flex-wrap:wrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:3px solid var(--g);background:var(--card);font-weight:700;color:var(--ink);flex:none}
+.tag{border:1px solid var(--line);border-radius:999px;padding:1px 10px}
+.tag.v{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.tag.money{border-color:var(--r);color:var(--r)}
+h1{font-size:28px;margin:10px 0 4px;line-height:1.3}
+header.doc p{margin:0;color:var(--sub)}
+h2{font-size:20px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--g)}
+h3{font-size:16px;margin:22px 0 6px}
+p,ul,ol{margin:8px 0}ul,ol{padding-left:22px}li{margin:3px 0}
+a{color:var(--g)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:14.5px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--th);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+.note{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);border-radius:6px;padding:10px 14px;color:var(--sub)}
+.warn{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--r);border-radius:6px;padding:10px 14px}
+code,pre{background:var(--code);border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:13.5px}
+code{padding:1px 5px}pre{padding:12px 14px;overflow-x:auto;line-height:1.5}
+nav.foot{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.list a{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0;text-decoration:none;color:var(--ink)}
+.list a:hover{border-color:var(--g)}
+.list b{display:block}.list span.d{color:var(--sub);font-size:14px}
+.list .tag{margin-left:auto;font-size:12px;color:var(--sub);white-space:nowrap}
+.list .tag.ok{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.list .tag.money{border-color:var(--r);color:var(--r)}
+.grp{font-size:13px;color:var(--sub);margin:22px 0 4px;font-weight:700;letter-spacing:.02em}
+.st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12.5px;font-weight:700;white-space:nowrap;border:1px solid var(--line)}
+.st.ok{background:var(--g);border-color:var(--g);color:#fff}.st.wait{color:var(--sub)}.st.ask{background:var(--y);border-color:var(--y);color:#231f1a}.st.money{border-color:var(--r);color:var(--r)}
+@media (max-width:600px){.list a{flex-wrap:wrap}.list .tag{margin-left:48px}h1{font-size:24px}}
+</style></head>
+<body><div class="wrap">
+<header class="doc"><div class="line"><span class="num">03</span><span>이세계 모험가 길드 · 개선 기획서</span><span class="tag v">v1</span><span class="tag">방향 동의 (사용자 안)</span><span class="tag money">수치: 선임 안건</span><span class="tag">초안 2026-11-24</span></div>
+<h1>정비 시설 (손질)</h1><p>출발 전 손질로 그 원정 동안 강화 +1, 길드가 소재를 대는 유료 시설</p></header>
+
+<h2>1. 목적</h2>
+<ul>
+<li>원정이 지나가는 길목에 <b>모험가가 돈을 내는 두 번째 자리</b>를 둔다 (식당 다음). 모험가 지갑(48주 합계 5,794G)이 길드를 지나가게.</li>
+<li>놀고 있는 소재에 쓸 곳을 준다. 소재가 요리 · 납품 · 판매 · 손질 사이에서 다투게 되어 돈 고민의 조건 ②(쓸 곳이 다툰다)가 켜진다.</li>
+<li>사용자 안 (11-24 18:51 · 18:54 · 18:55).</li>
+</ul>
+
+<h2>2. 정해진 것 (사용자)</h2>
+<div class="tw"><table>
+<tr><th>항목</th><th>내용</th><th>언제</th></tr>
+<tr><td>성격</td><td>사고파는 곳이 아니라 <b>정비를 받는 곳</b>. 길드 안에 무기점 같은 자리</td><td>18:51</td></tr>
+<tr><td>효과</td><td>정비를 받고 떠나면 <b>그 원정 동안 강화 +1</b></td><td>18:51</td></tr>
+<tr><td>소재</td><td>1회마다 등급에 맞는 소재를 소모. <b>길드가 소재를 댐</b></td><td>18:51 · 18:54</td></tr>
+<tr><td>돈</td><td><b>유료</b> (모험가가 정비료를 냄). 운영비는 <b>고정 지출</b></td><td>18:54</td></tr>
+<tr><td>원칙</td><td><b>처음부터 남는 돈이 있게</b>. 「처음엔 적자」 곡선은 쓰지 않음</td><td>18:55</td></tr>
+</table></div>
+
+<h2>3. 규칙 (안)</h2>
+<h3>3-1. 이용</h3>
+<ul>
+<li>의뢰를 떠나는 <b>파티당 1회</b> 손질을 받을 수 있습니다 (모험가 1명당이 아님). 한 달 출발 약 6.6팀, 소재 매입 약 13개라 1명당이면 소재가 모자랍니다.</li>
+<li>받을지는 모험가가 정합니다 (P7): 파티 대표의 씀씀이 성향 절약 40 · 보통 70 · 낭비 90% [임시], 그리고 파티 지갑 합계 ≥ 정비료.</li>
+<li>정비료는 파티원이 나눠 냅니다. 길드는 정비료 − 소재값을 법니다.</li>
+<li>창고에 맞는 소재가 없으면 손질하지 못하고, 기록창과 결산에 「소재가 없어 손질 못 함 ○번」으로 남깁니다 (부족 신호, <a href="04_purchase_v1.html">04</a>).</li>
+</ul>
+<h3>3-2. 강화 +1의 뜻 — 식사와 역할 나누기</h3>
+<div class="tw"><table>
+<tr><th>안</th><th>내용</th><th>장점</th><th>걸리는 점</th></tr>
+<tr><td><b>A (Claude 추천)</b></td><td>방어 · 부상: 그 원정에서 받는 피해 −1 [임시], 실패해도 부상 확률 절반</td><td>식사(공격 · 비전투 성공)와 겹치지 않음. 「부상 3.3회 / 해」라는 보이는 결과</td><td>수입 효과는 작음 → 돈은 정비료에서 나와야 함</td></tr>
+<tr><td>B</td><td>무기 강화: 전투 공격 +1단계</td><td>「강화」라는 말에 가장 맞음</td><td>식사 버프와 같은 자리. 버프는 돈이 안 됨(3배 +6G)</td></tr>
+<tr><td>C</td><td>성공률 전반 +n%p</td><td>단순함</td><td>막을 수 있는 실패의 상한이 월 +31G (대화 1장 30번)</td></tr>
+</table></div>
+<ul><li>어느 안이든 <b>효과는 덤이고, 시설의 값은 정비료에서 나옵니다</b>. 효과만으로는 돈이 되지 않음을 측정이 보여 줍니다.</li></ul>
+<h3>3-3. 돈 (어림셈 · 측정 안 함)</h3>
+<div class="tw"><table>
+<tr><th>값</th><th>[임시]</th></tr>
+<tr><td>짓는 값</td><td>500G (테이블 2세트 + 1, 첫 분기 안에 지을 수 있는 크기)</td></tr>
+<tr><td>정비료</td><td>F급 의뢰 30G · E급 45G</td></tr>
+<tr><td>소재</td><td>등급에 맞는 소재 1개 (F급 판매가 6G)</td></tr>
+<tr><td>운영비</td><td>월 30G (고정 지출)</td></tr>
+<tr><td>어림 결과</td><td>1~12주 월 +43G → 37~48주 +167G. 본전 약 12주</td></tr>
+</table></div>
+
+<h2>4. 화면</h2>
+<ul>
+<li>로비: 프로토타입 1층에 자리 하나 (집무실 · 관리소처럼 「지으면 열림」). 손질 중인 모험가는 작업대 앞에 잠깐 서고, 끝나면 「+30G」가 떠오름.</li>
+<li>시설 팝업: 이번 달 이용 · 정비료 수입 · 쓴 소재 · 운영비 · 남은 돈, 지금까지 합계.</li>
+<li>이름: 마을 대장간(장비 구매 · 영구)과 헷갈리지 않게 「정비 · 손질」 계열로.</li>
+</ul>
+
+<h2>5. 연동</h2>
+<ul>
+<li><a href="02_restaurant_v1.html">02 식당</a>: 같은 틀(떠나기 전 지갑을 엶). 운영비 틀을 식당에도 쓸지는 미결.</li>
+<li>소재: 요리 재료 · 리퀘스트 납품 · 판매 창구 · 손질이 같은 창고를 씀. 「소재 매입가」 결정(<a href="08_decision_cleanup_v1.html">08</a>에서 E급 뒤로)과 함께 봄.</li>
+<li>마을 대장간(<code>proposal_smithy_v1.md</code>) · 장비 3칸과 구분: 대장간 = 영구 장비, 손질 = 이번 원정만.</li>
+<li><a href="05_subsidy_contract_v1.html">05 계약</a>: 「부상 없이 한 분기」 같은 계약과 이어짐 (A안일 때).</li>
+</ul>
+
+<h2>6. 검증</h2>
+<ul>
+<li>손질 시설의 값(안 지은 봇 대비) 첫해 월 +100G 이상, 본전 24주 안 [임시].</li>
+<li>첫 12주에도 월 손익이 + (P2).</li>
+<li>소재 다툼이 실제로 생기는가: 요리 · 납품을 하면서 손질을 못 한 횟수가 0도 전부도 아닐 것.</li>
+</ul>
+
+<h2>7. 미결 사항</h2>
+<ul>
+<li><b>강화 +1의 뜻</b> (3-2 A · B · C) — 목록의 갈림길 3번</li>
+<li>정비료 · 운영비 · 짓는 값, 손익분기 이용 횟수</li>
+<li>운영비를 「11-05에 뺀 유지비」와 어떻게 다르게 보여 줄지 (대화 Q1 · 「내가 지은 시설에만 붙는」 고정비)</li>
+<li>휴업 가능 여부 (손님이 적은 주에 운영비를 피할 수 있는가)</li>
+<li>해금 시점: 처음부터 / 리퀘스트 보상 / 몇 주 뒤</li>
+<li>소재 등급이 안 맞을 때 (E급 의뢰인데 F급 소재뿐): 손질 못 함 / 효과 절반</li>
+<li>식당에도 같은 운영비 틀을 쓸지</li>
+</ul>
+
+<nav class="foot"><a href="02_restaurant_v1.html">← 02 식당 개편</a><a href="index.html">목록</a><a href="04_purchase_v1.html">04 구매 목록 재편 →</a></nav>
+</div></body></html>

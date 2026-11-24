@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>06 출발 승인 v1 | 이세계 모험가 길드</title><style>
+:root{--g:#8a5a2b;--y:#e0a526;--r:#c0504d;--bg:#f7f5f1;--card:#fff;--ink:#231f1a;--sub:#6a6158;--line:#e3ddd4;--th:#f3ece2;--code:#f1ede7}
+@media (prefers-color-scheme:dark){:root{--g:#d39a5c;--bg:#171512;--card:#201d19;--ink:#ece6de;--sub:#a89e92;--line:#363029;--th:#2a241d;--code:#29241e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;word-break:keep-all}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 80px}
+header.doc{background:var(--card);border:1px solid var(--line);border-left:10px solid var(--g);border-radius:10px;padding:20px 24px;margin-bottom:28px}
+.line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);flex-wrap:wrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:3px solid var(--g);background:var(--card);font-weight:700;color:var(--ink);flex:none}
+.tag{border:1px solid var(--line);border-radius:999px;padding:1px 10px}
+.tag.v{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.tag.money{border-color:var(--r);color:var(--r)}
+h1{font-size:28px;margin:10px 0 4px;line-height:1.3}
+header.doc p{margin:0;color:var(--sub)}
+h2{font-size:20px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--g)}
+h3{font-size:16px;margin:22px 0 6px}
+p,ul,ol{margin:8px 0}ul,ol{padding-left:22px}li{margin:3px 0}
+a{color:var(--g)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:14.5px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--th);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+.note{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);border-radius:6px;padding:10px 14px;color:var(--sub)}
+.warn{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--r);border-radius:6px;padding:10px 14px}
+code,pre{background:var(--code);border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:13.5px}
+code{padding:1px 5px}pre{padding:12px 14px;overflow-x:auto;line-height:1.5}
+nav.foot{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.list a{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0;text-decoration:none;color:var(--ink)}
+.list a:hover{border-color:var(--g)}
+.list b{display:block}.list span.d{color:var(--sub);font-size:14px}
+.list .tag{margin-left:auto;font-size:12px;color:var(--sub);white-space:nowrap}
+.list .tag.ok{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.list .tag.money{border-color:var(--r);color:var(--r)}
+.grp{font-size:13px;color:var(--sub);margin:22px 0 4px;font-weight:700;letter-spacing:.02em}
+.st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12.5px;font-weight:700;white-space:nowrap;border:1px solid var(--line)}
+.st.ok{background:var(--g);border-color:var(--g);color:#fff}.st.wait{color:var(--sub)}.st.ask{background:var(--y);border-color:var(--y);color:#231f1a}.st.money{border-color:var(--r);color:var(--r)}
+@media (max-width:600px){.list a{flex-wrap:wrap}.list .tag{margin-left:48px}h1{font-size:24px}}
+</style></head>
+<body><div class="wrap">
+<header class="doc"><div class="line"><span class="num">06</span><span>이세계 모험가 길드 · 개선 기획서</span><span class="tag v">v1</span><span class="tag">제안</span><span class="tag">수치: 작음</span><span class="tag">초안 2026-11-24</span></div>
+<h1>출발 승인</h1><p>승산이 낮은 출발에만 뜨는 카드: 보낸다 / 같이 보낸다 / 말린다</p></header>
+
+<h2>1. 목적</h2>
+<ul>
+<li>실패를 「날씨」가 아니라 <b>내 결정의 결과</b>로 만든다. 지금은 실패의 30%가 주사위(늦장)이고 나머지도 미리 막을 수단이 없다 (보고서 1-5).</li>
+<li>메인 퀘스트에서 이미 작동하는 「준비 → 판정 → 값」을 평소 플레이로 옮긴다.</li>
+<li>설계서 핵심 루프의 「승인 · 지명 결정」을 채운다. 모험가가 고른 것을 마스터가 승인하는 것이라 「모험가는 스스로 판단」(P7)을 넘지 않는다.</li>
+</ul>
+
+<h2>2. 지금</h2>
+<ul>
+<li>모험가가 의뢰를 고르고 혼자 가거나 길드에 있는 동료를 모아 떠남. 플레이어는 볼 수만 있음.</li>
+<li>예상 성공률 80% 미만 출발은 72주에 약 6건, 90% 미만은 약 22건 (보고서 6장 B1).</li>
+<li>예상과 실제의 어긋남: 예상 96% 이상이 실제 93.4%, 60~70%가 55.5% (보고서 1-5).</li>
+<li>돈으로 본 상한: 막을 수 있는 실패 약 5.3건 × 약 70G = 월 +31G (대화 5-1). <b>카드만으로는 판별 편차(75G)를 넘지 못합니다.</b> 판돈은 05 계약 · 10 신입과 묶여서 생깁니다.</li>
+</ul>
+
+<h2>3. 규칙 (안)</h2>
+<h3>3-1. 카드가 뜨는 때</h3>
+<ul>
+<li>모험가(또는 파티)가 의뢰를 맡았는데 <b>예상 성공률이 85% 미만</b> [임시]일 때, 출발 직전에 카드가 뜹니다. 목표 빈도는 한 달 1~2장.</li>
+<li>보호 구간(튜토리얼 뒤 12주)에는 뜨지 않습니다 (P8).</li>
+<li>자동 진행 중에도 잠깐 멈춥니다. 「다음부터 이 모험가는 알아서」 같은 끄기는 두지 않음 (빈도가 낮으므로).</li>
+</ul>
+<h3>3-2. 세 가지 선택</h3>
+<div class="tw"><table>
+<tr><th>선택</th><th>결과 [임시]</th><th>값</th></tr>
+<tr><td><b>보낸다</b></td><td>그대로 출발. 성공하면 「마스터가 믿어 줬다」 애착 +2</td><td>실패 위험을 그대로 짐</td></tr>
+<tr><td><b>같이 보낸다</b></td><td>길드에 있는 모험가 1명을 골라 붙임(파티 상한 안). 예상 성공률이 바로 다시 계산되어 카드에 보임</td><td>보수가 나뉨 · 붙인 사람은 이번 주에 다른 의뢰를 못 맡음. 신입을 붙이면 경험치 (<a href="10_newcomer_v1.html">10</a>)</td></tr>
+<tr><td><b>말린다</b></td><td>이번 주 출발 취소. 의뢰는 게시판에 남음 (기한은 흐름)</td><td>그 모험가 애착 −1 · 의뢰가 만료될 수 있음</td></tr>
+</table></div>
+<h3>3-3. 카드에 보이는 것</h3>
+<ul>
+<li>의뢰 · 모험가 초상 · 승산 칩(리퀘스트와 같은 「여유 · 보통 · 팽팽 · 위험」) · 이번 주 길드에 있는 모험가.</li>
+<li><b>성향 한 줄</b>: 「브루노는 요즘 들떠 있어요」처럼 늦장 성향을 말로 보여 줌 (제미나이 의견: 확률 계산기 놀이 방지). 새 수치는 만들지 않고 이미 있는 성향 · 늦장 규칙을 읽어 씀 (P10).</li>
+<li>의뢰 변주 태그(<a href="07_quest_variation_v1.html">07</a>)가 들어오면 「야간」 같은 태그가 판단 거리가 됨.</li>
+</ul>
+<h3>3-4. 돈이 걸리게 하는 방법</h3>
+<ul>
+<li>05 신뢰 계약(성공률 90% 이상)일 때 말리거나 같이 보내는 것이 보너스를 지킴.</li>
+<li>의뢰 실패 시 의뢰인 신뢰도 −2는 그대로. 위약금 같은 새 벌점은 두지 않음.</li>
+</ul>
+
+<h2>4. 화면</h2>
+<ul>
+<li>사건 카드(중재, <code>proposal_master_mediation_v1.md</code>)와 같은 크림색 카드 틀. 단추 3개, 「같이 보낸다」는 누르면 초상 줄이 펼쳐짐.</li>
+<li>결과는 귀환 보고에 한 줄: 「마스터 말씀대로 토빈과 같이 가길 잘했어요」 / 「말려 주셔서 다행이었어요」(같은 의뢰를 다른 사람이 실패했을 때).</li>
+</ul>
+
+<h2>5. 연동</h2>
+<ul>
+<li>todo1124 3번 C안(플레이어가 의뢰를 권함)과 한 묶음 — 이 카드가 「시킬 방법」의 첫 단계 (<a href="11_idle_adventurer_v1.html">11</a>).</li>
+<li>중재 사건 카드와 틀을 같이 씀. 다른 점은 걸린 것의 크기(애착 ±2~3 대 실패 · 부상 · 보상).</li>
+<li>예전의 「출발 전 작전 고르기」와 달리 모든 출발이 아니라 승산이 낮은 출발에만.</li>
+</ul>
+
+<h2>6. 검증</h2>
+<ul>
+<li>늘 보냄 · 늘 말림 · 늘 같이 보냄 · 잘 고르는 봇 넷을 짝 비교. 05 계약이 있을 때와 없을 때 각각.</li>
+<li>카드 빈도: 한 판 첫해 6~15장 안 [임시].</li>
+<li>「잘 고르는 봇」 대 「늘 보냄」 차이가 75G에 못 미치면, 05와 묶지 않은 단독 도입은 하지 않음.</li>
+</ul>
+
+<h2>7. 미결 사항</h2>
+<ul>
+<li><b>플레이어의 개입 선</b> (목록 갈림길 5번)</li>
+<li>카드 문턱 (85% / 80% / 90%)</li>
+<li>말린다의 값 (애착 −1이 맞는지, 값이 없어도 되는지)</li>
+<li>같이 보낸다의 보수 나눔 · 붙인 사람이 거절할 수 있는지 (지명처럼 수락 확률)</li>
+<li>늦장 성향을 카드에 보여 줄지, 보여 주면 얼마나 직접적으로</li>
+<li>파티(2명 이상)가 출발할 때도 같은 카드인지</li>
+</ul>
+
+<nav class="foot"><a href="05_subsidy_contract_v1.html">← 05 보조금 분기 계약</a><a href="index.html">목록</a><a href="07_quest_variation_v1.html">07 의뢰 변주와 정보 →</a></nav>
+</div></body></html>

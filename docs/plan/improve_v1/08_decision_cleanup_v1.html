@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>08 결정 정리 v1 | 이세계 모험가 길드</title><style>
+:root{--g:#8a5a2b;--y:#e0a526;--r:#c0504d;--bg:#f7f5f1;--card:#fff;--ink:#231f1a;--sub:#6a6158;--line:#e3ddd4;--th:#f3ece2;--code:#f1ede7}
+@media (prefers-color-scheme:dark){:root{--g:#d39a5c;--bg:#171512;--card:#201d19;--ink:#ece6de;--sub:#a89e92;--line:#363029;--th:#2a241d;--code:#29241e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;word-break:keep-all}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 80px}
+header.doc{background:var(--card);border:1px solid var(--line);border-left:10px solid var(--g);border-radius:10px;padding:20px 24px;margin-bottom:28px}
+.line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);flex-wrap:wrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:3px solid var(--g);background:var(--card);font-weight:700;color:var(--ink);flex:none}
+.tag{border:1px solid var(--line);border-radius:999px;padding:1px 10px}
+.tag.v{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.tag.money{border-color:var(--r);color:var(--r)}
+h1{font-size:28px;margin:10px 0 4px;line-height:1.3}
+header.doc p{margin:0;color:var(--sub)}
+h2{font-size:20px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--g)}
+h3{font-size:16px;margin:22px 0 6px}
+p,ul,ol{margin:8px 0}ul,ol{padding-left:22px}li{margin:3px 0}
+a{color:var(--g)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:14.5px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--th);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+.note{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);border-radius:6px;padding:10px 14px;color:var(--sub)}
+.warn{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--r);border-radius:6px;padding:10px 14px}
+code,pre{background:var(--code);border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:13.5px}
+code{padding:1px 5px}pre{padding:12px 14px;overflow-x:auto;line-height:1.5}
+nav.foot{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.list a{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0;text-decoration:none;color:var(--ink)}
+.list a:hover{border-color:var(--g)}
+.list b{display:block}.list span.d{color:var(--sub);font-size:14px}
+.list .tag{margin-left:auto;font-size:12px;color:var(--sub);white-space:nowrap}
+.list .tag.ok{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.list .tag.money{border-color:var(--r);color:var(--r)}
+.grp{font-size:13px;color:var(--sub);margin:22px 0 4px;font-weight:700;letter-spacing:.02em}
+.st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12.5px;font-weight:700;white-space:nowrap;border:1px solid var(--line)}
+.st.ok{background:var(--g);border-color:var(--g);color:#fff}.st.wait{color:var(--sub)}.st.ask{background:var(--y);border-color:var(--y);color:#231f1a}.st.money{border-color:var(--r);color:var(--r)}
+@media (max-width:600px){.list a{flex-wrap:wrap}.list .tag{margin-left:48px}h1{font-size:24px}}
+</style></head>
+<body><div class="wrap">
+<header class="doc"><div class="line"><span class="num">08</span><span>이세계 모험가 길드 · 개선 기획서</span><span class="tag v">v1</span><span class="tag">표시만</span><span class="tag">초안 2026-11-24</span></div>
+<h1>결정 정리</h1><p>고를 이유가 없는 선택지를 숨기고 묶고 E급 뒤로 미루기</p></header>
+
+<h2>1. 목적</h2>
+<ul>
+<li>결정의 수를 줄여 남은 결정에 무게가 실리게 한다 (P3 · P4). 효과가 없는 결정이 같은 무게로 화면을 차지하면, 「이건 해도 그만」을 깨닫는 순간 책 12쪽이 부담이 된다 (보고서 1-6 · 4-3).</li>
+<li>보고서 A1 · B6, 대화 M5를 한 문서로 모은다.</li>
+</ul>
+
+<h2>2. 지금 (측정)</h2>
+<p>E급 승급(약 40주)까지 만나는 결정 종류 약 20가지. 효과를 잰 13가지 가운데 7가지가 ±20G 안쪽이고, 20G를 넘는 6가지는 모두 「하지 않으면 손해」 쪽 (보고서 1-1).</p>
+
+<h2>3. 처리 (안)</h2>
+<div class="tw"><table>
+<tr><th>결정</th><th>측정</th><th>처리</th><th>대신 맡는 것</th></tr>
+<tr><td>요리 준비량 · 남은 그릇</td><td>기본값 4그릇 −93G · 답이 하나</td><td><b>삭제</b></td><td>주문할 때 소진 (<a href="02_restaurant_v1.html">02</a>)</td></tr>
+<tr><td>음식 가격 ±</td><td>±30% 모두 약 −30G</td><td><b>삭제</b></td><td>간판 메뉴 · 기준가 (<a href="02_restaurant_v1.html">02</a>)</td></tr>
+<tr><td>의뢰 수수료 5 · 15% (F급)</td><td>5% −45G · 15% −3G에 성공 −3건</td><td><b>F급에서 숨김</b>, E급에 열림 (E급 뒤 15%는 +42G)</td><td>보조금 계약 (<a href="05_subsidy_contract_v1.html">05</a>)</td></tr>
+<tr><td>게시판 칸 배분</td><td>F급에는 고를 등급이 하나</td><td><b>F급에서 숨김</b>, E급에 열림 (E급만 받기 +103G)</td><td>—</td></tr>
+<tr><td>의뢰 떼기</td><td>위약금 10% + 신뢰도 −2 &gt; 그냥 만료(신뢰도 −1)</td><td><b>「자세히」 안으로</b> (또는 규칙을 고쳐 떼면 신뢰도 −1 · 위약금 0)</td><td>—</td></tr>
+<tr><td>소재 매입가</td><td>50% · 120% 모두 손해</td><td><b>E급 뒤로</b></td><td>—</td></tr>
+<tr><td>계약 모험가</td><td>+7 ± 21G (구분 안 됨)</td><td><b>E급 뒤로</b></td><td>—</td></tr>
+<tr><td>접수대 · 판매 창구 · 게시판 업그레이드</td><td>구분 안 됨</td><td><b>효과 교체</b></td><td>구매 목록 재편 (<a href="04_purchase_v1.html">04</a>)</td></tr>
+<tr><td>장식 8종</td><td>현수막 외 구분 안 됨</td><td><b>4종으로</b></td><td>구매 목록 재편 (<a href="04_purchase_v1.html">04</a>)</td></tr>
+<tr><td>테이블 3~4세트</td><td>−1 ± 4G</td><td>유지 (먹는 사람이 늘면 값이 생김)</td><td>부족 신호 (<a href="04_purchase_v1.html">04</a>)</td></tr>
+<tr><td>던전 보내기</td><td>수입 +1G · 레벨 +0.21</td><td>유지 · 판돈 올리기는 14 참고</td><td>고급 재료 (<a href="02_restaurant_v1.html">02</a>)</td></tr>
+<tr><td>메인 퀘스트 받는 시점</td><td>첫 도전 승률 63% ↔ 92%</td><td><b>유지</b> (살아 있는 결정)</td><td>—</td></tr>
+<tr><td>리퀘스트 지명</td><td>승급 관문</td><td><b>유지</b></td><td>지명 목록 정리 (todo1124 4번)</td></tr>
+<tr><td>상단 · 대장간 · 물약</td><td>측정 안 함</td><td>유지 · 측정 대상</td><td>—</td></tr>
+</table></div>
+<p><b>결과 (어림):</b> 첫 40주에 보이는 결정 약 20 → 약 11 (식당 3 · 구매 · 계약 · 출발 승인 · 메인 퀘스트 · 리퀘스트 지명 · 던전 · 상단 · 대장간).</p>
+
+<h2>4. 숨기는 방법</h2>
+<ul>
+<li>메뉴 잠금(<code>메뉴_잠금_설계.md</code>)을 넓혀 씁니다: 숨긴 결정은 E급 승급 때 「새로 열림」으로 한 번에 소개.</li>
+<li>「자세히」 안으로 넣는 것은 지우지 않고 접어 둠 (테스트하는 사람이 찾을 수는 있게).</li>
+<li>규칙 코드(<code>game_core.js</code>)는 그대로 두고 화면에서만 숨기는 것이 기본 — 수치 변경 없음. 삭제 항목(준비량 · 가격)은 02가 결정될 때 규칙과 함께 바뀜.</li>
+</ul>
+
+<h2>5. 연동</h2>
+<ul>
+<li>02 · 04 · 05가 결정되기 전에도 「숨김 · E급 뒤로」 줄은 먼저 할 수 있음.</li>
+<li>튜토리얼(<code>튜토리얼.md</code>) · 상황별 안내 26개 중 숨긴 결정을 가르치는 안내는 E급 뒤로 옮김.</li>
+</ul>
+
+<h2>6. 검증</h2>
+<ul>
+<li>숨긴 뒤 기준 봇 수치가 그대로인지 (관문 1).</li>
+<li>시안을 1280×720에서 캡처해 화면당 누르는 것 수가 줄었는지 (지금 12~32개).</li>
+</ul>
+
+<h2>7. 미결 사항</h2>
+<ul>
+<li>의뢰 떼기: 「자세히」 안으로 / 규칙을 고쳐 살림</li>
+<li>F급 수수료를 숨길 때 기본값 10% 고정 문구를 어디에 보여 줄지</li>
+<li>숨긴 결정이 E급에 열리는 순서 (한 번에 / 하나씩)</li>
+<li>상단 · 대장간 · 물약을 측정한 뒤 이 표에 넣을지</li>
+</ul>
+
+<nav class="foot"><a href="07_quest_variation_v1.html">← 07 의뢰 변주와 정보</a><a href="index.html">목록</a><a href="09_monthly_report_v1.html">09 월말 결산 개편 →</a></nav>
+</div></body></html>

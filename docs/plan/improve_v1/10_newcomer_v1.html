@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>10 신입 정착 v1 | 이세계 모험가 길드</title><style>
+:root{--g:#8a5a2b;--y:#e0a526;--r:#c0504d;--bg:#f7f5f1;--card:#fff;--ink:#231f1a;--sub:#6a6158;--line:#e3ddd4;--th:#f3ece2;--code:#f1ede7}
+@media (prefers-color-scheme:dark){:root{--g:#d39a5c;--bg:#171512;--card:#201d19;--ink:#ece6de;--sub:#a89e92;--line:#363029;--th:#2a241d;--code:#29241e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;word-break:keep-all}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 80px}
+header.doc{background:var(--card);border:1px solid var(--line);border-left:10px solid var(--g);border-radius:10px;padding:20px 24px;margin-bottom:28px}
+.line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);flex-wrap:wrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:3px solid var(--g);background:var(--card);font-weight:700;color:var(--ink);flex:none}
+.tag{border:1px solid var(--line);border-radius:999px;padding:1px 10px}
+.tag.v{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.tag.money{border-color:var(--r);color:var(--r)}
+h1{font-size:28px;margin:10px 0 4px;line-height:1.3}
+header.doc p{margin:0;color:var(--sub)}
+h2{font-size:20px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--g)}
+h3{font-size:16px;margin:22px 0 6px}
+p,ul,ol{margin:8px 0}ul,ol{padding-left:22px}li{margin:3px 0}
+a{color:var(--g)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:14.5px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--th);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+.note{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);border-radius:6px;padding:10px 14px;color:var(--sub)}
+.warn{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--r);border-radius:6px;padding:10px 14px}
+code,pre{background:var(--code);border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:13.5px}
+code{padding:1px 5px}pre{padding:12px 14px;overflow-x:auto;line-height:1.5}
+nav.foot{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.list a{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0;text-decoration:none;color:var(--ink)}
+.list a:hover{border-color:var(--g)}
+.list b{display:block}.list span.d{color:var(--sub);font-size:14px}
+.list .tag{margin-left:auto;font-size:12px;color:var(--sub);white-space:nowrap}
+.list .tag.ok{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.list .tag.money{border-color:var(--r);color:var(--r)}
+.grp{font-size:13px;color:var(--sub);margin:22px 0 4px;font-weight:700;letter-spacing:.02em}
+.st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12.5px;font-weight:700;white-space:nowrap;border:1px solid var(--line)}
+.st.ok{background:var(--g);border-color:var(--g);color:#fff}.st.wait{color:var(--sub)}.st.ask{background:var(--y);border-color:var(--y);color:#231f1a}.st.money{border-color:var(--r);color:var(--r)}
+@media (max-width:600px){.list a{flex-wrap:wrap}.list .tag{margin-left:48px}h1{font-size:24px}}
+</style></head>
+<body><div class="wrap">
+<header class="doc"><div class="line"><span class="num">10</span><span>이세계 모험가 길드 · 개선 기획서</span><span class="tag v">v1</span><span class="tag">제안</span><span class="tag money">선임 안건</span><span class="tag">초안 2026-11-24</span></div>
+<h1>신입 정착</h1><p>합류 뒤 상주, 명성에 따라 오는 모험가의 레벨, 첫 원정 동행</p></header>
+
+<h2>1. 목적</h2>
+<ul>
+<li>첫해 수입을 묶는 <b>오는 사람 수와 출석</b>을 직접 푼다 (보고서 2-2: 시작 모험가 2 → 4명이면 +119G).</li>
+<li>「이름을 지어 준 새 모험가가 석 주에 한 번 나타난다」는 체감과 창립 멤버 쏠림을 줄인다.</li>
+<li>육성은 보조이므로(P1) 새 수치를 만들지 않고 이미 있는 규칙(방문 · 신입 경험치 · 명성)을 고친다.</li>
+</ul>
+
+<h2>2. 지금 (측정)</h2>
+<div class="tw"><table>
+<tr><th>항목</th><th>값</th></tr>
+<tr><td>나중 합류자 · 합류 뒤 1~12주</td><td>원정 중 23% · <b>길드에 오지 않음 61%</b> · 왔지만 못 나감 12% · 의뢰 2.2건</td></tr>
+<tr><td>원인</td><td>애착 0으로 와서 한 주에 올 확률 33% (<code>present</code>: 방문 간격 = 2주 × (1 + (100 − 애착) ÷ 50)). 애착은 의뢰 성공마다 +2</td></tr>
+<tr><td>레벨</td><td>모두 Lv 1 (<code>spawnAdv</code> — <code>lv: 1</code>, 능력치도 시작값)</td></tr>
+<tr><td>쏠림 (48주)</td><td>창립 1번 Lv 11.0 · 35건 / 세 번째 합류자 Lv 7.5 · 11건 / 여덟 번째 Lv 4.6 · 3건</td></tr>
+<tr><td>만료</td><td>연 9.1건 — 큰 부분이 「맡을 사람이 길드에 없어서」</td></tr>
+</table></div>
+
+<h2>3. 규칙 (안)</h2>
+<h3>3-1. 안 A — 정착 기간 (보고서 B2 · 대화 D6)</h3>
+<ul>
+<li>합류 뒤 <b>12주</b> [임시]는 매주 길드에 옵니다 (창립 멤버와 같음). 기간이 끝나면 지금의 방문 규칙으로.</li>
+<li>측정 (100판): 첫해 순이익 <b>+79 ± 16G</b> · 성공한 원정 68.8 → 78.2건 · 만료 9.1 → 4.5건 · 나중 합류자 의뢰 4.6 → 6.9건 · 승급 중앙 40 → 38주.</li>
+<li>8주면 +46 ± 18G, 「시작 애착 30」이면 +45 ± 14G.</li>
+<li>GPT · 제미나이 · Claude가 모두 동의한 안 (대화 5-3).</li>
+</ul>
+<h3>3-2. 안 B — 명성이 좋은 사람을 부른다 (todo1124 5번 A)</h3>
+<ul>
+<li>명성 단계마다 오는 모험가의 레벨 +1 [임시] (예: 명성 20 → Lv 2, 40 → Lv 3). 능력치도 그 레벨에 맞게.</li>
+<li>명성 · 현수막에 처음으로 돈이 되는 쓸모가 생김 (지금 현수막 명성 +39 · 수입 +6 ± 11G).</li>
+<li>측정 안 함 — 30판 훑어보기로 수입 · 승급 시점 영향을 먼저 봄.</li>
+</ul>
+<h3>3-3. 안 C — 첫 원정 동행</h3>
+<ul>
+<li>정착 기간의 신입은 파티를 짤 때 창립 멤버(또는 가장 오래된 모험가)를 먼저 찾음. 신입 경험치 규칙(이미 있음)이 더 자주 쓰임.</li>
+<li>출발 승인(<a href="06_departure_approval_v1.html">06</a>)의 「같이 보낸다」로 플레이어가 직접 붙일 수도 있음.</li>
+<li>대화 판단: 멘토 동행은 「절반만」 — 효과 대부분은 안 A에서 나옴. A 위에 얹는 연출 · 이야기 쪽.</li>
+</ul>
+<h3>3-4. 추천</h3>
+<p><b>A를 바탕으로, B는 측정 뒤.</b> A는 측정이 있고 규칙이 한 줄입니다. B는 04 구매 재편(현수막)과 함께 봅니다. C는 A가 들어간 뒤 이야기 쪽으로.</p>
+
+<h2>4. 화면</h2>
+<ul>
+<li>모험가 카드에 「정착 중 · 8주 남음」 띠. 끝나는 주에 리나 한마디 (「토빈, 이제 우리 길드 사람 다 됐네요」).</li>
+<li>B: 새 모험가 합류 카드에 「명성 덕분에 경력자가 왔어요 · Lv 3」.</li>
+<li>결산 ⑤ 새 얼굴 칸 (<a href="09_monthly_report_v1.html">09</a>).</li>
+</ul>
+
+<h2>5. 연동</h2>
+<ul>
+<li>승급이 약 2주 빨라짐 → 보고서 B4(승급 시점: 목표 48주 · 지금 40주)와 함께 정함.</li>
+<li>식당 D1(「먹으면 2주 꼭 옴」)과 같은 손잡이(출석). 둘 다 넣으면 겹치므로 함께 잼.</li>
+<li>05 개척 계약(새 모험가의 의뢰 성공)이 이 규칙의 판돈.</li>
+<li>11 노는 모험가: 정착 기간에 길드에 오는 사람이 늘면 「짝이 없어 남는」 일은 줄고 「맞는 의뢰 없음」은 늘 수 있음.</li>
+</ul>
+
+<h2>6. 검증</h2>
+<ul>
+<li>A: 이미 측정됨 (+79 ± 16G). 들어가면 관문 1 · 승급 시점 다시 확인.</li>
+<li>B: 30판 훑어보기 — 수입 · 48주 E급 비율 · 쏠림(나중 합류자 건수).</li>
+<li>함께: A + D1을 같이 켠 값이 각각의 합보다 얼마나 작은지.</li>
+</ul>
+
+<h2>7. 미결 사항</h2>
+<ul>
+<li>정착 기간 8주 / 12주</li>
+<li>정착이 끝난 뒤 애착이 낮으면 다시 잘 안 오게 되는데, 그때의 체감 (「정이 떨어졌나?」)</li>
+<li>B의 레벨 공식, 능력치를 레벨에 맞게 줄지</li>
+<li>승급 시점 보정 (목표 48주를 고칠지 · 조건을 고칠지)</li>
+</ul>
+
+<nav class="foot"><a href="09_monthly_report_v1.html">← 09 월말 결산 개편</a><a href="index.html">목록</a><a href="11_idle_adventurer_v1.html">11 노는 모험가 →</a></nav>
+</div></body></html>

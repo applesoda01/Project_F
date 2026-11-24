@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>12 의뢰 종류 = 육성 방향 v1 | 이세계 모험가 길드</title><style>
+:root{--g:#8a5a2b;--y:#e0a526;--r:#c0504d;--bg:#f7f5f1;--card:#fff;--ink:#231f1a;--sub:#6a6158;--line:#e3ddd4;--th:#f3ece2;--code:#f1ede7}
+@media (prefers-color-scheme:dark){:root{--g:#d39a5c;--bg:#171512;--card:#201d19;--ink:#ece6de;--sub:#a89e92;--line:#363029;--th:#2a241d;--code:#29241e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;word-break:keep-all}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 80px}
+header.doc{background:var(--card);border:1px solid var(--line);border-left:10px solid var(--g);border-radius:10px;padding:20px 24px;margin-bottom:28px}
+.line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);flex-wrap:wrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:3px solid var(--g);background:var(--card);font-weight:700;color:var(--ink);flex:none}
+.tag{border:1px solid var(--line);border-radius:999px;padding:1px 10px}
+.tag.v{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.tag.money{border-color:var(--r);color:var(--r)}
+h1{font-size:28px;margin:10px 0 4px;line-height:1.3}
+header.doc p{margin:0;color:var(--sub)}
+h2{font-size:20px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--g)}
+h3{font-size:16px;margin:22px 0 6px}
+p,ul,ol{margin:8px 0}ul,ol{padding-left:22px}li{margin:3px 0}
+a{color:var(--g)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:14.5px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--th);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+.note{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);border-radius:6px;padding:10px 14px;color:var(--sub)}
+.warn{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--r);border-radius:6px;padding:10px 14px}
+code,pre{background:var(--code);border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:13.5px}
+code{padding:1px 5px}pre{padding:12px 14px;overflow-x:auto;line-height:1.5}
+nav.foot{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.list a{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0;text-decoration:none;color:var(--ink)}
+.list a:hover{border-color:var(--g)}
+.list b{display:block}.list span.d{color:var(--sub);font-size:14px}
+.list .tag{margin-left:auto;font-size:12px;color:var(--sub);white-space:nowrap}
+.list .tag.ok{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.list .tag.money{border-color:var(--r);color:var(--r)}
+.grp{font-size:13px;color:var(--sub);margin:22px 0 4px;font-weight:700;letter-spacing:.02em}
+.st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12.5px;font-weight:700;white-space:nowrap;border:1px solid var(--line)}
+.st.ok{background:var(--g);border-color:var(--g);color:#fff}.st.wait{color:var(--sub)}.st.ask{background:var(--y);border-color:var(--y);color:#231f1a}.st.money{border-color:var(--r);color:var(--r)}
+@media (max-width:600px){.list a{flex-wrap:wrap}.list .tag{margin-left:48px}h1{font-size:24px}}
+</style></head>
+<body><div class="wrap">
+<header class="doc"><div class="line"><span class="num">12</span><span>이세계 모험가 길드 · 개선 기획서</span><span class="tag v">v1</span><span class="tag">제안</span><span class="tag">수치: 없음 ~ 작음</span><span class="tag">초안 2026-11-24</span></div>
+<h1>의뢰 종류 = 육성 방향</h1><p>이미 있는 「종류별 능력치 +2」를 보이게, 종류 칭호</p></header>
+
+<h2>1. 목적</h2>
+<ul>
+<li>설계 원칙 「육성은 경영의 일부 — 방침으로 성장 환경을 만든다」를 화면에서 보이게 한다. 규칙은 이미 있는데 플레이어가 모른다.</li>
+<li>육성은 보조(P1)이므로 <b>새 규칙보다 보여 주기</b>를 먼저 하고, 효과를 더한다면 돈에 닿게 한다.</li>
+</ul>
+
+<h2>2. 지금</h2>
+<ul>
+<li>의뢰 성공 시 그 종류의 대표 능력치 +2 (토벌 = 힘 · 사냥/채집 = 민첩 · 조사 = 지력 · 호위/구호 = 정신 · 탐사 = 기교).</li>
+<li>전직은 능력치 조합으로 정해짐 — 어떤 의뢰를 많이 했느냐가 장래 직업을 정하는데, 화면에서는 이어지지 않음.</li>
+<li>F급 칸 배분은 등급별이라 종류를 고를 방법이 없음 (보고서 1-2).</li>
+</ul>
+
+<h2>3. 규칙 (안)</h2>
+<h3>3-1. 보이기 (수치 없음)</h3>
+<ul>
+<li>모험가 카드에 <b>「최근 성장 방향」</b>: 최근 8건의 종류 비율 막대 + 「이대로면 ○○ 쪽 전직」 한 줄 (전직 조합표를 읽어 씀).</li>
+<li>귀환 보고에 「힘 +2」를 능력치 이름과 함께 (지금 기록에 있는지 확인 필요).</li>
+<li>월말 결산 ④ 맡은 의뢰 칸 (<a href="09_monthly_report_v1.html">09</a>).</li>
+</ul>
+<h3>3-2. 종류 칭호 (수치 작음)</h3>
+<ul>
+<li>같은 종류 의뢰를 <b>8건</b> [임시] 성공하면 칭호 (토벌 「들개 사냥꾼」 · 조사 「발 빠른 조사원」 …).</li>
+<li>효과는 돈에 닿게: 칭호를 가진 모험가가 그 종류 의뢰를 성공하면 <b>의뢰인 사례 +10G</b> [임시] (길드 몫). 육성이 경영으로 이어지는 작은 다리.</li>
+<li>칭호 이름은 모험가 대사 · 리퀘스트 지명 목록에도 보임.</li>
+</ul>
+<h3>3-3. 방침으로 기울이기 (뒤로)</h3>
+<ul>
+<li>F급 칸 배분을 종류 비중으로 바꾸는 안(보고서 B1 ②)은, 의뢰 공급이 주 2건이라 차이가 느리게 드러나 <b>프로토타입 뒤</b>로 둡니다 (<a href="14_later_ideas_v1.html">14</a> 의뢰 영업과 같은 묶음).</li>
+<li>대신 05 보조금 계약(「치안 계약 = 토벌 8건」)이 간접적으로 종류를 기울이는 방침이 됨.</li>
+</ul>
+
+<h2>4. 연동</h2>
+<ul>
+<li><a href="07_quest_variation_v1.html">07</a> 태그가 판정 능력치를 바꾸면, 「이 의뢰에 맞는 사람」과 성장 방향이 이어짐.</li>
+<li>설계서의 2차 전직(능력치 2개 조합)과 겹치지 않게, 칭호는 전직 전의 작은 표식으로만.</li>
+<li>대화 판단: 성장 분기점(G4)은 전직과 겹쳐 뒤로 (<a href="14_later_ideas_v1.html">14</a>).</li>
+</ul>
+
+<h2>5. 검증</h2>
+<ul>
+<li>3-1: 관문 1 변화 없음.</li>
+<li>3-2: 첫해 칭호를 얻는 모험가 수 (창립 멤버만 얻으면 쏠림을 키움 → 10 정착과 함께 봄), 사례금이 월 +20G 안쪽인지.</li>
+</ul>
+
+<h2>6. 미결 사항</h2>
+<ul>
+<li>「이대로면 ○○ 쪽 전직」을 보여 줄지 (전직의 놀라움을 줄일 수 있음)</li>
+<li>칭호 문턱 (8건) · 효과 (사례 +10G / 효과 없이 이름만)</li>
+<li>칭호 이름 목록 (5종 × 등급?)</li>
+</ul>
+
+<nav class="foot"><a href="11_idle_adventurer_v1.html">← 11 노는 모험가</a><a href="index.html">목록</a><a href="13_failure_story_v1.html">13 실패 · 부상의 이야기 →</a></nav>
+</div></body></html>

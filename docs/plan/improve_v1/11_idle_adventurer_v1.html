@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>11 노는 모험가 v1 | 이세계 모험가 길드</title><style>
+:root{--g:#8a5a2b;--y:#e0a526;--r:#c0504d;--bg:#f7f5f1;--card:#fff;--ink:#231f1a;--sub:#6a6158;--line:#e3ddd4;--th:#f3ece2;--code:#f1ede7}
+@media (prefers-color-scheme:dark){:root{--g:#d39a5c;--bg:#171512;--card:#201d19;--ink:#ece6de;--sub:#a89e92;--line:#363029;--th:#2a241d;--code:#29241e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;word-break:keep-all}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 80px}
+header.doc{background:var(--card);border:1px solid var(--line);border-left:10px solid var(--g);border-radius:10px;padding:20px 24px;margin-bottom:28px}
+.line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);flex-wrap:wrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:3px solid var(--g);background:var(--card);font-weight:700;color:var(--ink);flex:none}
+.tag{border:1px solid var(--line);border-radius:999px;padding:1px 10px}
+.tag.v{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.tag.money{border-color:var(--r);color:var(--r)}
+h1{font-size:28px;margin:10px 0 4px;line-height:1.3}
+header.doc p{margin:0;color:var(--sub)}
+h2{font-size:20px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--g)}
+h3{font-size:16px;margin:22px 0 6px}
+p,ul,ol{margin:8px 0}ul,ol{padding-left:22px}li{margin:3px 0}
+a{color:var(--g)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:14.5px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--th);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+.note{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);border-radius:6px;padding:10px 14px;color:var(--sub)}
+.warn{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--r);border-radius:6px;padding:10px 14px}
+code,pre{background:var(--code);border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:13.5px}
+code{padding:1px 5px}pre{padding:12px 14px;overflow-x:auto;line-height:1.5}
+nav.foot{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.list a{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0;text-decoration:none;color:var(--ink)}
+.list a:hover{border-color:var(--g)}
+.list b{display:block}.list span.d{color:var(--sub);font-size:14px}
+.list .tag{margin-left:auto;font-size:12px;color:var(--sub);white-space:nowrap}
+.list .tag.ok{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.list .tag.money{border-color:var(--r);color:var(--r)}
+.grp{font-size:13px;color:var(--sub);margin:22px 0 4px;font-weight:700;letter-spacing:.02em}
+.st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12.5px;font-weight:700;white-space:nowrap;border:1px solid var(--line)}
+.st.ok{background:var(--g);border-color:var(--g);color:#fff}.st.wait{color:var(--sub)}.st.ask{background:var(--y);border-color:var(--y);color:#231f1a}.st.money{border-color:var(--r);color:var(--r)}
+@media (max-width:600px){.list a{flex-wrap:wrap}.list .tag{margin-left:48px}h1{font-size:24px}}
+</style></head>
+<body><div class="wrap">
+<header class="doc"><div class="line"><span class="num">11</span><span>이세계 모험가 길드 · 개선 기획서</span><span class="tag v">v1</span><span class="tag">제안</span><span class="tag">수치: 안에 따라</span><span class="tag">초안 2026-11-24</span></div>
+<h1>노는 모험가</h1><p>왜 노는지 보여 주기, 짜인 파티에 끼어 가기, 시킬 방법</p></header>
+
+<h2>1. 목적</h2>
+<ul>
+<li>사용자 보고 (11-24 18:12): 「모험가가 3명이 되었는데 2명만 계속 나가고 있어서, 노는 애들은 뭘 어떻게 시켜야 하는지 모르겠다」.</li>
+<li>노는 까닭을 먼저 보이게 하고, 그다음에 할 일을 준다. todo1124 3번을 기획서로 옮긴 문서.</li>
+</ul>
+
+<h2>2. 지금 (측정)</h2>
+<ul>
+<li>원인 ① <b>짝이 없음</b>: 혼자 갈 승산이 낮으면 길드에 있는 동료를 모으는데 필요한 만큼만 모음 → 2명이 짝을 지으면 셋째가 남음. 창립 멤버가 첫 12주에 길드에 있으면서 못 나간 주 22%.</li>
+<li>나중 합류자가 길드에 왔는데 못 나간 주: 65% 「동료 부족」, 31% 「맞는 의뢰 없음」.</li>
+<li>원인 ② <b>시킬 방법이 없음</b>: 플레이어가 직접 보낼 수 있는 것은 리퀘스트 지명과 던전(12주 뒤)뿐.</li>
+<li>2년 차 이후에는 「맞는 의뢰 없음」이 주원인 (모험가-주의 33 → 57%) — <a href="14_later_ideas_v1.html">14</a>.</li>
+</ul>
+
+<h2>3. 안</h2>
+<div class="tw"><table>
+<tr><th>안</th><th>내용</th><th>수치</th><th>Claude 추천</th></tr>
+<tr><td><b>A</b></td><td>쉬는 모험가에게 까닭과 할 수 있는 일을 붙임: 「혼자 갈 만한 의뢰가 없어요 · 짝이 없어요」 + 리퀘스트 지명 · 던전으로 가는 단추</td><td>없음</td><td><b>먼저</b></td></tr>
+<tr><td><b>B</b></td><td>남은 한 명이 이미 짜인 파티에 끼어 감 (의뢰의 파티 상한 안에서, 보수는 나눔)</td><td>있음</td><td><b>다음</b> — 30판 훑어보기</td></tr>
+<tr><td>C</td><td>플레이어가 게시판 의뢰를 권함 (「이 의뢰 맡아 줄래?」)</td><td>있음</td><td>06 출발 승인이 들어간 뒤 같은 카드 틀로</td></tr>
+<tr><td>D</td><td>혼자 할 수 있는 F급 의뢰가 게시판에 늘 한 장</td><td>있음</td><td>B로 안 풀릴 때</td></tr>
+</table></div>
+
+<h3>3-1. A의 까닭 목록</h3>
+<div class="tw"><table>
+<tr><th>까닭</th><th>보이는 말</th><th>단추</th></tr>
+<tr><td>동료 부족</td><td>「혼자 가기엔 벅차서 짝을 기다려요」</td><td>리퀘스트 지명 (조건 맞으면)</td></tr>
+<tr><td>맞는 의뢰 없음</td><td>「제게 맞는 의뢰가 게시판에 없어요」</td><td>게시판 보기</td></tr>
+<tr><td>부상</td><td>「다리가 다 나을 때까지 1주 더」</td><td>—</td></tr>
+<tr><td>지갑이 비었음 / 넉넉함</td><td>(성향에 따라) 「이번 주는 쉬고 싶어요」</td><td>—</td></tr>
+<tr><td>던전 대기</td><td>「던전 파티 자리가 나면 갈게요」</td><td>던전 보기</td></tr>
+</table></div>
+<ul><li>버그 5 선택지 D 「쉬는 까닭을 나눠 보여 주기」와 같은 일 — 함께 처리.</li></ul>
+
+<h2>4. 화면</h2>
+<ul>
+<li>로비: 쉬는 모험가 머리 위 작은 아이콘 (짝 기다림 = 두 사람 그림, 의뢰 없음 = 빈 종이).</li>
+<li>모험가 쪽 상세: 까닭 한 줄 + 단추.</li>
+</ul>
+
+<h2>5. 연동</h2>
+<ul>
+<li><a href="06_departure_approval_v1.html">06</a>의 「같이 보낸다」가 B를 플레이어 손으로 하는 길. B를 자동 규칙으로 넣으면 06의 같이 보낸다는 값이 줄어듦 → 둘 중 하나만.</li>
+<li><a href="10_newcomer_v1.html">10</a> 정착 기간이 들어오면 길드에 오는 사람이 늘어 「동료 부족」은 줄 것 (측정으로 확인).</li>
+</ul>
+
+<h2>6. 검증</h2>
+<ul>
+<li>A: 관문 1 변화 없음. 화면 시안.</li>
+<li>B: 30판 훑어보기 — 「길드에 있는데 못 나간 주」 22% → ?, 성공률 · 보수 나눔에 따른 모험가 성장 변화.</li>
+</ul>
+
+<h2>7. 미결 사항</h2>
+<ul>
+<li>A~D 가운데 고르기 (여러 개 가능) — todo1124 3번 결정필요</li>
+<li>B와 06 「같이 보낸다」 중 무엇을 남길지</li>
+<li>까닭 아이콘을 로비에 띄울지 (화면이 복잡해짐)</li>
+</ul>
+
+<nav class="foot"><a href="10_newcomer_v1.html">← 10 신입 정착</a><a href="index.html">목록</a><a href="12_growth_direction_v1.html">12 의뢰 종류 = 육성 방향 →</a></nav>
+</div></body></html>

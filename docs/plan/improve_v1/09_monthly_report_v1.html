@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>09 월말 결산 개편 v1 | 이세계 모험가 길드</title><style>
+:root{--g:#8a5a2b;--y:#e0a526;--r:#c0504d;--bg:#f7f5f1;--card:#fff;--ink:#231f1a;--sub:#6a6158;--line:#e3ddd4;--th:#f3ece2;--code:#f1ede7}
+@media (prefers-color-scheme:dark){:root{--g:#d39a5c;--bg:#171512;--card:#201d19;--ink:#ece6de;--sub:#a89e92;--line:#363029;--th:#2a241d;--code:#29241e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;word-break:keep-all}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 80px}
+header.doc{background:var(--card);border:1px solid var(--line);border-left:10px solid var(--g);border-radius:10px;padding:20px 24px;margin-bottom:28px}
+.line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);flex-wrap:wrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:3px solid var(--g);background:var(--card);font-weight:700;color:var(--ink);flex:none}
+.tag{border:1px solid var(--line);border-radius:999px;padding:1px 10px}
+.tag.v{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.tag.money{border-color:var(--r);color:var(--r)}
+h1{font-size:28px;margin:10px 0 4px;line-height:1.3}
+header.doc p{margin:0;color:var(--sub)}
+h2{font-size:20px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--g)}
+h3{font-size:16px;margin:22px 0 6px}
+p,ul,ol{margin:8px 0}ul,ol{padding-left:22px}li{margin:3px 0}
+a{color:var(--g)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:14.5px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--th);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+.note{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);border-radius:6px;padding:10px 14px;color:var(--sub)}
+.warn{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--r);border-radius:6px;padding:10px 14px}
+code,pre{background:var(--code);border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:13.5px}
+code{padding:1px 5px}pre{padding:12px 14px;overflow-x:auto;line-height:1.5}
+nav.foot{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.list a{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0;text-decoration:none;color:var(--ink)}
+.list a:hover{border-color:var(--g)}
+.list b{display:block}.list span.d{color:var(--sub);font-size:14px}
+.list .tag{margin-left:auto;font-size:12px;color:var(--sub);white-space:nowrap}
+.list .tag.ok{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.list .tag.money{border-color:var(--r);color:var(--r)}
+.grp{font-size:13px;color:var(--sub);margin:22px 0 4px;font-weight:700;letter-spacing:.02em}
+.st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12.5px;font-weight:700;white-space:nowrap;border:1px solid var(--line)}
+.st.ok{background:var(--g);border-color:var(--g);color:#fff}.st.wait{color:var(--sub)}.st.ask{background:var(--y);border-color:var(--y);color:#231f1a}.st.money{border-color:var(--r);color:var(--r)}
+@media (max-width:600px){.list a{flex-wrap:wrap}.list .tag{margin-left:48px}h1{font-size:24px}}
+</style></head>
+<body><div class="wrap">
+<header class="doc"><div class="line"><span class="num">09</span><span>이세계 모험가 길드 · 개선 기획서</span><span class="tag v">v1</span><span class="tag">표시만</span><span class="tag">초안 2026-11-24</span></div>
+<h1>월말 결산 개편</h1><p>구매가 번 돈, 모험가의 성장, 내 결정의 결과를 한 장에</p></header>
+
+<h2>1. 목적</h2>
+<ul>
+<li>체감되지 않는 까닭 ③ 「돌아온 돈이 보이지 않는다」를 규칙 변경 없이 푼다 (대화 3-3).</li>
+<li>사용자가 「추가해야 할 것」으로 정한 <b>결산에 모험가의 성장 보여 주기</b>(todo1124 1번)를 같은 화면 설계로 묶는다.</li>
+<li>내 결정(계약 · 출발 승인 · 구매)이 무엇을 바꿨는지 한 달에 한 번 돌아보게 한다 (대화 M11).</li>
+</ul>
+
+<h2>2. 지금</h2>
+<ul>
+<li>결산 창에는 돈 항목 · 그래프 · 길드 등급 칸만 있고 모험가는 한 줄도 없음 (<code>ui.js</code> <code>ledgerHtml</code>).</li>
+<li>구매별 기여, 지금까지 번 돈은 어디에도 없음.</li>
+<li>한 달에 성공한 원정 약 5.7건 — 칸이 넘치지 않는 양.</li>
+</ul>
+
+<h2>3. 구성 (안)</h2>
+<div class="tw"><table>
+<tr><th>칸</th><th>내용</th><th>새로 기록할 것</th><th>Claude 추천</th></tr>
+<tr><td>① 돈</td><td>지금 있는 수입 · 지출 · 그래프</td><td>없음</td><td>유지</td></tr>
+<tr><td>② 내가 지은 것</td><td>구매마다 이번 달 +○G · 지금까지 +○G · 본전까지 남은 G. 본전을 넘은 것은 금색</td><td>구매별 매출 누적 (식당 · 손질 · 주점 · 업그레이드)</td><td>넣음 — 이 문서의 중심</td></tr>
+<tr><td>③ 이번 달 성장</td><td>레벨 업 · 승급한 모험가 「Lv 3 → 4」</td><td>없음 (기록에 있음)</td><td>넣음</td></tr>
+<tr><td>④ 맡은 의뢰</td><td>모험가별 건수와 종류, 종류가 올린 능력치 (<a href="12_growth_direction_v1.html">12</a>)</td><td>지난달 능력치 한 번 저장</td><td>넣음</td></tr>
+<tr><td>⑤ 새 얼굴</td><td>이번 달 합류한 모험가, 길드에 온 횟수</td><td>없음</td><td>넣음</td></tr>
+<tr><td>⑥ 내 결정</td><td>출발 승인 결과 「말린 2건 · 같이 보낸 1건 성공」, 계약 진행 「치안 5 / 8」</td><td>06 · 05가 들어올 때</td><td>06 · 05 뒤에</td></tr>
+<tr><td>⑦ 부족 신호</td><td>「자리가 없어 3명이 못 먹었어요」 등 (<a href="04_purchase_v1.html">04</a>)</td><td>04가 들어올 때</td><td>04 뒤에</td></tr>
+<tr><td>⑧ 다음 고비</td><td>승급까지 남은 업적</td><td>없음</td><td>칸이 넘치면 뺌</td></tr>
+</table></div>
+<ul>
+<li>한 장에 다 넣지 않고 <b>좌: 돈 (①②⑦) / 우: 사람 (③④⑤)</b>, 위쪽 한 줄에 ⑥.</li>
+<li>리나의 한마디를 맨 위에 — 그달 가장 큰 일 하나를 골라 말함 (「테이블 값을 다 뽑았어요!」 · 「토빈이 E급이 됐어요」).</li>
+</ul>
+
+<h2>4. 화면</h2>
+<ul>
+<li>1280 · 1920 두 크기 시안. 보고서 4-2에서 1280×720 장부 쪽 글자가 작았으므로, 이 창은 가장 작은 글자를 한 단계 키운 기준으로 그림.</li>
+<li>월말에 자동으로 열리는 지금 방식은 유지.</li>
+</ul>
+
+<h2>5. 연동</h2>
+<ul>
+<li>todo1124 1번의 「넣을 칸 ①~④」는 이 문서 ③~⑤ · ⑧과 같음. 결정은 이 문서에서 하고 todo에는 결과만 적음.</li>
+<li>02 · 03 · 04 · 05 · 06이 들어올 때마다 칸이 늘어나므로 빈 칸을 미리 그려 둠.</li>
+</ul>
+
+<h2>6. 검증</h2>
+<ul>
+<li>관문 1 수치 변화 없음 (표시만).</li>
+<li>48주 저장으로 결산을 열어 1280×720에서 넘치는지 캡처 확인.</li>
+</ul>
+
+<h2>7. 미결 사항</h2>
+<ul>
+<li>넣을 칸 (③④⑤ · ⑧) — todo1124 1번 결정필요</li>
+<li>②의 「본전까지」를 보여 줄지 (본전이 먼 구매가 많아 실망을 보일 수 있음)</li>
+<li>좌우 나눔 / 넘겨 보기(쪽 2장)</li>
+<li>리나 한마디의 우선순위 규칙</li>
+</ul>
+
+<nav class="foot"><a href="08_decision_cleanup_v1.html">← 08 결정 정리</a><a href="index.html">목록</a><a href="10_newcomer_v1.html">10 신입 정착 →</a></nav>
+</div></body></html>

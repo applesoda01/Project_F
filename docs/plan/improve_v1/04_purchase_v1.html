@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>04 구매 목록 재편 v1 | 이세계 모험가 길드</title><style>
+:root{--g:#8a5a2b;--y:#e0a526;--r:#c0504d;--bg:#f7f5f1;--card:#fff;--ink:#231f1a;--sub:#6a6158;--line:#e3ddd4;--th:#f3ece2;--code:#f1ede7}
+@media (prefers-color-scheme:dark){:root{--g:#d39a5c;--bg:#171512;--card:#201d19;--ink:#ece6de;--sub:#a89e92;--line:#363029;--th:#2a241d;--code:#29241e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;word-break:keep-all}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 80px}
+header.doc{background:var(--card);border:1px solid var(--line);border-left:10px solid var(--g);border-radius:10px;padding:20px 24px;margin-bottom:28px}
+.line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);flex-wrap:wrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:3px solid var(--g);background:var(--card);font-weight:700;color:var(--ink);flex:none}
+.tag{border:1px solid var(--line);border-radius:999px;padding:1px 10px}
+.tag.v{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.tag.money{border-color:var(--r);color:var(--r)}
+h1{font-size:28px;margin:10px 0 4px;line-height:1.3}
+header.doc p{margin:0;color:var(--sub)}
+h2{font-size:20px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--g)}
+h3{font-size:16px;margin:22px 0 6px}
+p,ul,ol{margin:8px 0}ul,ol{padding-left:22px}li{margin:3px 0}
+a{color:var(--g)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:14.5px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--th);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+.note{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);border-radius:6px;padding:10px 14px;color:var(--sub)}
+.warn{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--r);border-radius:6px;padding:10px 14px}
+code,pre{background:var(--code);border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:13.5px}
+code{padding:1px 5px}pre{padding:12px 14px;overflow-x:auto;line-height:1.5}
+nav.foot{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.list a{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0;text-decoration:none;color:var(--ink)}
+.list a:hover{border-color:var(--g)}
+.list b{display:block}.list span.d{color:var(--sub);font-size:14px}
+.list .tag{margin-left:auto;font-size:12px;color:var(--sub);white-space:nowrap}
+.list .tag.ok{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.list .tag.money{border-color:var(--r);color:var(--r)}
+.grp{font-size:13px;color:var(--sub);margin:22px 0 4px;font-weight:700;letter-spacing:.02em}
+.st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12.5px;font-weight:700;white-space:nowrap;border:1px solid var(--line)}
+.st.ok{background:var(--g);border-color:var(--g);color:#fff}.st.wait{color:var(--sub)}.st.ask{background:var(--y);border-color:var(--y);color:#231f1a}.st.money{border-color:var(--r);color:var(--r)}
+@media (max-width:600px){.list a{flex-wrap:wrap}.list .tag{margin-left:48px}h1{font-size:24px}}
+</style></head>
+<body><div class="wrap">
+<header class="doc"><div class="line"><span class="num">04</span><span>이세계 모험가 길드 · 개선 기획서</span><span class="tag v">v1</span><span class="tag">제안</span><span class="tag money">선임 안건</span><span class="tag">초안 2026-11-24</span></div>
+<h1>구매 목록 재편</h1><p>살 것 15가지를 수입의 곱셈 자리에 다시 붙이기, 부족 신호와 회수 표시</p></header>
+
+<h2>1. 목적</h2>
+<ul>
+<li>사용자가 짚은 가장 큰 문제 「투자 대비 효율이 체감되지 않는 것」(11-24 17:32)을 목록 전체에서 푼다. 식당 하나를 고쳐서는 15가지 중 하나를 살릴 뿐이다 (대화 1장 9번).</li>
+<li>긴장은 적자 위험이 아니라 <b>모자란 초반 금고로 무엇부터 지을지(순서)</b>에서 나오게 한다 (P2).</li>
+</ul>
+
+<h2>2. 지금 (측정)</h2>
+<div class="tw"><table>
+<tr><th>구매</th><th>값</th><th>측정된 수입 변화 (월)</th><th>본전</th></tr>
+<tr><td>테이블 첫 세트 + 요리</td><td>200G</td><td class="n">+21 ± 16G (식당 안 하는 봇 대비)</td><td>약 9.5달</td></tr>
+<tr><td>테이블 둘째 세트</td><td>200G</td><td class="n">+17G</td><td>약 12달</td></tr>
+<tr><td>테이블 3~4세트</td><td>각 200G</td><td class="n">−1 ± 4G</td><td>없음</td></tr>
+<tr><td>주점 업그레이드</td><td>500G</td><td class="n">첫해 +26G · 2년 차 +71G</td><td>약 1년</td></tr>
+<tr><td>벤치</td><td>400G</td><td class="n">+13 ± 11G</td><td>약 31달</td></tr>
+<tr><td>현수막</td><td>350G</td><td class="n">명성 +39 · 수입 +6 ± 11G</td><td>없음</td></tr>
+<tr><td>트로피 장식장</td><td>650G</td><td class="n">−3 ± 8G</td><td>없음</td></tr>
+<tr><td>게시판 · 접수대 · 판매 창구 업그레이드</td><td>각 500G</td><td class="n">구분 안 됨</td><td>없음</td></tr>
+<tr><td>화분 · 게시판 장식 · 사물함 · 지도 · 벽난로</td><td>150~500G</td><td class="n">구분 안 됨</td><td>없음</td></tr>
+</table></div>
+<p>체감되지 않는 까닭 셋 (대화 3-3): ① 효과가 값에 비해 너무 작다(+1 · +5) ② 효과가 막힌 곳(사람 수 · 출석)을 뚫지 않는다 ③ 돌아온 돈이 보이지 않는다.</p>
+
+<h2>3. 규칙 (안)</h2>
+<h3>3-1. 수입의 곱셈 자리</h3>
+<p>첫해 수입의 64%는 원정에서 나옵니다: <b>오는 사람 수 × 맡을 의뢰 × 성공률 × 건당 보상</b>. 여기에 다섯째 자리 <b>모험가 지갑이 지나가는 곳</b>을 더합니다. 구매는 이 다섯 가운데 하나에 반드시 닿게 합니다.</p>
+<div class="tw"><table>
+<tr><th>자리</th><th>지금 무엇이 닿나</th><th>바꿀 안 [임시]</th></tr>
+<tr><td>① 오는 사람 (수 · 출석)</td><td>없음 (명성 · 애착은 약한 손잡이)</td><td>현수막 → 「명성 단계마다 오는 모험가 Lv +1」(<a href="10_newcomer_v1.html">10</a>). 숙소(새 구매) → 신입 상주 기간 +4주 또는 모험가 상한 +2</td></tr>
+<tr><td>② 맡을 의뢰</td><td>게시판 업그레이드 = 기한 +1주 (효과 0)</td><td>게시판 업그레이드 → 「매달 의뢰 +1건」. 2년 차 병목(의뢰 공급)에 바로 닿음</td></tr>
+<tr><td>③ 성공률</td><td>지도(경험치) · 벽난로(부상)</td><td>손질 시설(<a href="03_maintenance_v1.html">03</a>)이 맡음. 지도 · 벽난로는 장식에서 뺌</td></tr>
+<tr><td>④ 건당 보상</td><td>접수대 업그레이드 = 응대 −0.5초 (효과 0), 벤치 +5G</td><td>접수대 업그레이드 → 「F급 의뢰 길드 몫 +10G」. 벤치와 합침</td></tr>
+<tr><td>⑤ 지갑이 지나가는 곳</td><td>식당 · 주점 (번 돈의 16%)</td><td>식당(<a href="02_restaurant_v1.html">02</a>) · 손질(<a href="03_maintenance_v1.html">03</a>) · 주점. 판매 창구 업그레이드 → 「모험가가 소재를 길드에 팔 때 +3G」는 유지</td></tr>
+</table></div>
+<h3>3-2. 장식 8종 → 4종</h3>
+<div class="tw"><table>
+<tr><th>남길 것 (안)</th><th>닿는 자리</th><th>뺄 것</th></tr>
+<tr><td>현수막</td><td>① 오는 사람의 레벨</td><td rowspan="4">화분 · 게시판 장식 · 지도 · 트로피 (효과 구분 안 됨). 벽난로는 손질로 옮김</td></tr>
+<tr><td>벤치 (접수대와 합침)</td><td>④ 건당 보상</td></tr>
+<tr><td>사물함</td><td>⑤ 소재 +1개 → 요리 · 손질 재료</td></tr>
+<tr><td>(새) 단골 게시판 또는 숙소</td><td>① 출석</td></tr>
+</table></div>
+<ul><li>꾸미는 즐거움(봇이 못 잼)을 위해 효과 없는 「꾸미기 전용」 장식을 싸게 남길지는 미결.</li></ul>
+<h3>3-3. 부족 신호 (D2) — 살 때를 알려 주기</h3>
+<div class="tw"><table>
+<tr><th>신호</th><th>뜨는 때</th><th>권하는 구매</th></tr>
+<tr><td>「자리가 없어 ○명이 못 먹었어요」</td><td>그 주에 테이블이 다 참</td><td>테이블</td></tr>
+<tr><td>「소재가 없어 손질 못 함 ○번」</td><td>손질을 원했는데 소재가 없음</td><td>사물함 · 소재 매입</td></tr>
+<tr><td>「게시판이 비어 ○명이 그냥 돌아갔어요」</td><td>「맡을 의뢰 없음」이 생김 (2년 차 8 → 57%)</td><td>게시판 업그레이드</td></tr>
+<tr><td>「집이 없어 ○○가 떠났어요」</td><td>모험가 상한 또는 신입 상주 끝</td><td>숙소</td></tr>
+</table></div>
+<h3>3-4. 회수 표시</h3>
+<ul>
+<li>구매마다 팝업에 「산 뒤 지금까지 +○G」를 남기고, 본전을 넘는 날 기록창 한 줄과 리나 한마디 (「테이블 값을 다 뽑았어요!」).</li>
+<li>월말 결산에 구매별 이번 달 기여 (<a href="09_monthly_report_v1.html">09</a>).</li>
+</ul>
+
+<h2>4. 순서의 고민 만들기</h2>
+<p>첫해 금고는 12주 689G · 24주 1,230G입니다. 목록이 5~6가지로 줄고 하나하나가 24주 안에 본전이면, 「테이블 먼저? 손질 먼저? 리퀘스트 기부금 먼저?」가 실제 고민이 됩니다. 리퀘스트 기부금(첫해 2,608G · 승급 관문)과 같은 금고를 다툽니다.</p>
+
+<h2>5. 연동</h2>
+<ul>
+<li>대화 4장 D2 · D3 · D4 · D8을 하나로 묶은 문서입니다.</li>
+<li>「모험가 지갑이 길드 시설을 지나가게」(D9)는 사용자가 보류(11-24 18:20)했으므로, 이 문서에서는 이미 정한 02 · 03까지만 쓰고 새 「돈 쓰는 자리」(숙박 · 훈련 판매)는 <a href="14_later_ideas_v1.html">14</a>에 둡니다.</li>
+<li>메뉴 잠금(<code>메뉴_잠금_설계.md</code>): 줄어든 목록은 필요할 때 하나씩 열림.</li>
+</ul>
+
+<h2>6. 검증</h2>
+<ul>
+<li>잘 사는 봇 ÷ 안 사는 봇 48주 월 순수입 <b>1.15 → 1.5배</b> [임시].</li>
+<li>남긴 구매 하나하나 본전 24주 안 [임시].</li>
+<li>다 사는 봇의 48주 안 E급 비율이 기준 봇보다 낮아지지 않을 것 (지금 91% → 78%로 오히려 느림).</li>
+</ul>
+
+<h2>7. 미결 사항</h2>
+<ul>
+<li>회수 기준 12주 / 24주 (목록 갈림길 2번 · 대화 Q3)</li>
+<li>업그레이드 효과 교체 목록 (3-1 표) 그대로 갈지</li>
+<li>장식 남길 것 · 뺄 것, 꾸미기 전용 장식</li>
+<li>숙소를 새로 둘지 (사람 수 자리에 닿는 구매가 지금 없음)</li>
+<li>이미 지은 장식이 있는 예전 저장의 처리 (환불 / 그대로)</li>
+<li>프로토타입에서 투자의 보람을 어디까지 보여 줄지 (대화 3-6)</li>
+</ul>
+
+<nav class="foot"><a href="03_maintenance_v1.html">← 03 정비 시설</a><a href="index.html">목록</a><a href="05_subsidy_contract_v1.html">05 보조금 분기 계약 →</a></nav>
+</div></body></html>

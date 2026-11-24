@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>02 식당 개편 v1 | 이세계 모험가 길드</title><style>
+:root{--g:#8a5a2b;--y:#e0a526;--r:#c0504d;--bg:#f7f5f1;--card:#fff;--ink:#231f1a;--sub:#6a6158;--line:#e3ddd4;--th:#f3ece2;--code:#f1ede7}
+@media (prefers-color-scheme:dark){:root{--g:#d39a5c;--bg:#171512;--card:#201d19;--ink:#ece6de;--sub:#a89e92;--line:#363029;--th:#2a241d;--code:#29241e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;word-break:keep-all}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 80px}
+header.doc{background:var(--card);border:1px solid var(--line);border-left:10px solid var(--g);border-radius:10px;padding:20px 24px;margin-bottom:28px}
+.line{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub);flex-wrap:wrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:3px solid var(--g);background:var(--card);font-weight:700;color:var(--ink);flex:none}
+.tag{border:1px solid var(--line);border-radius:999px;padding:1px 10px}
+.tag.v{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.tag.money{border-color:var(--r);color:var(--r)}
+h1{font-size:28px;margin:10px 0 4px;line-height:1.3}
+header.doc p{margin:0;color:var(--sub)}
+h2{font-size:20px;margin:36px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--g)}
+h3{font-size:16px;margin:22px 0 6px}
+p,ul,ol{margin:8px 0}ul,ol{padding-left:22px}li{margin:3px 0}
+a{color:var(--g)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;background:var(--card);font-size:14.5px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--th);white-space:nowrap}
+td.n{text-align:right;white-space:nowrap}
+.note{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--y);border-radius:6px;padding:10px 14px;color:var(--sub)}
+.warn{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--r);border-radius:6px;padding:10px 14px}
+code,pre{background:var(--code);border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:13.5px}
+code{padding:1px 5px}pre{padding:12px 14px;overflow-x:auto;line-height:1.5}
+nav.foot{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.list a{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:8px 0;text-decoration:none;color:var(--ink)}
+.list a:hover{border-color:var(--g)}
+.list b{display:block}.list span.d{color:var(--sub);font-size:14px}
+.list .tag{margin-left:auto;font-size:12px;color:var(--sub);white-space:nowrap}
+.list .tag.ok{background:var(--g);border-color:var(--g);color:#fff;font-weight:700}
+.list .tag.money{border-color:var(--r);color:var(--r)}
+.grp{font-size:13px;color:var(--sub);margin:22px 0 4px;font-weight:700;letter-spacing:.02em}
+.st{display:inline-block;border-radius:999px;padding:0 9px;font-size:12.5px;font-weight:700;white-space:nowrap;border:1px solid var(--line)}
+.st.ok{background:var(--g);border-color:var(--g);color:#fff}.st.wait{color:var(--sub)}.st.ask{background:var(--y);border-color:var(--y);color:#231f1a}.st.money{border-color:var(--r);color:var(--r)}
+@media (max-width:600px){.list a{flex-wrap:wrap}.list .tag{margin-left:48px}h1{font-size:24px}}
+</style></head>
+<body><div class="wrap">
+<header class="doc"><div class="line"><span class="num">02</span><span>이세계 모험가 길드 · 개선 기획서</span><span class="tag v">v1</span><span class="tag">방향 동의</span><span class="tag money">수치: 선임 안건</span><span class="tag">초안 2026-11-24</span></div>
+<h1>식당 개편</h1><p>주문할 때 재료 소진, 간판 메뉴, 두 그릇 주문, 한 그릇 값, 재료 조달</p></header>
+
+<h2>1. 목적</h2>
+<ul>
+<li>식당을 <b>처음부터 남는 돈이 있는 첫 시설</b>로 만든다 (원칙 P2). 모험가 지갑에 쌓이는 돈(첫해 한 달 약 480G)이 길드를 지나가는 첫 길목.</li>
+<li>준비량처럼 「틀린 답만 있는 관리」를 없애고, 「무엇을 팔까 · 재료를 어디서 구할까 · 자리를 늘릴까」 세 가지 선택만 남긴다 (P4).</li>
+<li>사용자가 「여관 느낌」이라고 한 메뉴 고르기를 살린다 (11-24 18:28).</li>
+</ul>
+
+<h2>2. 지금 (측정)</h2>
+<div class="tw"><table>
+<tr><th>항목</th><th>값</th></tr>
+<tr><td>한 달 손익 (첫해 · 100판)</td><td>만든 14.0그릇 · 팔린 5.4(39%) · 무료 7.2 · 버림 0.8 → 매출 119G − 재료 87G = <b>+32G</b></td></tr>
+<tr><td>식당 전체의 값 (식당 안 하는 봇 대비)</td><td>월 +38 ± 13G. 48주 금고는 식당 안 한 봇이 381G 더 많음</td></tr>
+<tr><td>한 그릇</td><td>값 = 재료 원가 × 2 + 5G → F급 17~25G, 남는 돈 평균 13G</td></tr>
+<tr><td>먹는 사람</td><td>의뢰를 떠나는 사람만, 씀씀이 성향에 따라 30 · 60 · 90% → 한 주 1.4~1.6명</td></tr>
+<tr><td>준비량</td><td>기본값 4그릇 그대로면 식당이 월 67G 적자 (준비량 2 고정 대비 −93 ± 20G)</td></tr>
+<tr><td>가격 ±30%</td><td>어느 쪽이든 약 −30G (기본가가 늘 최적)</td></tr>
+<tr><td>고급 요리 계단</td><td>설계는 F 13G → S 180G로 짜여 있으나 3년을 돌려도 한 그릇 22~23G에 머묾 (재료가 시장에 없음)</td></tr>
+</table></div>
+
+<h3>측정된 손잡이 (대화 3-8 · 1장 22번)</h3>
+<div class="tw"><table>
+<tr><th>손잡이</th><th>지금 대비 (월)</th><th>판 수</th></tr>
+<tr><td>한 가지 요리만 준비</td><td class="n">+15 ± 14G</td><td>100</td></tr>
+<tr><td>그릇 4주 보관</td><td class="n">+35 ± 28G</td><td>30</td></tr>
+<tr><td>떠나는 사람은 모두 먹음</td><td class="n">+36 ± 25G</td><td>30</td></tr>
+<tr><td>한 그릇 값 2배 (사는 사람은 그대로)</td><td class="n">+105 ± 17G</td><td>100</td></tr>
+<tr><td>요리 버프 3배</td><td class="n">+6 ± 25G</td><td>30</td></tr>
+<tr><td><b>한 가지 + 4주 보관 + 모두 먹음 + 값 2배</b></td><td class="n"><b>+254 ± 21G</b> (식당의 값 +292G)</td><td>100</td></tr>
+<tr><td>등급 제한 풀기 + 재료 살 길 + 메뉴 고르기</td><td class="n">첫해 +64 ± 27G · 2년 차 +134 ± 36G (메뉴를 안 고르면 −107G)</td><td>30</td></tr>
+</table></div>
+<p>읽는 법: <b>버프는 돈이 되지 않고</b>, 값을 하는 것은 「먹는 사람 수 × 한 그릇 값 − 버린 그릇」입니다. 넷이 곱으로 겹쳐 하나씩의 합(+191G)보다 묶음(+254G)이 큽니다.</p>
+
+<h2>3. 규칙 (안)</h2>
+<h3>3-1. 주문할 때 재료 소진 (준비량 삭제)</h3>
+<ul>
+<li>미리 만들지 않습니다. 모험가가 주문하면 그때 창고의 재료를 쓰고, 재료가 없는 요리는 메뉴판에서 「품절」로 보입니다.</li>
+<li>준비량 · 남은 그릇 결정은 사라집니다 (<a href="08_decision_cleanup_v1.html">08</a>). 「만든 것의 61%가 안 팔림」이 구조에서 없어집니다.</li>
+<li>11-24 18:41 사용자 아이디어 · Claude 찬성 (대화 1장 26 · 27번).</li>
+</ul>
+<h3>3-2. 간판 메뉴</h3>
+<ul>
+<li>발견한 요리 가운데 하나를 「간판」으로 걸어 둡니다. <b>한 번 정하면 그대로</b>이고, 바뀔 일이 생길 때만 리나가 묻습니다 — 새 요리 발견 · 귀한 재료 입고 · 간판 재료가 떨어짐 (첫해 5~10번 [어림]).</li>
+<li>간판은 고르면 이득, 안 골라도 손해 없음: 간판 요리는 주문 확률 +20%p · 한 그릇 +5G [임시].</li>
+<li>todo 7번 「이번 주 메뉴 고르기」는 주문 소진과 역할이 겹쳐, 「간판 메뉴」로 뜻을 바꿉니다 (대화 1장 27번).</li>
+</ul>
+<h3>3-3. 두 그릇 주문</h3>
+<ul>
+<li>11-24 18:38 사용자 아이디어. 한 사람이 <b>다른 요리</b>를 하나 더 주문할 수 있습니다. 발견한 요리가 늘수록 두 번째 주문 확률이 오릅니다 (예: 요리 2가지 20% · 3가지 35% · 4가지 이상 50% [임시]).</li>
+<li>버프는 겹치지 않고 한 그릇분만 적용 (돈만 늘어남).</li>
+<li>어림셈: 모두 두 그릇이면 월 +119G, 절반이면 +60G (측정 안 함).</li>
+</ul>
+<h3>3-4. 한 그릇 값</h3>
+<ul>
+<li>값의 기준을 「재료 원가 × 2 + 5G」에서 <b>모험가의 벌이</b>로 옮깁니다. 예: F급 요리 35~45G [임시] (측정의 「값 2배」 근처).</li>
+<li>플레이어가 값을 올리고 내리는 결정(±30%)은 없앱니다. 기본가가 늘 최적인 선택은 고를 이유가 없습니다 (<a href="08_decision_cleanup_v1.html">08</a>).</li>
+<li>모험가가 「비싸서 안 먹는」 판정은 씀씀이 성향과 지갑으로 합니다 (지갑 &lt; 한 그릇 × 3이면 안 먹음 [임시]).</li>
+</ul>
+<h3>3-5. 먹는 사람</h3>
+<ul>
+<li>떠나는 사람이 먹을 확률을 절약 30 · 보통 60 · 낭비 90%에서 절약 60 · 보통 85 · 낭비 100% [임시]로 올립니다.</li>
+<li>「쉬는 모험가도 먹는다」(D7)는 탈락 — 첫해에는 길드에 온 사람이 거의 다 떠나 한 해 13명뿐 (대화 3-5).</li>
+</ul>
+<h3>3-6. 재료 조달 — 남는 선택 ②</h3>
+<div class="tw"><table>
+<tr><th>경로</th><th>내용</th><th>지금</th></tr>
+<tr><td>시장</td><td>F급 재료를 돈으로 삼. 값은 고정</td><td>있음</td></tr>
+<tr><td>모험가가 잡아 온 것</td><td>소재 매입 → 창고 → 요리. 손질(<a href="03_maintenance_v1.html">03</a>) · 납품 · 판매와 다툼</td><td>있음 (첫해에는 메뉴와 거의 안 이어짐)</td></tr>
+<tr><td>상단</td><td>E급 재료를 가끔 들여옴 → 「귀한 재료 입고」로 간판을 바꿀 계기</td><td>상단은 있음, 식재료 거래는 확인 필요</td></tr>
+<tr><td>던전</td><td>고급 재료가 나오는 곳 (예: 마석 조각 → 「고블린도 탐낸 볶음」)</td><td>드롭률 미확인</td></tr>
+</table></div>
+<ul><li>요리의 등급 제한은 푸는 쪽에 찬성하되, 그것만으로는 효과 0 — 막는 것은 재료 (대화 1장 22번).</li></ul>
+
+<h2>4. 남는 선택 셋</h2>
+<div class="tw"><table>
+<tr><th>선택</th><th>어느 쪽도 말이 되는가</th><th>얼마나 자주</th></tr>
+<tr><td>무엇을 팔까 (간판)</td><td>싼 F급으로 많이 vs 귀한 재료로 비싸게</td><td>첫해 5~10번</td></tr>
+<tr><td>재료를 어디서 구할까</td><td>시장(돈) vs 잡아 온 소재(손질 · 납품과 다툼) vs 던전(위험)</td><td>재료가 떨어질 때</td></tr>
+<tr><td>자리를 늘릴까</td><td>테이블 200G vs 다른 구매. 「자리가 없어 ○명이 못 먹었어요」를 보고 판단 (<a href="04_purchase_v1.html">04</a> 부족 신호)</td><td>첫해 2~3번</td></tr>
+</table></div>
+
+<h2>5. 화면</h2>
+<ul>
+<li>음식 쪽: 간판 칸(초상 크기의 요리 그림 + 「간판」 띠), 요리마다 재고로 만들 수 있는 그릇 수, 품절 표시. 준비량 ± 단추와 가격 ± 단추는 없앰.</li>
+<li>로비: 모험가가 먹으면 테이블 위로 「+40G」가 떠오름 (P6).</li>
+<li>월말 결산: 「식당 이번 달 +○G · 지금까지 +○G」 (<a href="09_monthly_report_v1.html">09</a>).</li>
+</ul>
+
+<h2>6. 연동</h2>
+<ul>
+<li><a href="03_maintenance_v1.html">03 정비</a>: 식사 = 비전투 성공 · 전투 공격, 손질 = 방어 · 부상. 둘 다 「떠나기 전에 지갑을 여는 곳」.</li>
+<li><a href="04_purchase_v1.html">04 구매</a>: 테이블은 「지갑이 지나가는 자리」의 크기. 셋째 · 넷째 세트는 지금 값이 0(−1 ± 5G) — 먹는 사람이 늘어야 값이 생김.</li>
+<li><a href="10_newcomer_v1.html">10 신입</a>: 「먹으면 돌아온 뒤 2주 꼭 옴」(D1, 식당의 값 +82G)은 식당의 역할 갈림길(목록 「검토 중인 제안」 1번)과 함께 정함.</li>
+<li>요리 버프의 수치는 손대지 않음 (3배로 올려도 +6G).</li>
+</ul>
+
+<h2>7. 검증</h2>
+<ul>
+<li>식당의 값(식당 안 하는 봇 대비) <b>월 +150G 이상</b> [임시] — D7 훑어보기 때 쓴 통과 기준.</li>
+<li>테이블 첫 세트 + 요리의 본전 24주 안, 둘째 세트까지 프로토타입(40주) 안.</li>
+<li>모험가가 길드 시설에서 쓰는 몫 16% → 30% 이상.</li>
+<li>성공한 원정 · 48주 안 E급 비율이 흔들리지 않을 것 (묶음 측정에서 68.2건 · 90%로 그대로였음).</li>
+</ul>
+
+<h2>8. 미결 사항</h2>
+<ul>
+<li><b>식당의 역할</b>: 파는 곳(지갑) / 단골을 만드는 곳(D1) / 원정에 닿는 곳 — 목록의 갈림길 1번</li>
+<li>간판 메뉴의 효과 (주문 확률 · 값 가산) 크기</li>
+<li>두 그릇 주문의 확률 곡선, 「다른 요리여야 함」 조건 유지 여부</li>
+<li>한 그릇 값의 새 기준식 (등급별 표로 둘지, 「원가 × n」을 바꿀지)</li>
+<li>먹는 확률을 성향별로 올릴지, 「떠나는 사람 모두」로 단순하게 할지</li>
+<li>자리가 모자랄 때: 못 먹고 떠남(부족 신호) / 서서 먹음(값 절반)</li>
+<li>던전 재료 드롭률 (미확인) · 상단 식재료 거래 여부</li>
+<li>재료가 다 떨어지면 식당이 비는가, 시장 재료로 자동 보충하는가</li>
+</ul>
+
+<nav class="foot"><a href="01_principles_v1.html">← 01 개선 원칙</a><a href="index.html">목록</a><a href="03_maintenance_v1.html">03 정비 시설 →</a></nav>
+</div></body></html>
