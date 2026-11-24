@@ -2073,7 +2073,7 @@
   function cookMsg(r) {
     const nm = id => (MATS[id] || {}).name || '?';
     if (r.kind === 'ok') return { ok: true, text: `새 요리를 발견했어요! <b>${r.dish.name}</b>, 바로 메뉴에 올릴게요.` };
-    if (r.kind === 'known') return { text: '이미 아는 요리예요. 재료는 그대로 두었어요.' };
+    if (r.kind === 'known') return { text: `<b>${r.dish.name}</b>${josa(r.dish.name, '은', '는').slice(r.dish.name.length)} 이미 메뉴에 있어요. 그릇 수는 메뉴판에서 정해요.` };   // 2026-11-24 제보(순서를 바꾸니 안 만들어짐 = 이미 아는 요리): 요리 이름 + 할 일
     if (r.kind === 'none') return { bad: true, text: '이건… 아무도 먹지 않을 거예요.' };
     if (r.kind === 'extra') return { bad: true, text: `${josa(nm(r.mat), '은', '는')} 빼 보면 어떨까요?` };
     if (r.kind === 'missing') return { bad: true, text: '뭔가 하나 더 넣으면 좋겠는데요…' };
@@ -2464,6 +2464,7 @@
       document.addEventListener('pointerup', kEnd); document.addEventListener('pointercancel', () => kEnd(null)); }
     document.addEventListener('click', e => {
       if (!popup) return;
+      { const u = popup === 'meals' && !kAnim && e.target.closest('#popBody .kmat.unk'); if (u) { kToast({ text: '아직 모르는 재료예요. 의뢰에서 처음 얻으면 쓸 수 있어요.' }); return; } }   // 2026-11-24 제보: 「???」 재료는 눌러도 반응이 없어 조합이 안 되는 것처럼 보였음
       { const mt = e.target.closest('[data-mtsel], [data-mtf]'); if (mt && popup === 'trade') { if (mt.dataset.mtsel) mtSel = mt.dataset.mtsel; else mtFlt = mt.dataset.mtf; renderPopup(); return; } }
       { const bc = e.target.closest('[data-bchart], [data-bper]'); if (bc && popup === 'trade') { if (bc.dataset.bchart) buyChart = buyChart === bc.dataset.bchart ? null : bc.dataset.bchart; else buyChartW = +bc.dataset.bper; renderPopup(); return; } }
       { const lk = e.target.closest('[data-lgk]'); if (lk && popup === 'ledger') { lgSel = lk.dataset.lgk || null; renderPopup(); return; } }   // 2026-11-20 장부 항목 → 오른쪽 상세
@@ -2503,7 +2504,9 @@
       if (t.dataset.kcook) {   // 큰 솥 연출(약 1.6초) 뒤 결과. 연출 중 식당 아무 곳이나 누르면 바로 결과
         if (kAnim) return;
         const r = Gm.cook(s, kSel);
-        if (r.kind === 'known' || r.kind === 'invalid') { kMsg = cookMsg(r); renderPopup(); kToast(kMsg); return; }
+        if (r.kind === 'known' || r.kind === 'invalid') { kMsg = cookMsg(r); renderPopup(); kToast(kMsg);
+          if (r.kind === 'known') { const c = [...document.querySelectorAll('#popBody .kdish[data-dt]')].find(x => x.dataset.dt === r.dish.name); if (c) { c.scrollIntoView({ block: 'nearest' }); c.classList.remove('kflash'); void c.offsetWidth; c.classList.add('kflash'); setTimeout(() => c.classList.remove('kflash'), 1900); } }   // 메뉴판의 그 요리 카드 반짝임
+          return; }
         kAnim = { sel: kSel.slice(), r }; kSel = []; kMsg = null; kFx = ''; hooks.changed(); renderPopup();
         kTimer = setTimeout(kitchenDone, 1600); return;
       }

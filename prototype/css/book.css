@@ -1274,3 +1274,7 @@ body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 .av-trt span,.rk,.sf,.cont,.gv,.ql-fog,.res-b{font-size:12px!important;font-weight:700!important;padding:2px 7px!important;border-radius:6px!important;line-height:1.45!important}
 .ux-tag,.ux-tag.town,.st.new,.mk,.qparty,.tg.st{font-size:13px!important;font-weight:700!important;padding:3px 9px!important;border-radius:999px!important;line-height:1.45!important}
 .rq-chip,.fd-chip,.car-last span{font-size:14px!important;padding:4px 10px!important;border-radius:12px!important;line-height:1.45!important}
+/* 2026-11-24 이미 아는 요리를 조리대에 올리면 메뉴판의 그 카드를 반짝임 */
+.kdish.kflash{animation:kFlash .6s ease-in-out 3}
+@keyframes kFlash{50%{box-shadow:0 0 0 4px rgba(240,190,80,.85),0 0 14px rgba(240,190,80,.7);background-color:rgba(255,236,180,.6)}}
+.kmat.unk{cursor:help}
