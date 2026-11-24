@@ -328,10 +328,10 @@
     for (const k of q.req) {
       const vals = party.map(a => (finalStat(s, a, k) + (a.quirk === 'coward' && (q.type === 2 || q.type === 4) ? s.cfg.quirk.cowardStat : 0)) * (sm ? sm(a, k) : 1) * (k === a.core ? 1 + [0.03, 0.06, 0.10][a.stage - 1] : 1)).sort((x, y) => y - x);   // 2026-11-20 겁쟁이: 조사 · 탐사 판정 +
       const P0 = vals[0] + Q.partyAssist * vals.slice(1).reduce((x, y) => x + y, 0);
-      const fill = Math.min(P0 / q.r, 1.5); if (fill < 0.5) bottleneck = true; F += fill;
+      const fill = Math.min(P0 / (q.r * (q.g === 0 && k === 2 && Q.ncIntF ? Q.ncIntF : 1)), 1.5); if (fill < 0.5) bottleneck = true; F += fill;
     }
     F /= q.req.length;
-    let p = Math.max(0.05, Math.min(0.97, 0.55 + 1.1 * (F - 1)));
+    let p = Math.max(0.05, Math.min(0.97, (Q.ncBase != null ? Q.ncBase : 0.55) + 1.1 * (F - 1)));   // 2026-11-24 사용자 비전투 A+B+C: 기준점 quest.ncBase(요구치를 맞추면 이 확률) · F급 지력 요구치 quest.ncIntF 배율 [임시]
     if (bottleneck) p /= 2;
     return p;
   }
@@ -1166,6 +1166,7 @@
         if (needy && lowBuySkip(s, q) > 0 && s.R() < lowBuySkip(s, q)) continue;   // 2026-11-19 결정 43: 매입가를 낮춘 소재가 나오는 의뢰는 돈이 필요한 모험가가 거름 (50% → 25%)
         if (needy && K > 0 && a.quirk !== 'selfish') { const f = questFee(s, q); if (f > base0 + 1e-9 && s.R() < Math.min(1, (f - base0) / base0 * K)) { a.idle = 'fee'; continue; } }   // 2026-11-17 결정 22: 돈이 필요한 모험가는 수수료가 기본보다 높으면 확률로 거름(15% → 25%, 20% → 50%), 다 거르면 이번 주는 쉼
         let party = [a];
+        const thq = isCombat(q) ? th : th - ((s.cfg.adv.ncDrop || [0, 0, 0])[a.risk] || 0);   // 2026-11-24 사용자 비전투 A: 비전투 의뢰는 출발 기준을 adv.ncDrop만큼 낮춤 [임시]
         let pp = perceived(s, a, questP(s, party, q));
         if (pp < s.cfg.adv.seekTh[a.social]) {
           let mates = idle.filter(b => b !== a && b.state === 'town' && Math.abs(b.grade - q.g) <= 1 && !cPastEnd(s, b, q.weeks || s.cfg.quest.weeks[q.g]));
@@ -1174,10 +1175,10 @@
           const RP = s.cfg.adv.relParty || 0;
           if (RP > 0 && mates.length > 1) mates = mates.map(b => ({ b, k: relOf(s, a.id, b.id) + (s.R() - 0.5) * RP })).sort((x, y) => y.k - x.k).map(x => x.b);
           mates = mates.slice(0, 4);
-          for (const m of mates) { party.push(m); if (perceived(s, a, questP(s, party, q)) >= th) break; }
+          for (const m of mates) { party.push(m); if (perceived(s, a, questP(s, party, q)) >= thq) break; }
           pp = perceived(s, a, questP(s, party, q));
         }
-        if (pp < th) continue;
+        if (pp < thq) continue;
         { const cw = QC && pp < 0.7 ? party.find(m => m.quirk === 'coward' && s.R() < qkRisk(s, m, QC.cowardQuit)) : null;   // 겁쟁이: 「팽팽」 · 「위험」 의뢰는 출발 직전에 빠짐 → 이번 주 출발 안 함
           if (cw) { qkLog(s, cw, 'cowardQuit', `${J(cw.name, '이', '가')} 「${q.name || qn(q)}」 출발 직전에 빠졌습니다. (겁쟁이 · 이번 주는 출발하지 않음)`); break; } }
         s.board.splice(s.board.indexOf(q), 1);

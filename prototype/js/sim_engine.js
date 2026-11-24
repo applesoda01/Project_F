@@ -26,6 +26,7 @@
         x2Rate: 0.05,                              // 게시될 때 ×2 의뢰(골드만 2배)가 될 확률 (2026-11-12)
         upBoardWeeks: 1,                           // 게시판 업그레이드: 의뢰 기한 +주                // 의뢰 성공·실패 시 신뢰도 (2026-11-12 정수화, 예전 0.3·0.6)
         partyAssist: 0.25,                         // 파티원 보조 계수
+        ncBase: 0.7, ncIntF: 0.8,                  // 2026-11-24 비전투 B · C [임시] (balance.csv와 같게)
         deathBase: [0.01, 0.01, 0.03, 0.03, 0.05, 0.05, 0.08],
         soloMul: 0.5, partyFrom: [12, 24], partyRate: [0.2, 0.33], partyMul: [2, 3],   // 2026-11-19 보호 구간 혼자 판 · 그 뒤 파티 판 (balance.csv가 덮어씀)
         subGrowth: 0.2,                            // 성공 시 유형 능력치 성장
@@ -54,6 +55,7 @@
         leaveAfterYears: 2, leaveAttach: 20,
         heirDelayWeeks: 24,
         departTh: [0.70, 0.55, 0.35], seekTh: [0.30, 0.50, 0.70],   // 출발 기준(신중|보통|무모), 동료 찾는 기준(독불장군|보통|사교적)
+        ncDrop: [0.10, 0.15, 0.10],   // 2026-11-24 비전투 A: 출발 기준 낮춤 (신중|보통|무모) [임시]
         relParty: 30   // 2026-11-19: 동료를 고를 때 친밀도 흔들림 폭 [임시] (2026-11-20부터 시뮬레이터도 씀, balance.csv와 같게)
       },
       econ: {
@@ -311,12 +313,12 @@
       for (const k of q.req) {
         const vals = party.map(a => (finalStat(a, k) + (a.quirk === 'coward' && QC && (q.type === 2 || q.type === 4) ? QC.cowardStat : 0)) * (sm ? sm(a, k) : 1) * (k === a.core ? 1 + skillBonus(a) : 1)).sort((x, y) => y - x);   // 2026-11-20 겁쟁이: 조사 · 탐사 판정 + (게임과 같음)
         const P0 = vals[0] + Q.partyAssist * vals.slice(1).reduce((x, y) => x + y, 0);
-        const fill = Math.min(P0 / q.r, 1.5);
+        const fill = Math.min(P0 / (q.r * (q.g === 0 && k === 2 && Q.ncIntF ? Q.ncIntF : 1)), 1.5);   // 2026-11-24 C안 (게임과 같음)
         if (fill < 0.5) bottleneck = true;
         F += fill;
       }
       F /= q.req.length;
-      let p = 0.55 + 1.1 * (F - 1);
+      let p = (Q.ncBase != null ? Q.ncBase : 0.55) + 1.1 * (F - 1);   // 2026-11-24 B안 (게임과 같음)
       p = Math.max(0.05, Math.min(0.97, p));
       if (bottleneck) p /= 2;
       return p;
@@ -707,17 +709,18 @@
         for (const { q, i } of cands) {
           if (skipP > 0 && R() < skipP) continue;
           let party = [a];
+          const thq = q.combat ? th : th - ((A.ncDrop || [0, 0, 0])[a.risk] || 0);   // 2026-11-24 A안 (게임과 같음)
           let pp = perceived(a, questP(party, q));
           if (pp < A.seekTh[a.social]) {
             let mates = idle.filter(b => b !== a && b.busy === 0 && b.alive && Math.abs(b.grade - q.g) <= 1);
             const RP = A.relParty || 0;   // 2026-11-20 친밀도: 동료를 고를 때 친밀도 + 흔들림(±relParty/2) 큰 순서 (게임과 같음)
             if (RP > 0 && mates.length > 1) mates = mates.map(b => ({ b, k: relOf(a, b) + (R() - 0.5) * RP })).sort((x, y) => y.k - x.k).map(x => x.b);
             mates = mates.slice(0, 4);
-            for (const m of mates) { party.push(m); if (perceived(a, questP(party, q)) >= th) break; }
+            for (const m of mates) { party.push(m); if (perceived(a, questP(party, q)) >= thq) break; }
             pp = perceived(a, questP(party, q));
           }
-          if (pp >= th && QC && pp < 0.7 && party.some(m => m.quirk === 'coward' && R() < qkRisk(m, QC.cowardQuit))) { qkN('cowardQuit'); break; }   // 겁쟁이 출발 직전 빠짐 (게임과 같음)
-          if (pp >= th) {
+          if (pp >= thq && QC && pp < 0.7 && party.some(m => m.quirk === 'coward' && R() < qkRisk(m, QC.cowardQuit))) { qkN('cowardQuit'); break; }   // 겁쟁이 출발 직전 빠짐 (게임과 같음)
+          if (pp >= thq) {
             s.board.splice(i, 1);
             for (const m of party) m.busy = q.T ? q.T.weeks : Q.weeks[q.g];
             runQuest(party, q);

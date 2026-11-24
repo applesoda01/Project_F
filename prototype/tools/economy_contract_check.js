@@ -92,12 +92,12 @@ const CASES = [
     return { ok: c2.settled[dup.uid] != null && c1.gold === c2.gold && c1.stats.done === c2.stats.done && sum(wallets(c1)) === sum(wallets(c2)),
       detail: `불러온 뒤 원정 #${dup.uid} 다시 넣음 → 금고 차이 ${Math.round(c2.gold - c1.gold)}G · 성공 수 차이 ${c2.stats.done - c1.stats.done}` };
   } },
-  { id: 'D3', name: '계약 보수: 매주 저장 → 불러오기를 해도 총액 · 금고 같음, 12주 계약 보수는 75G를 넘지 않음', need: ['contractPropose'], src: '결정 9 · 3-3 · E1-6', run() {
-    const g0 = newRun(7000, 6), a = sign(g0), c1 = reload(g0); let c2 = reload(g0);
+  { id: 'D3', name: '계약 보수: 매주 저장 → 불러오기를 해도 총액 · 금고 같음, 12주 계약 보수는 월 보수 × 3을 넘지 않음 (예전 75G = 25G × 3)', need: ['contractPropose'], src: '결정 9 · 3-3 · E1-6', run() {
+    const g0 = newRun(7000, 6), a = sign(g0), pay = a.contract.pay, c1 = reload(g0); let c2 = reload(g0);   // 2026-11-24: 최소 보수가 모험가 벌이에 따라 바뀌므로 기대값을 실제 월 보수로 계산 (예전 25G 고정)
     for (let w = 0; w < 14; w++) { step(c1); step(c2); c2 = reload(c2); }
     const p1 = cpay(c1), p2 = cpay(c2);
-    return { ok: Math.round(c1.gold) === Math.round(c2.gold) && p1 === p2 && p1 <= 0 && p1 >= -75 && p1 <= -70,
-      detail: `${a.name} 12주 · 월 25G → 그대로 ${-p1}G / 매주 다시 불러옴 ${-p2}G · 금고 차이 ${Math.round(c2.gold - c1.gold)}G (기대 70~75G, 근무 주만큼 버림)` };
+    return { ok: Math.round(c1.gold) === Math.round(c2.gold) && p1 === p2 && p1 <= 0 && p1 >= -pay * 3 && p1 <= -(pay * 3 - Math.ceil(pay / 5)),
+      detail: `${a.name} 12주 · 월 ${pay}G → 그대로 ${-p1}G / 매주 다시 불러옴 ${-p2}G · 금고 차이 ${Math.round(c2.gold - c1.gold)}G (기대 ${pay * 3 - Math.ceil(pay / 5)}~${pay * 3}G, 근무 주만큼 버림)` };
   } },
   { id: 'N1', name: '금고 마이너스: 계약 보수(자동 지급)는 마이너스여도 나감', need: ['contractPropose'], src: '결정 7 · 2-9', run() {
     const g = newRun(7000, 6); sign(g); g.gold = -100000; const p0 = cpay(g);
@@ -147,8 +147,8 @@ const CASES = [
     return { ok, detail: `계약 중 출발 ${trips}건 중 끝을 넘음 ${over}건 · 끝 주 지명: "${last.why || '통과'}" · 끝 1주 전 지명: "${before.why || '통과'}"` };
   } },
   { id: 'X1', name: '계약 모험가가 죽거나 떠나면 근무 주만큼 정산하고 계약 해제 (위로금 없음)', need: ['contractPropose'], src: 'E3-6 · 결정 20', run() {
-    const g = newRun(7000, 6), a = sign(g); step(g); step(g); step(g); const wk = a.contract.wk, p0 = cpay(g); a.alive = false; step(g);   // 6주 체결 · 8주 월말 지급 뒤 1주 더 근무
-    return { ok: a.contract === null && p0 - cpay(g) === Math.floor(25 * wk / 4), detail: `월말 지급 뒤 ${wk}주 더 근무하고 사망 → 계약 ${a.contract === null ? '해제' : '남음'} · 지급 ${p0 - cpay(g)}G (기대 ⌊25 × ${wk} ÷ 4⌋ = ${Math.floor(25 * wk / 4)}G)` };
+    const g = newRun(7000, 6), a = sign(g); step(g); step(g); step(g); const wk = a.contract.wk, pay = a.contract.pay, p0 = cpay(g); a.alive = false; step(g);   // 6주 체결 · 8주 월말 지급 뒤 1주 더 근무
+    return { ok: a.contract === null && p0 - cpay(g) === Math.floor(pay * wk / 4), detail: `월말 지급 뒤 ${wk}주 더 근무하고 사망 → 계약 ${a.contract === null ? '해제' : '남음'} · 지급 ${p0 - cpay(g)}G (기대 ⌊${pay} × ${wk} ÷ 4⌋ = ${Math.floor(pay * wk / 4)}G)` };
   } },
   { id: 'M1', name: '혼성 파티 수수료: 계약 모험가 = 계약 수수료, 자유 = 의뢰 수수료', need: ['rateOf', 'contractPropose'], src: 'E3-5 · 결정 4 · 11', run() {
     const g = newRun(7000, 6), a = sign(g, null, { rate: 0.25 }), b = cand(g, a), q = g.board[0] || {};
@@ -157,7 +157,7 @@ const CASES = [
       detail: `계약 ${Math.round(ra * 100)}% · 자유 ${Math.round(rb * 100)}% → 101G = 실수령 ${Array.from(sp.net).join(' · ')} + 길드 ${sp.guild}` };
   } },
   { id: 'G1', name: 'V2 설정을 모두 예전 값으로 돌리면 관문 1 = 551G · 95.2% (11-19 630G · 95.1%)', need: [], src: 'E1-7 · 결정표 7장', run() {
-    const r = gate(c => { c.econ.feePerInfo = 0.02; c.econ.subsidyMode = 0; c.econ.resaleRate = 0.08; c.econ.matBuyRate = 0; c.econ.restK = 0; c.contract.slots = 0; c.adv.zeroFameVisit = 0; c.adv.starOn = 0; c.adv.founderMix = 0; c.econ.drawMode = 0; c.late.on = 0; if (c.qlv) c.qlv.on = 0; c.adv.fameStep = 5; c.adv.fameSkip = 0; c.adv.founderWarrior = 0; c.gear.pieceBuy = 0; c.gear.needSmith = 0; c.econ.mealMode = 0; c.adv.relParty = 0; if (c.quirk) c.quirk.rate = 0; if (c.dungeon) c.dungeon.on = 0; Object.assign(c.econ, { feeOpt: [0.1, 0.15, 0.2], orderMax: 2, mealCook: 0, mktOn: 0, popOn: 0, gqOn: 0, carOn: 0, matBaseOn: 0, stapleGrade: -1, autoRareRate: 0 }); c.contract.minPay = [0, 0, 0, 0, 0, 0, 0]; c.contract.ratioMin = 0; /* 2026-11-20 main 병합: V4 시장 · 식당 · 길드 의뢰 · 상단도 끔 */ c.growth.gradeLv = [0, 5, 10, 18, 26, 35, 45]; c.growth.gradeAch = [0, 5, 5, 7, 7, 10, 10]; });   // 2026-11-20 버릇 · 던전도 끔 · 승급 조건도 예전 값(E급 Lv5 · 실적 5)   // 2026-11-19 대장간 전 구매 없음도 끔   // 2026-11-17 cd248c4: 의뢰 0건 판 대책 두 가지도 끔
+    const r = gate(c => { c.econ.feePerInfo = 0.02; c.econ.subsidyMode = 0; c.econ.resaleRate = 0.08; c.econ.matBuyRate = 0; c.econ.restK = 0; c.contract.slots = 0; c.adv.zeroFameVisit = 0; c.adv.starOn = 0; c.quest.ncBase = 0.55; c.quest.ncIntF = 1; c.adv.ncDrop = [0, 0, 0]; c.adv.founderMix = 0; c.econ.drawMode = 0; c.late.on = 0; if (c.qlv) c.qlv.on = 0; c.adv.fameStep = 5; c.adv.fameSkip = 0; c.adv.founderWarrior = 0; c.gear.pieceBuy = 0; c.gear.needSmith = 0; c.econ.mealMode = 0; c.adv.relParty = 0; if (c.quirk) c.quirk.rate = 0; if (c.dungeon) c.dungeon.on = 0; Object.assign(c.econ, { feeOpt: [0.1, 0.15, 0.2], orderMax: 2, mealCook: 0, mktOn: 0, popOn: 0, gqOn: 0, carOn: 0, matBaseOn: 0, stapleGrade: -1, autoRareRate: 0 }); c.contract.minPay = [0, 0, 0, 0, 0, 0, 0]; c.contract.ratioMin = 0; /* 2026-11-20 main 병합: V4 시장 · 식당 · 길드 의뢰 · 상단도 끔 */ c.growth.gradeLv = [0, 5, 10, 18, 26, 35, 45]; c.growth.gradeAch = [0, 5, 5, 7, 7, 10, 10]; });   // 2026-11-20 버릇 · 던전도 끔 · 승급 조건도 예전 값(E급 Lv5 · 실적 5)   // 2026-11-19 대장간 전 구매 없음도 끔   // 2026-11-17 cd248c4: 의뢰 0건 판 대책 두 가지도 끔
     return { ok: r.G === 551 && r.S === '95.2', detail: `게임 ${r.G}G · ${r.S}% (eb10e81 559G에서 −1G는 정수 배분 버림. 2026-11-18 대장간 리퀘스트 조건 완화(데이터)로 558 → 560G. 2026-11-19 한 모험가가 두 리퀘스트에 들어가지 않게 막아 560 → 557G. 2026-11-19 게시판에 같은 의뢰가 두 장 붙지 않게 막아 557 → 562G. 2026-11-19 리퀘스트 「들개 떼 우두머리」(2명 필수) 추가로 562 → 560G, 초반 보호 구간에 맞춰 들개 4 → 2로 560 → 553G. 레벨 곡선 160 × Lv · 침공 적 × 0.6으로 553 → 567G · 94.6%. 보호 구간 혼자 판 · 파티 판으로 567 → 619G · 95.2%. 측정 판 시작에 집무실(튜토리얼 상태)로 619 → 630G · 95.1%. 리퀘스트 10번 · 침공 적 × 0.8로 630 → 551G · 95.2%. 끈 것: 정보실 +2%p 복원 · 매달 보조금 · 자동 차익 8% · 매입 0 · 거름 0 · 계약 정원 0 · 의뢰 0건 대책 2가지)` };
   } },
   { id: 'G2', name: '지금 설정 관문 1 (기록용, 월 순이익 300~600G 안이면 통과)', need: [], src: '관문 1', run() {
