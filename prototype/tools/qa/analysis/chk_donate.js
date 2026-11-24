@@ -1,0 +1,3 @@
+const {play,avg}=require('./harness.js');const R=[];for(let i=0;i<100;i++)R.push(play(7000+i,48,{}));
+const sum=(m,f)=>m.hist.reduce((t,h)=>t+(h.builds||[]).filter(f).reduce((a,b)=>a+b.c,0),0);
+console.log('첫해 건설 · 기부 합계',avg(R.map(m=>sum(m,()=>true))).toFixed(0),'| 리퀘스트 기부',avg(R.map(m=>sum(m,b=>/^리퀘스트/.test(b.f)))).toFixed(0),'| 테이블',avg(R.map(m=>sum(m,b=>/테이블/.test(b.f)))).toFixed(0),'| 집무실',avg(R.map(m=>sum(m,b=>/집무실/.test(b.f)))).toFixed(0),'| 섭외비',avg(R.map(m=>-m.hist.reduce((t,h)=>t+(h.scout||0),0))).toFixed(0),'| 리퀘스트 보상(금화)',avg(R.map(m=>m.hist.reduce((t,h)=>t+(h.reqIn||0),0))).toFixed(0),'| 출발 기록',avg(R.map(m=>m.wk.reduce((t,x)=>t+(x.k.depart||0),0))).toFixed(1));
