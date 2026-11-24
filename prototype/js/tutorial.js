@@ -122,7 +122,9 @@
       hold(true); const s = getS(), t = s.tut;
       if (t.aid == null || !s.advs.some(a => a.id === t.aid)) t.aid = act(() => Gm.tutSpawn(s, { core: 1 + Math.floor(s.R() * 4) })).id;
       t.cur = t.aid;
-      after(2, () => say('FT0005', 1, () => { t.cur = null; t.ph = 'wait'; after(1, () => go('FT0008')); }));   // 2026-11-19 사용자: 한 주 기다림 없이 바로 요리 단계로 (전엔 다음 주까지 최대 30초 기다림)
+      after(2, () => say('FT0005', 1, () => { t.cur = null; t.ph = 'name';   // 2026-11-24 버그 6 A안 (사용자 12:00): 대화가 끝나면 두 번째 모험가 이름 짓기 → 지으면 요리 단계로
+        const next = () => { t.ph = 'wait'; after(1, () => go('FT0008')); }, a = s.advs.find(x => x.id === t.aid);
+        if (root.UI.nameAsk && a) root.UI.nameAsk(a, next); else next(); }));   // 2026-11-19 사용자: 한 주 기다림 없이 바로 요리 단계로 (전엔 다음 주까지 최대 30초 기다림)
     },
     FT0008() { hold(true); say('FT0008', 1, () => { unlock('meals'); getS().tut.ph = 'meals'; }); },   // 음식 칸이 열림
     FT0009() { hold(true); say('FT0009', 1, () => { getS().tut.ph = 'wait'; after(1, () => go('FT0006')); }); },   // 2026-11-19 사용자: 한 주 기다림 없이 바로 집무실 단계로
