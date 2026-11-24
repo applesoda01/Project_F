@@ -270,7 +270,7 @@
   // ---------- 알림 (전직 제안 등 꼭 알려야 할 것만) ----------
   const TOAST_KIND = { promo: 1, depart: 1, success: 1, fail: 1, unlock: 1, build: 1, warn: 1, arrive: 1 };
   // 2026-11-23 모험가 개선작업 ② (사용자 20:31 「진행하자」 · 시안 mockups/idea_1123/성장카드_시안_1920.png): 원정에서 돌아온 모험가 성장 카드 — 화면 정수가 실제로 오른 능력치만
-  const starTag = a => a && a.star ? `<i class="astar s${a.star}" title="별 ${a.star}개 — 레벨이 오를 때 능력치가 ×${(s.cfg.adv.starMul || [1, 1.25, 1.5])[a.star - 1]}만큼 오릅니다">${'★'.repeat(a.star)}</i>` : '';   // 2026-11-23 모험가 개선작업 ③ 별
+  const starTag = a => a && a.star ? `<i class="astar s${a.star}" title="별 ${a.star}개 — 레벨이 오를 때 능력치가 ×${(s.cfg.adv.starMul || [1, 1.25, 1.5])[a.star - 1]}만큼 오릅니다">${[0, 1, 2].map(i => `<img class="${i < a.star ? 'on' : 'off'}" src="assets/ui/hud/star_${i < a.star ? 'on' : 'off'}.png" alt="">`).join('')}</i>` : '';   // 2026-11-23 모험가 개선작업 ③ 별 · 2026-11-24 사용자 B안: 제미나이 별 그림, 늘 3칸(못 가진 칸은 빈 별)
   const starCls = a => a && a.star >= 2 ? ' star' + a.star : '';   // 2026-11-23 별 테두리 (사용자 21:05): ★2 은 · ★3 금 + 빛
   const statInt = (a, i) => Math.round(Math.min(s.cfg.growth.statCap, a.stats[i]));
   UI.growSnap = function () {
