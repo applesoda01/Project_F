@@ -1,5 +1,6 @@
 // 분석용 실행기: 정책(P)에 따라 한 판을 돌리고 주별 · 월별 지표를 모은다. 게임 코드는 건드리지 않음.
-const ctx=require('./load.js')();const Gm=ctx.GuildGame,Sim=ctx.GuildSim;
+// __PF_PATCH: 규칙 시험용 메모리 패치 (patch_d1.js 참고 · 보통은 없음)
+const ctx=require('./load.js')(global.__PF_PATCH);const Gm=ctx.GuildGame,Sim=ctx.GuildSim;
 const DECO_SPOTS={floor:[[2,3],[11,3],[2,6],[11,6],[6,4],[8,4]],wallL:[1,3,5,7,9,11],wallR:[1,3,5,7,9,11]};
 function buyDeco(g,keep){for(const d of Gm.DECO){if(d.id==='table')continue;if(Gm.capOf(g,d.id)<=Gm.placedN(g,d.id))continue;if(g.gold-d.price<keep)continue;
   let ok=false;if(d.kind==='wall'||d.kind==='fire'){for(const w of ['L','R'])for(let i=0;i<14&&!ok;i++)if(Gm.placeOk(g,d.id,{wall:w,i})){ok=!!Gm.placeBuy(g,d.id,{wall:w,i});}}

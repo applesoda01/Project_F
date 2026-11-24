@@ -7,7 +7,7 @@
 ## 한 번에 돌리기
 
 ```
-bash prototype/tools/qa/analysis/run_all.sh     # 약 20분, results/ 에 글 파일 15개
+bash prototype/tools/qa/analysis/run_all.sh     # 약 35분, results/ 에 글 파일 17개
 python3 prototype/tools/qa/analysis/charts.py docs/reports/qa_1124/analysis   # 그림 3장 (run_all 뒤에)
 ```
 
@@ -29,6 +29,8 @@ python3 prototype/tools/qa/analysis/charts.py docs/reports/qa_1124/analysis   # 
 | `exp_rep.js` | 첫해 의뢰 · 몬스터 반복 |
 | `exp_drift.js` | 최근 변경(비전투 · 별)과 승급 시점 |
 | `chk_donate.js` · `savechk.js` | 첫해 지출 내역 · 저장에 든 수치 표 |
+| `exp_seat.js` | 분기별 식당 자리 이용 · 식사 수입과 재료비 |
+| `patch_d1.js` · `exp_d1.js` · `an_d1.js` | 「먹은 모험가가 더 자주 온다」 규칙 시험 — 규칙 6가지 × 봇 6가지 × 100판. 규칙은 읽어 들인 글을 메모리에서만 바꿔 흉내 냄 (게임 파일은 그대로) |
 | `ux_cap.js` | 화면 14개를 해상도별로 캡처하고 실제 글자 크기 · 누르는 것의 수와 크기를 잼 (시험 사본 · Playwright 필요) |
 | `chat_rep.js` | 1배속으로 몇 분 돌려 기록창 대사를 모음 (시험 사본 · Playwright 필요) |
 | `charts.py` | 보고서 그림 3장 |
@@ -47,5 +49,9 @@ python3 prototype/tools/qa/analysis/charts.py docs/reports/qa_1124/analysis   # 
 | `cfg: c => { … }` | 규칙 수치를 그 판에서만 바꿈 (저장소의 수치는 그대로) |
 | `pre(g, w)` · `post(g, w)` | 주 넘김 앞뒤에 직접 행동을 넣음 |
 | `snap: [48, 96]` | 그 주의 모험가 명부를 따로 남김 |
+
+## 「이런 규칙이라면」 시험
+
+`global.__PF_PATCH = (파일 이름, 글) => 글` 을 `harness.js`를 부르기 전에 넣으면, 읽어 들인 게임 코드를 메모리에서만 바꿔 돌립니다. `patch_d1.js`가 본보기입니다. 붙일 자리를 찾지 못하면 멈추고, 패치만 넣고 규칙을 켜지 않으면 원본과 같은 값이 나오는지 먼저 확인합니다.
 
 화면 도구의 시험 사본 만드는 법은 `prototype/tools/qa/README.md`를 봅니다.
