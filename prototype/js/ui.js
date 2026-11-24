@@ -470,15 +470,16 @@
     if (ex.ownerStat && a) town.push(`<div class="rqd-li">${esc(a.name)}의 ${josa(STAT_NM[a.core], '이', '가')} <b>+${ex.ownerStat}</b> 올랐어요</div>`);
     if (ex.ownerXp && a) town.push(`<div class="rqd-li">${esc(josa(a.name, '이', '가'))} 경험치 <b>+${ex.ownerXp}</b>를 얻었어요</div>`);
     const got = [];   // 받은 보상
-    if (rw.gold) got.push(`<span class="rq-chip gold">${fmt(rw.gold)}G</span>`);
-    if (rw.fame) got.push(`<span class="rq-chip">명성 +${rw.fame}</span>`); if (rw.trust) got.push(`<span class="rq-chip">신뢰도 +${rw.trust}</span>`);
-    if (rw.attach) got.push(`<span class="rq-chip">${rw.attach[0] === 'all' ? '모든 모험가' : rw.attach[0] === 'party' ? '참가자' : esc(giver)} 애착 +${rw.attach[1]}</span>`);
+    const ci = f => `<img src="assets/ui/hud/${f}.png" alt="">`;   // 2026-11-24 사용자 B안: 받은 보상 칩에 HUD 아이콘
+    if (rw.gold) got.push(`<span class="rq-chip gold">${ci('icon_coin')}${fmt(rw.gold)}G</span>`);
+    if (rw.fame) got.push(`<span class="rq-chip">${ci('icon_star')}명성 +${rw.fame}</span>`); if (rw.trust) got.push(`<span class="rq-chip">${ci('trust/trust_3')}신뢰도 +${rw.trust}</span>`);
+    if (rw.attach) got.push(`<span class="rq-chip">${ci('icon_adventurer')}${rw.attach[0] === 'all' ? '모든 모험가' : rw.attach[0] === 'party' ? '참가자' : esc(giver)} 애착 +${rw.attach[1]}</span>`);
     for (const [m, k] of Object.entries(rw.mats || {})) got.push(rqMat(m, k));
     const m = Gm.mainView ? Gm.mainView(s) : null, prog = m && m.state === 'none' && s.grade === 0 ? `<div class="rqd-prog"><span>메인 퀘스트까지 리퀘스트 <b>${m.doneN} / ${m.need}</b></span><i><u style="width:${Math.round(Math.min(1, m.doneN / m.need) * 100)}%"></u></i></div>` : m && m.state === 'offer' ? '<div class="rqd-prog"><span><b>메인 퀘스트가 도착했어요!</b> 리퀘스트 장 맨 위를 보세요</span></div>' : '';
     // 2026-11-23 3차 14번: 이 리퀘스트를 마쳐야 오는 다음 리퀘스트를 소문(hint)으로 알려 줌 (조건이 다 차면 「곧 찾아와요」, 아니면 남은 조건 수)
     const RQ0 = Gm.reqOf(s), nxt = (Gm.NQ || []).filter(x => (x.cond || []).some(c => c[0] === 'done' && c[2] === L.rq.key) && !RQ0.done[x.id] && !RQ0.open.some(r => r.key === x.id)).slice(0, 2)
       .map(x => { const [mt, tt] = Gm.reqProgress(s, x); return `<div class="rqd-li">${esc(x.hint || x.name.replace('{이름}', '모험가'))}<small>${mt >= tt ? '곧 찾아와요' : `조건 ${mt} / ${tt}`}</small></div>`; });
-    rqdEl.innerHTML = `<div class="rqd-box">${rqdFace(L.rq.key, L.rq.who)}<div class="rqd-k">리퀘스트 완료</div><h2>「${esc(L.rq.name || d.name)}」</h2><div class="rqd-g">${esc(giver)}의 부탁을 들어주었어요</div>
+    rqdEl.innerHTML = `<div class="rqd-box"><i class="rqd-stamp">완료</i>${rqdFace(L.rq.key, L.rq.who)}<div class="rqd-k">리퀘스트 완료</div><h2>「${esc(L.rq.name || d.name)}」</h2><div class="rqd-g">${esc(giver)}의 부탁을 들어주었어요</div>
       ${town.length ? `<div class="rqd-sec"><i>마을의 변화</i><div class="rqd-town">${town.join('')}</div></div>` : ''}
       ${got.length ? `<div class="rqd-sec"><i>받은 보상</i><div class="bk-rq rqd-got">${got.join('')}</div></div>` : ''}
       ${nxt.length ? `<div class="rqd-sec"><i>다음 리퀘스트 소문</i>${nxt.join('')}</div>` : ''}

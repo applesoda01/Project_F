@@ -720,3 +720,18 @@ span.kslot{cursor:default}
 #arrCard .arr-qk em{font-style:normal;font-weight:700;color:#4a2160;margin-right:6px}
 #arrCard .arr-bar{position:absolute;left:0;bottom:0;height:4px;width:100%;background:#c9963e;transform-origin:left;animation:arrBar linear forwards}
 @keyframes arrBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+/* 2026-11-24 리퀘스트 완료 카드 B안 (사용자 확정 13:22): 양피지 + 붉은 리본 + 「완료」 도장 · 보상 칩 아이콘 · 갈색 글자 · 금색 막대 */
+#rqdLay .rqd-box{background:url(../assets/ui/pop/panel_paper.png) center/100% 100% no-repeat;border:none;border-radius:0;box-shadow:none;filter:drop-shadow(0 16px 30px rgba(0,0,0,.45));padding:80px 60px 40px;min-width:680px}
+#rqdLay .rqd-face{border-color:#c98a2a;box-shadow:0 0 0 4px #fff3d6,0 4px 10px rgba(0,0,0,.3)}
+#rqdLay .rqd-k{display:inline-block;padding:6px 26px;margin-bottom:10px;background:#7a3b2a;color:#fff3d6;letter-spacing:.2em;clip-path:polygon(0 0,100% 0,94% 50%,100% 100%,0 100%,6% 50%)}
+#rqdLay h2{display:inline-block;margin:2px auto 8px;padding:14px 60px 12px;background:url(../assets/ui/pop/title.png) center/100% 100% no-repeat;color:#5a3a1e;font-size:30px}   /* 사용자 13:3x: A안의 장식 제목 판도 넣음 */
+#rqdLay .rqd-k{display:table;margin-left:auto;margin-right:auto}#rqdLay .rqd-g{color:#7a5a3a}
+#rqdLay .rqd-sec>i{color:#8a6a46;letter-spacing:.08em;display:flex;align-items:center;gap:10px}#rqdLay .rqd-sec>i::before,#rqdLay .rqd-sec>i::after{content:"";width:60px;height:1px;background:rgba(138,106,70,.45)}
+#rqdLay .rqd-li{color:#4a3420}#rqdLay .rqd-li small{color:#9a8466}
+#rqdLay .rqd-pop{background:#fffaf0;border-color:#d9b98a}#rqdLay .rqd-pop span{color:#7a5a3a}#rqdLay .rqd-pop b{color:#5a3a1e}
+#rqdLay .rq-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;border-radius:999px;background:#fff7e6;border:2px solid #c9a76a;color:#5a3a1e;font-size:17px;font-weight:700;line-height:1}#rqdLay .rq-chip img{width:26px;height:26px;object-fit:contain}
+#rqdLay .rqd-prog{color:#7a5a3a}#rqdLay .rqd-prog b{color:#5a3a1e}#rqdLay .rqd-prog i{background:rgba(110,72,36,.15);height:10px;border-radius:5px}#rqdLay .rqd-prog u{background:linear-gradient(#f2c14e,#d08a1c)}
+#rqdLay .gup-bar{left:60px;right:60px;bottom:24px;background:rgba(160,110,50,.55)}
+#rqdLay .rqd-stamp{position:absolute;right:34px;top:26px;font:900 26px/1 "MaruBuri","Malgun Gothic",serif;font-style:normal;letter-spacing:4px;color:#b8322a;padding:8px 12px 6px 16px;border:4px double rgba(184,50,42,.85);border-radius:10px;transform:rotate(12deg);background:rgba(255,245,235,.4);animation:rqdStamp .45s .25s ease-out both;pointer-events:none}
+@keyframes rqdStamp{from{opacity:0;transform:rotate(12deg) scale(1.8)}to{opacity:1;transform:rotate(12deg) scale(1)}}
+
