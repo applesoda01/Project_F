@@ -17,8 +17,10 @@ const BUY0 = {   // 손잡이 [시안 기본값 · 모두 임시]
   tight: 0.5,                                  // 주머니: 값 ≤ 남은 돈/2 → 1 · ≤ 남은 돈 → tight · 넘으면 0
   cheap: [0.8, 1.2], dear: [1.25, 0.5],        // 견줌: 여관 값의 0.8배 이하 1.2 · 1.25배 초과 0.5 · 그 사이 1.0
   front: [0, 4],                               // 앞줄 직업(core): 전사 · 도적 (combat.js POS 0)
+  qMul: 1,                                     // (2026-11-25 승산 훑기) 게시판 퀘스트의 세기 배수: 판정 기준치 · 적 체력 · 공격력에 곱함 (정해진 틀로 만드는 튜토리얼 · 길드 의뢰 · 상단 호위와 리퀘스트 · 침공은 그대로)
+  dishK: 1,                                    // (승산 훑기) 길드 요리 효과 배수 (F급 +3 → ×2 = +6 · ×3 = +9). 측정 도구가 Gm.DISH 의 val 에 곱함
 };
-const BS = `function __bs(s){ s.bstat = s.bstat || [0,1,2,3].map(() => ({ g: 0, inn: 0, innG: 0, no: 0, why: {}, gwhy: {}, potN: 0, potG: 0, prepN: 0, prepG: 0, bigN: 0, bigG: 0, pl: {}, ps: {}, pe: {} })); return s.bstat[Math.min(3, Math.floor(Math.max(0, s.week) / 12))]; }
+const BS = `function __bs(s){ s.bstat = s.bstat || [0,1,2,3].map(() => ({ g: 0, inn: 0, innG: 0, no: 0, why: {}, gwhy: {}, potN: 0, potG: 0, prepN: 0, prepG: 0, bigN: 0, bigG: 0, pl: {}, ps: {}, pe: {}, band: [0, 0, 0], tband: [0, 0, 0], need: [0, 0, 0], eatN: 0, upN: 0, eatB: [0, 0, 0], upB: [0, 0, 0], w0N: 0, w0G: 0, w0B: 0, gqN: 0, gqRw: 0, gqRwG: 0 })); return s.bstat[Math.min(3, Math.floor(Math.max(0, s.week) / 12))]; }
   function kCan(s, d) { if (stockOf(s, d) > 0) return true; if (!(s.cfg.buy && s.cfg.buy.cookOrder)) return false; const RS = reqReserve(s); return d.mats.every(m => (s.mats[m] || 0) - (RS[m] || 0) >= 1 || (SPICE.has(m) && shopPrice(s, m) <= s.gold)); }
   function kServe(s, d) { if (stockOf(s, d) > 0) { takeBowl(s, d); return; } const RS = reqReserve(s);
     for (const m of d.mats) if (!((s.mats[m] || 0) - (RS[m] || 0) >= 1)) { const c = shopPrice(s, m); s.gold -= c; s.month.shop = (s.month.shop || 0) - c; s.mats[m] = (s.mats[m] || 0) + 1; mktAdd(s, m, -1); }
@@ -26,7 +28,7 @@ const BS = `function __bs(s){ s.bstat = s.bstat || [0,1,2,3].map(() => ({ g: 0, 
   `;
 const NEWBUY = `
           const BY = s.cfg.buy, B = __bs(s), combat = isCombat(q), band = pp >= BY.bands[1] ? 2 : pp >= BY.bands[0] ? 1 : 0;
-          const big = band === 0 || (!!q.rq && combat), MC = mealCookOn(s);
+          const big = band === 0 || (!!q.rq && combat), MC = mealCookOn(s), tq = questP(s, party, q), tb = tq >= BY.bands[1] ? 2 : tq >= BY.bands[0] ? 1 : 0; B.tband[tb] += party.length;
           const innP = Math.round(Q.reward[Math.min(6, s.grade)] * BY.innRate);
           const rawRW = (q.gq != null ? (q.reward || 0) : q.reward * (q.x2 ? 2 : 1)) * (BY.split ? (q.party || 1) : 1);
           const sh = econSplit(rawRW, party.map(m => rateOf(s, m, q))).net, lv2m = [0, BY.like, 1];
@@ -37,7 +39,7 @@ const NEWBUY = `
           party.forEach((m, i) => {
             const saving = !!(s.townUnlock || {}).smith && !!eqNext(s, m);
             let rem = Math.min(Math.max(0, m.wallet), Math.max(0, sh[i]) * BY.spend[saving ? 0 : 1][m.spend] + (big ? Math.max(0, m.wallet) * BY.bigK[m.spend] : 0));
-            const base = BY.need[m.risk][band], potL = combat ? Math.min(2, base + (BY.front.includes(m.core) ? 1 : 0)) : 0, mealL = Math.min(2, base + (m.quirk === 'glutton' ? 1 : 0));
+            B.band[band]++; const base = BY.need[m.risk][band], potL = combat ? Math.min(2, base + (BY.front.includes(m.core) ? 1 : 0)) : 0, mealL = Math.min(2, base + (m.quirk === 'glutton' ? 1 : 0)); B.need[mealL]++;
             const items = []; for (let k = m.pots; k < C.potionCarry[m.spend]; k++) items.push({ t: 'pot', L: potL }); items.push({ t: 'meal', L: mealL });
             items.sort((a, b) => (b.L - a.L) || ((a.t === 'pot' ? 0 : 1) - (b.t === 'pot' ? 0 : 1)));
             const whyMoney = price => m.wallet < price ? 'wallet' : saving ? 'saving' : 'earn';
@@ -69,21 +71,23 @@ global.__PF_PATCH = (f, src) => {
   src = src.slice(0, i0) + '        let eaters = 0; const dish = dishFor(s, q), ate = new Set(), innSet = new Set(), BYON = !!(s.cfg.buy && s.cfg.buy.on);\n        if (BYON) {' + NEWBUY + '        } else {\n' + old + '        { const B = __bs(s); B.g += eaters; B.no += party.length - eaters; if (!dish) B.why.nodish = (B.why.nodish || 0) + party.length; }\n        }\n' + src.slice(i1);
   // 여관 밥: 모든 능력치 +innVal
   { const m = src.match(/        let sm = dish && dish\.stats\.length \?[^\n]*\n/); if (!m) throw new Error('exp_buy: sm');
-    src = src.replace(m[0], m[0] + '        if (innSet.size) { const s0 = sm, iv = s.cfg.buy.innVal; sm = (a, k) => (s0 ? s0(a, k) : 1) * (innSet.has(a.id) ? 1 + iv / Math.max(1, finalStat(s, a, +k)) : 1); }\n'); }
+    src = src.replace(m[0], m[0] + '        if (innSet.size) { const s0 = sm, iv = s.cfg.buy.innVal; sm = (a, k) => (s0 ? s0(a, k) : 1) * (innSet.has(a.id) ? 1 + iv / Math.max(1, finalStat(s, a, +k)) : 1); }\n        if (BYON && (ate.size || innSet.size)) { const B = __bs(s), BD = s.cfg.buy.bands, bd = p => p >= BD[1] ? 2 : p >= BD[0] ? 1 : 0, cb = isCombat(q), p0 = questP(s, party, q), p1 = cb ? CB.predict(party.map(a => unitOf(s, a, 0, sm)), q.seen, q.g, party[0].risk) : successP(s, party, q, sm), b0 = bd(p0), n = ate.size + innSet.size; B.eatN += n; B.eatB[b0] += n; if (bd(p1) > b0) { B.upN += n; B.upB[b0] += n; } }\n'); }
   // 물약: 새 판단이면 원래 구매를 건너뜀 · 원래 구매도 셈
   one('for (const m of party) { const want = C.potionCarry[m.spend]', 'if (!BYON) for (const m of party) { const want = C.potionCarry[m.spend]');
   one('while (m.pots < want && m.wallet >= price) { m.wallet -= price; m.pots++; }', 'while (m.pots < want && m.wallet >= price) { m.wallet -= price; m.pots++; __bs(s).potN++; __bs(s).potG += price; }');
   // 준비에 쓴 돈 · 파티 인원 (출발 때)
-  one('        party.forEach((m, i) => { const c = m.contract; if (!c || s.week < c.start', '        { const B = __bs(s), used = party.reduce((t, m, i) => t + Math.max(0, w0[i] - m.wallet), 0), bg = pp < ((s.cfg.buy || BUY_D).bands[0]) || (!!q.rq && isCombat(q)); if (bg) { B.bigN += party.length; B.bigG += used; } else { B.prepN += party.length; B.prepG += used; } B.pl[party.length] = (B.pl[party.length] || 0) + 1; }\n        party.forEach((m, i) => { const c = m.contract; if (!c || s.week < c.start');
+  one('        party.forEach((m, i) => { const c = m.contract; if (!c || s.week < c.start', '        { const B = __bs(s), used = party.reduce((t, m, i) => t + Math.max(0, w0[i] - m.wallet), 0), bg = pp < ((s.cfg.buy || BUY_D).bands[0]) || (!!q.rq && isCombat(q)); const w0s = w0.reduce((a, b) => a + Math.max(0, b), 0); if (bg) { B.bigN += party.length; B.bigG += used; B.w0B += w0s; } else { B.prepN += party.length; B.prepG += used; B.w0G += w0s; } if (q.gq != null) { B.gqN++; if (q.reward > 0) { B.gqRw++; B.gqRwG += q.reward; } } B.pl[party.length] = (B.pl[party.length] || 0) + 1; }\n        party.forEach((m, i) => { const c = m.contract; if (!c || s.week < c.start');
   // 보상 나누기
   one('const RW = q.gq != null ? 0 : q.reward * (q.x2 ? 2 : 1), DV = s.cfg.deco;', 'const RW = q.gq != null ? 0 : q.reward * (q.x2 ? 2 : 1) * (s.cfg.buy && s.cfg.buy.split ? (q.party || 1) : 1), DV = s.cfg.deco;');
   { const m = src.match(/        const sp = econSplit\(RW, [^\n]*\n/); if (!m) throw new Error('exp_buy: sp');
     src = src.replace(m[0], m[0] + '        { const B = __bs(s), n = party.length; B.ps[n] = (B.ps[n] || 0) + 1; B.pe[n] = (B.pe[n] || 0) + sp.net.reduce((a, b) => a + b, 0) / n; }\n'); }
   // 식당: 주문할 때 만듦
   one('(mealCookOn(s) && stockOf(s, d) <= 0)', '(mealCookOn(s) && !kCan(s, d))');
+  one('const DF = ((Q.diff || [])[g] || 1) * (QL ? 1 + QL.foe * (lv - 1) : 1);', 'const DF = ((Q.diff || [])[g] || 1) * (QL ? 1 + QL.foe * (lv - 1) : 1) * ((!force && s.cfg.buy && s.cfg.buy.qMul) || 1);');
   one('  function kitchenWeekly(s) {\n    if (!mealCookOn(s)) return;', '  function kitchenWeekly(s) {\n    if (!mealCookOn(s) || (s.cfg.buy && s.cfg.buy.cookOrder)) return;');
   return 'const BUY_D = ' + JSON.stringify({ bands: BUY0.bands }) + ';\n' + src;
 };
+if (require.main !== module) { module.exports = { BUY0 }; return; }
 const { play, avg, med, Gm } = require('./harness.js');
 const N = +process.argv[2] || 30, W = 48, ONLY = process.argv[3] ? process.argv[3].split(',') : null;
 const C = {
