@@ -1,0 +1,480 @@
+<!DOCTYPE HTML>
+<html data-book-version="v5" lang="ko" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>03 식당 개편 - Project_F 기획 안내서 v5 — 경영 · 육성 개편안</title>
+
+
+        <!-- Custom HTML head -->
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+
+        <meta name="description" content="이세계 모험가 길드(가칭) — 처음 읽는 사람을 위한 기획 안내서">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/custom.css">
+
+    <link rel="stylesheet" href="../../_book-ui.css">
+</head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html" class="book-toc-change" data-book-change="index.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기">들어가며<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded affix "><a href="../reading.html">이 책을 읽는 법</a></li><li class="chapter-item expanded affix "><a href="../changes.html">변경 비교표: v1 → v2</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded "><a href="../ch01/index.html"><strong aria-hidden="true">1.</strong> 이 게임은</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch01/concept.html"><strong aria-hidden="true">1.1.</strong> 한 장으로 보는 게임</a></li><li class="chapter-item expanded "><a href="../ch01/numbers.html"><strong aria-hidden="true">1.2.</strong> 핵심 수치 다섯 가지</a></li><li class="chapter-item expanded "><a href="../ch01/scope.html"><strong aria-hidden="true">1.3.</strong> 프로토타입 범위와 현재 상태</a></li><li class="chapter-item expanded "><a href="../ch01/references.html"><strong aria-hidden="true">1.4.</strong> 레퍼런스 게임</a></li><li class="chapter-item expanded "><a href="../ch01/platform.html"><strong aria-hidden="true">1.5.</strong> 플랫폼과 로드맵</a></li></ol></li><li class="chapter-item expanded "><a href="../ch02/index.html"><strong aria-hidden="true">2.</strong> 한 판의 흐름</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch02/loop.html"><strong aria-hidden="true">2.1.</strong> 핵심 루프: 한 주에 일어나는 일</a></li><li class="chapter-item expanded "><a href="../ch02/time.html"><strong aria-hidden="true">2.2.</strong> 시간: 주 · 달 · 해</a></li><li class="chapter-item expanded "><a href="../ch02/first-year.html"><strong aria-hidden="true">2.3.</strong> 첫해 진행표</a></li></ol></li><li class="chapter-item expanded "><a href="../ch03/index.html"><strong aria-hidden="true">3.</strong> 모험가</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch03/stats.html"><strong aria-hidden="true">3.1.</strong> 능력치 · 레벨 · 등급</a></li><li class="chapter-item expanded "><a href="../ch03/jobs.html"><strong aria-hidden="true">3.2.</strong> 직업과 전직</a></li><li class="chapter-item expanded "><a href="../ch03/skills.html"><strong aria-hidden="true">3.3.</strong> 스킬과 성장 경로</a></li><li class="chapter-item expanded "><a href="../ch03/personality.html"><strong aria-hidden="true">3.4.</strong> 성향과 애착도</a></li><li class="chapter-item expanded "><a href="../ch03/lifecycle.html"><strong aria-hidden="true">3.5.</strong> 합류 · 계약 · 파티 · 사망과 계승</a></li><li class="chapter-item expanded "><a href="../ch03/talk.html"><strong aria-hidden="true">3.6.</strong> 모험가끼리 대화 · 몸 상태 · 칭호</a></li></ol></li><li class="chapter-item expanded "><a href="../ch04/index.html"><strong aria-hidden="true">4.</strong> 의뢰와 퀘스트</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch04/board.html"><strong aria-hidden="true">4.1.</strong> 의뢰 유입과 게시판</a></li><li class="chapter-item expanded "><a href="../ch04/judge.html"><strong aria-hidden="true">4.2.</strong> 의뢰 유형과 성공 판정</a></li><li class="chapter-item expanded "><a href="../ch04/requests.html"><strong aria-hidden="true">4.3.</strong> 리퀘스트(서브 퀘스트)</a></li><li class="chapter-item expanded "><a href="../ch04/requests-list.html"><strong aria-hidden="true">4.4.</strong> F급 리퀘스트 28개와 의뢰인</a></li><li class="chapter-item expanded "><a href="../ch04/nomination.html"><strong aria-hidden="true">4.5.</strong> 지명 퀘스트</a></li><li class="chapter-item expanded "><a href="../ch04/main.html"><strong aria-hidden="true">4.6.</strong> 메인 퀘스트</a></li></ol></li><li class="chapter-item expanded "><a href="../ch05/index.html"><strong aria-hidden="true">5.</strong> 전투</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch05/rules.html"><strong aria-hidden="true">5.1.</strong> 전투 규칙</a></li><li class="chapter-item expanded "><a href="../ch05/departure.html"><strong aria-hidden="true">5.2.</strong> 출발 판단과 성공률</a></li><li class="chapter-item expanded "><a href="../ch05/invasion.html"><strong aria-hidden="true">5.3.</strong> 침공: 다리를 지켜라</a></li><li class="chapter-item expanded "><a href="../ch05/extra.html"><strong aria-hidden="true">5.4.</strong> 습격 · 마인 · 무술 대회</a></li></ol></li><li class="chapter-item expanded "><a href="../ch06/index.html"><strong aria-hidden="true">6.</strong> 아이템</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch06/gear.html"><strong aria-hidden="true">6.1.</strong> 장비</a></li><li class="chapter-item expanded "><a href="../ch06/potion.html"><strong aria-hidden="true">6.2.</strong> 물약과 소재</a></li><li class="chapter-item expanded "><a href="../ch06/cooking.html"><strong aria-hidden="true">6.3.</strong> 요리</a></li></ol></li><li class="chapter-item expanded "><a href="../ch07/index.html"><strong aria-hidden="true">7.</strong> 길드와 마을</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch07/facilities.html"><strong aria-hidden="true">7.1.</strong> 시설</a></li><li class="chapter-item expanded "><a href="../ch07/housing.html"><strong aria-hidden="true">7.2.</strong> 길드 내부 꾸미기</a></li><li class="chapter-item expanded "><a href="../ch07/town.html"><strong aria-hidden="true">7.3.</strong> 마을과 인구</a></li></ol></li><li class="chapter-item expanded "><a href="../ch08/index.html"><strong aria-hidden="true">8.</strong> 길드 승급</a></li><li class="chapter-item expanded "><a href="../ch09/index.html"><strong aria-hidden="true">9.</strong> 경제</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch09/market.html"><strong aria-hidden="true">9.1.</strong> V4 소재 시장과 식당 순환</a></li><li class="chapter-item expanded "><a href="../ch09/flow.html"><strong aria-hidden="true">9.2.</strong> 돈의 흐름 한눈에 보기</a></li><li class="chapter-item expanded "><a href="../ch09/income.html"><strong aria-hidden="true">9.3.</strong> 길드 수입</a></li><li class="chapter-item expanded "><a href="../ch09/spending.html"><strong aria-hidden="true">9.4.</strong> 길드 지출</a></li><li class="chapter-item expanded "><a href="../ch09/adventurer.html"><strong aria-hidden="true">9.5.</strong> 모험가의 지갑</a></li><li class="chapter-item expanded "><a href="../ch09/measure.html"><strong aria-hidden="true">9.6.</strong> v1 기준 측정: 첫해 100판</a></li><li class="chapter-item expanded "><a href="../ch09/ledger.html"><strong aria-hidden="true">9.7.</strong> 장부와 관문 1</a></li><li class="chapter-item expanded "><a href="../ch09/issues.html"><strong aria-hidden="true">9.8.</strong> 알려진 문제와 열린 질문</a></li></ol></li><li class="chapter-item expanded "><a href="../ch10/index.html"><strong aria-hidden="true">10.</strong> 화면</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch10/flow.html"><strong aria-hidden="true">10.1.</strong> 화면 흐름</a></li><li class="chapter-item expanded "><a href="../ch10/book.html"><strong aria-hidden="true">10.2.</strong> 길드 업무 일지(책 UI)</a></li><li class="chapter-item expanded "><a href="../ch10/miniview.html"><strong aria-hidden="true">10.3.</strong> 원정 미니 뷰</a></li><li class="chapter-item expanded "><a href="../ch10/hud.html"><strong aria-hidden="true">10.4.</strong> HUD · 대화 · 침공 화면</a></li><li class="chapter-item expanded "><a href="../ch10/visual.html"><strong aria-hidden="true">10.5.</strong> 비주얼과 사운드</a></li></ol></li><li class="chapter-item expanded "><a href="../ch11/index.html"><strong aria-hidden="true">11.</strong> 세계관과 이야기</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch11/ending.html"><strong aria-hidden="true">11.1.</strong> 엔딩 · 마왕 · 간부</a></li><li class="chapter-item expanded "><a href="../ch11/characters.html"><strong aria-hidden="true">11.2.</strong> 인물과 이름</a></li></ol></li><li class="chapter-item expanded "><a href="../plan/index.html" class="book-toc-change" data-book-change="plan/index.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기"><strong aria-hidden="true">12.</strong> V5 경영 · 육성 개편안<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../plan/01-principles.html" class="book-toc-change" data-book-change="plan/01-principles.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기"><strong aria-hidden="true">12.1.</strong> 01 원칙 다섯<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../plan/02-timeline.html" class="book-toc-change" data-book-change="plan/02-timeline.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기"><strong aria-hidden="true">12.2.</strong> 02 40주 진행표<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../plan/03-dining.html" class="book-toc-change active" data-book-change="plan/03-dining.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기"><strong aria-hidden="true">12.3.</strong> 03 식당 개편<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../plan/17-quest-material-map.html" class="book-toc-change" data-book-change="plan/17-quest-material-map.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기"><strong aria-hidden="true">12.4.</strong> 17 퀘스트와 소재의 지도<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../plan/18-purchase-judgment.html" class="book-toc-change" data-book-change="plan/18-purchase-judgment.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기"><strong aria-hidden="true">12.5.</strong> 18 모험가가 물건을 사는 판단<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol></li><li class="chapter-item expanded "><a href="../development/index.html"><strong aria-hidden="true">13.</strong> 개발 순서와 완료 기준</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../development/foundation.html"><strong aria-hidden="true">13.1.</strong> 1. 기준 확정·저장·정산 기반</a></li><li class="chapter-item expanded "><a href="../development/contracts.html"><strong aria-hidden="true">13.2.</strong> 2. 계약·지원·배치</a></li><li class="chapter-item expanded "><a href="../development/operations.html"><strong aria-hidden="true">13.3.</strong> 3. 거래·의뢰 관리·발주</a></li><li class="chapter-item expanded "><a href="../development/validation.html"><strong aria-hidden="true">13.4.</strong> 4. 보조금·통합 검증</a></li><li class="chapter-item expanded "><a href="../development/later.html"><strong aria-hidden="true">13.5.</strong> 5. 후속 사업과 보류 범위</a></li></ol></li><li class="chapter-item expanded "><li class="spacer"></li><li class="chapter-item expanded "><a href="../appendix/glossary.html"><strong aria-hidden="true">14.</strong> 부록 A. 용어집</a></li><li class="chapter-item expanded "><a href="../appendix/values.html"><strong aria-hidden="true">15.</strong> 부록 B. 주요 설정값</a></li><li class="chapter-item expanded "><a href="../appendix/pending.html"><strong aria-hidden="true">16.</strong> 부록 C. 결정 대기 목록</a></li><li class="chapter-item expanded "><a href="../appendix/sources.html"><strong aria-hidden="true">17.</strong> 부록 D. 원본 문서 지도</a></li><li class="chapter-item expanded "><a href="../appendix/ideas.html"><strong aria-hidden="true">18.</strong> 부록 E. 아이디어</a></li><li class="chapter-item expanded "><a href="../appendix/ideas_2026-11-19.html"><strong aria-hidden="true">19.</strong> 부록 E. 아이디어 메모 (2026-11-19)</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Project_F 기획 안내서 v5 — 경영 · 육성 개편안</h1>
+
+                    <div class="right-buttons">
+<nav class="book-version-menu" aria-label="문서 버전"><select id="book-version-select" aria-label="문서 버전 선택"><option value="../../v1/index.html">V1 원본 (첫 페이지)</option><option value="../../v2/index.html">V2 개선안 (첫 페이지)</option><option value="../../v3/index.html">V3 반영판 (첫 페이지)</option><option value="../../v4/index.html">V4 시장 제안판 (첫 페이지)</option><option value="03-dining.html" selected>V5 경영 · 육성 개편안</option></select><a href="../versions.html">버전 이력</a></nav>
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/applesoda01/Project_F" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+<p class="book-version-status">V5 경영 · 육성 개편안 · V4를 보존하고 2026-11-24 설계 대화의 경영 · 육성 개편 항목을 넣은 판. 보라 목차·본문을 클릭하면 V4 대비 변경 요약을 볼 수 있습니다. 새 규칙은 게임 미반영이고 값은 모두 [임시]입니다.</p><section class="book-change" data-book-change="plan/03-dining.html" aria-label="V1 대비 변경된 내용"><button type="button" class="book-change-trigger" aria-haspopup="dialog">변경 요약</button>
+                        <h1 id="03-식당-개편"><a class="header" href="#03-식당-개편">03 식당 개편</a></h1>
+<blockquote>
+<p><strong>상태: 초안 (2026-11-25) · 한석님 논의 전 / 게임: 미반영 · 숫자는 모두 [임시]</strong></p>
+<p>2026-11-24 밤에 방향만 잡아 둔 것(주문할 때 재료 소진 · 두 그릇 주문 · 간판 메뉴 · 고급 요리)을 <a href="01-principles.html">01 원칙</a> · <a href="17-quest-material-map.html">17 퀘스트와 소재의 지도</a> · <a href="18-purchase-judgment.html">18 사는 판단</a>에 맞춰 정했습니다. 걸음 3(요리 값)을 정하다가 18이 따로 섰고, 값과 사는 쪽의 규칙은 18에 있습니다.</p>
+<p>숫자는 「재기 전의 출발 값」입니다. 한 바퀴 다 정한 뒤 한꺼번에 봅니다(저장소의 <code>docs/design/임시_값_목록_2026-11-25.md</code>).</p>
+<p>대화 기록: 저장소의 <code>docs/design/세부기획_대화_2026-11-25.md</code> (「03」)</p>
+</blockquote>
+<h2 id="한눈에"><a class="header" href="#한눈에">한눈에</a></h2>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: center">걸음</th><th>정한 것</th></tr></thead><tbody>
+<tr><td style="text-align: center">1 재료가 오는 길</td><td>주재료(고기 · 버섯 · 생선)는 모험가가 잡아 온 것으로만. 양념은 플레이어가 시장에서 직접 삼</td></tr>
+<tr><td style="text-align: center">2 만드는 때</td><td>미리 만들지 않고 주문할 때 재료를 씀. 그릇 수 정하기를 없앰. 남은 그릇분은 상하지 않음</td></tr>
+<tr><td style="text-align: center">3 값</td><td>플레이어가 ◀ 숫자 ▶로 매김. 모험가는 주머니 · 필요 · 여관에 견줘 판단 (18)</td></tr>
+<tr><td style="text-align: center">4 몇 그릇</td><td>사는 판단이 정함. 서로 다른 요리로, 도움이 되는 것만. 상한 두 그릇</td></tr>
+<tr><td style="text-align: center">5 간판 메뉴</td><td>잘 팔리는 요리. 효과가 한 단계 높고 여관과 견주지 않음. 마르타의 2단계</td></tr>
+<tr><td style="text-align: center">6 고급 요리</td><td>둘째 묶음의 식재료로 만드는 요리 셋. 큰일 앞의 요리. 마르타의 3단계</td></tr>
+<tr><td style="text-align: center">7 마르타</td><td>식재료를 넘겨 단계를 올림. 좌판은 신뢰에 따라 — 양념, 그리고 가끔 귀한 식재료</td></tr>
+<tr><td style="text-align: center">8 발견</td><td>새 요리는 지금처럼 조리대에서 직접 만들어 봄. 전설의 요리 다섯은 계단의 맨 위</td></tr>
+</tbody></table>
+</div>
+<h2 id="왜-고치나"><a class="header" href="#왜-고치나">왜 고치나</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>진단</th><th>숫자</th></tr></thead><tbody>
+<tr><td>식당이 거의 벌지 못함</td><td>식당의 값이 한 달 +38G (2026-11-24 측정)</td></tr>
+<tr><td>만든 것이 안 팔림</td><td>만든 그릇의 61%가 안 팔림</td></tr>
+<tr><td>재료와 퀘스트가 이어지지 않음</td><td>F급 요리 재료를 모두 시장에서 삼. 모험가가 무엇을 잡아 오든 메뉴가 같음</td></tr>
+<tr><td>밥이 결과를 바꾸지 못함</td><td>밥을 먹는 사람이 65명이든 47명이든 퀘스트 성공률이 90%로 같음 (2026-11-25 1차 측정)</td></tr>
+<tr><td>길드에서 먹는 사람이 적음</td><td>떠난 모험가 122명 가운데 47명 (같은 측정)</td></tr>
+</tbody></table>
+</div>
+<h2 id="1-재료가-오는-길"><a class="header" href="#1-재료가-오는-길">1. 재료가 오는 길</a></h2>
+<div class="table-wrapper"><table><thead><tr><th></th><th>정한 것</th><th>지금 게임에서 바뀌는 곳</th></tr></thead><tbody>
+<tr><td>주재료 (고기 · 버섯 · 생선)</td><td>모험가가 잡아 온 것으로만 만듦</td><td>창고에 없으면 시장에서 사 쓰던 것을 뺌</td></tr>
+<tr><td>양념 (소금 · 향신료 · 물 · 밀가루)</td><td>플레이어가 시장에서 직접 삼. 떨어지면 그때그때</td><td>식당이 알아서 사던 것을 수동으로 되돌림</td></tr>
+<tr><td>없을 때</td><td>그 요리는 품절이고 경고 카드에 뜸</td><td>양념은 카드를 누르면 바로 살 수 있게, 주재료는 「굼바의 일에서 나와요」처럼 풀 길이 보이게</td></tr>
+<tr><td>장보기 기능</td><td>한 번에 쌓아 두기 · 맡기기는 뒤 등급에서 보상으로 엶</td><td>프로토타입(F급)에는 들어가지 않음</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>주재료를 시장에서 사면 퀘스트를 할 까닭이 줄어듭니다.</strong> 17에서 「경영에서 급한 것이 퀘스트를 이끈다」로 정했습니다. 식재료만 시장에서 살 수 있으면 줄 10개 가운데 3개(고기 · 버섯·열매 · 생선)가 그 이음에서 빠집니다.</li>
+<li>식재료가 나오는 사람이 셋(굼바 · 헤르만 · 탐험가)이라 길이 하나뿐인 것은 아닙니다. 식재료가 안 나오는 두 사람(사냥꾼 · 세실리아)만 밀면 식당이 비는데, 이것은 막지 않고 경고 카드에 보이게 둡니다.</li>
+<li><strong>양념을 직접 사는 것은 경영의 손맛입니다.</strong> 모든 손길을 게임이 가져가면 경영하는 느낌이 사라집니다. 처음에는 직접 하고, 피로가 쌓일 즈음 장을 봐 두는 기능을 보상으로 엽니다(<a href="01-principles.html">01</a>의 「손이 가는 일은 처음에는 직접」).</li>
+<li>양념 값은 그것으로 만드는 그릇 값의 10%쯤으로 둡니다(예: 20G짜리 2그릇이 나오는 양념 하나 = 4G). 지금 12G는 옛 규칙의 부산물입니다.</li>
+</ul>
+<h2 id="2-만드는-때"><a class="header" href="#2-만드는-때">2. 만드는 때</a></h2>
+<div class="table-wrapper"><table><thead><tr><th></th><th>지금 게임</th><th>정한 것</th></tr></thead><tbody>
+<tr><td>만드는 때</td><td>매주 출발 전에 요리마다 정해 둔 수(0 ~ 10그릇)만큼 미리 만듦</td><td>모험가가 주문할 때 재료를 씀</td></tr>
+<tr><td>플레이어의 손</td><td>요리마다 준비할 그릇 수를 정함</td><td>없음</td></tr>
+<tr><td>재료 한 세트</td><td>2 ~ 3그릇</td><td>그대로</td></tr>
+<tr><td>남은 그릇분</td><td>한 주 뒤에 버리거나 할인 · 무료로 줌</td><td><strong>상하지 않음.</strong> 다음 주문 때 나감</td></tr>
+<tr><td>재고 표시</td><td>재료 개수</td><td>「멧돼지 스테이크 5그릇분」처럼 그릇 수로</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>그릇 수 정하기는 손이 가는 일이지만 경영의 손맛이 아닙니다. 맞히면 본전이고 틀리면 버리기만 하는 「틀리면 손해만 보는 관리」입니다. 그 손은 「누구의 일을 밀까」와 「양념 사기」가 대신합니다.</li>
+<li>버리는 일이 없어집니다. 따라서 「마감 할인」과 「무료 식사」도 없어집니다. 무료 식사의 애착 +1을 다른 모양으로 살릴지는 11 애착에서 다룹니다.</li>
+</ul>
+<h2 id="3-값"><a class="header" href="#3-값">3. 값</a></h2>
+<p>값은 플레이어가 요리마다 숫자로 매깁니다. 사는 쪽의 규칙은 <a href="18-purchase-judgment.html">18</a>에 있습니다.</p>
+<pre><code>멧돼지 스테이크      ◀  20G  ▶     적당하다     여관에서는 20G
+</code></pre>
+<ul>
+<li>1G 단위입니다. 한 번 매기면 바꿀 때까지 그대로 갑니다.</li>
+<li>숫자 옆에 모험가가 그 값을 어떻게 느끼는지(싸다 · 적당하다 · 비싸다)와 여관 값이 함께 보입니다.</li>
+<li>처음 값은 여관과 같은 값입니다. 지금의 「재료비 × 2 + 5G」로 계산하지 않습니다.</li>
+<li>길드가 비싸거나 품절이면 모험가는 여관에서 먹고 떠납니다. 여관의 밥은 싸고 효과가 약합니다. 결산에 「여관에서 먹은 모험가 · 놓친 돈」이 보입니다.</li>
+<li>마을이 커지면 여관 값이 오르고, 길드도 값을 올려 받을 수 있습니다.</li>
+</ul>
+<h2 id="4-한-사람이-몇-그릇"><a class="header" href="#4-한-사람이-몇-그릇">4. 한 사람이 몇 그릇</a></h2>
+<p>따로 규칙을 두지 않습니다. 모험가는 준비물을 필요한 것부터 사고, 쓸 돈이 남으면 다음 것을 삽니다(18).</p>
+<div class="table-wrapper"><table><thead><tr><th>경우</th><th style="text-align: center">사는 그릇</th><th>까닭</th></tr></thead><tbody>
+<tr><td>능력치 하나만 보는 퀘스트 (F급 대부분)</td><td style="text-align: center">한 그릇</td><td>둘째 요리는 그 퀘스트에 도움이 안 됨</td></tr>
+<tr><td>능력치 둘을 보는 퀘스트 (D급부터)</td><td style="text-align: center">두 그릇까지</td><td>요리마다 올려 주는 능력치가 다름</td></tr>
+<tr><td>보스 같은 큰일</td><td style="text-align: center">두 그릇까지</td><td>지갑을 열어 쓸 돈이 넉넉함</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>서로 다른 요리여야 하고, 그 퀘스트에 도움이 되는 것만 삽니다. 같은 요리의 효과는 겹치지 않습니다. 상한은 두 그릇입니다.</li>
+<li>요리를 여러 가지 갖춰 두면 한 사람이 더 삽니다. 요리를 늘릴 까닭이 생깁니다.</li>
+</ul>
+<h2 id="5-요리의-계단"><a class="header" href="#5-요리의-계단">5. 요리의 계단</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>계단</th><th style="text-align: center">값</th><th>효과</th><th>재료가 오는 곳</th><th>누가 사나</th><th>열리는 때</th></tr></thead><tbody>
+<tr><td>여관의 밥</td><td style="text-align: center">20G</td><td>가장 약함 (모든 능력치 조금)</td><td>—</td><td>길드에서 못 산 사람</td><td>처음부터 (마을)</td></tr>
+<tr><td>기본 요리</td><td style="text-align: center">20G에서 시작</td><td>기본</td><td>첫 묶음</td><td>누구나</td><td>식당을 지으면</td></tr>
+<tr><td><strong>간판 메뉴</strong></td><td style="text-align: center">25G쯤</td><td>한 단계 위</td><td>첫 묶음</td><td>평소에도 잘 팔림</td><td>마르타의 2단계</td></tr>
+<tr><td><strong>고급 요리</strong></td><td style="text-align: center">40G 이상</td><td>두 단계 위</td><td>둘째 묶음</td><td>보스를 앞둔 사람 · 잘 버는 사람</td><td>마르타의 3단계</td></tr>
+<tr><td>전설의 요리</td><td style="text-align: center">미정</td><td>미정</td><td>특수 리퀘스트의 전설의 소재</td><td>—</td><td>프로토타입 밖</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>모험가는 살 수 있는 것 가운데 가장 좋은 것을 고릅니다. 모험가가 클수록, 큰일일수록 위 칸이 팔립니다.</li>
+<li>효과의 크기는 「승산을 한 단계 올릴 만큼」을 기준으로, 측정(승산 훑기)이 오면 맞춥니다.</li>
+</ul>
+<h3 id="간판-메뉴--잘-팔리는-요리"><a class="header" href="#간판-메뉴--잘-팔리는-요리">간판 메뉴 — 잘 팔리는 요리</a></h3>
+<p>기본 요리 가운데 하나를 골라 내거는 <strong>우리 길드만의 요리</strong>입니다. 기본 요리를 대신하지 않고, 메뉴에 한 줄이 더 생깁니다.</p>
+<div class="table-wrapper"><table><thead><tr><th></th><th>기본 요리</th><th>간판 메뉴</th></tr></thead><tbody>
+<tr><td>효과</td><td>기본</td><td>한 단계 위</td></tr>
+<tr><td>값</td><td>여관에 견줌. 올리면 「여관보다 비싸요」</td><td>여관과 견주지 않음. 더 받을 수 있음</td></tr>
+<tr><td>재료</td><td>한 세트</td><td>같음</td></tr>
+<tr><td>개수</td><td>—</td><td>한 번에 하나. 바꾸는 것은 한 달에 한 번</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>값은 물약을 사고도 살 수 있는 25G쯤으로 둡니다. 평소에 밥에 쓸 수 있는 돈이 그쯤이기 때문입니다.</li>
+<li><strong>어느 요리를 걸지가 고민입니다.</strong> 전사가 많으면 스테이크, 마법사가 많으면 버섯 수프가 맞습니다. 그리고 그 재료가 나오는 사람의 일을 꾸준히 밀어야 합니다.</li>
+<li>「재료를 두 배로 쓰고 값도 두 배」는 검토했으나 쓰지 않습니다. 평소의 쓸 돈으로는 사기 어려워 「큰일 앞의 요리」가 되기 때문입니다. 그 자리는 고급 요리가 맡습니다.</li>
+</ul>
+<h3 id="고급-요리--큰일-앞의-요리"><a class="header" href="#고급-요리--큰일-앞의-요리">고급 요리 — 큰일 앞의 요리</a></h3>
+<p>둘째 묶음의 식재료로 만드는 요리 셋입니다. 기본 요리 셋과 같은 능력치를 맡는 윗등급이라, 「고기는 힘, 버섯은 지력, 생선은 민첩」이 그대로 통합니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>고급 요리 [이름 임시]</th><th>주재료</th><th>재료가 나오는 곳</th><th>올려 주는 능력치</th></tr></thead><tbody>
+<tr><td>등심 스테이크</td><td>멧돼지 등심</td><td>굼바의 둘째 묶음</td><td>힘 · 기교</td></tr>
+<tr><td>향버섯 볶음</td><td>향버섯</td><td>헤르만의 둘째 묶음</td><td>지력 · 정신</td></tr>
+<tr><td>잉어 찜</td><td>큰 잉어</td><td>탐험가의 둘째 묶음</td><td>민첩</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>재료부터 여관에 없는 것이라 값을 여관과 견주지 않습니다.</li>
+<li>「넘길까, 만들까」가 생깁니다. 처음 들어온 둘째 묶음 식재료는 마르타에게 넘겨 3단계를 열고, 그 뒤에 들어오는 것으로 요리를 만듭니다. 보스를 넘은 보람이 「새 재료 → 새 조리법 → 메뉴판의 새 줄」로 차례로 보입니다.</li>
+<li>보스는 길드의 대목입니다(18). 보스를 앞두고 고급 재료를 쌓아 두는 것이 플레이어의 준비가 됩니다.</li>
+</ul>
+<h3 id="전설의-요리-다섯"><a class="header" href="#전설의-요리-다섯">전설의 요리 다섯</a></h3>
+<p>지금 게임의 그리폰 알 오믈렛 · 와이번 꼬치구이 · 키메라 3종 모둠 · 불사조 수프 · 용 꼬리 스테이크는 버리지 않고 계단의 맨 위에 둡니다. 특수 리퀘스트에서 얻은 전설의 소재로만 만듭니다. 효과와 값은 특수 리퀘스트가 정해질 때(10 · 15) 함께 정합니다.</p>
+<h2 id="6-마르타--떠돌이-농산-상단"><a class="header" href="#6-마르타--떠돌이-농산-상단">6. 마르타 — 떠돌이 농산 상단</a></h2>
+<div class="table-wrapper"><table><thead><tr><th></th><th>정한 것</th></tr></thead><tbody>
+<tr><td>넘기는 것</td><td>식재료. 12개에 한 단계</td></tr>
+<tr><td>오는 때</td><td>떠돌이로 둠. 「마르타가 오는 주」가 작은 장날. 첫 방문과 간격은 지금(13 ~ 16주 · 5 ~ 8주마다)보다 당김</td></tr>
+<tr><td>팔지 않는 것</td><td>첫 묶음의 주재료 · 한 등급 위의 식재료</td></tr>
+</tbody></table>
+</div>
+<p>마르타의 좌판은 신뢰에 따라 달라집니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>마르타의 신뢰</th><th>파는 것</th><th>열리는 것</th></tr></thead><tbody>
+<tr><td>1단계</td><td>양념 (시장보다 쌈)</td><td>—</td></tr>
+<tr><td>2단계</td><td>양념 + 가끔 귀한 식재료 한두 개</td><td>간판 메뉴</td></tr>
+<tr><td>3단계</td><td>양념 + 귀한 식재료가 더 자주</td><td>고급 요리의 조리법</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>귀한 식재료는 둘째 묶음의 식재료이고, 길드가 이미 한 번 얻어 본 것만 팝니다.</strong> 보스를 넘기 전에는 좌판에 오르지 않습니다. 값은 비쌉니다. 사기 전에 무엇인지 다 보입니다.</li>
+<li>소재를 더 얻는 길이 셋이 됩니다: Lv 3이 된 퀘스트를 더 돈다 · 둘째 묶음으로 간다 · 마르타에게서 산다. 시간을 쓸지 돈을 쓸지를 고릅니다.</li>
+<li>A 그룹 넷 가운데 한스 · 대장장이 · 그레타는 늘 마을에 있고 마르타만 가끔 옵니다.</li>
+</ul>
+<h2 id="7-요리-발견"><a class="header" href="#7-요리-발견">7. 요리 발견</a></h2>
+<p>새 요리는 지금처럼 <strong>조리대에서 직접 만들어 봐야</strong> 메뉴에 오릅니다. 식당에서 손맛이 가장 큰 일이라 그대로 둡니다.</p>
+<div class="table-wrapper"><table><thead><tr><th></th><th>일어나는 일</th></tr></thead><tbody>
+<tr><td>마르타가 3단계가 되기 전</td><td>둘째 묶음의 식재료를 조리대에 올려도 「아직 다룰 줄 모르는 재료」</td></tr>
+<tr><td>3단계가 되면</td><td>마르타가 조리법을 귀띔해 줌. 그 뒤 조리대에서 직접 만들어 보면 메뉴에 오름</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>마르타의 신뢰는 요리를 대신 넣어 주는 것이 아니라, 그 재료를 다룰 수 있게 해 주고 귀띔을 줍니다.</li>
+<li>틀리면 넣은 재료가 사라지는 것은 그대로입니다. 귀띔을 듣고 만들면 틀리지 않습니다.</li>
+<li>간판 메뉴는 새 요리가 아니라 이미 아는 요리를 내거는 것이라, 2단계가 되면 바로 걸 수 있습니다.</li>
+</ul>
+<h2 id="식당이-두-배로-버는-길은-손님-수입니다"><a class="header" href="#식당이-두-배로-버는-길은-손님-수입니다">식당이 두 배로 버는 길은 손님 수입니다</a></h2>
+<p>값을 두 배로 올리면 평소의 쓸 돈(45G쯤, 싸우는 퀘스트에서는 물약 20G를 먼저 삼)으로는 사기 어렵습니다. 두 배는 먹는 사람 수에서 나옵니다.</p>
+<div class="table-wrapper"><table><thead><tr><th></th><th style="text-align: center">길드에서 먹는 사람</th><th>식당 수입</th></tr></thead><tbody>
+<tr><td>지금 (퀘스트가 쉬움)</td><td style="text-align: center">열에 넷</td><td>지금 수준</td></tr>
+<tr><td>퀘스트가 팽팽해져 「꼭 필요하다」고 느끼면</td><td style="text-align: center">더 많이</td><td>값을 올리지 않고도 늘어남</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>18에서 「퀘스트는 준비 없이 가면 팽팽하고, 준비하면 여유가 되게 설계한다」로 정했습니다. 식당의 벌이는 이 조건에 달려 있습니다.</li>
+<li>얼마나 느는지는 재는 중입니다(승산 훑기).</li>
+</ul>
+<h2 id="플레이어의-손"><a class="header" href="#플레이어의-손">플레이어의 손</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>남는 손</th><th>없어지는 손</th></tr></thead><tbody>
+<tr><td>누구의 일을 밀까 (주재료)</td><td>요리마다 준비할 그릇 수 정하기</td></tr>
+<tr><td>양념 장보기</td><td>남은 그릇 처리 (마감 할인 · 무료 식사)</td></tr>
+<tr><td>요리 값 매기기</td><td></td></tr>
+<tr><td>어느 요리를 간판으로 걸까</td><td></td></tr>
+<tr><td>귀한 식재료를 넘길까, 만들까</td><td></td></tr>
+<tr><td>모자란 재료를 마르타에게서 살까</td><td></td></tr>
+<tr><td>조리대에서 새 요리 찾기</td><td></td></tr>
+<tr><td>자리(테이블) 늘리기</td><td></td></tr>
+</tbody></table>
+</div>
+<h2 id="1차-측정에서-식당에-대해-나온-것"><a class="header" href="#1차-측정에서-식당에-대해-나온-것">1차 측정에서 식당에 대해 나온 것</a></h2>
+<p>「주문할 때 만든다 · 주재료는 잡아 온 것만」을 측정 도구 안에서 흉내 낸 결과입니다(100판 · 48주).</p>
+<div class="table-wrapper"><table><thead><tr><th></th><th style="text-align: center">지금</th><th style="text-align: center">식당만 바꿈</th></tr></thead><tbody>
+<tr><td>한 달 순수입</td><td style="text-align: center">418G</td><td style="text-align: center">455G (+36 ± 17)</td></tr>
+<tr><td>한 달 식사 수입</td><td style="text-align: center">119G</td><td style="text-align: center">99G</td></tr>
+<tr><td>재료 등 「그 밖」 지출</td><td style="text-align: center">−119G</td><td style="text-align: center">−50G</td></tr>
+<tr><td>맞는 요리가 없어 못 먹은 사람 (한 판)</td><td style="text-align: center">9.4명</td><td style="text-align: center">25.4명</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>식사 수입은 줄어도 버리는 재료가 없어져 순수입이 늡니다.</li>
+<li>첫 24주에 재료가 모자랍니다. 처음 창고에 기본 재료를 넣어 둘지는 [임시] 값 목록에 올려 두었습니다.</li>
+</ul>
+<h2 id="지금-게임과-달라지는-곳"><a class="header" href="#지금-게임과-달라지는-곳">지금 게임과 달라지는 곳</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>지금</th><th>바뀌면</th></tr></thead><tbody>
+<tr><td>F급 주재료를 시장에서 사 씀</td><td>잡아 온 것으로만</td></tr>
+<tr><td>양념을 식당이 알아서 삼</td><td>플레이어가 직접 삼</td></tr>
+<tr><td>매주 미리 만듦 · 그릇 수를 정함</td><td>주문할 때 재료를 씀</td></tr>
+<tr><td>남은 그릇은 버리거나 할인 · 무료</td><td>상하지 않음</td></tr>
+<tr><td>값 = 재료비 × 2 + 5G에서 시작</td><td>여관과 같은 값에서 시작</td></tr>
+<tr><td>한 파티에 요리 하나, 한 사람 한 그릇</td><td>사는 판단이 정함. 두 그릇까지</td></tr>
+<tr><td>요리 17가지가 한 줄</td><td>여관 → 기본 → 간판 → 고급 → 전설의 계단</td></tr>
+<tr><td>농산 상단이 한 등급 위의 식재료를 팖</td><td>양념, 그리고 이미 얻어 본 귀한 식재료</td></tr>
+<tr><td>농산 상단과의 관계 = 거래 금액</td><td>넘긴 식재료의 개수</td></tr>
+</tbody></table>
+</div>
+<h2 id="f급에-새로-만들-것"><a class="header" href="#f급에-새로-만들-것">F급에 새로 만들 것</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>갈래</th><th>새로 만들 것</th></tr></thead><tbody>
+<tr><td>요리</td><td>고급 요리 셋 · 간판 메뉴 (기본 요리 셋의 윗등급 줄)</td></tr>
+<tr><td>마을</td><td>여관의 밥 (값과 효과)</td></tr>
+<tr><td>화면</td><td>메뉴판의 값 줄(◀ 숫자 ▶ · 느끼는 것 · 여관 값) · 그릇분 재고 · 간판 걸기 · 마르타의 좌판 · 양념 사기</td></tr>
+<tr><td>말</td><td>모험가가 안 산 까닭 · 경고 카드의 식당 줄(재료 없음 · 양념 없음 · 비싸서) · 결산의 「놓친 손님」</td></tr>
+</tbody></table>
+</div>
+<h2 id="아직-모르는-것"><a class="header" href="#아직-모르는-것">아직 모르는 것</a></h2>
+<ol>
+<li>퀘스트가 팽팽해지면 길드에서 먹는 사람이 얼마나 느는지 (재는 중)</li>
+<li>요리의 효과가 얼마여야 승산을 한 단계 올리는지 (재는 중)</li>
+<li>주재료가 모자라는 초반을 어떻게 넘기는지 (처음 창고의 재료)</li>
+<li>요리 값에 「가장 남는 값」이 하나로 굳는지</li>
+<li>양념을 직접 사는 손이 귀찮음이 아니라 손맛이 되는지 (플레이해 봐야 앎)</li>
+</ol>
+<h2 id="다른-항목으로-넘긴-것"><a class="header" href="#다른-항목으로-넘긴-것">다른 항목으로 넘긴 것</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>넘긴 것</th><th>다룰 곳</th></tr></thead><tbody>
+<tr><td>마을 손님이 식당을 쓰는 것 · 마을 단계마다의 여관 값 · 술</td><td>06</td></tr>
+<tr><td>장을 봐 두는 기능이 열리는 때</td><td>07 · 08</td></tr>
+<tr><td>무료 식사의 애착을 다른 모양으로 살릴지</td><td>11</td></tr>
+<tr><td>전설의 요리의 효과와 값 · 특수 리퀘스트</td><td>10 · 15</td></tr>
+<tr><td>먼 곳의 재료로 그때만 내는 「특별 요리」 (식당의 작은 행사)</td><td>뒤 등급</td></tr>
+<tr><td>테이블과 자리</td><td>07</td></tr>
+</tbody></table>
+</div>
+<h2 id="한석님과-논의할-것"><a class="header" href="#한석님과-논의할-것">한석님과 논의할 것</a></h2>
+<ol>
+<li>주재료를 시장에서 사지 않는 것 · 양념을 직접 사게 되돌리는 것</li>
+<li>그릇 수 정하기와 마감 할인 · 무료 식사를 없애는 것</li>
+<li>요리 값의 출발을 여관에 맞추는 것 · 양념 값</li>
+<li>요리의 계단(간판 25G쯤 · 고급 40G 이상)과 효과의 크기</li>
+<li>농산 상단의 좌판과 오는 때를 바꾸는 것</li>
+<li>요리의 효과와 퀘스트의 세기를 「준비하면 승산이 한 단계 오른다」에 맞추는 것</li>
+</ol>
+<h2 id="근거"><a class="header" href="#근거">근거</a></h2>
+<ul>
+<li>지금의 식당 규칙은 저장소의 <code>docs/design/현황/03_식당과_요리.md</code>(코드를 읽은 조사)에서 확인했습니다.</li>
+<li>요리 값(17 · 23 · 25G)은 새 판을 만들어 값만 읽었습니다.</li>
+<li>어제의 측정값(식당의 값 +38G · 61%가 안 팔림)은 <code>docs/design/경영_설계_대화_2026-11-24.md</code>에 있습니다.</li>
+<li>1차 측정은 <code>docs/design/현황/18_사는_판단_1차_측정.md</code>입니다.</li>
+</ul>
+
+                    </section></main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../plan/02-timeline.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../plan/17-quest-material-map.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../plan/02-timeline.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../plan/17-quest-material-map.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../theme/mermaid-init.js"></script>
+
+
+    </div>
+    <script type="application/json" id="book-change-data" data-book-root="../" data-from="V4" data-to="V5">{"index.html":{"title":"들어가며","items":[{"before":"기존 「들어가며」 설명","after":"「들어가며」 안내를 보완했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"versions.html":{"title":"버전 이력","items":[{"before":"기존 「버전 이력」 설명","after":"「버전 이력」 안내를 보완했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/01-principles.html":{"title":"01 원칙 다섯","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 · 왜 이 다섯인가 · 1. 관찰 — 막힘은 숫자로 늘 보인다. 어느 불부터 끌지는 플레이어가 정한다. 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/02-timeline.html":{"title":"02 40주 진행표","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 · 사람이 두 그룹으로 나뉩니다 · A 그룹 — 누구와 무엇을 거래하고 무엇이 열리나 [임시] 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/03-dining.html":{"title":"03 식당 개편","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 · 왜 고치나 · 1. 재료가 오는 길 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/17-quest-material-map.html":{"title":"17 퀘스트와 소재의 지도","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 · 1. 맞물림 — 퀘스트가 소재를, 소재가 사람을 정합니다 · 2. B 그룹 — 다섯 사람 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/18-purchase-judgment.html":{"title":"18 모험가가 물건을 사는 판단","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 · 정해 둔 선 · 지금 게임 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/index.html":{"title":"V5 경영 · 육성 개편안 — 항목 목록","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 — 18항목 · 무엇이 문제였나 · 원칙 다섯 (01) 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]}}</script>
+<dialog id="book-change-dialog" aria-labelledby="book-change-title"><button type="button" class="dialog-close" aria-label="변경 요약 닫기">×</button><h2 id="book-change-title">V4 대비 변경 요약</h2><div id="book-change-body"></div><div class="dialog-actions"><a id="book-change-open" href="03-dining.html">문서 열기</a><a href="../changes.html">전체 변경 비교표</a></div></dialog><script src="../../_book-ui.js"></script>
+</body>
+</html>
