@@ -185,7 +185,7 @@
 <blockquote>
 <p><strong>상태: 초안 (2026-11-25) · 한석님 논의 전 / 게임: 미반영 · 수와 이름은 모두 [임시]</strong></p>
 <p>02 진행표를 쓰다가 「퀘스트와 소재를 더 늘려야 하는가」가 03 · 04 · 05 · 07 · 10 · 15에 모두 걸려 있는 것이 드러나, 새 항목으로 세워 먼저 정했습니다. 이 쪽을 쓰면서 새로 잰 것은 없습니다. 게임 데이터와 코드를 읽은 것, 그리고 계산한 것입니다.</p>
-<p><strong>2026-11-25 22:06 고침:</strong> <a href="19-fortune-teller.html">19 점술가</a>를 새 항목으로 세우면서 <strong>마석 줄을 받는 사람이 그레타에서 점술가(새 인물)로 바뀌었습니다.</strong> 그레타는 약초 하나, 점술가는 마석 하나를 받습니다. 아래 표를 함께 고쳤습니다. 줄 10개 · 140칸은 그대로입니다.</p>
+<p><strong>2026-11-25 22:26 고침:</strong> <a href="19-fortune-teller.html">19 점술가</a>를 새 항목으로 세우면서 <strong>줄을 받는 사람을 다시 나눴습니다.</strong> 마석은 그레타에서 점술가(새 인물)로, 뼈·뿔은 대장장이에서 그레타로 옮겼고, 점술가가 받는 새 줄 「옛 물건」을 더했습니다(모든 퀘스트에서 낮은 확률로 나옴). 식재료 세 줄은 그대로입니다. 줄은 11개 · 147칸이 되었습니다. 아래 표를 함께 고쳤습니다.</p>
 <p>대화 기록: 저장소의 <code>docs/design/세부기획_대화_2026-11-25.md</code> (17-1 ~ 17-7)</p>
 </blockquote>
 <h2 id="한눈에"><a class="header" href="#한눈에">한눈에</a></h2>
@@ -193,7 +193,7 @@
 <tr><td>맞물림</td><td>어느 퀘스트를 미느냐가 어느 소재가 들어오느냐를, 그 소재가 누구의 신뢰를 올리느냐를 정합니다. 경영에서 급한 것이 퀘스트 선택을 이끕니다</td></tr>
 <tr><td>B 그룹</td><td><strong>다섯 사람.</strong> 퀘스트 종류마다 한 사람 (02의 「세 사람」을 바꿈)</td></tr>
 <tr><td>묶음</td><td>사람마다 등급에 둘. 둘째 묶음은 상대 · 문턱 · 소재가 새로운 「새 일」</td></tr>
-<tr><td>소재</td><td><strong>줄 10개 × 등급 7 × 묶음 2 = 140칸.</strong> 한 사람이 줄 둘을 맡고, 줄마다 받는 A 그룹 사람이 정해짐</td></tr>
+<tr><td>소재</td><td><strong>줄 10개 × 등급 7 × 묶음 2 = 140칸</strong>, 그리고 모든 퀘스트에서 낮은 확률로 나오는 「옛 물건」 7칸 = <strong>147칸.</strong> B 그룹 한 사람이 줄 둘을 맡고, 줄마다 받는 A 그룹 사람이 정해짐</td></tr>
 <tr><td>겹침</td><td>같은 소재를 시설(한스)과 장비(대장장이) 두 군데에서 쓰게 둠</td></tr>
 <tr><td>보스</td><td>묶음마다 하나, 한 등급에 10번. 그 사람의 일에 맞는 「큰일」. 뱃지 + 완성된 물건 + 이름표를 줌</td></tr>
 <tr><td>한도</td><td>퀘스트마다 Lv 1 → 2 → 3. 묶음의 퀘스트를 모두 Lv 3까지 해내면 보스</td></tr>
@@ -211,7 +211,7 @@
 <ul>
 <li>「테이블이 급하다 → 한스의 소재가 필요하다 → 사냥꾼이나 세실리아의 일을 민다」처럼, 경영에서 급한 것이 퀘스트 선택을 이끕니다.</li>
 <li>칸 배분 하나로 경영과 육성을 함께 고민하게 됩니다. 누구의 일을 미느냐에 따라 자라는 능력도 달라지기 때문입니다.</li>
-<li><strong>2026-11-25 22:06 덧붙임:</strong> 마석을 점술가에게 옮기면서 그레타(약초 · 세실리아)와 점술가(마석 · 헤르만)는 소재가 한 곳에서만 나오게 되었습니다. 아래의 「두 곳 이상」은 한스 · 대장장이 · 마르타에게만 맞습니다. 한 바퀴 뒤 소재를 한 표로 셈할 때 다시 봅니다.</li>
+<li><strong>2026-11-25 22:26:</strong> 줄을 다시 나눈 뒤에도 아래의 「두 곳 이상」은 다섯 사람 모두에게 맞습니다. 점술가의 둘째 줄(옛 물건)은 모든 퀘스트에서 나옵니다.</li>
 <li><strong>A 그룹 누구의 소재든 두 곳 이상에서 나옵니다.</strong> 한 곳에서만 나오면 길이 하나라 「레일 위를 달리는 느낌」이 됩니다. 급한 것과 키우고 싶은 능력, 두 가지를 놓고 고르게 합니다.</li>
 </ul>
 <h2 id="2-b-그룹--다섯-사람"><a class="header" href="#2-b-그룹--다섯-사람">2. B 그룹 — 다섯 사람</a></h2>
@@ -241,11 +241,11 @@
 <li>둘째 묶음의 소재는 윗등급 것을 당겨 쓰지 않고 <strong>그 등급에 새로 만듭니다.</strong> 윗등급 소재를 당겨 쓰면 등급이 올랐을 때 새것이 남지 않습니다.</li>
 <li>첫 묶음은 지금 있는 F급 퀘스트 10개(종류마다 2개)가 그대로 됩니다.</li>
 </ul>
-<h2 id="4-소재의-틀--줄-10개"><a class="header" href="#4-소재의-틀--줄-10개">4. 소재의 틀 — 줄 10개</a></h2>
+<h2 id="4-소재의-틀--줄-10개-그리고-옛-물건"><a class="header" href="#4-소재의-틀--줄-10개-그리고-옛-물건">4. 소재의 틀 — 줄 10개, 그리고 옛 물건</a></h2>
 <h3 id="줄의-주인"><a class="header" href="#줄의-주인">줄의 주인</a></h3>
 <p>B 그룹 한 사람이 줄 둘을 맡고, 줄마다 받는 A 그룹 사람이 정해져 있습니다.</p>
 <div class="table-wrapper"><table><thead><tr><th>B 그룹</th><th>맡는 줄 → 받는 사람</th><th>맡는 줄 → 받는 사람</th></tr></thead><tbody>
-<tr><td>굼바 (토벌)</td><td>뼈·뿔 → 대장장이</td><td>고기 → 마르타</td></tr>
+<tr><td>굼바 (토벌)</td><td>뼈·뿔 → 그레타</td><td>고기 → 마르타</td></tr>
 <tr><td>사냥꾼 (사냥·채집)</td><td>목재 → 한스</td><td>가죽·깃털 → 대장장이</td></tr>
 <tr><td>헤르만 (조사)</td><td>마석 → 점술가</td><td>버섯·열매 → 마르타</td></tr>
 <tr><td>세실리아 (호위·구호)</td><td>천 → 한스</td><td>약초 → 그레타</td></tr>
@@ -253,14 +253,16 @@
 </tbody></table>
 </div><div class="table-wrapper"><table><thead><tr><th>A 그룹</th><th>받는 줄</th><th>소재가 나오는 곳</th></tr></thead><tbody>
 <tr><td>한스 (목수)</td><td>목재 · 천</td><td>사냥꾼 · 세실리아 (2곳)</td></tr>
-<tr><td>대장장이</td><td>뼈·뿔 · 가죽·깃털 · 광석</td><td>굼바 · 사냥꾼 · 탐험가 (3곳)</td></tr>
-<tr><td>그레타 (약초 할머니)</td><td>약초</td><td>세실리아 (1곳)</td></tr>
-<tr><td>점술가 (새 인물 · <a href="19-fortune-teller.html">19</a>)</td><td>마석</td><td>헤르만 (1곳)</td></tr>
+<tr><td>대장장이</td><td>가죽·깃털 · 광석</td><td>사냥꾼 · 탐험가 (2곳)</td></tr>
+<tr><td>그레타 (약초 할머니)</td><td>약초 · 뼈·뿔</td><td>세실리아 · 굼바 (2곳)</td></tr>
+<tr><td>점술가 (새 인물 · <a href="19-fortune-teller.html">19</a>)</td><td>마석 · 옛 물건</td><td>헤르만 · 모든 퀘스트</td></tr>
 <tr><td>마르타 (농산 상단)</td><td>고기 · 버섯·열매 · 생선</td><td>굼바 · 헤르만 · 탐험가 (3곳)</td></tr>
 </tbody></table>
 </div>
 <ul>
 <li>다섯 사람 모두 <strong>서로 다른 두 사람</strong>에게 줍니다.</li>
+<li><strong>옛 물건</strong>(옛 동전 같은 것)은 B 그룹 누구의 줄도 아닙니다. 모든 퀘스트에서 낮은 확률로 나옵니다 [임시: 15%쯤]. 지금 게임의 수선 숫돌이 모든 F급 퀘스트에서 5%로 나오는 것과 같은 모양입니다. 수선 숫돌은 강화 재료로 씁니다(사용자 22:25 · 09 · 14에서 다룸).</li>
+<li>뼈와 뿔은 약재로 그레타에게 갑니다. 토벌에서 많이 싸우면 다치고, 거기서 나온 뼈와 뿔이 약초 시설을 키웁니다.</li>
 <li>지금 게임에서는 같은 소재의 주인이 등급마다 달랐습니다(가죽이 F급에서는 토벌, E · D급에서는 사냥·채집). 줄로 정리하면서 <strong>고기는 굼바, 가죽은 사냥꾼</strong>으로 맞췄습니다. 지금 E급 데이터가 이미 이렇게 되어 있습니다.</li>
 <li>마르타는 여러 곳에서 받습니다. 식재료는 고기 · 버섯 · 생선이 서로 다른 요리가 되므로, 「누구를 밀까」보다 「어느 요리를 낼까」의 고민이 됩니다(03).</li>
 </ul>
@@ -279,7 +281,8 @@
 <div class="table-wrapper"><table><thead><tr><th></th><th style="text-align: center">칸</th><th style="text-align: center">지금 있는 것</th><th style="text-align: center">새로</th></tr></thead><tbody>
 <tr><td>첫 묶음 (줄 10 × 등급 7)</td><td style="text-align: center">70</td><td style="text-align: center">38</td><td style="text-align: center">32</td></tr>
 <tr><td>둘째 묶음 (줄 10 × 등급 7)</td><td style="text-align: center">70</td><td style="text-align: center">0</td><td style="text-align: center">70</td></tr>
-<tr><td>합계</td><td style="text-align: center">140</td><td style="text-align: center">38</td><td style="text-align: center">102</td></tr>
+<tr><td>옛 물건 (등급 7 · 묶음 없음)</td><td style="text-align: center">7</td><td style="text-align: center">0</td><td style="text-align: center">7</td></tr>
+<tr><td>합계</td><td style="text-align: center">147</td><td style="text-align: center">38</td><td style="text-align: center">109</td></tr>
 </tbody></table>
 </div>
 <ul>
@@ -297,15 +300,15 @@
 </tbody></table>
 </div>
 <ul>
-<li>소재의 쓰임은 받는 쪽 항목에서 정합니다: 03 요리 · 04 정비대 · 05 약초 시설 · 07 한스.</li>
+<li>소재의 쓰임은 받는 쪽 항목에서 정합니다: 03 요리 · 04 정비대 · 05 약초 시설 · 07 한스 · 19 점술가.</li>
 <li>소재는 쓰임이 정해져야 완성됩니다. E급 이상은 받는 쪽 시설이 설계되지 않아서, 아래 예시 이름을 [임시]로 두고 그 등급을 만들 때 확정합니다.</li>
 </ul>
 <h3 id="전체-등급-예시-임시"><a class="header" href="#전체-등급-예시-임시">전체 등급 예시 [임시]</a></h3>
 <p>보통 글씨는 지금 있는 소재, <strong>굵은 글씨는 새로 만들 소재</strong>입니다. 정해진 것은 F급 두 줄뿐이고 나머지는 틀을 보이기 위한 예시입니다.</p>
 <h4 id="굼바--토벌"><a class="header" href="#굼바--토벌">굼바 — 토벌</a></h4>
 <div class="table-wrapper"><table><thead><tr><th>줄 → 받는 사람</th><th>묶음</th><th>F</th><th>E</th><th>D</th><th>C</th><th>B</th><th>A</th><th>S</th></tr></thead><tbody>
-<tr><td>뼈·뿔 → 대장장이</td><td>첫</td><td>짐승 뼛조각</td><td>늑대 송곳니</td><td>오크 엄니</td><td>트롤 뿔</td><td><strong>오우거 뿔</strong></td><td><strong>거인의 손톱</strong></td><td><strong>마수의 뿔</strong></td></tr>
-<tr><td>뼈·뿔 → 대장장이</td><td>둘째</td><td><strong>멧돼지 엄니</strong></td><td><strong>곰 발톱</strong></td><td><strong>검치호 이빨</strong></td><td><strong>트롤 등뼈</strong></td><td><strong>오우거 엄니</strong></td><td><strong>거인의 이빨</strong></td><td><strong>마수 송곳니</strong></td></tr>
+<tr><td>뼈·뿔 → 그레타</td><td>첫</td><td>짐승 뼛조각</td><td>늑대 송곳니</td><td>오크 엄니</td><td>트롤 뿔</td><td><strong>오우거 뿔</strong></td><td><strong>거인의 손톱</strong></td><td><strong>마수의 뿔</strong></td></tr>
+<tr><td>뼈·뿔 → 그레타</td><td>둘째</td><td><strong>멧돼지 엄니</strong></td><td><strong>곰 발톱</strong></td><td><strong>검치호 이빨</strong></td><td><strong>트롤 등뼈</strong></td><td><strong>오우거 엄니</strong></td><td><strong>거인의 이빨</strong></td><td><strong>마수 송곳니</strong></td></tr>
 <tr><td>고기 → 마르타</td><td>첫</td><td>멧돼지 고기</td><td>늑대 고기</td><td>흑곰 고기</td><td>트롤 뼈</td><td><strong>매머드 고기</strong></td><td><strong>천둥소 고기</strong></td><td><strong>마수 고기</strong></td></tr>
 <tr><td>고기 → 마르타</td><td>둘째</td><td><strong>멧돼지 등심</strong></td><td><strong>곰 발바닥</strong></td><td><strong>흑곰 갈비</strong></td><td><strong>검치호 고기</strong></td><td><strong>매머드 갈비</strong></td><td><strong>천둥소 안심</strong></td><td><strong>마수 심장</strong></td></tr>
 </tbody></table>
@@ -340,6 +343,7 @@
 <tr><td>광석 → 대장장이</td><td>둘째</td><td><strong>옛 쇠붙이</strong></td><td><strong>주석 원석</strong></td><td><strong>은광석</strong></td><td><strong>금광석</strong></td><td><strong>미스릴 결정</strong></td><td><strong>오리할콘</strong></td><td><strong>별의 핵</strong></td></tr>
 <tr><td>생선 → 마르타</td><td>첫</td><td>민물고기</td><td><strong>은어</strong></td><td><strong>동굴 장어</strong></td><td><strong>철갑상어</strong></td><td><strong>심해 아귀</strong></td><td><strong>대왕 오징어</strong></td><td><strong>빙하 고래</strong></td></tr>
 <tr><td>생선 → 마르타</td><td>둘째</td><td><strong>큰 잉어</strong></td><td><strong>무지개 송어</strong></td><td><strong>눈먼 메기</strong></td><td><strong>철갑상어 알</strong></td><td><strong>달빛 연어</strong></td><td><strong>진주조개</strong></td><td><strong>고래 뱃살</strong></td></tr>
+<tr><td>옛 물건 → 점술가</td><td>모든 퀘스트</td><td><strong>옛 동전</strong></td><td>(미정)</td><td>(미정)</td><td>(미정)</td><td>(미정)</td><td>(미정)</td><td>(미정)</td></tr>
 </tbody></table>
 </div>
 <h2 id="5-같은-소재를-두-군데에서-씁니다"><a class="header" href="#5-같은-소재를-두-군데에서-씁니다">5. 같은 소재를 두 군데에서 씁니다</a></h2>
@@ -348,7 +352,7 @@
 <tr><td>참나무 가지</td><td>한스</td><td style="text-align: center">8</td></tr>
 <tr><td>무명천</td><td>한스</td><td style="text-align: center">6</td></tr>
 <tr><td>짐승 가죽</td><td>대장장이</td><td style="text-align: center">4</td></tr>
-<tr><td>짐승 뼛조각</td><td>대장장이</td><td style="text-align: center">3</td></tr>
+<tr><td>짐승 뼛조각</td><td>그레타</td><td style="text-align: center">3</td></tr>
 <tr><td>고철 조각</td><td>대장장이</td><td style="text-align: center">3</td></tr>
 <tr><td>희미한 마석</td><td>점술가</td><td style="text-align: center">3</td></tr>
 </tbody></table>
@@ -498,7 +502,7 @@
 <li>한 등급에 보스 10번 (전체 77번)</li>
 <li>퀘스트 레벨을 1번 성공에 한 레벨로 바꾸는 것 (<code>qlv,need</code> 3 → 1)</li>
 <li>F급 70건과 E급에 닿는 때 (40주를 넘길지, 붙는 퀘스트를 늘릴지)</li>
-<li>소재의 틀 140칸과 전설 · 신화의 선</li>
+<li>소재의 틀 147칸과 전설 · 신화의 선</li>
 <li>보스가 주는 물건의 효과와 양 (애착 · 레어 장비의 세기 · 성급 물건의 개수 · 씀씀이)</li>
 <li>뱃지에 효과를 붙일지 (지금은 없음)</li>
 </ol>
