@@ -69,6 +69,7 @@
     - [01 원칙 다섯](plan/01-principles.md)
     - [02 40주 진행표](plan/02-timeline.md)
     - [17 퀘스트와 소재의 지도](plan/17-quest-material-map.md)
+    - [18 모험가가 물건을 사는 판단](plan/18-purchase-judgment.md)
 
 - [개발 순서와 완료 기준](development/README.md)
     - [1. 기준 확정·저장·정산 기반](development/foundation.md)
