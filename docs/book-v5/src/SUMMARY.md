@@ -69,6 +69,7 @@
     - [01 원칙 다섯](plan/01-principles.md)
     - [02 40주 진행표](plan/02-timeline.md)
     - [03 식당 개편](plan/03-dining.md)
+    - [04 정비대](plan/04-maintenance.md)
     - [06 마을 손님](plan/06-town-customers.md)
     - [17 퀘스트와 소재의 지도](plan/17-quest-material-map.md)
     - [18 모험가가 물건을 사는 판단](plan/18-purchase-judgment.md)
