@@ -73,6 +73,7 @@
     - [05 약초 시설](plan/05-herb-facility.md)
     - [06 마을 손님](plan/06-town-customers.md)
     - [07 시설을 놓을 자리](plan/07-placement.md)
+    - [08 쓰면 조금씩 오름](plan/08-grow-with-use.md)
     - [17 퀘스트와 소재의 지도](plan/17-quest-material-map.md)
     - [18 모험가가 물건을 사는 판단](plan/18-purchase-judgment.md)
     - [19 점술가](plan/19-fortune-teller.md)
