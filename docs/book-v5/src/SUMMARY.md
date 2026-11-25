@@ -68,6 +68,7 @@
 - [V5 경영 · 육성 개편안](plan/README.md)
     - [01 원칙 다섯](plan/01-principles.md)
     - [02 40주 진행표](plan/02-timeline.md)
+    - [17 퀘스트와 소재의 지도](plan/17-quest-material-map.md)
 
 - [개발 순서와 완료 기준](development/README.md)
     - [1. 기준 확정·저장·정산 기반](development/foundation.md)

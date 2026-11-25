@@ -1,0 +1,563 @@
+<!DOCTYPE HTML>
+<html data-book-version="v5" lang="ko" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>17 퀘스트와 소재의 지도 - Project_F 기획 안내서 v5 — 경영 · 육성 개편안</title>
+
+
+        <!-- Custom HTML head -->
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+
+        <meta name="description" content="이세계 모험가 길드(가칭) — 처음 읽는 사람을 위한 기획 안내서">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/custom.css">
+
+    <link rel="stylesheet" href="../../_book-ui.css">
+</head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html" class="book-toc-change" data-book-change="index.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기">들어가며<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded affix "><a href="../reading.html">이 책을 읽는 법</a></li><li class="chapter-item expanded affix "><a href="../changes.html">변경 비교표: v1 → v2</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded "><a href="../ch01/index.html"><strong aria-hidden="true">1.</strong> 이 게임은</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch01/concept.html"><strong aria-hidden="true">1.1.</strong> 한 장으로 보는 게임</a></li><li class="chapter-item expanded "><a href="../ch01/numbers.html"><strong aria-hidden="true">1.2.</strong> 핵심 수치 다섯 가지</a></li><li class="chapter-item expanded "><a href="../ch01/scope.html"><strong aria-hidden="true">1.3.</strong> 프로토타입 범위와 현재 상태</a></li><li class="chapter-item expanded "><a href="../ch01/references.html"><strong aria-hidden="true">1.4.</strong> 레퍼런스 게임</a></li><li class="chapter-item expanded "><a href="../ch01/platform.html"><strong aria-hidden="true">1.5.</strong> 플랫폼과 로드맵</a></li></ol></li><li class="chapter-item expanded "><a href="../ch02/index.html"><strong aria-hidden="true">2.</strong> 한 판의 흐름</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch02/loop.html"><strong aria-hidden="true">2.1.</strong> 핵심 루프: 한 주에 일어나는 일</a></li><li class="chapter-item expanded "><a href="../ch02/time.html"><strong aria-hidden="true">2.2.</strong> 시간: 주 · 달 · 해</a></li><li class="chapter-item expanded "><a href="../ch02/first-year.html"><strong aria-hidden="true">2.3.</strong> 첫해 진행표</a></li></ol></li><li class="chapter-item expanded "><a href="../ch03/index.html"><strong aria-hidden="true">3.</strong> 모험가</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch03/stats.html"><strong aria-hidden="true">3.1.</strong> 능력치 · 레벨 · 등급</a></li><li class="chapter-item expanded "><a href="../ch03/jobs.html"><strong aria-hidden="true">3.2.</strong> 직업과 전직</a></li><li class="chapter-item expanded "><a href="../ch03/skills.html"><strong aria-hidden="true">3.3.</strong> 스킬과 성장 경로</a></li><li class="chapter-item expanded "><a href="../ch03/personality.html"><strong aria-hidden="true">3.4.</strong> 성향과 애착도</a></li><li class="chapter-item expanded "><a href="../ch03/lifecycle.html"><strong aria-hidden="true">3.5.</strong> 합류 · 계약 · 파티 · 사망과 계승</a></li><li class="chapter-item expanded "><a href="../ch03/talk.html"><strong aria-hidden="true">3.6.</strong> 모험가끼리 대화 · 몸 상태 · 칭호</a></li></ol></li><li class="chapter-item expanded "><a href="../ch04/index.html"><strong aria-hidden="true">4.</strong> 의뢰와 퀘스트</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch04/board.html"><strong aria-hidden="true">4.1.</strong> 의뢰 유입과 게시판</a></li><li class="chapter-item expanded "><a href="../ch04/judge.html"><strong aria-hidden="true">4.2.</strong> 의뢰 유형과 성공 판정</a></li><li class="chapter-item expanded "><a href="../ch04/requests.html"><strong aria-hidden="true">4.3.</strong> 리퀘스트(서브 퀘스트)</a></li><li class="chapter-item expanded "><a href="../ch04/requests-list.html"><strong aria-hidden="true">4.4.</strong> F급 리퀘스트 28개와 의뢰인</a></li><li class="chapter-item expanded "><a href="../ch04/nomination.html"><strong aria-hidden="true">4.5.</strong> 지명 퀘스트</a></li><li class="chapter-item expanded "><a href="../ch04/main.html"><strong aria-hidden="true">4.6.</strong> 메인 퀘스트</a></li></ol></li><li class="chapter-item expanded "><a href="../ch05/index.html"><strong aria-hidden="true">5.</strong> 전투</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch05/rules.html"><strong aria-hidden="true">5.1.</strong> 전투 규칙</a></li><li class="chapter-item expanded "><a href="../ch05/departure.html"><strong aria-hidden="true">5.2.</strong> 출발 판단과 성공률</a></li><li class="chapter-item expanded "><a href="../ch05/invasion.html"><strong aria-hidden="true">5.3.</strong> 침공: 다리를 지켜라</a></li><li class="chapter-item expanded "><a href="../ch05/extra.html"><strong aria-hidden="true">5.4.</strong> 습격 · 마인 · 무술 대회</a></li></ol></li><li class="chapter-item expanded "><a href="../ch06/index.html"><strong aria-hidden="true">6.</strong> 아이템</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch06/gear.html"><strong aria-hidden="true">6.1.</strong> 장비</a></li><li class="chapter-item expanded "><a href="../ch06/potion.html"><strong aria-hidden="true">6.2.</strong> 물약과 소재</a></li><li class="chapter-item expanded "><a href="../ch06/cooking.html"><strong aria-hidden="true">6.3.</strong> 요리</a></li></ol></li><li class="chapter-item expanded "><a href="../ch07/index.html"><strong aria-hidden="true">7.</strong> 길드와 마을</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch07/facilities.html"><strong aria-hidden="true">7.1.</strong> 시설</a></li><li class="chapter-item expanded "><a href="../ch07/housing.html"><strong aria-hidden="true">7.2.</strong> 길드 내부 꾸미기</a></li><li class="chapter-item expanded "><a href="../ch07/town.html"><strong aria-hidden="true">7.3.</strong> 마을과 인구</a></li></ol></li><li class="chapter-item expanded "><a href="../ch08/index.html"><strong aria-hidden="true">8.</strong> 길드 승급</a></li><li class="chapter-item expanded "><a href="../ch09/index.html"><strong aria-hidden="true">9.</strong> 경제</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch09/market.html"><strong aria-hidden="true">9.1.</strong> V4 소재 시장과 식당 순환</a></li><li class="chapter-item expanded "><a href="../ch09/flow.html"><strong aria-hidden="true">9.2.</strong> 돈의 흐름 한눈에 보기</a></li><li class="chapter-item expanded "><a href="../ch09/income.html"><strong aria-hidden="true">9.3.</strong> 길드 수입</a></li><li class="chapter-item expanded "><a href="../ch09/spending.html"><strong aria-hidden="true">9.4.</strong> 길드 지출</a></li><li class="chapter-item expanded "><a href="../ch09/adventurer.html"><strong aria-hidden="true">9.5.</strong> 모험가의 지갑</a></li><li class="chapter-item expanded "><a href="../ch09/measure.html"><strong aria-hidden="true">9.6.</strong> v1 기준 측정: 첫해 100판</a></li><li class="chapter-item expanded "><a href="../ch09/ledger.html"><strong aria-hidden="true">9.7.</strong> 장부와 관문 1</a></li><li class="chapter-item expanded "><a href="../ch09/issues.html"><strong aria-hidden="true">9.8.</strong> 알려진 문제와 열린 질문</a></li></ol></li><li class="chapter-item expanded "><a href="../ch10/index.html"><strong aria-hidden="true">10.</strong> 화면</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch10/flow.html"><strong aria-hidden="true">10.1.</strong> 화면 흐름</a></li><li class="chapter-item expanded "><a href="../ch10/book.html"><strong aria-hidden="true">10.2.</strong> 길드 업무 일지(책 UI)</a></li><li class="chapter-item expanded "><a href="../ch10/miniview.html"><strong aria-hidden="true">10.3.</strong> 원정 미니 뷰</a></li><li class="chapter-item expanded "><a href="../ch10/hud.html"><strong aria-hidden="true">10.4.</strong> HUD · 대화 · 침공 화면</a></li><li class="chapter-item expanded "><a href="../ch10/visual.html"><strong aria-hidden="true">10.5.</strong> 비주얼과 사운드</a></li></ol></li><li class="chapter-item expanded "><a href="../ch11/index.html"><strong aria-hidden="true">11.</strong> 세계관과 이야기</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch11/ending.html"><strong aria-hidden="true">11.1.</strong> 엔딩 · 마왕 · 간부</a></li><li class="chapter-item expanded "><a href="../ch11/characters.html"><strong aria-hidden="true">11.2.</strong> 인물과 이름</a></li></ol></li><li class="chapter-item expanded "><a href="../plan/index.html" class="book-toc-change" data-book-change="plan/index.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기"><strong aria-hidden="true">12.</strong> V5 경영 · 육성 개편안<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../plan/01-principles.html" class="book-toc-change" data-book-change="plan/01-principles.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기"><strong aria-hidden="true">12.1.</strong> 01 원칙 다섯<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../plan/02-timeline.html" class="book-toc-change" data-book-change="plan/02-timeline.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기"><strong aria-hidden="true">12.2.</strong> 02 40주 진행표<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../plan/17-quest-material-map.html" class="book-toc-change active" data-book-change="plan/17-quest-material-map.html" aria-haspopup="dialog" title="V4 대비 변경 요약 보기"><strong aria-hidden="true">12.3.</strong> 17 퀘스트와 소재의 지도<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol></li><li class="chapter-item expanded "><a href="../development/index.html"><strong aria-hidden="true">13.</strong> 개발 순서와 완료 기준</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../development/foundation.html"><strong aria-hidden="true">13.1.</strong> 1. 기준 확정·저장·정산 기반</a></li><li class="chapter-item expanded "><a href="../development/contracts.html"><strong aria-hidden="true">13.2.</strong> 2. 계약·지원·배치</a></li><li class="chapter-item expanded "><a href="../development/operations.html"><strong aria-hidden="true">13.3.</strong> 3. 거래·의뢰 관리·발주</a></li><li class="chapter-item expanded "><a href="../development/validation.html"><strong aria-hidden="true">13.4.</strong> 4. 보조금·통합 검증</a></li><li class="chapter-item expanded "><a href="../development/later.html"><strong aria-hidden="true">13.5.</strong> 5. 후속 사업과 보류 범위</a></li></ol></li><li class="chapter-item expanded "><li class="spacer"></li><li class="chapter-item expanded "><a href="../appendix/glossary.html"><strong aria-hidden="true">14.</strong> 부록 A. 용어집</a></li><li class="chapter-item expanded "><a href="../appendix/values.html"><strong aria-hidden="true">15.</strong> 부록 B. 주요 설정값</a></li><li class="chapter-item expanded "><a href="../appendix/pending.html"><strong aria-hidden="true">16.</strong> 부록 C. 결정 대기 목록</a></li><li class="chapter-item expanded "><a href="../appendix/sources.html"><strong aria-hidden="true">17.</strong> 부록 D. 원본 문서 지도</a></li><li class="chapter-item expanded "><a href="../appendix/ideas.html"><strong aria-hidden="true">18.</strong> 부록 E. 아이디어</a></li><li class="chapter-item expanded "><a href="../appendix/ideas_2026-11-19.html"><strong aria-hidden="true">19.</strong> 부록 E. 아이디어 메모 (2026-11-19)</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Project_F 기획 안내서 v5 — 경영 · 육성 개편안</h1>
+
+                    <div class="right-buttons">
+<nav class="book-version-menu" aria-label="문서 버전"><select id="book-version-select" aria-label="문서 버전 선택"><option value="../../v1/index.html">V1 원본 (첫 페이지)</option><option value="../../v2/index.html">V2 개선안 (첫 페이지)</option><option value="../../v3/index.html">V3 반영판 (첫 페이지)</option><option value="../../v4/index.html">V4 시장 제안판 (첫 페이지)</option><option value="17-quest-material-map.html" selected>V5 경영 · 육성 개편안</option></select><a href="../versions.html">버전 이력</a></nav>
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/applesoda01/Project_F" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+<p class="book-version-status">V5 경영 · 육성 개편안 · V4를 보존하고 2026-11-24 설계 대화의 경영 · 육성 개편 항목을 넣은 판. 보라 목차·본문을 클릭하면 V4 대비 변경 요약을 볼 수 있습니다. 새 규칙은 게임 미반영이고 값은 모두 [임시]입니다.</p><section class="book-change" data-book-change="plan/17-quest-material-map.html" aria-label="V1 대비 변경된 내용"><button type="button" class="book-change-trigger" aria-haspopup="dialog">변경 요약</button>
+                        <h1 id="17-퀘스트와-소재의-지도"><a class="header" href="#17-퀘스트와-소재의-지도">17 퀘스트와 소재의 지도</a></h1>
+<blockquote>
+<p><strong>상태: 초안 (2026-11-25) · 한석님 논의 전 / 게임: 미반영 · 수와 이름은 모두 [임시]</strong></p>
+<p>02 진행표를 쓰다가 「퀘스트와 소재를 더 늘려야 하는가」가 03 · 04 · 05 · 07 · 10 · 15에 모두 걸려 있는 것이 드러나, 새 항목으로 세워 먼저 정했습니다. 이 쪽을 쓰면서 새로 잰 것은 없습니다. 게임 데이터와 코드를 읽은 것, 그리고 계산한 것입니다.</p>
+<p>대화 기록: 저장소의 <code>docs/design/세부기획_대화_2026-11-25.md</code> (17-1 ~ 17-7)</p>
+</blockquote>
+<h2 id="한눈에"><a class="header" href="#한눈에">한눈에</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>정한 것</th><th>내용</th></tr></thead><tbody>
+<tr><td>맞물림</td><td>어느 퀘스트를 미느냐가 어느 소재가 들어오느냐를, 그 소재가 누구의 신뢰를 올리느냐를 정합니다. 경영에서 급한 것이 퀘스트 선택을 이끕니다</td></tr>
+<tr><td>B 그룹</td><td><strong>다섯 사람.</strong> 퀘스트 종류마다 한 사람 (02의 「세 사람」을 바꿈)</td></tr>
+<tr><td>묶음</td><td>사람마다 등급에 둘. 둘째 묶음은 상대 · 문턱 · 소재가 새로운 「새 일」</td></tr>
+<tr><td>소재</td><td><strong>줄 10개 × 등급 7 × 묶음 2 = 140칸.</strong> 한 사람이 줄 둘을 맡고, 줄마다 받는 A 그룹 사람이 정해짐</td></tr>
+<tr><td>겹침</td><td>같은 소재를 시설(한스)과 장비(대장장이) 두 군데에서 쓰게 둠</td></tr>
+<tr><td>보스</td><td>묶음마다 하나, 한 등급에 10번. 그 사람의 일에 맞는 「큰일」. 뱃지 + 완성된 물건 + 이름표를 줌</td></tr>
+<tr><td>한도</td><td>퀘스트마다 Lv 1 → 2 → 3. 묶음의 퀘스트를 모두 Lv 3까지 해내면 보스</td></tr>
+</tbody></table>
+</div>
+<p>처음의 두 물음에 대한 답: <strong>퀘스트는 F급 10개에서 30개(게시판 20 + 보스 10)로, 소재는 F급 10종에서 20종으로 늘어납니다.</strong></p>
+<h2 id="1-맞물림--퀘스트가-소재를-소재가-사람을-정합니다"><a class="header" href="#1-맞물림--퀘스트가-소재를-소재가-사람을-정합니다">1. 맞물림 — 퀘스트가 소재를, 소재가 사람을 정합니다</a></h2>
+<div class="table-wrapper"><table><thead><tr><th style="text-align: center">차례</th><th>일어나는 일</th></tr></thead><tbody>
+<tr><td style="text-align: center">①</td><td>게시판의 칸 배분으로 <strong>누구의 일을 밀지</strong> 정합니다 (B 그룹)</td></tr>
+<tr><td style="text-align: center">②</td><td>그 사람의 퀘스트를 해내면 <strong>그 사람이 맡은 줄의 소재</strong>가 들어옵니다</td></tr>
+<tr><td style="text-align: center">③</td><td>그 소재를 받는 <strong>A 그룹 사람</strong>이 정해져 있습니다. 그 사람과 거래하면 신뢰가 오릅니다</td></tr>
+<tr><td style="text-align: center">④</td><td>신뢰가 오르면 시설 · 설비 · 요리가 열립니다</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>「테이블이 급하다 → 한스의 소재가 필요하다 → 사냥꾼이나 세실리아의 일을 민다」처럼, 경영에서 급한 것이 퀘스트 선택을 이끕니다.</li>
+<li>칸 배분 하나로 경영과 육성을 함께 고민하게 됩니다. 누구의 일을 미느냐에 따라 자라는 능력도 달라지기 때문입니다.</li>
+<li><strong>A 그룹 누구의 소재든 두 곳 이상에서 나옵니다.</strong> 한 곳에서만 나오면 길이 하나라 「레일 위를 달리는 느낌」이 됩니다. 급한 것과 키우고 싶은 능력, 두 가지를 놓고 고르게 합니다.</li>
+</ul>
+<h2 id="2-b-그룹--다섯-사람"><a class="header" href="#2-b-그룹--다섯-사람">2. B 그룹 — 다섯 사람</a></h2>
+<p>게임의 뼈대는 이미 다섯 갈래입니다. 능력치 5 · 첫 직업 5 · 퀘스트 종류 5가 하나씩 짝입니다. 세 사람으로 묶으면 2 · 2 · 1로 한 사람이 얇아지고, 한 사람을 밀면 A 그룹 넷 중 셋이 함께 올라 맞물림이 흐려집니다. 그래서 종류마다 한 사람으로 했습니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>맡는 사람</th><th>퀘스트 종류</th><th>자라는 능력</th><th>주로 가는 직업</th><th>지금 게임에서</th></tr></thead><tbody>
+<tr><td>굼바 (농부)</td><td>토벌</td><td>힘</td><td>전사</td><td>리퀘스트 의뢰인</td></tr>
+<tr><td><strong>사냥꾼</strong></td><td>사냥·채집</td><td>민첩</td><td>궁수</td><td><strong>새 인물</strong></td></tr>
+<tr><td>헤르만 (학자)</td><td>조사</td><td>지력</td><td>마법사</td><td>리퀘스트 의뢰인</td></tr>
+<tr><td>세실리아 (수녀)</td><td>호위·구호</td><td>정신</td><td>성직자</td><td>리퀘스트 의뢰인</td></tr>
+<tr><td><strong>탐험가</strong></td><td>탐사</td><td>기교</td><td>도적</td><td><strong>새 인물</strong></td></tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>바르톨 촌장</strong>은 등급의 끝 보스(침공)를 알리는 사람으로 둡니다. 다섯 사람의 일을 다 해내면 촌장이 마을의 큰일을 맡깁니다.</li>
+<li><strong>페드로 상인</strong>은 B 그룹에 넣지 않습니다. 지금 부탁이 짐마차와 장터 호위라 세실리아와 겹칩니다. 기존 리퀘스트의 사람으로 남기고 10번에서 다룹니다.</li>
+<li>새 인물 둘의 이름 · 생김새와 대장장이의 이름(지금 「미정」)은 그림을 만들기 전에 정합니다.</li>
+</ul>
+<h2 id="3-묶음은-사람마다-둘--둘째-묶음은-새-일"><a class="header" href="#3-묶음은-사람마다-둘--둘째-묶음은-새-일">3. 묶음은 사람마다 둘 — 둘째 묶음은 「새 일」</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>달라지는 것</th><th>내용</th><th>이어지는 곳</th></tr></thead><tbody>
+<tr><td>상대와 장소</td><td>새 퀘스트. 예: 들개를 잡다가 → 숲 안쪽의 큰 멧돼지</td><td>「한 단계 올라왔다」가 눈에 보임</td></tr>
+<tr><td>문턱</td><td>최소 조건이 붙음. 예: 힘 20 이상, 또는 둘이 가야 함</td><td>「지금 막힌 곳」 목록과 수행(09)</td></tr>
+<tr><td>소재</td><td>첫 묶음에 없던 소재가 나옴</td><td>A 그룹의 다음 단계를 여는 열쇠</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>첫 묶음의 소재로 A 그룹의 2단계를, 둘째 묶음의 소재로 3단계를 여는 모양이 됩니다.</li>
+<li>둘째 묶음의 소재는 윗등급 것을 당겨 쓰지 않고 <strong>그 등급에 새로 만듭니다.</strong> 윗등급 소재를 당겨 쓰면 등급이 올랐을 때 새것이 남지 않습니다.</li>
+<li>첫 묶음은 지금 있는 F급 퀘스트 10개(종류마다 2개)가 그대로 됩니다.</li>
+</ul>
+<h2 id="4-소재의-틀--줄-10개"><a class="header" href="#4-소재의-틀--줄-10개">4. 소재의 틀 — 줄 10개</a></h2>
+<h3 id="줄의-주인"><a class="header" href="#줄의-주인">줄의 주인</a></h3>
+<p>B 그룹 한 사람이 줄 둘을 맡고, 줄마다 받는 A 그룹 사람이 정해져 있습니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>B 그룹</th><th>맡는 줄 → 받는 사람</th><th>맡는 줄 → 받는 사람</th></tr></thead><tbody>
+<tr><td>굼바 (토벌)</td><td>뼈·뿔 → 대장장이</td><td>고기 → 마르타</td></tr>
+<tr><td>사냥꾼 (사냥·채집)</td><td>목재 → 한스</td><td>가죽·깃털 → 대장장이</td></tr>
+<tr><td>헤르만 (조사)</td><td>마석 → 그레타</td><td>버섯·열매 → 마르타</td></tr>
+<tr><td>세실리아 (호위·구호)</td><td>천 → 한스</td><td>약초 → 그레타</td></tr>
+<tr><td>탐험가 (탐사)</td><td>광석 → 대장장이</td><td>생선 → 마르타</td></tr>
+</tbody></table>
+</div><div class="table-wrapper"><table><thead><tr><th>A 그룹</th><th>받는 줄</th><th>소재가 나오는 곳</th></tr></thead><tbody>
+<tr><td>한스 (목수)</td><td>목재 · 천</td><td>사냥꾼 · 세실리아 (2곳)</td></tr>
+<tr><td>대장장이</td><td>뼈·뿔 · 가죽·깃털 · 광석</td><td>굼바 · 사냥꾼 · 탐험가 (3곳)</td></tr>
+<tr><td>그레타 (약초 할머니)</td><td>마석 · 약초</td><td>헤르만 · 세실리아 (2곳)</td></tr>
+<tr><td>마르타 (농산 상단)</td><td>고기 · 버섯·열매 · 생선</td><td>굼바 · 헤르만 · 탐험가 (3곳)</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>다섯 사람 모두 <strong>서로 다른 두 사람</strong>에게 줍니다.</li>
+<li>지금 게임에서는 같은 소재의 주인이 등급마다 달랐습니다(가죽이 F급에서는 토벌, E · D급에서는 사냥·채집). 줄로 정리하면서 <strong>고기는 굼바, 가죽은 사냥꾼</strong>으로 맞췄습니다. 지금 E급 데이터가 이미 이렇게 되어 있습니다.</li>
+<li>마르타는 여러 곳에서 받습니다. 식재료는 고기 · 버섯 · 생선이 서로 다른 요리가 되므로, 「누구를 밀까」보다 「어느 요리를 낼까」의 고민이 됩니다(03).</li>
+</ul>
+<h3 id="규칙-셋"><a class="header" href="#규칙-셋">규칙 셋</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>규칙</th><th>내용</th></tr></thead><tbody>
+<tr><td>등급마다 묶음 둘</td><td>줄마다 등급에 소재가 둘. 첫 묶음의 것, 둘째 묶음의 것</td></tr>
+<tr><td>전설 · 신화 속 동물은 뺌</td><td>용 · 와이번 · 그리폰 · 키메라 · 불사조는 <strong>특수 리퀘스트</strong>로 갑니다. 보통 퀘스트의 줄에는 떼로 사는 짐승과 종족(들개 · 멧돼지 · 늑대 · 곰 · 오크 · 트롤 …)만 둡니다</td></tr>
+<tr><td>이름은 6글자까지</td><td>띄어쓰기도 한 글자로 셉니다. 지금 있는 56종은 모두 6글자 이하입니다</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>지금 소재 가운데 12종이 줄에서 빠져 특수 리퀘스트의 전리품이 됩니다: 와이번 비늘 · 키메라 뿔 · 용의 유해 · 그리폰 깃털 · 불사조 깃털 · 용근 · 용안석 · 용익막 · 와이번 고기 · 키메라 고기 · 용 꼬리 · 그리폰 알.</li>
+<li>특수 리퀘스트로 풀 거리가 그만큼 늘어납니다. 무엇이고 언제 나오는지는 10 · 15에서 정합니다.</li>
+</ul>
+<h3 id="전체의-크기"><a class="header" href="#전체의-크기">전체의 크기</a></h3>
+<div class="table-wrapper"><table><thead><tr><th></th><th style="text-align: center">칸</th><th style="text-align: center">지금 있는 것</th><th style="text-align: center">새로</th></tr></thead><tbody>
+<tr><td>첫 묶음 (줄 10 × 등급 7)</td><td style="text-align: center">70</td><td style="text-align: center">38</td><td style="text-align: center">32</td></tr>
+<tr><td>둘째 묶음 (줄 10 × 등급 7)</td><td style="text-align: center">70</td><td style="text-align: center">0</td><td style="text-align: center">70</td></tr>
+<tr><td>합계</td><td style="text-align: center">140</td><td style="text-align: center">38</td><td style="text-align: center">102</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>줄에 넣지 않은 것: 양념 4종(소금 · 향신료 · 신선한 물 · 밀가루)과 수선용 2종.</li>
+<li>지금 게임은 뼈·뿔 · 광석 · 천 · 마석만 S급까지 차 있고, 목재는 2칸, 약초와 생선은 1칸뿐입니다. D급부터는 소재를 쓰는 곳(장비 · 물약)도, 퀘스트의 이름도 아직 없습니다.</li>
+</ul>
+<h3 id="이번에-확정하는-것--f급-20칸"><a class="header" href="#이번에-확정하는-것--f급-20칸">이번에 확정하는 것 — F급 20칸</a></h3>
+<p>프로토타입은 길드가 E급이 되면 끝나고, F급 동안에는 E급 퀘스트가 붙지 않습니다. 그래서 이번에는 F급만 확정합니다. 굵은 글씨가 새 소재 10종입니다(이름 [임시]).</p>
+<div class="table-wrapper"><table><thead><tr><th>B 그룹</th><th>첫 묶음</th><th>둘째 묶음</th></tr></thead><tbody>
+<tr><td>굼바 (토벌)</td><td>짐승 뼛조각 · 멧돼지 고기</td><td><strong>멧돼지 엄니</strong> · <strong>멧돼지 등심</strong></td></tr>
+<tr><td>사냥꾼 (사냥·채집)</td><td>참나무 가지 · 짐승 가죽</td><td><strong>참나무 원목</strong> · <strong>질긴 가죽</strong></td></tr>
+<tr><td>헤르만 (조사)</td><td>희미한 마석 · 들버섯</td><td><strong>맑은 마석</strong> · <strong>향버섯</strong></td></tr>
+<tr><td>세실리아 (호위·구호)</td><td>무명천 · 약초</td><td><strong>고운 무명</strong> · <strong>귀한 약초</strong></td></tr>
+<tr><td>탐험가 (탐사)</td><td>고철 조각 · 민물고기</td><td><strong>옛 쇠붙이</strong> · <strong>큰 잉어</strong></td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>소재의 쓰임은 받는 쪽 항목에서 정합니다: 03 요리 · 04 정비대 · 05 약초 시설 · 07 한스.</li>
+<li>소재는 쓰임이 정해져야 완성됩니다. E급 이상은 받는 쪽 시설이 설계되지 않아서, 아래 예시 이름을 [임시]로 두고 그 등급을 만들 때 확정합니다.</li>
+</ul>
+<h3 id="전체-등급-예시-임시"><a class="header" href="#전체-등급-예시-임시">전체 등급 예시 [임시]</a></h3>
+<p>보통 글씨는 지금 있는 소재, <strong>굵은 글씨는 새로 만들 소재</strong>입니다. 정해진 것은 F급 두 줄뿐이고 나머지는 틀을 보이기 위한 예시입니다.</p>
+<h4 id="굼바--토벌"><a class="header" href="#굼바--토벌">굼바 — 토벌</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>줄 → 받는 사람</th><th>묶음</th><th>F</th><th>E</th><th>D</th><th>C</th><th>B</th><th>A</th><th>S</th></tr></thead><tbody>
+<tr><td>뼈·뿔 → 대장장이</td><td>첫</td><td>짐승 뼛조각</td><td>늑대 송곳니</td><td>오크 엄니</td><td>트롤 뿔</td><td><strong>오우거 뿔</strong></td><td><strong>거인의 손톱</strong></td><td><strong>마수의 뿔</strong></td></tr>
+<tr><td>뼈·뿔 → 대장장이</td><td>둘째</td><td><strong>멧돼지 엄니</strong></td><td><strong>곰 발톱</strong></td><td><strong>검치호 이빨</strong></td><td><strong>트롤 등뼈</strong></td><td><strong>오우거 엄니</strong></td><td><strong>거인의 이빨</strong></td><td><strong>마수 송곳니</strong></td></tr>
+<tr><td>고기 → 마르타</td><td>첫</td><td>멧돼지 고기</td><td>늑대 고기</td><td>흑곰 고기</td><td>트롤 뼈</td><td><strong>매머드 고기</strong></td><td><strong>천둥소 고기</strong></td><td><strong>마수 고기</strong></td></tr>
+<tr><td>고기 → 마르타</td><td>둘째</td><td><strong>멧돼지 등심</strong></td><td><strong>곰 발바닥</strong></td><td><strong>흑곰 갈비</strong></td><td><strong>검치호 고기</strong></td><td><strong>매머드 갈비</strong></td><td><strong>천둥소 안심</strong></td><td><strong>마수 심장</strong></td></tr>
+</tbody></table>
+</div>
+<h4 id="사냥꾼--사냥채집"><a class="header" href="#사냥꾼--사냥채집">사냥꾼 — 사냥·채집</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>줄 → 받는 사람</th><th>묶음</th><th>F</th><th>E</th><th>D</th><th>C</th><th>B</th><th>A</th><th>S</th></tr></thead><tbody>
+<tr><td>목재 → 한스</td><td>첫</td><td>참나무 가지</td><td><strong>자작 가지</strong></td><td><strong>흑단 가지</strong></td><td><strong>철목 가지</strong></td><td>세계수 가지</td><td><strong>성목 가지</strong></td><td><strong>천년목 가지</strong></td></tr>
+<tr><td>목재 → 한스</td><td>둘째</td><td><strong>참나무 원목</strong></td><td><strong>자작 원목</strong></td><td><strong>흑단 원목</strong></td><td><strong>철목 원목</strong></td><td><strong>세계수 원목</strong></td><td><strong>성목 원목</strong></td><td><strong>천년목 원목</strong></td></tr>
+<tr><td>가죽·깃털 → 대장장이</td><td>첫</td><td>짐승 가죽</td><td>사슴 가죽</td><td>흑곰 가죽</td><td><strong>검치호 가죽</strong></td><td><strong>매머드 가죽</strong></td><td><strong>천둥소 가죽</strong></td><td><strong>마수 가죽</strong></td></tr>
+<tr><td>가죽·깃털 → 대장장이</td><td>둘째</td><td><strong>질긴 가죽</strong></td><td><strong>순록 가죽</strong></td><td><strong>은여우 모피</strong></td><td><strong>큰수리 깃털</strong></td><td><strong>매머드 털</strong></td><td><strong>백호 모피</strong></td><td><strong>마수 힘줄</strong></td></tr>
+</tbody></table>
+</div>
+<h4 id="헤르만--조사"><a class="header" href="#헤르만--조사">헤르만 — 조사</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>줄 → 받는 사람</th><th>묶음</th><th>F</th><th>E</th><th>D</th><th>C</th><th>B</th><th>A</th><th>S</th></tr></thead><tbody>
+<tr><td>마석 → 그레타</td><td>첫</td><td>희미한 마석</td><td>마석 조각</td><td>마정석</td><td>고급 마정석</td><td>정령석</td><td>성좌석</td><td><strong>천공석</strong></td></tr>
+<tr><td>마석 → 그레타</td><td>둘째</td><td><strong>맑은 마석</strong></td><td><strong>마석 덩이</strong></td><td><strong>물든 마정석</strong></td><td><strong>순수 마정석</strong></td><td><strong>대정령석</strong></td><td><strong>쌍성좌석</strong></td><td><strong>심연석</strong></td></tr>
+<tr><td>버섯·열매 → 마르타</td><td>첫</td><td>들버섯</td><td>산딸기</td><td>마력 버섯</td><td><strong>구름 열매</strong></td><td>세계수 꿀</td><td><strong>별빛 포도</strong></td><td><strong>천공 버섯</strong></td></tr>
+<tr><td>버섯·열매 → 마르타</td><td>둘째</td><td><strong>향버섯</strong></td><td><strong>꿀사과</strong></td><td><strong>달빛 송로</strong></td><td><strong>이슬 버섯</strong></td><td><strong>세계수 열매</strong></td><td><strong>성좌 석류</strong></td><td><strong>황금 사과</strong></td></tr>
+</tbody></table>
+</div>
+<h4 id="세실리아--호위구호"><a class="header" href="#세실리아--호위구호">세실리아 — 호위·구호</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>줄 → 받는 사람</th><th>묶음</th><th>F</th><th>E</th><th>D</th><th>C</th><th>B</th><th>A</th><th>S</th></tr></thead><tbody>
+<tr><td>천 → 한스</td><td>첫</td><td>무명천</td><td>모직 천</td><td>마직 천</td><td>축복받은 천</td><td>은빛 실타래</td><td>성은 실타래</td><td><strong>천공 실타래</strong></td></tr>
+<tr><td>천 → 한스</td><td>둘째</td><td><strong>고운 무명</strong></td><td><strong>두꺼운 모직</strong></td><td><strong>물들인 마직</strong></td><td><strong>축성 비단</strong></td><td><strong>은빛 비단</strong></td><td><strong>성은 비단</strong></td><td><strong>천공 비단</strong></td></tr>
+<tr><td>약초 → 그레타</td><td>첫</td><td>약초</td><td><strong>쓴풀</strong></td><td><strong>월광초</strong></td><td><strong>성수 이끼</strong></td><td><strong>세계수 잎</strong></td><td><strong>불사초</strong></td><td><strong>영초</strong></td></tr>
+<tr><td>약초 → 그레타</td><td>둘째</td><td><strong>귀한 약초</strong></td><td><strong>달맞이꽃</strong></td><td><strong>월광초 뿌리</strong></td><td><strong>은방울꽃</strong></td><td><strong>세계수 새순</strong></td><td><strong>불사초 꽃</strong></td><td><strong>만년 영초</strong></td></tr>
+</tbody></table>
+</div>
+<h4 id="탐험가--탐사"><a class="header" href="#탐험가--탐사">탐험가 — 탐사</a></h4>
+<div class="table-wrapper"><table><thead><tr><th>줄 → 받는 사람</th><th>묶음</th><th>F</th><th>E</th><th>D</th><th>C</th><th>B</th><th>A</th><th>S</th></tr></thead><tbody>
+<tr><td>광석 → 대장장이</td><td>첫</td><td>고철 조각</td><td>구리 원석</td><td>철광석</td><td>흑철광</td><td>미스릴 원석</td><td>아다만 원석</td><td>운철</td></tr>
+<tr><td>광석 → 대장장이</td><td>둘째</td><td><strong>옛 쇠붙이</strong></td><td><strong>주석 원석</strong></td><td><strong>은광석</strong></td><td><strong>금광석</strong></td><td><strong>미스릴 결정</strong></td><td><strong>오리할콘</strong></td><td><strong>별의 핵</strong></td></tr>
+<tr><td>생선 → 마르타</td><td>첫</td><td>민물고기</td><td><strong>은어</strong></td><td><strong>동굴 장어</strong></td><td><strong>철갑상어</strong></td><td><strong>심해 아귀</strong></td><td><strong>대왕 오징어</strong></td><td><strong>빙하 고래</strong></td></tr>
+<tr><td>생선 → 마르타</td><td>둘째</td><td><strong>큰 잉어</strong></td><td><strong>무지개 송어</strong></td><td><strong>눈먼 메기</strong></td><td><strong>철갑상어 알</strong></td><td><strong>달빛 연어</strong></td><td><strong>진주조개</strong></td><td><strong>고래 뱃살</strong></td></tr>
+</tbody></table>
+</div>
+<h2 id="5-같은-소재를-두-군데에서-씁니다"><a class="header" href="#5-같은-소재를-두-군데에서-씁니다">5. 같은 소재를 두 군데에서 씁니다</a></h2>
+<p>F급 장비 13가지의 조합법에는 대장장이의 줄이 아닌 소재가 많이 들어갑니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>소재</th><th>줄의 주인</th><th style="text-align: center">장비 13가지 가운데 쓰이는 수</th></tr></thead><tbody>
+<tr><td>참나무 가지</td><td>한스</td><td style="text-align: center">8</td></tr>
+<tr><td>무명천</td><td>한스</td><td style="text-align: center">6</td></tr>
+<tr><td>짐승 가죽</td><td>대장장이</td><td style="text-align: center">4</td></tr>
+<tr><td>짐승 뼛조각</td><td>대장장이</td><td style="text-align: center">3</td></tr>
+<tr><td>고철 조각</td><td>대장장이</td><td style="text-align: center">3</td></tr>
+<tr><td>희미한 마석</td><td>그레타</td><td style="text-align: center">3</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li><strong>이 겹침을 그대로 둡니다.</strong> 참나무 가지를 한스에게 가져가 시설에 쓸지, 대장장이에게 가져가 나무 검을 만들지 고르게 됩니다.</li>
+<li>쓸 곳이 하나면 고를 것이 없어 「소재 팔기」가 다시 숙제가 됩니다. 겹쳐야 경영(시설)과 육성(장비)이 같은 소재를 두고 만납니다.</li>
+<li>지금은 겹침이 한스의 두 줄에 쏠려 있습니다. <strong>장비 조합법 조절</strong>은 04 · 07에서 다룹니다.</li>
+</ul>
+<h2 id="6-보스"><a class="header" href="#6-보스">6. 보스</a></h2>
+<h3 id="보스는-그-사람의-일에-맞는-큰일"><a class="header" href="#보스는-그-사람의-일에-맞는-큰일">보스는 그 사람의 일에 맞는 「큰일」</a></h3>
+<p>보스가 모두 싸움은 아닙니다. 지금 F급 퀘스트를 보면 토벌과 호위·구호는 모두 싸움이고 조사는 싸움이 없습니다. 보스도 그 줄의 능력을 봅니다. 묶음에서 키운 것을 보스에서 쓰고, 보스마다 지명할 사람이 달라집니다.</p>
+<p>F급 보스 10개 [임시] — 굵은 글씨가 새로 만들 것, 나머지 5개는 지금 있는 리퀘스트입니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>B 그룹</th><th>첫 보스</th><th>둘째 보스</th><th>보는 능력</th></tr></thead><tbody>
+<tr><td>굼바</td><td>들개 떼 우두머리 (싸움)</td><td>밭을 망치는 외눈 멧돼지 (싸움)</td><td>힘</td></tr>
+<tr><td>사냥꾼</td><td><strong>숲의 큰뿔 사슴</strong> (싸움)</td><td><strong>길을 막은 쓰러진 거목</strong> (싸움 없음)</td><td>민첩</td></tr>
+<tr><td>헤르만</td><td>낡은 지도의 X 표시 (싸움 없음)</td><td><strong>봉인된 석실</strong> (싸움 없음)</td><td>지력</td></tr>
+<tr><td>세실리아</td><td>짐마차를 노리는 도적 (싸움)</td><td><strong>돌림병이 도는 마을</strong> (싸움 없음)</td><td>정신</td></tr>
+<tr><td>탐험가</td><td>우물 속 끈적한 손님 (싸움)</td><td><strong>무너진 갱도</strong> (싸움 없음)</td><td>기교</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>「짐마차를 노리는 도적」은 지금 페드로의 부탁, 「우물 속 끈적한 손님」은 그레타의 부탁입니다. 부탁하는 사람을 옮기는 일은 10번에서 정리합니다.</li>
+</ul>
+<h3 id="보스가-주는-것--체육관-뱃지처럼"><a class="header" href="#보스가-주는-것--체육관-뱃지처럼">보스가 주는 것 — 체육관 뱃지처럼</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>받는 쪽</th><th>주는 것</th></tr></thead><tbody>
+<tr><td>길드</td><td>그 사람의 <strong>다음 묶음</strong>(새 퀘스트와 새 소재) · 돈 · 명성</td></tr>
+<tr><td>길드의 벽</td><td><strong>뱃지</strong> — 보스마다 늘 줌. 보기만 하는 기념물이고 바닥 자리를 차지하지 않음</td></tr>
+<tr><td>길드의 가방</td><td><strong>완성된 물건 하나</strong> — 보스마다 정해져 있고, 리퀘스트에 미리 보임</td></tr>
+<tr><td>보낸 모험가</td><td><strong>이름표</strong>(「들개 우두머리를 잡은」) · 애착</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>결과가 사람과 장소 양쪽에 남습니다. 보낸 모험가가 떠나도 길드에는 기록이 남습니다.</li>
+<li>보상을 미리 보여 주므로(뽑기가 아님) 「궁수 무기가 필요하니 사냥꾼의 일부터 민다」처럼, 누구의 일을 밀지 고를 까닭이 능력 · 소재에 이어 하나 더 생깁니다.</li>
+<li><strong>전설의 동물(특수 리퀘스트)과의 차이:</strong> 보통 보스는 완성된 물건을, 전설의 동물은 <strong>전설의 소재</strong>를 줍니다. 그 소재로 전설의 요리와 장비를 만듭니다.</li>
+</ul>
+<h3 id="완성된-물건-임시"><a class="header" href="#완성된-물건-임시">완성된 물건 [임시]</a></h3>
+<p>모험가가 지닌 것마다 그것을 바꾸는 물건을 하나씩 대어 봤습니다. 모두 「누구에게 줄까」를 고르게 합니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>갈래</th><th>물건</th><th>하는 일</th><th style="text-align: center">넣음</th></tr></thead><tbody>
+<tr><td>사람됨</td><td>담력의 술</td><td>성향을 한 칸 옮김 (신중 ↔ 보통 ↔ 무모)</td><td style="text-align: center">○</td></tr>
+<tr><td>사람됨</td><td>어울림 술</td><td>사교를 한 칸 옮김 (독불장군 ↔ 사교적)</td><td style="text-align: center">○</td></tr>
+<tr><td>사람됨</td><td>버릇 고침약</td><td>버릇 하나를 다른 것으로 바꿈. 귀하게</td><td style="text-align: center">○</td></tr>
+<tr><td>힘</td><td>비전서</td><td>스킬 하나를 더함. 마법학원에서 팔지 않는 스킬</td><td style="text-align: center">○</td></tr>
+<tr><td>힘</td><td>레어 장비</td><td>그 직업의 좋은 무기 · 방어구</td><td style="text-align: center">○</td></tr>
+<tr><td>힘</td><td>별의 조각</td><td>성급 +1. 끝 보스에만</td><td style="text-align: center">○</td></tr>
+<tr><td>사이</td><td>정성 꾸러미</td><td>주면 애착이 오름</td><td style="text-align: center">○</td></tr>
+<tr><td>사이</td><td>화해의 술</td><td>서먹한 두 모험가의 사이를 풂</td><td style="text-align: center">○</td></tr>
+<tr><td>길드</td><td>소개장</td><td>원하는 직업의 신입이 옴</td><td style="text-align: center">○</td></tr>
+<tr><td>사람됨</td><td>복주머니</td><td>씀씀이를 한 칸 옮김</td><td style="text-align: center">한석님 안건 (경제 수치)</td></tr>
+<tr><td>힘</td><td>힘의 열매</td><td>능력치 하나를 올림</td><td style="text-align: center">뺌 (09 수행과 겹침)</td></tr>
+<tr><td>길드</td><td>만병 고약</td><td>부상을 바로 낫게 함</td><td style="text-align: center">뺌 (05 약초 시설과 겹침)</td></tr>
+<tr><td>힘</td><td>되돌림 모래</td><td>고른 특성을 다시 고름</td><td style="text-align: center">미룸 (14)</td></tr>
+<tr><td>길드</td><td>수호 부적</td><td>죽음을 한 번 막음</td><td style="text-align: center">미룸 (죽음은 B급부터)</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>버릇은 「이 녀석은 겁쟁이라서」처럼 모험가에게 정이 붙는 까닭입니다. 쉽게 바뀌면 다 비슷해지므로 버릇을 바꾸는 물건은 귀하게 둡니다.</li>
+<li>바꾸는 물건은 쓰기 전에 결과가 보여야 합니다(「한 칸 옮긴다」).</li>
+<li>성급은 성장 배수가 1성 1배 · 2성 1.25배 · 3성 1.5배라 힘이 셉니다. 등급마다 1개, 전체 7개로 귀하게 둡니다.</li>
+</ul>
+<p>사람마다 주는 물건의 성격이 다르고, 보스의 무게에 따라 크기가 다릅니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>B 그룹</th><th>주는 물건의 성격</th><th>첫 보스 (작은 것)</th><th>둘째 보스 (큰 것)</th></tr></thead><tbody>
+<tr><td>굼바 (농부)</td><td>싸움 도구</td><td>정성 꾸러미</td><td>레어 장비</td></tr>
+<tr><td>사냥꾼</td><td>사람을 잇는 것</td><td>화해의 술</td><td>소개장</td></tr>
+<tr><td>헤르만 (학자)</td><td>배움</td><td>정성 꾸러미</td><td>비전서</td></tr>
+<tr><td>세실리아 (수녀)</td><td>마음</td><td>어울림 술</td><td>담력의 술 또는 버릇 고침약</td></tr>
+<tr><td>탐험가</td><td>진귀한 것</td><td>정성 꾸러미</td><td>레어 장비 (장신구)</td></tr>
+<tr><td>바르톨 (끝 보스)</td><td>—</td><td>—</td><td>별의 조각</td></tr>
+</tbody></table>
+</div>
+<h2 id="7-한도와-수"><a class="header" href="#7-한도와-수">7. 한도와 수</a></h2>
+<h3 id="한도는-퀘스트마다-lv-1--2--3"><a class="header" href="#한도는-퀘스트마다-lv-1--2--3">한도는 퀘스트마다 Lv 1 → 2 → 3</a></h3>
+<div class="table-wrapper"><table><thead><tr><th></th><th>내용</th></tr></thead><tbody>
+<tr><td>한 퀘스트</td><td>Lv 1 → Lv 2 → Lv 3. 해낼 때마다 레벨이 오르고, 상대가 한 단계씩 세짐</td></tr>
+<tr><td>한 묶음 (퀘스트 2개)</td><td>두 퀘스트를 모두 Lv 3까지 = 6번 → 보스가 리퀘스트로 나옴</td></tr>
+<tr><td>보이는 곳</td><td>게시판의 퀘스트 종이에 레벨이 표시됨. 보스까지 얼마나 남았는지 따로 찾지 않아도 됨</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>같은 일을 세 번 되풀이하는 것이 아니라 한 단계씩 세지는 것입니다. 「실컷 잡았더니 보스가 나온다」에 맞춥니다.</li>
+<li>묶음을 골고루 겪게 됩니다. 묶음의 두 퀘스트는 주는 소재가 달라서, 골고루 해야 두 소재가 다 들어옵니다.</li>
+<li>지금 게임의 「의뢰 레벨」(최대 3, 레벨마다 상대와 판정 +15% · 보상 +20%)을 그대로 씁니다. 지금은 같은 퀘스트를 3번 성공해야 한 레벨이 오르는데, 1번에 한 레벨로 바꾸는 셈입니다.</li>
+<li>Lv 3이 된 뒤에도 그 퀘스트는 계속 붙고, 보내면 돈과 경험치를 받습니다. 막지 않습니다.</li>
+</ul>
+<h3 id="한-등급의-모양"><a class="header" href="#한-등급의-모양">한 등급의 모양</a></h3>
+<div class="table-wrapper"><table><thead><tr><th></th><th>값 [임시]</th></tr></thead><tbody>
+<tr><td>한 등급의 보스</td><td>다섯 사람 × 묶음 둘 = 10번, 그리고 끝 보스 (02의 「6번」을 바꿈)</td></tr>
+<tr><td>전체 보스</td><td>70번 + 끝 보스 7번 = 77번 (720주에 평균 9주에 한 번)</td></tr>
+<tr><td>F급에 필요한 건수</td><td>묶음 10 × 6번 + 보스 10번 = 70건</td></tr>
+<tr><td>지금의 박자</td><td>40주에 성공하는 원정 약 57건 (한 주 1.4건)</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>지금 게임도 「리퀘스트 10번 → 침공」이라 보스 10번은 같은 박자입니다.</li>
+<li><strong>70건은 40주에 들어가지 않습니다.</strong> 계산으로는 E급에 닿는 때가 49주쯤으로 늦어집니다. 40주를 넘기는 것을 받아들일지, 한 주에 붙는 퀘스트를 늘릴지는 재 본 뒤 정합니다.</li>
+</ul>
+<h2 id="8-f급에-새로-만들-것"><a class="header" href="#8-f급에-새로-만들-것">8. F급에 새로 만들 것</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>갈래</th><th>지금 있는 것</th><th>새로 만들 것</th><th>고칠 것</th></tr></thead><tbody>
+<tr><td>B 그룹 인물</td><td>굼바 · 헤르만 · 세실리아</td><td>사냥꾼 · 탐험가 (2명)</td><td>대장장이의 이름</td></tr>
+<tr><td>게시판 퀘스트</td><td>첫 묶음 10개</td><td>둘째 묶음 10개</td><td>토벌 2개와 사냥·채집 2개의 소재 바꿈, 「오늘 저녁 삼겹살」</td></tr>
+<tr><td>보스 리퀘스트</td><td>들어맞는 것 5개</td><td>5개</td><td>부탁하는 사람 바꿈 2개</td></tr>
+<tr><td>소재</td><td>첫 묶음 10종</td><td>둘째 묶음 10종</td><td>무명천을 받는 사람</td></tr>
+<tr><td>뱃지</td><td>—</td><td>10개</td><td>—</td></tr>
+<tr><td>보스가 주는 물건</td><td>레어 장비의 바탕(장비 13가지)</td><td>8종</td><td>—</td></tr>
+<tr><td>화면</td><td>칸 배분(등급별)</td><td>—</td><td>사람별 다섯 줄, 퀘스트 종이에 Lv 표시</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>그림으로 필요한 것은 저장소의 <code>docs/todo1125.md</code>에 모았습니다.</li>
+</ul>
+<h2 id="지금-게임과-달라지는-곳"><a class="header" href="#지금-게임과-달라지는-곳">지금 게임과 달라지는 곳</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>지금</th><th>바뀌면</th></tr></thead><tbody>
+<tr><td>게시판 퀘스트에 얼굴 있는 의뢰인이 없음</td><td>종류마다 맡는 사람이 있음</td></tr>
+<tr><td>칸 배분이 등급별</td><td>사람별 다섯 줄</td></tr>
+<tr><td>같은 퀘스트를 3번 성공해야 레벨이 오름</td><td>1번에 한 레벨. Lv 3까지가 한도</td></tr>
+<tr><td>리퀘스트 10번을 채우면 침공</td><td>보스 10번을 모두 해내면 침공</td></tr>
+<tr><td>토벌이 가죽을, 사냥·채집이 고기를 줌 (F급)</td><td>토벌이 고기를, 사냥·채집이 가죽을 줌</td></tr>
+<tr><td>농산 상단이 한 등급 위의 식재료를 팖</td><td>좋은 식재료는 둘째 묶음에서 나옴 — 남길지는 03에서</td></tr>
+<tr><td>용 · 와이번 등의 소재가 보통 퀘스트에서 나옴</td><td>특수 리퀘스트로</td></tr>
+</tbody></table>
+</div>
+<h2 id="아직-모르는-것"><a class="header" href="#아직-모르는-것">아직 모르는 것</a></h2>
+<ol>
+<li><strong>E급에 닿는 때.</strong> 70건이면 49주쯤(계산). 재 봐야 압니다.</li>
+<li><strong>성공 57건에 리퀘스트가 들어 있는지</strong> 확인하지 못했습니다.</li>
+<li><strong>한 번에 떨어지는 소재의 개수와 F급 소재의 값.</strong> A 그룹의 단계(200G · 600G)까지 몇 개를 넘겨야 하는지 모릅니다.</li>
+<li><strong>뒤 등급의 박자.</strong> 뒤 등급은 한 등급이 평균 110주쯤이라 보스 10번이면 11주에 한 번입니다. 뒤 등급의 길이가 정해질 때 다시 봅니다.</li>
+</ol>
+<h2 id="다른-항목으로-넘긴-것"><a class="header" href="#다른-항목으로-넘긴-것">다른 항목으로 넘긴 것</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>넘긴 것</th><th>다룰 곳</th></tr></thead><tbody>
+<tr><td>둘째 묶음 퀘스트 10개의 이름과 상대 · 새 보스 5개의 내용 · 「오늘 저녁 삼겹살」</td><td>10 · 15</td></tr>
+<tr><td>기존 리퀘스트 29개와의 관계 · 페드로와 바르톨의 자리</td><td>10</td></tr>
+<tr><td>특수 리퀘스트(전설의 동물) — 무엇이고 언제 나오는지</td><td>10 · 15</td></tr>
+<tr><td>「주 수에 따라 파티 의뢰가 늘어남」(12주 · 24주)을 남길지</td><td>10 · 15</td></tr>
+<tr><td>새 식재료의 쓰임 · 농산 상단이 윗등급 식재료를 파는 규칙 · 줄에서 빠진 소재를 쓰는 요리 5가지</td><td>03</td></tr>
+<tr><td>장비 조합법 조절 · 대장장이가 받는 소재의 쓰임</td><td>04 · 07</td></tr>
+<tr><td>약초 · 마석의 쓰임</td><td>05</td></tr>
+<tr><td>목재 · 천의 쓰임 · 뱃지를 벽의 어디에 거는지</td><td>07</td></tr>
+<tr><td>둘째 묶음의 최소 조건과 수행 · 스킬을 마법학원에서 사는 것</td><td>09 · 14</td></tr>
+<tr><td>이름표가 보이는 곳 · 보스가 주는 물건의 효과</td><td>11 · 14</td></tr>
+</tbody></table>
+</div>
+<h2 id="한석님과-논의할-것"><a class="header" href="#한석님과-논의할-것">한석님과 논의할 것</a></h2>
+<ol>
+<li>B 그룹을 다섯 사람으로 두는 것 · 새 인물 둘</li>
+<li>한 등급에 보스 10번 (전체 77번)</li>
+<li>퀘스트 레벨을 1번 성공에 한 레벨로 바꾸는 것 (<code>qlv,need</code> 3 → 1)</li>
+<li>F급 70건과 E급에 닿는 때 (40주를 넘길지, 붙는 퀘스트를 늘릴지)</li>
+<li>소재의 틀 140칸과 전설 · 신화의 선</li>
+<li>보스가 주는 물건의 효과와 양 (애착 · 레어 장비의 세기 · 성급 물건의 개수 · 씀씀이)</li>
+<li>뱃지에 효과를 붙일지 (지금은 없음)</li>
+</ol>
+<h2 id="근거"><a class="header" href="#근거">근거</a></h2>
+<ul>
+<li>게임 데이터(<code>js/data_gen.js</code>)를 읽어 확인: 소재 56종의 등급과 줄 · 퀘스트 틀(F 10 · E 7 · D ~ S 5씩)과 틀마다 주는 소재 · 장비 26 · 물약 4 · 요리 17의 조합법 · 몬스터 8.</li>
+<li>코드(<code>js/game_core.js</code> · <code>js/ui.js</code>)를 읽어 확인: 퀘스트 종류와 능력치의 짝 · 의뢰 레벨 · 칸 배분 · 농산 상단이 파는 등급 · 성급의 성장 배수 · 프로토타입이 끝나는 때.</li>
+<li>인물은 책 V4 「인물과 이름」과 <code>data/named_quests.csv</code>.</li>
+<li>원정 57건은 2026-11-24에 잰 값(한 해 48주에 성공 약 68건)에서 나눈 것입니다.</li>
+</ul>
+
+                    </section></main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../plan/02-timeline.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../development/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../plan/02-timeline.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../development/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../theme/mermaid-init.js"></script>
+
+
+    </div>
+    <script type="application/json" id="book-change-data" data-book-root="../" data-from="V4" data-to="V5">{"index.html":{"title":"들어가며","items":[{"before":"기존 「들어가며」 설명","after":"「들어가며」 안내를 보완했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"versions.html":{"title":"버전 이력","items":[{"before":"기존 「버전 이력」 설명","after":"「버전 이력」 안내를 보완했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/01-principles.html":{"title":"01 원칙 다섯","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 · 왜 이 다섯인가 · 1. 관찰 — 막힘은 숫자로 늘 보인다. 어느 불부터 끌지는 플레이어가 정한다. 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/02-timeline.html":{"title":"02 40주 진행표","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 · 사람이 두 그룹으로 나뉩니다 · A 그룹 — 누구와 무엇을 거래하고 무엇이 열리나 [임시] 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/17-quest-material-map.html":{"title":"17 퀘스트와 소재의 지도","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 · 1. 맞물림 — 퀘스트가 소재를, 소재가 사람을 정합니다 · 2. B 그룹 — 다섯 사람 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/index.html":{"title":"V5 경영 · 육성 개편안 — 항목 목록","items":[{"before":"V4에는 이 문서가 없습니다.","after":"한눈에 — 17항목 · 무엇이 문제였나 · 원칙 다섯 (01) 설명을 추가했습니다.","state":"V5 경영 · 육성 개편안 (2026-11-24 설계 대화). 기획: 방향 정리 · 한석님 논의 전 / 게임: 미반영 · 값은 모두 [임시]"}]}}</script>
+<dialog id="book-change-dialog" aria-labelledby="book-change-title"><button type="button" class="dialog-close" aria-label="변경 요약 닫기">×</button><h2 id="book-change-title">V4 대비 변경 요약</h2><div id="book-change-body"></div><div class="dialog-actions"><a id="book-change-open" href="17-quest-material-map.html">문서 열기</a><a href="../changes.html">전체 변경 비교표</a></div></dialog><script src="../../_book-ui.js"></script>
+</body>
+</html>
