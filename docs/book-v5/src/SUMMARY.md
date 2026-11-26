@@ -75,6 +75,7 @@
     - [07 시설을 놓을 자리](plan/07-placement.md)
     - [08 쓰면 조금씩 오름](plan/08-grow-with-use.md)
     - [09 수행](plan/09-training.md)
+    - [10 · 15 의뢰](plan/10-15-quests.md)
     - [11 애착](plan/11-attachment.md)
     - [12 신입 모험가](plan/12-newcomers.md)
     - [13 노는 모험가](plan/13-idle-adventurers.md)
