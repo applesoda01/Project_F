@@ -78,6 +78,7 @@
     - [11 애착](plan/11-attachment.md)
     - [12 신입 모험가](plan/12-newcomers.md)
     - [13 노는 모험가](plan/13-idle-adventurers.md)
+    - [14 모험가의 고비](plan/14-milestones.md)
     - [16 막힘 알림](plan/16-blocked-list.md)
     - [17 퀘스트와 소재의 지도](plan/17-quest-material-map.md)
     - [18 모험가가 물건을 사는 판단](plan/18-purchase-judgment.md)
