@@ -66,6 +66,7 @@
     - [인물과 이름](ch11/characters.md)
 
 - [V5 경영 · 육성 개편안](plan/README.md)
+    - [한석님과 논의할 것 — 한 장](plan/00-meeting.md)
     - [바탕]()
         - [01 원칙 다섯](plan/01-principles.md)
         - [02 40주 진행표](plan/02-timeline.md)

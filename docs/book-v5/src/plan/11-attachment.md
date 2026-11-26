@@ -6,6 +6,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「11 애착」 · 2026-11-26 11:23 ~ 14:25)
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 애착이 낮아도 벌이 없습니다. 누구나 매주 길드에 들릅니다.
+- 애착 20마다 한 칸, 모두 다섯 칸입니다. 칸마다 종류가 다른 보상이 열립니다.
+- 부탁은 능력이 되면 애착이 0이어도 들어줍니다. 애착은 그 위에 얹는 보탬입니다.
+
+</div>
+
 ## 한눈에
 
 | 걸음 | 정한 것 |
@@ -30,18 +40,50 @@
 - 옛 규칙으로 잰 값: 패널티를 없애면 한 달 +118 ± 16G, 만료 9.1 → 2.7건, 신입의 한 해 원정 4.7 → 7.8건(결과 25).
 - 원정 중이거나 부상 중이면 없는 것은 그대로입니다.
 
-**함께 없애는 것**
+<details>
+<summary>함께 없애는 것 2가지 (눌러서 펼치기)</summary>
 
 | 지금 있는 규칙 | 까닭 |
 | --- | --- |
 | 애착 20 미만으로 2년이 지나면 마을을 떠남 | 새 빠르기에서는 일어날 수 없는 규칙. 「애착이 낮으면 벌」 쪽의 규칙 |
 | 애착 단계의 이름 (방랑자 · 새내기 · 동반자 · 토박이) | 넘어도 열리는 것이 없었음. 눈금을 아래의 다섯 칸 하나로 통일 |
 
+</details>
+
 - 모험가가 줄어드는 길은 죽음(2세가 태어나므로 일시적) · 은퇴(설계할 것) · 방출입니다. 죽음은 지금 게임에도 있고(F급 의뢰에서 쓰러지면 1%쯤), 은퇴 · 방출 · 2세는 아직 게임에 없습니다. (2026-11-26 15:40 고침: 처음에 「셋 다 아직 없다」고 잘못 적었습니다.)
 
 ## 2. 다섯 칸 — 20마다 하나씩
 
 문턱을 넘는 것은 「그 모험가와의 사이가 한 걸음 깊어지는 사건」입니다. 칸마다 보상의 **종류가 다릅니다.**
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 222" role="img" aria-label="애착 다섯 칸: 20 새내기, 40 단골, 60 바람, 80 정착, 100 장식 또는 별">
+<line class="pf-track" x1="60" y1="100" x2="700" y2="100" stroke-width="6" stroke-linecap="round"/>
+<circle cx="60" cy="100" r="4" fill="currentColor" opacity=".45"/>
+<text x="60" y="74" font-size="12" text-anchor="middle" class="pf-soft">0</text>
+<g text-anchor="middle">
+<text x="188" y="50" font-size="15" font-weight="700">새내기</text><text x="188" y="74" font-size="12" class="pf-soft">20 · 칭호</text>
+<text x="316" y="50" font-size="15" font-weight="700">단골</text><text x="316" y="74" font-size="12" class="pf-soft">40 · 돈</text>
+<text x="444" y="50" font-size="15" font-weight="700">바람</text><text x="444" y="74" font-size="12" class="pf-soft">60 · 이야기</text>
+<text x="572" y="50" font-size="15" font-weight="700">정착</text><text x="572" y="74" font-size="12" class="pf-soft">80 · 마을</text>
+<text x="700" y="50" font-size="15" font-weight="700">장식 · 별</text><text x="700" y="74" font-size="12" class="pf-soft">100 · 물건</text>
+<text x="188" y="130" font-size="12.5">칭호 「새내기」</text><text x="188" y="148" font-size="12.5">경험치 +10%</text>
+<text x="316" y="130" font-size="12.5">조금 비싸도</text><text x="316" y="148" font-size="12.5">길드에서 삼</text>
+<text x="444" y="130" font-size="12.5">그 사람만의</text><text x="444" y="148" font-size="12.5">리퀘스트가 열림</text>
+<text x="572" y="130" font-size="12.5">집 · 매주 소재 1개</text><text x="572" y="148" font-size="12.5">후배와 함께 감</text>
+<text x="700" y="130" font-size="12.5">3성: 장식</text><text x="700" y="148" font-size="12.5">1 · 2성: 별 +1</text>
+<text x="188" y="204" font-size="12.5">+5%p</text><text x="316" y="204" font-size="12.5">+10%p</text><text x="444" y="204" font-size="12.5">+15%p</text><text x="572" y="204" font-size="12.5">+20%p</text><text x="700" y="204" font-size="12.5">+25%p</text>
+</g>
+<circle class="pf-acc pf-ring" cx="188" cy="100" r="10"><title>애착 20 — 새내기</title></circle>
+<circle class="pf-acc pf-ring" cx="316" cy="100" r="10"><title>애착 40 — 단골</title></circle>
+<circle class="pf-acc pf-ring" cx="444" cy="100" r="10"><title>애착 60 — 바람</title></circle>
+<circle class="pf-acc pf-ring" cx="572" cy="100" r="10"><title>애착 80 — 정착</title></circle>
+<circle class="pf-acc pf-ring" cx="700" cy="100" r="10"><title>애착 100 — 장식 또는 별</title></circle>
+<line class="pf-grid" x1="10" y1="176" x2="750" y2="176" stroke-width="1"/>
+<text x="10" y="204" font-size="12" class="pf-soft">부탁의 보탬</text>
+</svg>
+<p class="pf-cap">그림 1. 애착의 다섯 칸 [임시] — 설명을 위한 그림이며, 게임 화면의 시안이 아닙니다. 창립 멤버는 20에서 시작합니다.</p>
+</div>
 
 | 애착 | 이름 | 받는 것 | 종류 |
 | :---: | --- | --- | --- |
@@ -127,6 +169,38 @@
 | 바탕 | 승산이 기준 이상이면 100%. 모자라면 1%p마다 −2%p [임시] |
 | 애착 | 한 칸마다 +5%p [임시]. 100에서 +25%p |
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 335" role="img" aria-label="승산에 따른 바탕 수락 확률. 신중은 승산 95%부터, 보통은 85%부터, 무모는 65%부터 100%">
+<g font-size="12.5">
+<circle class="pf-sw pf-s1" cx="76" cy="12" r="5"/><text x="88" y="16">신중 — 출발 기준 95%</text>
+<circle class="pf-sw pf-s2" cx="266" cy="12" r="5"/><text x="278" y="16">보통 — 85%</text>
+<circle class="pf-sw pf-s3" cx="396" cy="12" r="5"/><text x="408" y="16">무모 — 65%</text>
+</g>
+<g class="pf-grid" stroke-width="1">
+<line x1="70" y1="40" x2="700" y2="40"/><line x1="70" y1="88" x2="700" y2="88"/><line x1="70" y1="136" x2="700" y2="136"/><line x1="70" y1="184" x2="700" y2="184"/><line x1="70" y1="232" x2="700" y2="232"/>
+</g>
+<line class="pf-axis" x1="70" y1="280" x2="700" y2="280" stroke-width="1"/>
+<g font-size="12" text-anchor="end" class="pf-soft">
+<text x="62" y="44">100%</text><text x="62" y="92">80%</text><text x="62" y="140">60%</text><text x="62" y="188">40%</text><text x="62" y="236">20%</text><text x="62" y="284">0%</text>
+</g>
+<g font-size="12" text-anchor="middle" class="pf-soft">
+<text x="70" y="298">35%</text><text x="166.9" y="298">45%</text><text x="263.8" y="298">55%</text><text x="360.8" y="298">65%</text><text x="457.7" y="298">75%</text><text x="554.6" y="298">85%</text><text x="651.5" y="298">95%</text>
+</g>
+<text x="385" y="324" font-size="12.5" text-anchor="middle">승산 — 그 사람이 끼었을 때 그 일이 성공할 확률</text>
+<text x="16" y="160" font-size="12.5" text-anchor="middle" transform="rotate(-90 16 160)">바탕 수락 확률</text>
+<polyline class="pf-line pf-s3" points="70,184 360.8,40 700,40"><title>무모: 승산 65% 이상이면 100%. 1%p 모자랄 때마다 −2%p</title></polyline>
+<polyline class="pf-line pf-s2" points="70,280 554.6,40 700,40"><title>보통: 승산 85% 이상이면 100%. 1%p 모자랄 때마다 −2%p</title></polyline>
+<polyline class="pf-line pf-s1" points="70,280 166.9,280 651.5,40 700,40"><title>신중: 승산 95% 이상이면 100%. 1%p 모자랄 때마다 −2%p</title></polyline>
+<circle class="pf-dot pf-s3" cx="360.8" cy="40" r="5"><title>무모 — 승산 65%부터 100%</title></circle>
+<circle class="pf-dot pf-s2" cx="554.6" cy="40" r="5"><title>보통 — 승산 85%부터 100%</title></circle>
+<circle class="pf-dot pf-s1" cx="651.5" cy="40" r="5"><title>신중 — 승산 95%부터 100%</title></circle>
+<g font-size="13" font-weight="700">
+<text x="278" y="96">무모</text><text x="375" y="144">보통</text><text x="472" y="144">신중</text>
+</g>
+</svg>
+<p class="pf-cap">그림 2. 부탁의 바탕 [임시] — 승산이 그 사람의 출발 기준에 닿으면 100%, 모자라면 1%p마다 −2%p. 아래 표와 같은 값입니다.</p>
+</div>
+
 | 승산 | 신중 | 보통 | 무모 |
 | :---: | :---: | :---: | :---: |
 | 95% 이상 | 100% | 100% | 100% |
@@ -136,6 +210,22 @@
 | 55% | 20% | 40% | 80% |
 
 - 예: 보통 성향인 사람에게 승산 70%인 일을 맡기면 바탕이 70%입니다. 애착이 80이면 +20%p가 되어 90%입니다.
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 84" role="img" aria-label="예: 바탕 70%에 애착 80의 보탬 20%p를 더해 수락 확률 90%">
+<rect x="70" y="36" width="630" height="20" rx="4" fill="currentColor" opacity=".1"/>
+<rect class="pf-sw pf-s2" x="70" y="36" width="441" height="20" rx="4"><title>바탕 70% — 보통 성향 · 승산 70%</title></rect>
+<rect class="pf-acc" x="513" y="36" width="124" height="20" rx="4"><title>애착 80 — 네 칸 × 5%p = +20%p</title></rect>
+<g font-size="12.5" text-anchor="middle">
+<text x="290" y="24">바탕 70% (보통 성향 · 승산 70%)</text>
+<text x="575" y="24">애착 80 → +20%p</text>
+<text x="70" y="76" class="pf-soft">0%</text><text x="700" y="76" class="pf-soft">100%</text>
+</g>
+<text x="712" y="51" font-size="14" font-weight="700">90%</text>
+</svg>
+<p class="pf-cap">그림 3. 예 — 화면에도 「바탕 70% + 애착 20%」처럼 나눠 보이면 애착이 한 일이 보입니다.</p>
+</div>
+
 - **애착이 0이어도 능력이 되면 100% 수락합니다.** 「스스로도 갈 만한 일이면 간다」.
 - 화면에 「바탕 70% + 애착 20%」로 나눠 보이면 애착이 한 일이 보입니다.
 - 센 사람을 먼저 섭외하면 승산이 올라, 망설이던 사람도 따라옵니다.
@@ -152,6 +242,17 @@
 
 ## 4. 오르는 길은 셋
 
+```mermaid
+flowchart LR
+  W1["① 함께 일함<br/>의뢰 · 리퀘스트 · 보스 · 던전"] --> A(("애착"))
+  W2["② 길드를 씀<br/>수행 · 구급 주머니 · 좋아하는 자리"] --> A
+  G1["리퀘스트와 보스의 보상"] --> G["③ 선물"]
+  G2["떠돌이 상단"] --> G
+  G3["희귀 상단"] --> G
+  G --> A
+  A --> R["20마다 한 칸<br/>(다섯 칸)"]
+```
+
 | 길 | 무엇 | 누가 만드나 |
 | --- | --- | --- |
 | ① 함께 일함 | 의뢰 · 리퀘스트 · 보스 · 던전 성공 | 저절로 (바탕) |
@@ -159,6 +260,32 @@
 | ③ 선물 | 플레이어가 골라서 줌 | 플레이어의 마음 |
 
 **빠르기의 목표 [임시]**
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 196" role="img" aria-label="한 해 뒤 닿는 애착의 목표: 가만히 있으면 60쯤, 경영에 마음을 쓰면 80쯤, 그 사람에게 마음을 쓰면 100">
+<g class="pf-grid" stroke-width="1">
+<line x1="272" y1="16" x2="272" y2="152"/><line x1="344" y1="16" x2="344" y2="152"/><line x1="416" y1="16" x2="416" y2="152"/><line x1="488" y1="16" x2="488" y2="152"/><line x1="560" y1="16" x2="560" y2="152"/>
+</g>
+<line class="pf-axis" x1="200" y1="16" x2="200" y2="152" stroke-width="1"/>
+<g font-size="13.5" font-weight="700">
+<text x="10" y="38">가만히 있음</text><text x="10" y="84">경영에 마음을 씀</text><text x="10" y="130">그 사람에게 마음을 씀</text>
+</g>
+<g font-size="12" class="pf-soft">
+<text x="10" y="55">① 함께 일함만</text><text x="10" y="101">① + ② 길드를 씀</text><text x="10" y="147">① + ② + ③ 선물</text>
+</g>
+<rect class="pf-acc" x="200" y="28" width="216" height="16" rx="3"><title>가만히 있음 — 한 해 뒤 60쯤</title></rect>
+<rect class="pf-acc" x="200" y="74" width="288" height="16" rx="3"><title>경영에 마음을 씀 — 한 해 뒤 80쯤</title></rect>
+<rect class="pf-acc" x="200" y="120" width="360" height="16" rx="3"><title>그 사람에게 마음을 씀 — 한 해 뒤 100</title></rect>
+<g font-size="12.5">
+<text x="426" y="41">60쯤 · 바람까지</text><text x="498" y="87">80쯤 · 정착까지</text><text x="570" y="133">100 · 장식 또는 별</text>
+</g>
+<g font-size="12" text-anchor="middle" class="pf-soft">
+<text x="200" y="168">0</text><text x="272" y="168">20</text><text x="344" y="168">40</text><text x="416" y="168">60</text><text x="488" y="168">80</text><text x="560" y="168">100</text>
+</g>
+<text x="380" y="190" font-size="12.5" text-anchor="middle">한 해 뒤의 애착</text>
+</svg>
+<p class="pf-cap">그림 4. 빠르기의 목표 [임시] — 잰 값이 아니라 맞추려는 값입니다.</p>
+</div>
 
 | 플레이어가 하는 것 | 한 해 뒤 닿는 곳 | 받는 것 |
 | --- | :---: | --- |
@@ -169,7 +296,8 @@
 - 무거운 보상(매주 소재 · 별 +1)은 마음을 쓴 사람에게만 갑니다.
 - 길마다의 크기는 이 목표에 맞춰 재서 정합니다. 너무 느리면 나중에 맞춥니다.
 
-**정리한 것**
+<details>
+<summary>지금 있는 길 7가지를 어떻게 정리했는지 (눌러서 펼치기)</summary>
 
 | 지금 있는 길 | 새 설계 |
 | --- | --- |
@@ -183,6 +311,8 @@
 
 - 「눌러서 +1」은 매주 누르면 한 사람에 한 해 +48이라 위의 목표를 덮어 버립니다. 누르는 쪽이 늘 이득인 숙제이기도 합니다.
 - 늦잠 깨우기(술꾼이 늦잠으로 쉬는 주에 눌러 깨움)는 애착과 상관없으므로 그대로 둡니다.
+
+</details>
 
 ## 5. 선물 — 애착만 올려 주는 물건
 
