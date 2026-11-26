@@ -6,6 +6,16 @@
 >
 > 이 쪽은 나머지 항목(02 ~ 16)의 잣대입니다. 항목마다 「확인하는 방법」의 물음에 답할 수 있어야 합니다.
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 핵심 고리는 「관찰 → 선택 → 결과」입니다. 막힘은 숫자로 보이고, 고민되는 일만 묻고, 고른 결과는 반드시 보여 줍니다.
+- 경영: 돈은 모험가의 주머니에서 옵니다. 시설은 지은 날부터 남고, 모험가가 낸 돈은 그 모험가의 힘으로 돌아갑니다.
+- 육성: 모험가가 어느 쪽으로 클지는 플레이어가 정합니다. 그렇게 큰 모험가가 전에 못 가던 곳에 갑니다.
+
+</div>
+
 ## 한눈에
 
 맨 위에 **핵심 고리 「관찰 → 선택 → 결과」** 가 있고, 그 아래에 원칙 다섯이 있습니다. 앞의 셋은 고리의 한 칸씩을 맡고, 뒤의 둘은 그 고리가 도는 두 마당(경영 · 육성)을 맡습니다.
@@ -20,6 +30,30 @@
 
 - 앞선 「원칙 넷」(돈은 모험가에게 있다 · 처음부터 남게 · 불이 먼저 · 자동화보다 선택)을 다시 묶은 것입니다. 「돈은 모험가에게 있다」와 「처음부터 남게」를 「경영의 돈」 하나로 합치고, 「결과」와 「육성」을 새로 세웠습니다.
 - 「불」은 막힘을 가리키는 말입니다. 막힘이 생긴 것을 「불이 났다」, 풀린 것을 「불이 꺼졌다」고 씁니다.
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 134" role="img" aria-label="그림 1. 핵심 고리 — 뒤의 두 원칙(경영의 돈 · 육성)은 이 고리가 도는 두 마당입니다.">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="232.0" height="58" rx="8"/>
+<rect class="pf-box" x="264.0" y="14" width="232.0" height="58" rx="8"/>
+<rect class="pf-box" x="524.0" y="14" width="232.0" height="58" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="120.0" y="39">관찰</text>
+<text x="380.0" y="39">선택</text>
+<text x="640.0" y="39">결과</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="120.0" y="59">막힘은 숫자로 늘 보인다</text>
+<text x="380.0" y="59">고민되는 일만 플레이어에게 묻는다</text>
+<text x="640.0" y="59">무엇이 달라졌는지 반드시 보여 준다</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="238.0" y1="43.0" x2="261.0" y2="43.0"/>
+<line x1="498.0" y1="43.0" x2="521.0" y2="43.0"/>
+<path d="M640.0,74 V96 Q640.0,106 630.0,106 H130.0 Q120.0,106 120.0,96 V76"/>
+</g>
+<text x="380.0" y="126" font-size="12.5" text-anchor="middle">결과가 다시 관찰로</text>
+</svg>
+<p class="pf-cap">그림 1. 핵심 고리 — 뒤의 두 원칙(경영의 돈 · 육성)은 이 고리가 도는 두 마당입니다.</p>
+</div>
 
 ## 왜 이 다섯인가
 
@@ -214,6 +248,40 @@
 
 ### 기본 기조 — 돈이 도는 한 바퀴
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 152" role="img" aria-label="그림 2. 돈이 도는 한 바퀴">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box" x="160.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box" x="316.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box" x="472.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box" x="628.0" y="14" width="128.0" height="76" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="68.0" y="39">의뢰를 함</text>
+<text x="224.0" y="39">시설에 들름</text>
+<text x="380.0" y="39">길드가 씀</text>
+<text x="536.0" y="39">모험가가</text>
+<text x="692.0" y="39">더 어려운 의뢰</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="68.0" y="59">보상을 받음</text>
+<text x="224.0" y="59">사용료를 냄</text>
+<text x="380.0" y="59">시설을 더 짓거나</text>
+<text x="380.0" y="75">수행을 보냄</text>
+<text x="536.0" y="59">더 강해짐</text>
+<text x="692.0" y="59">더 큰 보상</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="134.0" y1="52.0" x2="157.0" y2="52.0"/>
+<line x1="290.0" y1="52.0" x2="313.0" y2="52.0"/>
+<line x1="446.0" y1="52.0" x2="469.0" y2="52.0"/>
+<line x1="602.0" y1="52.0" x2="625.0" y2="52.0"/>
+<path d="M692.0,92 V114 Q692.0,124 682.0,124 H78.0 Q68.0,124 68.0,114 V94"/>
+</g>
+<text x="380.0" y="144" font-size="12.5" text-anchor="middle">다시 처음으로</text>
+</svg>
+<p class="pf-cap">그림 2. 돈이 도는 한 바퀴</p>
+</div>
+
+
 | 차례 | 일어나는 일 |
 | :---: | --- |
 | ① | 모험가가 의뢰를 하고 보상을 받습니다 |
@@ -228,6 +296,28 @@
 
 - 이 바퀴에서 경영(② · ③)과 육성(④)이 하나로 이어집니다. 길드가 돈을 버는 일이 곧 모험가를 키우는 일입니다.
 - 지금 게임은 바퀴가 ②에서 끊겨 있습니다.
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 194" role="img" aria-label="그림 3. 지금은 모험가가 번 돈의 대부분이 길드를 거치지 않습니다.">
+<g class="pf-grid" stroke-width="1"><line x1="355.0" y1="16" x2="355.0" y2="150"/><line x1="450.0" y1="16" x2="450.0" y2="150"/><line x1="545.0" y1="16" x2="545.0" y2="150"/><line x1="640.0" y1="16" x2="640.0" y2="150"/></g>
+<line class="pf-axis" x1="260" y1="16" x2="260" y2="150" stroke-width="1"/>
+<text x="10" y="41" font-size="13.5" font-weight="700">모험가들이 버는 돈</text>
+<rect class="pf-acc" x="260" y="28" width="360.5" height="16" rx="3"><title>모험가들이 버는 돈 — 759G</title></rect>
+<text x="630.5" y="41" font-size="12.5">759G</text>
+<text x="10" y="75" font-size="13.5" font-weight="700">길드 시설에서 쓰는 돈 (식사 · 술)</text>
+<rect class="pf-acc" x="260" y="62" width="58.4" height="16" rx="3"><title>길드 시설에서 쓰는 돈 (식사 · 술) — 123G</title></rect>
+<text x="328.4" y="75" font-size="12.5">123G</text>
+<text x="10" y="109" font-size="13.5" font-weight="700">쓰지 않고 주머니에 쌓이는 돈</text>
+<rect class="pf-acc" x="260" y="96" width="228.0" height="16" rx="3"><title>쓰지 않고 주머니에 쌓이는 돈 — 약 480G</title></rect>
+<text x="498.0" y="109" font-size="12.5">약 480G</text>
+<text x="10" y="143" font-size="13.5" font-weight="700">길드의 순수입</text>
+<rect class="pf-mute" x="260" y="130" width="198.5" height="16" rx="3"><title>길드의 순수입 — 418G</title></rect>
+<text x="468.5" y="143" font-size="12.5">418G</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="260.0" y="166">0</text><text x="355.0" y="166">200</text><text x="450.0" y="166">400</text><text x="545.0" y="166">600</text><text x="640.0" y="166">800</text></g>
+<text x="450.0" y="188" font-size="12.5" text-anchor="middle">한 달 (지금 게임 · 잰 값)</text>
+</svg>
+<p class="pf-cap">그림 3. 지금은 모험가가 번 돈의 대부분이 길드를 거치지 않습니다.</p>
+</div>
 
 | 한 달 (어제 측정) | 값 |
 | --- | ---: |
@@ -281,6 +371,29 @@
 ### 몸통은 저절로, 방향은 내가
 
 지금 게임에서는 레벨만 오르면 능력치가 정해진 대로 오릅니다. 그래서 전사는 누구나 똑같은 전사가 됩니다.
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 166" role="img" aria-label="그림 4. 몸통은 저절로 — 지금 규칙으로는 주력만 크고 나머지는 거의 그대로입니다. 방향을 고르는 손이 없습니다.">
+<g font-size="12.5">
+<circle class="pf-sw pf-s1" cx="176" cy="12" r="5"/><text x="188" y="16">시작</text>
+<circle class="pf-sw pf-s2" cx="235" cy="12" r="5"/><text x="247" y="16">40주 뒤 (Lv 9.5)</text>
+</g>
+<g class="pf-grid" stroke-width="1"><line x1="304.3" y1="30" x2="304.3" y2="140"/><line x1="438.6" y1="30" x2="438.6" y2="140"/><line x1="572.9" y1="30" x2="572.9" y2="140"/></g>
+<line class="pf-axis" x1="170" y1="30" x2="170" y2="140" stroke-width="1"/>
+<text x="10" y="60" font-size="13.5" font-weight="700">주력 능력치</text>
+<rect class="pf-sw pf-s1" x="170" y="36" width="201.4" height="16" rx="3"><title>주력 능력치 · 시작 — 15</title></rect>
+<text x="379.4" y="49" font-size="12.5">15</text>
+<rect class="pf-sw pf-s2" x="170" y="56" width="429.7" height="16" rx="3"><title>주력 능력치 · 40주 뒤 (Lv 9.5) — 32</title></rect>
+<text x="607.7" y="69" font-size="12.5">32</text>
+<text x="10" y="116" font-size="13.5" font-weight="700">나머지 넷 (하나씩)</text>
+<rect class="pf-sw pf-s1" x="170" y="92" width="80.6" height="16" rx="3"><title>나머지 넷 (하나씩) · 시작 — 6</title></rect>
+<text x="258.6" y="105" font-size="12.5">6</text>
+<rect class="pf-sw pf-s2" x="170" y="112" width="120.9" height="16" rx="3"><title>나머지 넷 (하나씩) · 40주 뒤 (Lv 9.5) — 9</title></rect>
+<text x="298.9" y="125" font-size="12.5">9</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="170.0" y="156">0</text><text x="304.3" y="156">10</text><text x="438.6" y="156">20</text><text x="572.9" y="156">30</text></g>
+</svg>
+<p class="pf-cap">그림 4. 몸통은 저절로 — 지금 규칙으로는 주력만 크고 나머지는 거의 그대로입니다. 방향을 고르는 손이 없습니다.</p>
+</div>
 
 | | 지금 규칙 |
 | --- | --- |

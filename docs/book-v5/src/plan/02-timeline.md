@@ -8,6 +8,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md`
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 사람이 두 그룹으로 나뉩니다. A 그룹(다섯)은 경제를, B 그룹(다섯)은 퀘스트를 맡습니다.
+- 한 등급의 모양은 「다섯 사람 × 묶음 둘 → 보스 열 → 끝 보스」입니다.
+- 이 표는 따라가는 길이 아니라 확인표입니다. F급은 70건이 필요해 40주에 들어가지 않을 수 있습니다 (계산으로 49주쯤).
+
+</div>
+
 ## 한눈에
 
 - **이 표는 따라가는 길이 아닙니다.** 「보통 이 순서로 불이 난다」를 적어 두고, 빈 곳과 몰리는 곳을 찾는 확인표입니다. 불은 시스템에서 저절로 나고, 무엇부터 끌지는 플레이어가 고릅니다.
@@ -58,6 +68,41 @@
 
 한 묶음은 이렇게 흘러갑니다.
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 100" role="img" aria-label="그림 1. B 그룹 — 한 묶음의 차례">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box" x="160.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box" x="316.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box pf-box-acc" x="472.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box" x="628.0" y="14" width="128.0" height="76" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="68.0" y="39">묶음이 붙음</text>
+<text x="224.0" y="39">레벨이 오름</text>
+<text x="380.0" y="39">둘 다 Lv 3</text>
+<text x="536.0" y="39">보스를 해냄</text>
+<text x="692.0" y="39">다음 묶음</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="68.0" y="59">그 사람의</text>
+<text x="68.0" y="75">퀘스트 2개</text>
+<text x="224.0" y="59">해낼 때마다</text>
+<text x="224.0" y="75">Lv 1 → 2 → 3</text>
+<text x="380.0" y="59">6번을 해내면</text>
+<text x="380.0" y="75">보스가 나옴</text>
+<text x="536.0" y="59">뱃지 · 완성된 물건</text>
+<text x="536.0" y="75">· 칭호</text>
+<text x="692.0" y="59">새 퀘스트</text>
+<text x="692.0" y="75">새 소재</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="134.0" y1="52.0" x2="157.0" y2="52.0"/>
+<line x1="290.0" y1="52.0" x2="313.0" y2="52.0"/>
+<line x1="446.0" y1="52.0" x2="469.0" y2="52.0"/>
+<line x1="602.0" y1="52.0" x2="625.0" y2="52.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 1. B 그룹 — 한 묶음의 차례</p>
+</div>
+
 | 차례 | 일어나는 일 |
 | :---: | --- |
 | ① | 게시판에 그 사람의 묶음(퀘스트 2개)이 붙습니다 |
@@ -72,6 +117,25 @@
 
 ## 한 등급의 모양
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 146" role="img" aria-label="그림 2. F급의 길이 [임시] — 지금 박자로는 40주에 들어가지 않습니다.">
+<g class="pf-grid" stroke-width="1"><line x1="292.5" y1="16" x2="292.5" y2="102"/><line x1="385.0" y1="16" x2="385.0" y2="102"/><line x1="477.5" y1="16" x2="477.5" y2="102"/><line x1="570.0" y1="16" x2="570.0" y2="102"/></g>
+<line class="pf-axis" x1="200" y1="16" x2="200" y2="102" stroke-width="1"/>
+<text x="10" y="38" font-size="13.5" font-weight="700">F급에 필요한 건수</text>
+<text x="10" y="55" font-size="12" class="pf-soft">묶음 10 × 6번 + 보스 10번</text>
+<rect class="pf-acc" x="200" y="28" width="323.8" height="16" rx="3"><title>F급에 필요한 건수 — 70건</title></rect>
+<text x="533.8" y="41" font-size="12.5">70건</text>
+<text x="10" y="84" font-size="13.5" font-weight="700">지금 박자로 40주에</text>
+<text x="10" y="101" font-size="12" class="pf-soft">한 주 1.4건</text>
+<rect class="pf-mute" x="200" y="74" width="263.6" height="16" rx="3"><title>지금 박자로 40주에 — 57건 — 70건은 49주쯤</title></rect>
+<text x="473.6" y="87" font-size="12.5">57건 — 70건은 49주쯤</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="200.0" y="118">0</text><text x="292.5" y="118">20</text><text x="385.0" y="118">40</text><text x="477.5" y="118">60</text><text x="570.0" y="118">80</text></g>
+<text x="385.0" y="140" font-size="12.5" text-anchor="middle">성공하는 원정의 건수</text>
+</svg>
+<p class="pf-cap">그림 2. F급의 길이 [임시] — 지금 박자로는 40주에 들어가지 않습니다.</p>
+</div>
+
+
 | | 값 [임시] |
 | --- | --- |
 | 한 등급 | B 그룹 다섯 사람 × 묶음 둘 = 보스 열, 그리고 등급의 끝 보스 |
@@ -85,6 +149,49 @@
 - 뒤 등급이 몇 주씩 걸리는지는 아직 정해진 것이 없습니다.
 
 ## 진행표 [임시]
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 172" role="img" aria-label="그림 3. 보스 열 번이 오는 때 [임시 · 아래 진행표의 값] — 열째 보스 뒤에 침공이 옵니다. 처음에 잡은 길이는 40주였습니다.">
+<line class="pf-track" x1="60" y1="70" x2="700" y2="70" stroke-width="6" stroke-linecap="round"/>
+<line class="pf-axis" x1="213.6" y1="50" x2="213.6" y2="122" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="213.6" y="138" font-size="12" text-anchor="middle" class="pf-soft">12주 · 던전</text>
+<g text-anchor="middle">
+<text x="124.0" y="42" font-size="13.5" font-weight="700">1</text>
+<text x="124.0" y="100" font-size="12">5주</text>
+<text x="188.0" y="42" font-size="13.5" font-weight="700">2</text>
+<text x="188.0" y="100" font-size="12">10주</text>
+<text x="252.0" y="42" font-size="13.5" font-weight="700">3</text>
+<text x="252.0" y="100" font-size="12">15주</text>
+<text x="316.0" y="42" font-size="13.5" font-weight="700">4</text>
+<text x="316.0" y="100" font-size="12">20주</text>
+<text x="367.2" y="42" font-size="13.5" font-weight="700">5</text>
+<text x="367.2" y="100" font-size="12">24주</text>
+<text x="431.2" y="42" font-size="13.5" font-weight="700">6</text>
+<text x="431.2" y="100" font-size="12">29주</text>
+<text x="495.2" y="42" font-size="13.5" font-weight="700">7</text>
+<text x="495.2" y="100" font-size="12">34주</text>
+<text x="559.2" y="42" font-size="13.5" font-weight="700">8</text>
+<text x="559.2" y="100" font-size="12">39주</text>
+<text x="623.2" y="42" font-size="13.5" font-weight="700">9</text>
+<text x="623.2" y="100" font-size="12">44주</text>
+<text x="687.2" y="42" font-size="13.5" font-weight="700">10</text>
+<text x="687.2" y="100" font-size="12">49주</text>
+</g>
+<circle class="pf-acc pf-ring" cx="124.0" cy="70" r="9"><title>1 5주</title></circle>
+<circle class="pf-acc pf-ring" cx="188.0" cy="70" r="9"><title>2 10주</title></circle>
+<circle class="pf-acc pf-ring" cx="252.0" cy="70" r="9"><title>3 15주</title></circle>
+<circle class="pf-acc pf-ring" cx="316.0" cy="70" r="9"><title>4 20주</title></circle>
+<circle class="pf-acc pf-ring" cx="367.2" cy="70" r="9"><title>5 24주</title></circle>
+<circle class="pf-acc pf-ring" cx="431.2" cy="70" r="9"><title>6 29주</title></circle>
+<circle class="pf-acc pf-ring" cx="495.2" cy="70" r="9"><title>7 34주</title></circle>
+<circle class="pf-acc pf-ring" cx="559.2" cy="70" r="9"><title>8 39주</title></circle>
+<circle class="pf-acc pf-ring" cx="623.2" cy="70" r="9"><title>9 44주</title></circle>
+<circle class="pf-acc pf-ring" cx="687.2" cy="70" r="9"><title>10 49주</title></circle>
+<text x="380" y="166" font-size="12.5" text-anchor="middle">주</text>
+</svg>
+<p class="pf-cap">그림 3. 보스 열 번이 오는 때 [임시 · 아래 진행표의 값] — 열째 보스 뒤에 침공이 옵니다. 처음에 잡은 길이는 40주였습니다.</p>
+</div>
+
 
 「보통 이 순서로 난다」입니다. 보스의 때는 묶음 하나(6번 + 보스)를 차례로 밀었을 때의 계산값으로, 5주에 한 번꼴입니다.
 
@@ -103,6 +210,22 @@
 | 그 뒤 | 「놓을 자리가 없어요」 → 2층 (길드 E급) | | |
 
 ### 미는 방법에 따라 흐름이 달라집니다
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 126" role="img" aria-label="그림 4. 미는 방법에 따라 첫 보스의 때가 달라집니다 [임시]">
+<g class="pf-grid" stroke-width="1"><line x1="264.0" y1="16" x2="264.0" y2="82"/><line x1="328.0" y1="16" x2="328.0" y2="82"/><line x1="392.0" y1="16" x2="392.0" y2="82"/><line x1="456.0" y1="16" x2="456.0" y2="82"/><line x1="520.0" y1="16" x2="520.0" y2="82"/></g>
+<line class="pf-axis" x1="200" y1="16" x2="200" y2="82" stroke-width="1"/>
+<text x="10" y="41" font-size="13.5" font-weight="700">한 사람의 일에 몰기</text>
+<rect class="pf-acc" x="200" y="28" width="64.0" height="16" rx="3"><title>한 사람의 일에 몰기 — 5주쯤</title></rect>
+<text x="274.0" y="41" font-size="12.5">5주쯤</text>
+<text x="10" y="75" font-size="13.5" font-weight="700">다섯 사람에게 고르게</text>
+<rect class="pf-acc" x="200" y="62" width="268.8" height="16" rx="3"><title>다섯 사람에게 고르게 — 21주쯤 — 보스 다섯이 한꺼번에</title></rect>
+<text x="478.8" y="75" font-size="12.5">21주쯤 — 보스 다섯이 한꺼번에</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="200.0" y="98">0</text><text x="264.0" y="98">5</text><text x="328.0" y="98">10</text><text x="392.0" y="98">15</text><text x="456.0" y="98">20</text><text x="520.0" y="98">25</text></g>
+<text x="360.0" y="120" font-size="12.5" text-anchor="middle">첫 보스가 나오는 때 (주)</text>
+</svg>
+<p class="pf-cap">그림 4. 미는 방법에 따라 첫 보스의 때가 달라집니다 [임시]</p>
+</div>
 
 | | 한 사람의 일에 몰기 | 다섯 사람에게 고르게 |
 | --- | --- | --- |

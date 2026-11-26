@@ -187,6 +187,14 @@
 <p>길드에 왔는데 그 주에 의뢰를 못 나가고 쉬는 사람을 다룹니다. 이 쪽은 다른 쪽보다 짧습니다. 따져 보니 뿌리가 의뢰 쪽에 있어서, 풀이의 큰 줄기를 10 · 15(의뢰)로 넘겼기 때문입니다. 이 쪽을 쓰면서 새로 잰 것은 없습니다.</p>
 <p>대화 기록: 저장소의 <code>docs/design/세부기획_대화_2026-11-25.md</code> (「13 노는 모험가」 · 2026-11-26 14:56 ~ 15:12) · 지금 게임의 규칙: <code>docs/design/현황/13_노는_모험가.md</code></p>
 </blockquote>
+<div class="pf-key">
+<p><strong>이 쪽의 세 줄</strong></p>
+<ul>
+<li>노는 모험가의 뿌리는 파티를 짜는 규칙이 아니라 「의뢰의 수와 크기」입니다. 풀이의 큰 줄기는 10 · 15로 넘겼습니다.</li>
+<li>「끼기」는 보류합니다. 의뢰의 수를 맞춘 뒤에 재 보고 넣을지 정합니다.</li>
+<li>정착한 선배가 쉬는 주에 약한 모험가와 함께 가 줍니다. 그때 애착과 친밀도가 더 오릅니다.</li>
+</ul>
+</div>
 <h2 id="한눈에"><a class="header" href="#한눈에">한눈에</a></h2>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: center">걸음</th><th>정한 것</th></tr></thead><tbody>
 <tr><td style="text-align: center">1 뿌리</td><td>노는 모험가의 뿌리는 「의뢰의 수와 크기」. 크기는 <a href="17-quest-material-map.html">17</a> · <a href="18-purchase-judgment.html">18</a>로 풀리는 쪽이고, 수는 10 · 15에서 꼭 확인함</td></tr>
@@ -210,8 +218,71 @@
 <li>창립 멤버는 첫 12주 가운데 22%를 「동료 기다림」으로 쉽니다. 나중에 온 모험가가 길드에 왔는데 못 나간 주의 65%가 「동료 기다림」, 31%가 「맞는 의뢰 없음」입니다(결과 09).</li>
 <li>떠나는 파티의 54%가 혼자, 38%가 둘입니다(결과 27).</li>
 </ul>
+<div class="pf-fig">
+<svg viewBox="0 0 760 160" role="img" aria-label="그림 1. 지금은 떠나는 파티의 절반 이상이 혼자입니다.">
+<g class="pf-grid" stroke-width="1"><line x1="270.0" y1="16" x2="270.0" y2="116"/><line x1="420.0" y1="16" x2="420.0" y2="116"/><line x1="570.0" y1="16" x2="570.0" y2="116"/></g>
+<line class="pf-axis" x1="120" y1="16" x2="120" y2="116" stroke-width="1"/>
+<text x="10" y="41" font-size="13.5" font-weight="700">혼자</text>
+<rect class="pf-acc" x="120" y="28" width="405.0" height="16" rx="3"><title>혼자 — 54%</title></rect>
+<text x="535.0" y="41" font-size="12.5">54%</text>
+<text x="10" y="75" font-size="13.5" font-weight="700">둘</text>
+<rect class="pf-acc" x="120" y="62" width="285.0" height="16" rx="3"><title>둘 — 38%</title></rect>
+<text x="415.0" y="75" font-size="12.5">38%</text>
+<text x="10" y="109" font-size="13.5" font-weight="700">셋 이상</text>
+<rect class="pf-acc" x="120" y="96" width="60.0" height="16" rx="3"><title>셋 이상 — 8% (셋 6% · 넷 다섯 2%)</title></rect>
+<text x="190.0" y="109" font-size="12.5">8% (셋 6% · 넷 다섯 2%)</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="120.0" y="132">0</text><text x="270.0" y="132">20</text><text x="420.0" y="132">40</text><text x="570.0" y="132">60</text></g>
+<text x="345.0" y="154" font-size="12.5" text-anchor="middle">떠나는 파티의 크기 (지금 게임 · 잰 값)</text>
+</svg>
+<p class="pf-cap">그림 1. 지금은 떠나는 파티의 절반 이상이 혼자입니다.</p>
+</div>
+<div class="pf-fig">
+<svg viewBox="0 0 760 160" role="img" aria-label="그림 2. 못 나간 주의 3분의 2가 「동료 기다림」입니다.">
+<g class="pf-grid" stroke-width="1"><line x1="255.0" y1="16" x2="255.0" y2="116"/><line x1="360.0" y1="16" x2="360.0" y2="116"/><line x1="465.0" y1="16" x2="465.0" y2="116"/><line x1="570.0" y1="16" x2="570.0" y2="116"/></g>
+<line class="pf-axis" x1="150" y1="16" x2="150" y2="116" stroke-width="1"/>
+<text x="10" y="41" font-size="13.5" font-weight="700">동료 기다림</text>
+<rect class="pf-acc" x="150" y="28" width="341.2" height="16" rx="3"><title>동료 기다림 — 65%</title></rect>
+<text x="501.2" y="41" font-size="12.5">65%</text>
+<text x="10" y="75" font-size="13.5" font-weight="700">맞는 의뢰 없음</text>
+<rect class="pf-acc" x="150" y="62" width="162.8" height="16" rx="3"><title>맞는 의뢰 없음 — 31%</title></rect>
+<text x="322.8" y="75" font-size="12.5">31%</text>
+<text x="10" y="109" font-size="13.5" font-weight="700">그 밖</text>
+<rect class="pf-acc" x="150" y="96" width="21.0" height="16" rx="3"><title>그 밖 — 4%</title></rect>
+<text x="181.0" y="109" font-size="12.5">4%</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="150.0" y="132">0</text><text x="255.0" y="132">20</text><text x="360.0" y="132">40</text><text x="465.0" y="132">60</text><text x="570.0" y="132">80</text></g>
+<text x="360.0" y="154" font-size="12.5" text-anchor="middle">나중에 온 모험가가 길드에 왔는데 못 나간 주의 까닭 (지금 게임 · 잰 값)</text>
+</svg>
+<p class="pf-cap">그림 2. 못 나간 주의 3분의 2가 「동료 기다림」입니다.</p>
+</div>
 <h2 id="2-뿌리는-의뢰의-수와-크기입니다"><a class="header" href="#2-뿌리는-의뢰의-수와-크기입니다">2. 뿌리는 의뢰의 수와 크기입니다</a></h2>
 <p>처음에는 「파티를 짜는 규칙」을 까닭으로 보았습니다. 숫자를 견줘 보니 뿌리는 의뢰 쪽에 있었습니다(사용자 15:00 「의뢰의 구조에서 있는 문제는 아닌지」).</p>
+<div class="pf-fig">
+<svg viewBox="0 0 760 222" role="img" aria-label="그림 3. 모험가는 느는데 나갈 자리는 거의 그대로입니다 — 지금 게임의 숫자이고, 「나갈 수 있는 사람」은 의뢰 × 파티 평균 1.6명으로 곱한 어림입니다.">
+<g font-size="12.5">
+<circle class="pf-sw pf-s1" cx="106" cy="12" r="5"/><text x="118" y="16">모험가</text>
+<circle class="pf-sw pf-s2" cx="177" cy="12" r="5"/><text x="189" y="16">한 주에 나갈 수 있는 사람 (어림)</text>
+</g>
+<g class="pf-grid" stroke-width="1"><line x1="235.0" y1="30" x2="235.0" y2="196"/><line x1="370.0" y1="30" x2="370.0" y2="196"/><line x1="505.0" y1="30" x2="505.0" y2="196"/><line x1="640.0" y1="30" x2="640.0" y2="196"/></g>
+<line class="pf-axis" x1="100" y1="30" x2="100" y2="196" stroke-width="1"/>
+<text x="10" y="60" font-size="13.5" font-weight="700">24주</text>
+<rect class="pf-sw pf-s1" x="100" y="36" width="270.0" height="16" rx="3"><title>24주 · 모험가 — 4.0명</title></rect>
+<text x="378.0" y="49" font-size="12.5">4.0명</text>
+<rect class="pf-sw pf-s2" x="100" y="56" width="222.8" height="16" rx="3"><title>24주 · 한 주에 나갈 수 있는 사람 (어림) — 3.3명</title></rect>
+<text x="330.8" y="69" font-size="12.5">3.3명</text>
+<text x="10" y="116" font-size="13.5" font-weight="700">40주</text>
+<rect class="pf-sw pf-s1" x="100" y="92" width="472.5" height="16" rx="3"><title>40주 · 모험가 — 7.0명</title></rect>
+<text x="580.5" y="105" font-size="12.5">7.0명</text>
+<rect class="pf-sw pf-s2" x="100" y="112" width="236.2" height="16" rx="3"><title>40주 · 한 주에 나갈 수 있는 사람 (어림) — 3.5명</title></rect>
+<text x="344.2" y="125" font-size="12.5">3.5명</text>
+<text x="10" y="172" font-size="13.5" font-weight="700">48주</text>
+<rect class="pf-sw pf-s1" x="100" y="148" width="540.0" height="16" rx="3"><title>48주 · 모험가 — 8명</title></rect>
+<text x="648.0" y="161" font-size="12.5">8명</text>
+<rect class="pf-sw pf-s2" x="100" y="168" width="249.8" height="16" rx="3"><title>48주 · 한 주에 나갈 수 있는 사람 (어림) — 3.7명</title></rect>
+<text x="357.8" y="181" font-size="12.5">3.7명</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="100.0" y="212">0명</text><text x="235.0" y="212">2명</text><text x="370.0" y="212">4명</text><text x="505.0" y="212">6명</text><text x="640.0" y="212">8명</text></g>
+</svg>
+<p class="pf-cap">그림 3. 모험가는 느는데 나갈 자리는 거의 그대로입니다 — 지금 게임의 숫자이고, 「나갈 수 있는 사람」은 의뢰 × 파티 평균 1.6명으로 곱한 어림입니다.</p>
+</div>
 <div class="table-wrapper"><table><thead><tr><th>때</th><th style="text-align: center">모험가</th><th style="text-align: center">한 주에 들어오는 의뢰</th><th style="text-align: center">한 주에 나갈 수 있는 사람 (어림)</th></tr></thead><tbody>
 <tr><td>12주</td><td style="text-align: center">2 ~ 3명</td><td style="text-align: center">1.65건</td><td style="text-align: center">2.6명</td></tr>
 <tr><td>24주</td><td style="text-align: center">4.0명</td><td style="text-align: center">2.04건</td><td style="text-align: center">3.3명</td></tr>

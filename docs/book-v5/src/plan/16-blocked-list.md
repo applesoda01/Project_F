@@ -6,6 +6,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「16 막힘 알림」 · 「지금 막힌 곳 목록」)
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 토스트를 쓰지 않습니다. 막힘은 왼쪽 위 「지금 막힌 곳」 목록에 모아 보입니다.
+- 목록에 오르는 막힘은 열 가지입니다. 세 줄까지 보이고, 넘치면 「+숫자」로 접힙니다.
+- 목록에는 길드가 놓친 것만 올립니다. 좋은 소식과 한 사람의 속사정은 다른 곳에서 보입니다.
+
+</div>
+
 ## 한눈에
 
 | 걸음 | 정한 것 |
@@ -38,6 +48,32 @@
 | ② **「지금 막힌 곳」 목록** | 불이 타는 동안, 왼쪽 위에 |
 | ③ 건설 목록 | 지으려 할 때 |
 | ④ 월말 결산 | 한 달에 한 번 |
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 82" role="img" aria-label="그림 1. 목록의 한 줄이 생겨서 사라지기까지">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box" x="199.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box pf-box-acc" x="394.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box" x="589.0" y="14" width="167.0" height="58" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="87.5" y="39">막힘이 생김</text>
+<text x="282.5" y="39">목록에 보임</text>
+<text x="477.5" y="39">누르면</text>
+<text x="672.5" y="39">풀리면</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="87.5" y="59">줄이 생기며 작은 움직임</text>
+<text x="282.5" y="59">사람의 말 + 숫자</text>
+<text x="477.5" y="59">풀 수 있는 화면으로 감</text>
+<text x="672.5" y="59">「✔ 해결」로 남았다가 사라짐</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="173.0" y1="43.0" x2="196.0" y2="43.0"/>
+<line x1="368.0" y1="43.0" x2="391.0" y2="43.0"/>
+<line x1="563.0" y1="43.0" x2="586.0" y2="43.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 1. 목록의 한 줄이 생겨서 사라지기까지</p>
+</div>
 
 ## 1. 목록에 오르는 막힘 — 열 가지
 

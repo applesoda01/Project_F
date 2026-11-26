@@ -8,6 +8,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (17-1 ~ 17-7)
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 어느 퀘스트를 미느냐가 어느 소재가 들어오느냐를, 그 소재가 누구의 신뢰를 올리느냐를 정합니다.
+- B 그룹 다섯 사람이 퀘스트 종류를 하나씩 맡습니다. 사람마다 묶음 둘 · 보스 둘이라, 한 등급에 보스가 열입니다.
+- 소재는 줄 10개 × 등급 7 × 묶음 2 = 140칸에 「옛 물건」 7칸을 더해 147칸입니다. F급은 10종에서 20종이 됩니다.
+
+</div>
+
 ## 한눈에
 
 | 정한 것 | 내용 |
@@ -23,6 +33,33 @@
 처음의 두 물음에 대한 답: **퀘스트는 F급 10개에서 30개(게시판 20 + 보스 10)로, 소재는 F급 10종에서 20종으로 늘어납니다.**
 
 ## 1. 맞물림 — 퀘스트가 소재를, 소재가 사람을 정합니다
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 82" role="img" aria-label="그림 1. 맞물림 — 경영에서 급한 것이 퀘스트 선택을 이끕니다.">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box" x="199.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box" x="394.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box pf-box-acc" x="589.0" y="14" width="167.0" height="58" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="87.5" y="39">누구의 일을 밀까</text>
+<text x="282.5" y="39">소재가 들어옴</text>
+<text x="477.5" y="39">A 그룹과 거래</text>
+<text x="672.5" y="39">새것이 열림</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="87.5" y="59">게시판의 칸 배분 (B 그룹)</text>
+<text x="282.5" y="59">그 사람이 맡은 줄</text>
+<text x="477.5" y="59">그 줄을 받는 사람</text>
+<text x="672.5" y="59">시설 · 설비 · 요리</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="173.0" y1="43.0" x2="196.0" y2="43.0"/>
+<line x1="368.0" y1="43.0" x2="391.0" y2="43.0"/>
+<line x1="563.0" y1="43.0" x2="586.0" y2="43.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 1. 맞물림 — 경영에서 급한 것이 퀘스트 선택을 이끕니다.</p>
+</div>
+
 
 | 차례 | 일어나는 일 |
 | :---: | --- |
@@ -66,6 +103,54 @@
 
 ## 4. 소재의 틀 — 줄 10개, 그리고 옛 물건
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 340" role="img" aria-label="B 그룹 다섯 사람이 소재 줄을 둘씩 맡고, 줄마다 받는 A 그룹 사람이 정해져 있음">
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="85" y="12">B 그룹 — 퀘스트</text><text x="305" y="12">소재의 줄 (10)</text><text x="670" y="12">A 그룹 — 경제</text></g>
+<g class="pf-arrow"><line x1="160" y1="46" x2="250" y2="33"/><line x1="360" y1="33" x2="590" y2="46"/><line x1="160" y1="46" x2="250" y2="59"/><line x1="360" y1="59" x2="590" y2="170"/><line x1="160" y1="108" x2="250" y2="95"/><line x1="360" y1="95" x2="590" y2="108"/><line x1="160" y1="108" x2="250" y2="121"/><line x1="360" y1="121" x2="590" y2="232"/><line x1="160" y1="170" x2="250" y2="157"/><line x1="360" y1="157" x2="590" y2="294"/><line x1="160" y1="170" x2="250" y2="183"/><line x1="360" y1="183" x2="590" y2="170"/><line x1="160" y1="232" x2="250" y2="219"/><line x1="360" y1="219" x2="590" y2="108"/><line x1="160" y1="232" x2="250" y2="245"/><line x1="360" y1="245" x2="590" y2="46"/><line x1="160" y1="294" x2="250" y2="281"/><line x1="360" y1="281" x2="590" y2="232"/><line x1="160" y1="294" x2="250" y2="307"/><line x1="360" y1="307" x2="590" y2="170"/></g>
+<rect class="pf-box" x="10" y="22" width="150" height="48" rx="8"/>
+<rect class="pf-box" x="250" y="22" width="110" height="22" rx="11"/>
+<rect class="pf-box" x="250" y="48" width="110" height="22" rx="11"/>
+<rect class="pf-box" x="10" y="84" width="150" height="48" rx="8"/>
+<rect class="pf-box" x="250" y="84" width="110" height="22" rx="11"/>
+<rect class="pf-box" x="250" y="110" width="110" height="22" rx="11"/>
+<rect class="pf-box" x="10" y="146" width="150" height="48" rx="8"/>
+<rect class="pf-box" x="250" y="146" width="110" height="22" rx="11"/>
+<rect class="pf-box" x="250" y="172" width="110" height="22" rx="11"/>
+<rect class="pf-box" x="10" y="208" width="150" height="48" rx="8"/>
+<rect class="pf-box" x="250" y="208" width="110" height="22" rx="11"/>
+<rect class="pf-box" x="250" y="234" width="110" height="22" rx="11"/>
+<rect class="pf-box" x="10" y="270" width="150" height="48" rx="8"/>
+<rect class="pf-box" x="250" y="270" width="110" height="22" rx="11"/>
+<rect class="pf-box" x="250" y="296" width="110" height="22" rx="11"/>
+<rect class="pf-box pf-box-acc" x="590" y="22" width="160" height="48" rx="8"/>
+<rect class="pf-box pf-box-acc" x="590" y="84" width="160" height="48" rx="8"/>
+<rect class="pf-box pf-box-acc" x="590" y="146" width="160" height="48" rx="8"/>
+<rect class="pf-box pf-box-acc" x="590" y="208" width="160" height="48" rx="8"/>
+<rect class="pf-box pf-box-acc" x="590" y="270" width="160" height="48" rx="8"/>
+<text x="85" y="43" font-size="14" font-weight="700" text-anchor="middle">굼바</text><text x="85" y="60" font-size="11.5" text-anchor="middle" class="pf-soft">토벌 · 힘</text>
+<text x="305" y="37" font-size="12" text-anchor="middle">뼈·뿔</text>
+<text x="305" y="63" font-size="12" text-anchor="middle">고기</text>
+<text x="85" y="105" font-size="14" font-weight="700" text-anchor="middle">사냥꾼</text><text x="85" y="122" font-size="11.5" text-anchor="middle" class="pf-soft">사냥·채집 · 민첩</text>
+<text x="305" y="99" font-size="12" text-anchor="middle">목재</text>
+<text x="305" y="125" font-size="12" text-anchor="middle">가죽·깃털</text>
+<text x="85" y="167" font-size="14" font-weight="700" text-anchor="middle">헤르만</text><text x="85" y="184" font-size="11.5" text-anchor="middle" class="pf-soft">조사 · 지력</text>
+<text x="305" y="161" font-size="12" text-anchor="middle">마석</text>
+<text x="305" y="187" font-size="12" text-anchor="middle">버섯·열매</text>
+<text x="85" y="229" font-size="14" font-weight="700" text-anchor="middle">세실리아</text><text x="85" y="246" font-size="11.5" text-anchor="middle" class="pf-soft">호위·구호 · 정신</text>
+<text x="305" y="223" font-size="12" text-anchor="middle">천</text>
+<text x="305" y="249" font-size="12" text-anchor="middle">약초</text>
+<text x="85" y="291" font-size="14" font-weight="700" text-anchor="middle">탐험가</text><text x="85" y="308" font-size="11.5" text-anchor="middle" class="pf-soft">탐사 · 기교</text>
+<text x="305" y="285" font-size="12" text-anchor="middle">광석</text>
+<text x="305" y="311" font-size="12" text-anchor="middle">생선</text>
+<text x="670" y="43" font-size="14" font-weight="700" text-anchor="middle">그레타</text><text x="670" y="60" font-size="11.5" text-anchor="middle" class="pf-soft">약초 시설</text>
+<text x="670" y="105" font-size="14" font-weight="700" text-anchor="middle">한스</text><text x="670" y="122" font-size="11.5" text-anchor="middle" class="pf-soft">테이블 · 설비 · 장식</text>
+<text x="670" y="167" font-size="14" font-weight="700" text-anchor="middle">마르타</text><text x="670" y="184" font-size="11.5" text-anchor="middle" class="pf-soft">요리</text>
+<text x="670" y="229" font-size="14" font-weight="700" text-anchor="middle">대장장이</text><text x="670" y="246" font-size="11.5" text-anchor="middle" class="pf-soft">정비대 · 장비</text>
+<text x="670" y="291" font-size="14" font-weight="700" text-anchor="middle">점술가</text><text x="670" y="308" font-size="11.5" text-anchor="middle" class="pf-soft">점술가의 자리</text>
+<text x="670" y="332" font-size="11.5" text-anchor="middle" class="pf-soft">+ 옛 물건 (모든 퀘스트에서 가끔)</text></svg>
+<p class="pf-cap">그림 2. 퀘스트 → 소재 → 사람의 지도 — 한 사람의 일을 밀면 A 그룹 두 사람의 줄이 쌓입니다.</p>
+</div>
+
 ### 줄의 주인
 
 B 그룹 한 사람이 줄 둘을 맡고, 줄마다 받는 A 그룹 사람이 정해져 있습니다.
@@ -103,6 +188,18 @@ B 그룹 한 사람이 줄 둘을 맡고, 줄마다 받는 A 그룹 사람이 �
 - 지금 소재 가운데 12종이 줄에서 빠져 특수 리퀘스트의 전리품이 됩니다: 와이번 비늘 · 키메라 뿔 · 용의 유해 · 그리폰 깃털 · 불사조 깃털 · 용근 · 용안석 · 용익막 · 와이번 고기 · 키메라 고기 · 용 꼬리 · 그리폰 알.
 - 특수 리퀘스트로 풀 거리가 그만큼 늘어납니다. 무엇이고 언제 나오는지는 10 · 15에서 정합니다.
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 96" role="img" aria-label="그림 3. 소재의 전체 크기 — 147칸 가운데 109칸을 새로 만듭니다. 이번에 확정하는 것은 F급 20칸입니다.">
+<g font-size="12.5" text-anchor="middle">
+<text x="151.4" y="18" font-weight="700">지금 있는 것</text><text x="151.4" y="36">38칸</text>
+<text x="466.4" y="18" font-weight="700">새로 만들 것</text><text x="466.4" y="36">109칸 (둘째 묶음 70 · 첫 묶음 32 · 옛 물건 7)</text>
+</g>
+<rect class="pf-sw pf-s1" x="71.0" y="46" width="160.9" height="20" rx="4"><title>지금 있는 것 — 38칸</title></rect>
+<rect class="pf-sw pf-s2" x="233.9" y="46" width="465.1" height="20" rx="4"><title>새로 만들 것 — 109칸 (둘째 묶음 70 · 첫 묶음 32 · 옛 물건 7)</title></rect>
+</svg>
+<p class="pf-cap">그림 3. 소재의 전체 크기 — 147칸 가운데 109칸을 새로 만듭니다. 이번에 확정하는 것은 F급 20칸입니다.</p>
+</div>
+
 ### 전체의 크기
 
 | | 칸 | 지금 있는 것 | 새로 |
@@ -131,6 +228,10 @@ B 그룹 한 사람이 줄 둘을 맡고, 줄마다 받는 A 그룹 사람이 �
 - 소재는 쓰임이 정해져야 완성됩니다. E급 이상은 받는 쪽 시설이 설계되지 않아서, 아래 예시 이름을 [임시]로 두고 그 등급을 만들 때 확정합니다.
 
 ### 전체 등급 예시 [임시]
+
+
+<details>
+<summary>등급 F ~ S의 소재 이름 예시 — 140칸과 옛 물건 (눌러서 펼치기)</summary>
 
 보통 글씨는 지금 있는 소재, **굵은 글씨는 새로 만들 소재**입니다. 정해진 것은 F급 두 줄뿐이고 나머지는 틀을 보이기 위한 예시입니다.
 
@@ -179,6 +280,8 @@ B 그룹 한 사람이 줄 둘을 맡고, 줄마다 받는 A 그룹 사람이 �
 | 생선 → 마르타 | 첫 | 민물고기 | **은어** | **동굴 장어** | **철갑상어** | **심해 아귀** | **대왕 오징어** | **빙하 고래** |
 | 생선 → 마르타 | 둘째 | **큰 잉어** | **무지개 송어** | **눈먼 메기** | **철갑상어 알** | **달빛 연어** | **진주조개** | **고래 뱃살** |
 | 옛 물건 → 점술가 | 모든 퀘스트 | **옛 동전** | (미정) | (미정) | (미정) | (미정) | (미정) | (미정) |
+
+</details>
 
 ## 5. 같은 소재를 두 군데에서 씁니다
 
@@ -268,6 +371,42 @@ F급 보스 10개 [임시] — 굵은 글씨가 새로 만들 것, 나머지 5�
 
 ### 한도는 퀘스트마다 Lv 1 → 2 → 3
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 100" role="img" aria-label="그림 4. 한 묶음의 차례">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box" x="160.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box" x="316.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box pf-box-acc" x="472.0" y="14" width="128.0" height="76" rx="8"/>
+<rect class="pf-box" x="628.0" y="14" width="128.0" height="76" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="68.0" y="39">묶음이 붙음</text>
+<text x="224.0" y="39">레벨이 오름</text>
+<text x="380.0" y="39">둘 다 Lv 3</text>
+<text x="536.0" y="39">보스를 해냄</text>
+<text x="692.0" y="39">다음 묶음</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="68.0" y="59">그 사람의</text>
+<text x="68.0" y="75">퀘스트 2개</text>
+<text x="224.0" y="59">해낼 때마다</text>
+<text x="224.0" y="75">Lv 1 → 2 → 3</text>
+<text x="380.0" y="59">6번을 해내면</text>
+<text x="380.0" y="75">보스가 나옴</text>
+<text x="536.0" y="59">뱃지 · 완성된 물건</text>
+<text x="536.0" y="75">· 칭호</text>
+<text x="692.0" y="59">새 퀘스트</text>
+<text x="692.0" y="75">새 소재</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="134.0" y1="52.0" x2="157.0" y2="52.0"/>
+<line x1="290.0" y1="52.0" x2="313.0" y2="52.0"/>
+<line x1="446.0" y1="52.0" x2="469.0" y2="52.0"/>
+<line x1="602.0" y1="52.0" x2="625.0" y2="52.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 4. 한 묶음의 차례</p>
+</div>
+
+
 | | 내용 |
 | --- | --- |
 | 한 퀘스트 | Lv 1 → Lv 2 → Lv 3. 해낼 때마다 레벨이 오르고, 상대가 한 단계씩 세짐 |
@@ -280,6 +419,25 @@ F급 보스 10개 [임시] — 굵은 글씨가 새로 만들 것, 나머지 5�
 - Lv 3이 된 뒤에도 그 퀘스트는 계속 붙고, 보내면 돈과 경험치를 받습니다. 막지 않습니다.
 
 ### 한 등급의 모양
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 146" role="img" aria-label="그림 5. F급의 길이 [임시] — 지금 박자로는 40주에 들어가지 않습니다. 퀘스트의 수는 10 · 15에서 다시 정했습니다.">
+<g class="pf-grid" stroke-width="1"><line x1="292.5" y1="16" x2="292.5" y2="102"/><line x1="385.0" y1="16" x2="385.0" y2="102"/><line x1="477.5" y1="16" x2="477.5" y2="102"/><line x1="570.0" y1="16" x2="570.0" y2="102"/></g>
+<line class="pf-axis" x1="200" y1="16" x2="200" y2="102" stroke-width="1"/>
+<text x="10" y="38" font-size="13.5" font-weight="700">F급에 필요한 건수</text>
+<text x="10" y="55" font-size="12" class="pf-soft">묶음 10 × 6번 + 보스 10번</text>
+<rect class="pf-acc" x="200" y="28" width="323.8" height="16" rx="3"><title>F급에 필요한 건수 — 70건</title></rect>
+<text x="533.8" y="41" font-size="12.5">70건</text>
+<text x="10" y="84" font-size="13.5" font-weight="700">지금 박자로 40주에</text>
+<text x="10" y="101" font-size="12" class="pf-soft">한 주 1.4건</text>
+<rect class="pf-mute" x="200" y="74" width="263.6" height="16" rx="3"><title>지금 박자로 40주에 — 57건 — 70건은 49주쯤</title></rect>
+<text x="473.6" y="87" font-size="12.5">57건 — 70건은 49주쯤</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="200.0" y="118">0</text><text x="292.5" y="118">20</text><text x="385.0" y="118">40</text><text x="477.5" y="118">60</text><text x="570.0" y="118">80</text></g>
+<text x="385.0" y="140" font-size="12.5" text-anchor="middle">성공하는 원정의 건수</text>
+</svg>
+<p class="pf-cap">그림 5. F급의 길이 [임시] — 지금 박자로는 40주에 들어가지 않습니다. 퀘스트의 수는 10 · 15에서 다시 정했습니다.</p>
+</div>
+
 
 | | 값 [임시] |
 | --- | --- |
