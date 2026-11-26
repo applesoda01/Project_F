@@ -8,6 +8,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「07 시설을 놓을 자리」)
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 새 시설 셋(정비대 · 점술가의 자리 · 약초 시설)은 테이블처럼 로비 바닥에 놓습니다. 크기는 2칸 × 2칸입니다.
+- 장식은 「옆에 놓인 시설을 돕는 것」으로 다시 짭니다. 어디에 놓느냐가 뜻을 가집니다.
+- 치우면 창고로 가고 레벨은 남습니다. 무엇을 만들 수 있는지는 리퀘스트가 열고, 만드는 것은 한스입니다.
+
+</div>
+
 ## 한눈에
 
 | 걸음 | 정한 것 |
@@ -33,6 +43,21 @@
 2026-11-25 B세션 조사(저장소의 `docs/design/현황/07_시설과_로비_배치.md`)에서 읽은 값입니다.
 
 ## 1. 새 시설의 크기 — 2칸 × 2칸
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 196" role="img" aria-label="테이블 세트는 3칸, 새 시설은 2칸 곱하기 2칸. 장식은 시설 옆에 놓으면 그 시설을 도움">
+<g class="pf-box"><rect x="40" y="60" width="64" height="64" rx="6"/><rect x="104" y="60" width="64" height="64" rx="6"/><rect x="168" y="60" width="64" height="64" rx="6"/>
+<rect x="330" y="28" width="128" height="64" rx="6"/><rect x="330" y="92" width="64" height="64" rx="6"/><rect x="394" y="92" width="64" height="64" rx="6"/></g>
+<rect class="pf-box pf-box-acc" x="458" y="28" width="64" height="64" rx="6"/>
+<g text-anchor="middle" font-size="12.5">
+<text x="72" y="97">의자</text><text x="136" y="97">테이블</text><text x="200" y="97">의자</text>
+<text x="394" y="65">본체 (2칸)</text><text x="362" y="129">일하는 사람</text><text x="426" y="129">손님</text><text x="490" y="65">장식</text>
+</g>
+<g text-anchor="middle" font-size="13.5" font-weight="700"><text x="136" y="150">테이블 세트 — 3칸</text><text x="394" y="182">새 시설 — 2칸 × 2칸</text></g>
+<text x="536" y="56" font-size="12.5">옆에 놓으면</text><text x="536" y="74" font-size="12.5">그 시설을 도움</text>
+</svg>
+<p class="pf-cap">그림 1. 바닥에 놓는 것의 크기 [임시] — 설명을 위한 그림이며, 게임 화면의 시안이 아닙니다.</p>
+</div>
 
 | 물건 | 크기 |
 | --- | --- |
@@ -94,6 +119,49 @@
 | 무엇을 만들 수 있게 되는가 | 지금처럼 리퀘스트가 엶. 「고아원 겨울 장작」을 도우면 벽난로, 「길드가 너무 삭막해요」를 끝내면 화분 |
 | 만드는 것 | 한스. 테이블 · 설비(훈련 허수아비 · 구인 현수막) · 장식 모두. 소재(목재 · 천)와 돈이 들고 여러 개를 만들 수 있음 |
 | 한스의 단계 | 「몇 개까지 놓을 수 있는가」를 늘림 |
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 82" role="img" aria-label="그림 2. 리퀘스트가 열고, 한스가 만듭니다.">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="232.0" height="58" rx="8"/>
+<rect class="pf-box" x="264.0" y="14" width="232.0" height="58" rx="8"/>
+<rect class="pf-box pf-box-acc" x="524.0" y="14" width="232.0" height="58" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="120.0" y="39">리퀘스트를 끝냄</text>
+<text x="380.0" y="39">한스에게 맡김</text>
+<text x="640.0" y="39">여러 개를 만듦</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="120.0" y="59">무엇을 만들 수 있는지가 열림</text>
+<text x="380.0" y="59">소재(목재 · 천)와 돈이 듦</text>
+<text x="640.0" y="59">놓을 수 있는 수는 한스의 단계</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="238.0" y1="43.0" x2="261.0" y2="43.0"/>
+<line x1="498.0" y1="43.0" x2="521.0" y2="43.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 2. 리퀘스트가 열고, 한스가 만듭니다.</p>
+</div>
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 160" role="img" aria-label="그림 3. 한스의 단계 — 놓을 수 있는 수 [임시]">
+<line class="pf-track" x1="80" y1="100" x2="680.0" y2="100" stroke-width="6" stroke-linecap="round"/>
+<g text-anchor="middle">
+<text x="80.0" y="50" font-size="15" font-weight="700">1단계</text><text x="80.0" y="74" font-size="12" class="pf-soft">처음</text>
+<text x="80.0" y="130" font-size="12.5">테이블 2세트</text>
+<text x="80.0" y="148" font-size="12.5">장식은 종류마다 1개</text>
+<text x="380.0" y="50" font-size="15" font-weight="700">2단계</text><text x="380.0" y="74" font-size="12" class="pf-soft">첫 묶음의 소재를 건넴</text>
+<text x="380.0" y="130" font-size="12.5">테이블 3세트</text>
+<text x="380.0" y="148" font-size="12.5">종류마다 2개</text>
+<text x="680.0" y="50" font-size="15" font-weight="700">3단계</text><text x="680.0" y="74" font-size="12" class="pf-soft">둘째 묶음의 소재를 건넴</text>
+<text x="680.0" y="130" font-size="12.5">테이블 4세트</text>
+<text x="680.0" y="148" font-size="12.5">종류마다 3개</text>
+</g>
+<circle class="pf-acc pf-ring" cx="80.0" cy="100" r="10"><title>1단계 — 처음</title></circle>
+<circle class="pf-acc pf-ring" cx="380.0" cy="100" r="10"><title>2단계 — 첫 묶음의 소재를 건넴</title></circle>
+<circle class="pf-acc pf-ring" cx="680.0" cy="100" r="10"><title>3단계 — 둘째 묶음의 소재를 건넴</title></circle>
+</svg>
+<p class="pf-cap">그림 3. 한스의 단계 — 놓을 수 있는 수 [임시]</p>
+</div>
 
 | 한스의 단계 | 놓을 수 있는 수 [임시] |
 | --- | --- |

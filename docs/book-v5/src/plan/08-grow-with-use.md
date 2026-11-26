@@ -8,6 +8,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「08 쓰면 조금씩 오름」)
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 네 시설 모두 이용객이 쌓이면 레벨이 오르고, 오르면 조금 더 비싸게 받을 수 있습니다 (30명에 한 레벨 · +2G).
+- 시설을 열 번 쓰면, 그 원정에만 듣던 효과가 조금 몸에 남습니다 (+1).
+- 장식은 값이 아닌 것(자리 · 손님 · 소재)을 돕습니다. 식당에는 품삯을 두지 않습니다.
+
+</div>
+
 ## 한눈에
 
 | 걸음 | 정한 것 |
@@ -48,6 +58,31 @@
 
 값을 올리는 길은 둘이고, 겹치지 않게 둡니다.
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 228" role="img" aria-label="그림 1. 값을 올리는 길 둘 [임시 예] — 마을 단계(큰 계단) 위에 시설의 레벨(작은 계단)이 얹힙니다.">
+<g class="pf-grid" stroke-width="1"><line x1="238.0" y1="16" x2="238.0" y2="184"/><line x1="306.0" y1="16" x2="306.0" y2="184"/><line x1="374.0" y1="16" x2="374.0" y2="184"/><line x1="442.0" y1="16" x2="442.0" y2="184"/><line x1="510.0" y1="16" x2="510.0" y2="184"/></g>
+<line class="pf-axis" x1="170" y1="16" x2="170" y2="184" stroke-width="1"/>
+<text x="10" y="41" font-size="13.5" font-weight="700">개척촌 · 시설 Lv 1</text>
+<rect class="pf-acc" x="170" y="28" width="136.0" height="16" rx="3"><title>개척촌 · 시설 Lv 1 — 20G</title></rect>
+<text x="316.0" y="41" font-size="12.5">20G</text>
+<text x="10" y="75" font-size="13.5" font-weight="700">개척촌 · 시설 Lv 2</text>
+<rect class="pf-acc" x="170" y="62" width="149.6" height="16" rx="3"><title>개척촌 · 시설 Lv 2 — 22G — 레벨은 작은 계단 (+2G)</title></rect>
+<text x="329.6" y="75" font-size="12.5">22G — 레벨은 작은 계단 (+2G)</text>
+<text x="10" y="109" font-size="13.5" font-weight="700">개척촌 · 시설 Lv 3</text>
+<rect class="pf-acc" x="170" y="96" width="163.2" height="16" rx="3"><title>개척촌 · 시설 Lv 3 — 24G</title></rect>
+<text x="343.2" y="109" font-size="12.5">24G</text>
+<text x="10" y="143" font-size="13.5" font-weight="700">마을 · 시설 Lv 1</text>
+<rect class="pf-mute" x="170" y="130" width="204.0" height="16" rx="3"><title>마을 · 시설 Lv 1 — 30G — 마을 단계는 큰 계단</title></rect>
+<text x="384.0" y="143" font-size="12.5">30G — 마을 단계는 큰 계단</text>
+<text x="10" y="177" font-size="13.5" font-weight="700">읍 · 시설 Lv 1</text>
+<rect class="pf-mute" x="170" y="164" width="306.0" height="16" rx="3"><title>읍 · 시설 Lv 1 — 45G</title></rect>
+<text x="486.0" y="177" font-size="12.5">45G</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="170.0" y="200">0</text><text x="238.0" y="200">10</text><text x="306.0" y="200">20</text><text x="374.0" y="200">30</text><text x="442.0" y="200">40</text><text x="510.0" y="200">50</text></g>
+<text x="340.0" y="222" font-size="12.5" text-anchor="middle">모험가가 「적당하다」고 느끼는 값의 가운데 (G)</text>
+</svg>
+<p class="pf-cap">그림 1. 값을 올리는 길 둘 [임시 예] — 마을 단계(큰 계단) 위에 시설의 레벨(작은 계단)이 얹힙니다.</p>
+</div>
+
 | 값을 올리는 길 | 크기 |
 | --- | --- |
 | 마을 단계 (마을 가게의 값이 오름 · [06](06-town-customers.md)) | 큰 계단 (20G → 30G → 45G) |
@@ -60,6 +95,28 @@
 ## 2. 모험가가 조금씩 자라는 몫
 
 > **그 원정 동안만 주던 것이, 열 번 쓰면 조금 몸에 남는다.** [임시: 열 번]
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 82" role="img" aria-label="그림 2. 쓰면 쌓이는 몫 [임시]">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="232.0" height="58" rx="8"/>
+<rect class="pf-box" x="264.0" y="14" width="232.0" height="58" rx="8"/>
+<rect class="pf-box pf-box-acc" x="524.0" y="14" width="232.0" height="58" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="120.0" y="39">시설을 씀</text>
+<text x="380.0" y="39">열 번이 쌓임</text>
+<text x="640.0" y="39">몸에 남음</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="120.0" y="59">그 원정 동안만 효과</text>
+<text x="380.0" y="59">같은 것을 열 번</text>
+<text x="640.0" y="59">능력치 +1 같은 작은 몫</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="238.0" y1="43.0" x2="261.0" y2="43.0"/>
+<line x1="498.0" y1="43.0" x2="521.0" y2="43.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 2. 쓰면 쌓이는 몫 [임시]</p>
+</div>
 
 | 쓰는 것 | 그 원정 동안 | 열 번 쓰면 남는 것 [임시] |
 | --- | --- | --- |

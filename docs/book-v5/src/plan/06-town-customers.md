@@ -8,6 +8,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「06」)
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 마을 사람도 길드의 시설을 모두 이용합니다. 손님이 「떠나는 모험가」에서 마을 전체로 넓어집니다.
+- 얼마나 오는지는 인구가 정합니다 (150명에 한 주 3명쯤). 자리와 재료는 모험가가 먼저입니다.
+- 여는 열쇠는 촌장입니다 (첫 보스 다섯 가운데 셋). 왕국 보조금은 퀘스트 보상의 50%에서 10%로 낮춥니다.
+
+</div>
+
 ## 한눈에
 
 | 걸음 | 정한 것 |
@@ -27,6 +37,20 @@
 | 인구가 늘어도 길드에 돌아오는 것이 거의 없음 | 지금 길드 식당과 주점의 손님은 모험가뿐 |
 | 벌이의 3분의 2가 왕국에서 옴 | 보조금 64% · 식사와 술 23% · 수수료 13% (2026-11-25 1차 측정) |
 | F급에 퀘스트가 모자람 | 70건이 필요한데 지금 박자로는 40주에 57건 (17) |
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 96" role="img" aria-label="그림 1. 지금 길드의 한 달 벌이 (1차 측정) — 3분의 2가 왕국에서 옵니다.">
+<g font-size="12.5" text-anchor="middle">
+<text x="271.4" y="18" font-weight="700">왕국 보조금</text><text x="271.4" y="36">344G · 64%</text>
+<text x="544.3" y="18" font-weight="700">식사와 술</text><text x="544.3" y="36">122G · 23%</text>
+<text x="657.8" y="18" font-weight="700">수수료</text><text x="657.8" y="36">72G · 13%</text>
+</g>
+<rect class="pf-sw pf-s1" x="71.0" y="46" width="400.8" height="20" rx="4"><title>왕국 보조금 — 344G · 64%</title></rect>
+<rect class="pf-sw pf-s2" x="473.8" y="46" width="140.9" height="20" rx="4"><title>식사와 술 — 122G · 23%</title></rect>
+<rect class="pf-sw pf-s3" x="616.7" y="46" width="82.3" height="20" rx="4"><title>수수료 — 72G · 13%</title></rect>
+</svg>
+<p class="pf-cap">그림 1. 지금 길드의 한 달 벌이 (1차 측정) — 3분의 2가 왕국에서 옵니다.</p>
+</div>
 
 ## 1. 마을 사람은 길드의 시설을 모두 이용합니다
 
@@ -52,6 +76,28 @@
 | ② | 한 사람씩 길드와 여관을 견줌. 길드가 싸거나 여관에 없는 요리가 있으면 길드로 옴 |
 | ③ | 길드에 빈자리가 있으면 먹고, 없으면 여관으로 돌아감 |
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 192" role="img" aria-label="그림 2. 마을 손님의 수 [임시] — 인구 100명에 한 주 2명쯤. 이들이 길드와 여관 가운데 고릅니다.">
+<g class="pf-grid" stroke-width="1"><line x1="270.0" y1="16" x2="270.0" y2="148"/><line x1="370.0" y1="16" x2="370.0" y2="148"/><line x1="470.0" y1="16" x2="470.0" y2="148"/><line x1="570.0" y1="16" x2="570.0" y2="148"/></g>
+<line class="pf-axis" x1="170" y1="16" x2="170" y2="148" stroke-width="1"/>
+<text x="10" y="38" font-size="13.5" font-weight="700">개척촌 (시작)</text>
+<text x="10" y="55" font-size="12" class="pf-soft">인구 150명</text>
+<rect class="pf-acc" x="170" y="28" width="60.0" height="16" rx="3"><title>개척촌 (시작) — 3명쯤</title></rect>
+<text x="240.0" y="41" font-size="12.5">3명쯤</text>
+<text x="10" y="84" font-size="13.5" font-weight="700">마을</text>
+<text x="10" y="101" font-size="12" class="pf-soft">인구 300명</text>
+<rect class="pf-acc" x="170" y="74" width="120.0" height="16" rx="3"><title>마을 — 6명쯤</title></rect>
+<text x="300.0" y="87" font-size="12.5">6명쯤</text>
+<text x="10" y="130" font-size="13.5" font-weight="700">읍</text>
+<text x="10" y="147" font-size="12" class="pf-soft">인구 1,000명</text>
+<rect class="pf-acc" x="170" y="120" width="400.0" height="16" rx="3"><title>읍 — 20명쯤</title></rect>
+<text x="580.0" y="133" font-size="12.5">20명쯤</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="170.0" y="164">0</text><text x="270.0" y="164">5</text><text x="370.0" y="164">10</text><text x="470.0" y="164">15</text><text x="570.0" y="164">20</text></g>
+<text x="370.0" y="186" font-size="12.5" text-anchor="middle">한 주에 밖에서 먹는 마을 사람</text>
+</svg>
+<p class="pf-cap">그림 2. 마을 손님의 수 [임시] — 인구 100명에 한 주 2명쯤. 이들이 길드와 여관 가운데 고릅니다.</p>
+</div>
+
 | 마을 | 인구 | 한 주에 밖에서 먹는 마을 사람 |
 | --- | :---: | :---: |
 | 시작 (개척촌) | 150명 | 3명쯤 |
@@ -73,6 +119,34 @@
 | **마을 전체의 형편 하나** | 마을 단계가 한 번에 쓸 수 있는 돈을 정함 | — |
 
 > **마을 사람이 한 번에 쓸 수 있는 돈 = 그 마을 여관 값의 2배까지.** [임시]
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 222" role="img" aria-label="그림 3. 마을 전체의 형편 [임시] — 마을 사람은 여관 값의 2배까지 씁니다.">
+<g font-size="12.5">
+<circle class="pf-sw pf-s1" cx="126" cy="12" r="5"/><text x="138" y="16">여관의 밥</text>
+<circle class="pf-sw pf-s2" cx="214" cy="12" r="5"/><text x="226" y="16">마을 사람이 한 번에 쓰는 돈</text>
+</g>
+<g class="pf-grid" stroke-width="1"><line x1="250.0" y1="30" x2="250.0" y2="196"/><line x1="380.0" y1="30" x2="380.0" y2="196"/><line x1="510.0" y1="30" x2="510.0" y2="196"/><line x1="640.0" y1="30" x2="640.0" y2="196"/></g>
+<line class="pf-axis" x1="120" y1="30" x2="120" y2="196" stroke-width="1"/>
+<text x="10" y="60" font-size="13.5" font-weight="700">개척촌</text>
+<rect class="pf-sw pf-s1" x="120" y="36" width="104.0" height="16" rx="3"><title>개척촌 · 여관의 밥 — 20G</title></rect>
+<text x="232.0" y="49" font-size="12.5">20G</text>
+<rect class="pf-sw pf-s2" x="120" y="56" width="208.0" height="16" rx="3"><title>개척촌 · 마을 사람이 한 번에 쓰는 돈 — 40G</title></rect>
+<text x="336.0" y="69" font-size="12.5">40G</text>
+<text x="10" y="116" font-size="13.5" font-weight="700">마을</text>
+<rect class="pf-sw pf-s1" x="120" y="92" width="156.0" height="16" rx="3"><title>마을 · 여관의 밥 — 30G</title></rect>
+<text x="284.0" y="105" font-size="12.5">30G</text>
+<rect class="pf-sw pf-s2" x="120" y="112" width="312.0" height="16" rx="3"><title>마을 · 마을 사람이 한 번에 쓰는 돈 — 60G</title></rect>
+<text x="440.0" y="125" font-size="12.5">60G</text>
+<text x="10" y="172" font-size="13.5" font-weight="700">읍</text>
+<rect class="pf-sw pf-s1" x="120" y="148" width="234.0" height="16" rx="3"><title>읍 · 여관의 밥 — 45G</title></rect>
+<text x="362.0" y="161" font-size="12.5">45G</text>
+<rect class="pf-sw pf-s2" x="120" y="168" width="468.0" height="16" rx="3"><title>읍 · 마을 사람이 한 번에 쓰는 돈 — 90G</title></rect>
+<text x="596.0" y="181" font-size="12.5">90G</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="120.0" y="212">0G</text><text x="250.0" y="212">25G</text><text x="380.0" y="212">50G</text><text x="510.0" y="212">75G</text><text x="640.0" y="212">100G</text></g>
+</svg>
+<p class="pf-cap">그림 3. 마을 전체의 형편 [임시] — 마을 사람은 여관 값의 2배까지 씁니다.</p>
+</div>
 
 | 마을 단계 | 여관의 밥 | 마을 사람이 한 번에 쓰는 돈 | 살 수 있는 것 |
 | --- | :---: | :---: | --- |
@@ -119,6 +193,38 @@
 
 돈, 그리고 **게시판에 붙는 퀘스트**입니다. 길드에 다녀간 마을 사람이 많을수록 퀘스트가 더 붙습니다. 밥을 먹으러 온 사람이 부탁할 일을 남기고 가는 모양입니다.
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 152" role="img" aria-label="그림 4. 마을 손님이 만드는 고리">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="167.0" height="76" rx="8"/>
+<rect class="pf-box" x="199.0" y="14" width="167.0" height="76" rx="8"/>
+<rect class="pf-box" x="394.0" y="14" width="167.0" height="76" rx="8"/>
+<rect class="pf-box" x="589.0" y="14" width="167.0" height="76" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="87.5" y="39">퀘스트를 해냄</text>
+<text x="282.5" y="39">식당을 잘 꾸림</text>
+<text x="477.5" y="39">마을 사람이 다녀감</text>
+<text x="672.5" y="39">퀘스트가 더 붙음</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="87.5" y="59">소재가 들어오고</text>
+<text x="87.5" y="75">마을이 큼</text>
+<text x="282.5" y="59">마을 사람이 여관 대신</text>
+<text x="282.5" y="75">길드로 옴</text>
+<text x="477.5" y="59">돈을 쓰고</text>
+<text x="477.5" y="75">일을 남기고 감</text>
+<text x="672.5" y="59">게시판에</text>
+<text x="672.5" y="75">한 장 더</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="173.0" y1="52.0" x2="196.0" y2="52.0"/>
+<line x1="368.0" y1="52.0" x2="391.0" y2="52.0"/>
+<line x1="563.0" y1="52.0" x2="586.0" y2="52.0"/>
+<path d="M672.5,92 V114 Q672.5,124 662.5,124 H97.5 Q87.5,124 87.5,114 V94"/>
+</g>
+<text x="380.0" y="144" font-size="12.5" text-anchor="middle">다시 퀘스트로</text>
+</svg>
+<p class="pf-cap">그림 4. 마을 손님이 만드는 고리</p>
+</div>
+
 | 차례 | 고리 |
 | :---: | --- |
 | ① | 퀘스트를 해냄 → 소재가 들어오고 마을이 큼 |
@@ -134,6 +240,36 @@
 
 ### 여관 값은 마을 단계마다 오릅니다
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 284" role="img" aria-label="그림 5. 여관 값은 마을 단계마다 오릅니다 [임시] — 길드의 요리도 그만큼 올려 받을 수 있습니다.">
+<g class="pf-grid" stroke-width="1"><line x1="270.0" y1="16" x2="270.0" y2="240"/><line x1="370.0" y1="16" x2="370.0" y2="240"/><line x1="470.0" y1="16" x2="470.0" y2="240"/><line x1="570.0" y1="16" x2="570.0" y2="240"/></g>
+<line class="pf-axis" x1="170" y1="16" x2="170" y2="240" stroke-width="1"/>
+<text x="10" y="38" font-size="13.5" font-weight="700">개척촌</text>
+<text x="10" y="55" font-size="12" class="pf-soft">인구 300 미만</text>
+<rect class="pf-acc" x="170" y="28" width="80.0" height="16" rx="3"><title>개척촌 — 20G</title></rect>
+<text x="260.0" y="41" font-size="12.5">20G</text>
+<text x="10" y="84" font-size="13.5" font-weight="700">마을</text>
+<text x="10" y="101" font-size="12" class="pf-soft">300 이상</text>
+<rect class="pf-acc" x="170" y="74" width="120.0" height="16" rx="3"><title>마을 — 30G</title></rect>
+<text x="300.0" y="87" font-size="12.5">30G</text>
+<text x="10" y="130" font-size="13.5" font-weight="700">읍</text>
+<text x="10" y="147" font-size="12" class="pf-soft">1,000 이상</text>
+<rect class="pf-acc" x="170" y="120" width="180.0" height="16" rx="3"><title>읍 — 45G</title></rect>
+<text x="360.0" y="133" font-size="12.5">45G</text>
+<text x="10" y="176" font-size="13.5" font-weight="700">도시</text>
+<text x="10" y="193" font-size="12" class="pf-soft">2,000 이상</text>
+<rect class="pf-acc" x="170" y="166" width="280.0" height="16" rx="3"><title>도시 — 70G</title></rect>
+<text x="460.0" y="179" font-size="12.5">70G</text>
+<text x="10" y="222" font-size="13.5" font-weight="700">성채 도시</text>
+<text x="10" y="239" font-size="12" class="pf-soft">3,500 이상</text>
+<rect class="pf-acc" x="170" y="212" width="400.0" height="16" rx="3"><title>성채 도시 — 100G</title></rect>
+<text x="580.0" y="225" font-size="12.5">100G</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="170.0" y="256">0</text><text x="270.0" y="256">25</text><text x="370.0" y="256">50</text><text x="470.0" y="256">75</text><text x="570.0" y="256">100</text></g>
+<text x="370.0" y="278" font-size="12.5" text-anchor="middle">여관의 밥 값 (G)</text>
+</svg>
+<p class="pf-cap">그림 5. 여관 값은 마을 단계마다 오릅니다 [임시] — 길드의 요리도 그만큼 올려 받을 수 있습니다.</p>
+</div>
+
 | 마을 단계 | 인구 | 여관의 밥 |
 | --- | :---: | :---: |
 | 개척촌 | 300 미만 | 20G |
@@ -146,6 +282,30 @@
 - 마을을 키워야 값을 올려 받을 수 있습니다. 길드만 키워서는 안 되고 마을을 함께 키워야 합니다.
 
 ### 왕국 보조금은 퀘스트 보상의 10%
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 184" role="img" aria-label="그림 6. 왕국 보조금 50% → 10% [임시] — 퀘스트 하나에 60G가 20G로 줍니다. 새 시설과 마을 손님이 메워야 합니다.">
+<g font-size="12.5">
+<circle class="pf-sw pf-s3" cx="126" cy="12" r="5"/><text x="138" y="16">수수료</text>
+<circle class="pf-sw pf-s1" cx="197" cy="12" r="5"/><text x="209" y="16">왕국 보조금</text>
+</g>
+<g class="pf-grid" stroke-width="1"><line x1="206.7" y1="30" x2="206.7" y2="140"/><line x1="293.3" y1="30" x2="293.3" y2="140"/><line x1="380.0" y1="30" x2="380.0" y2="140"/><line x1="466.7" y1="30" x2="466.7" y2="140"/><line x1="553.3" y1="30" x2="553.3" y2="140"/><line x1="640.0" y1="30" x2="640.0" y2="140"/></g>
+<line class="pf-axis" x1="120" y1="30" x2="120" y2="140" stroke-width="1"/>
+<text x="10" y="60" font-size="13.5" font-weight="700">지금</text>
+<rect class="pf-sw pf-s3" x="120" y="36" width="86.7" height="16" rx="3"><title>지금 · 수수료 — 10G</title></rect>
+<text x="214.7" y="49" font-size="12.5">10G</text>
+<rect class="pf-sw pf-s1" x="120" y="56" width="433.3" height="16" rx="3"><title>지금 · 왕국 보조금 — 50G</title></rect>
+<text x="561.3" y="69" font-size="12.5">50G</text>
+<text x="10" y="116" font-size="13.5" font-weight="700">정한 것</text>
+<rect class="pf-sw pf-s3" x="120" y="92" width="86.7" height="16" rx="3"><title>정한 것 · 수수료 — 10G</title></rect>
+<text x="214.7" y="105" font-size="12.5">10G</text>
+<rect class="pf-sw pf-s1" x="120" y="112" width="86.7" height="16" rx="3"><title>정한 것 · 왕국 보조금 — 10G</title></rect>
+<text x="214.7" y="125" font-size="12.5">10G</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="120.0" y="156">0G</text><text x="206.7" y="156">10G</text><text x="293.3" y="156">20G</text><text x="380.0" y="156">30G</text><text x="466.7" y="156">40G</text><text x="553.3" y="156">50G</text><text x="640.0" y="156">60G</text></g>
+<text x="380.0" y="178" font-size="12.5" text-anchor="middle">보상 100G짜리 퀘스트 하나에서 길드가 받는 돈</text>
+</svg>
+<p class="pf-cap">그림 6. 왕국 보조금 50% → 10% [임시] — 퀘스트 하나에 60G가 20G로 줍니다. 새 시설과 마을 손님이 메워야 합니다.</p>
+</div>
 
 | | 지금 | 정한 것 |
 | --- | :---: | :---: |
