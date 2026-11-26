@@ -75,6 +75,12 @@ test('real books preserve v1 and provide portable version links, including new c
   assert.match(v5, /<option[^>]+selected>V5 경영 · 육성 개편안/);
   assert.match(v5, /data-from="V4" data-to="V5"/);
   assert.match(readFileSync(join(output, 'v4/ch06/cooking.html'), 'utf8'), /<option value="\.\.\/\.\.\/v5\/ch06\/cooking.html">V5 경영 · 육성 개편안/);
+  // 2026-11-26 V6: V5 대비 변경(개편안을 장마다 합침 · 개발 관리)을 주황색으로 표시하는 판
+  const v6 = readFileSync(join(output, 'v6/development/v6.html'), 'utf8');
+  assert.match(v6, /<html[^>]*data-book-version="v6"/);
+  assert.match(v6, /<option[^>]+selected>V6 개편 반영판/);
+  assert.match(v6, /data-from="V5" data-to="V6"/);
+  assert.match(readFileSync(join(output, 'v5/ch06/cooking.html'), 'utf8'), /<option value="\.\.\/\.\.\/v6\/ch06\/cooking.html">V6 개편 반영판/);
   for (const removed of ['proposal', 'ch03/contracts.html', 'ch04/commission.html', 'ch06/ownership.html']) {
     assert.equal(existsSync(join(output, 'v2', removed)), false);
   }

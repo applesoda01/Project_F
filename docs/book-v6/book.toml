@@ -1,0 +1,17 @@
+[book]
+title = "Project_F 기획 안내서 v6 — 개편 반영판"
+authors = ["Project_F"]
+language = "ko"
+src = "src"
+description = "이세계 모험가 길드(가칭) — 처음 읽는 사람을 위한 기획 안내서"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/applesoda01/Project_F"
+additional-js = ["theme/mermaid-init.js"]
+additional-css = ["theme/custom.css"]
+no-section-label = false
+
+[output.html.search]
+enable = true

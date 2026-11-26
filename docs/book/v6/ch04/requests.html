@@ -1,0 +1,409 @@
+<!DOCTYPE HTML>
+<html data-book-version="v6" lang="ko" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>리퀘스트(서브 퀘스트) - Project_F 기획 안내서 v6 — 개편 반영판</title>
+
+
+        <!-- Custom HTML head -->
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+
+        <meta name="description" content="이세계 모험가 길드(가칭) — 처음 읽는 사람을 위한 기획 안내서">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/custom.css">
+
+    <link rel="stylesheet" href="../../_book-ui.css">
+</head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../index.html" class="book-toc-change" data-book-change="index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기">들어가며<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded affix "><a href="../reading.html">이 책을 읽는 법</a></li><li class="chapter-item expanded affix "><a href="../v6-overview.html" class="book-toc-change" data-book-change="v6-overview.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기">새 설계 한눈에 (V6)<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded affix "><a href="../changes.html">변경 비교표: v1 → v2</a></li><li class="chapter-item expanded affix "><li class="spacer"></li><li class="chapter-item expanded "><a href="../ch01/index.html" class="book-toc-change" data-book-change="ch01/index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">1.</strong> 이 게임은<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch01/concept.html"><strong aria-hidden="true">1.1.</strong> 한 장으로 보는 게임</a></li><li class="chapter-item expanded "><a href="../ch01/numbers.html"><strong aria-hidden="true">1.2.</strong> 핵심 수치 다섯 가지</a></li><li class="chapter-item expanded "><a href="../ch01/scope.html"><strong aria-hidden="true">1.3.</strong> 프로토타입 범위와 현재 상태</a></li><li class="chapter-item expanded "><a href="../ch01/references.html"><strong aria-hidden="true">1.4.</strong> 레퍼런스 게임</a></li><li class="chapter-item expanded "><a href="../ch01/platform.html"><strong aria-hidden="true">1.5.</strong> 플랫폼과 로드맵</a></li><li class="chapter-item expanded "><a href="../ch01/principles.html" class="book-toc-change" data-book-change="ch01/principles.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">1.6.</strong> 새 설계 01 · 원칙 다섯<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol></li><li class="chapter-item expanded "><a href="../ch02/index.html" class="book-toc-change" data-book-change="ch02/index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">2.</strong> 한 판의 흐름<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch02/loop.html"><strong aria-hidden="true">2.1.</strong> 핵심 루프: 한 주에 일어나는 일</a></li><li class="chapter-item expanded "><a href="../ch02/time.html"><strong aria-hidden="true">2.2.</strong> 시간: 주 · 달 · 해</a></li><li class="chapter-item expanded "><a href="../ch02/first-year.html"><strong aria-hidden="true">2.3.</strong> 첫해 진행표</a></li><li class="chapter-item expanded "><a href="../ch02/timeline-v6.html" class="book-toc-change" data-book-change="ch02/timeline-v6.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">2.4.</strong> 새 설계 02 · 40주 진행표<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol></li><li class="chapter-item expanded "><a href="../ch03/index.html" class="book-toc-change" data-book-change="ch03/index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">3.</strong> 모험가<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch03/stats.html"><strong aria-hidden="true">3.1.</strong> 능력치 · 레벨 · 등급</a></li><li class="chapter-item expanded "><a href="../ch03/jobs.html"><strong aria-hidden="true">3.2.</strong> 직업과 전직</a></li><li class="chapter-item expanded "><a href="../ch03/skills.html"><strong aria-hidden="true">3.3.</strong> 스킬과 성장 경로</a></li><li class="chapter-item expanded "><a href="../ch03/personality.html"><strong aria-hidden="true">3.4.</strong> 성향과 애착도</a></li><li class="chapter-item expanded "><a href="../ch03/lifecycle.html"><strong aria-hidden="true">3.5.</strong> 합류 · 계약 · 파티 · 사망과 계승</a></li><li class="chapter-item expanded "><a href="../ch03/talk.html"><strong aria-hidden="true">3.6.</strong> 모험가끼리 대화 · 몸 상태 · 칭호</a></li><li class="chapter-item expanded "><a href="../ch03/training.html" class="book-toc-change" data-book-change="ch03/training.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">3.7.</strong> 새 설계 09 · 수행<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch03/milestones.html" class="book-toc-change" data-book-change="ch03/milestones.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">3.8.</strong> 새 설계 14 · 모험가의 고비<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch03/attachment.html" class="book-toc-change" data-book-change="ch03/attachment.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">3.9.</strong> 새 설계 11 · 애착<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch03/newcomers.html" class="book-toc-change" data-book-change="ch03/newcomers.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">3.10.</strong> 새 설계 12 · 신입 모험가<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch03/idle-adventurers.html" class="book-toc-change" data-book-change="ch03/idle-adventurers.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">3.11.</strong> 새 설계 13 · 노는 모험가<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol></li><li class="chapter-item expanded "><a href="../ch04/index.html" class="book-toc-change" data-book-change="ch04/index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">4.</strong> 의뢰와 퀘스트<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch04/board.html"><strong aria-hidden="true">4.1.</strong> 의뢰 유입과 게시판</a></li><li class="chapter-item expanded "><a href="../ch04/judge.html"><strong aria-hidden="true">4.2.</strong> 의뢰 유형과 성공 판정</a></li><li class="chapter-item expanded "><a href="../ch04/requests.html" class="active"><strong aria-hidden="true">4.3.</strong> 리퀘스트(서브 퀘스트)</a></li><li class="chapter-item expanded "><a href="../ch04/requests-list.html"><strong aria-hidden="true">4.4.</strong> F급 리퀘스트 28개와 의뢰인</a></li><li class="chapter-item expanded "><a href="../ch04/nomination.html"><strong aria-hidden="true">4.5.</strong> 지명 퀘스트</a></li><li class="chapter-item expanded "><a href="../ch04/main.html"><strong aria-hidden="true">4.6.</strong> 메인 퀘스트</a></li><li class="chapter-item expanded "><a href="../ch04/quest-material-map.html" class="book-toc-change" data-book-change="ch04/quest-material-map.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">4.7.</strong> 새 설계 17 · 퀘스트와 소재의 지도<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch04/quest-structure.html" class="book-toc-change" data-book-change="ch04/quest-structure.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">4.8.</strong> 새 설계 10 · 15 · 의뢰<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol></li><li class="chapter-item expanded "><a href="../ch05/index.html" class="book-toc-change" data-book-change="ch05/index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">5.</strong> 전투<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch05/rules.html"><strong aria-hidden="true">5.1.</strong> 전투 규칙</a></li><li class="chapter-item expanded "><a href="../ch05/departure.html"><strong aria-hidden="true">5.2.</strong> 출발 판단과 성공률</a></li><li class="chapter-item expanded "><a href="../ch05/invasion.html"><strong aria-hidden="true">5.3.</strong> 침공: 다리를 지켜라</a></li><li class="chapter-item expanded "><a href="../ch05/extra.html"><strong aria-hidden="true">5.4.</strong> 습격 · 마인 · 무술 대회</a></li></ol></li><li class="chapter-item expanded "><a href="../ch06/index.html" class="book-toc-change" data-book-change="ch06/index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">6.</strong> 아이템<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch06/gear.html"><strong aria-hidden="true">6.1.</strong> 장비</a></li><li class="chapter-item expanded "><a href="../ch06/potion.html"><strong aria-hidden="true">6.2.</strong> 물약과 소재</a></li><li class="chapter-item expanded "><a href="../ch06/cooking.html"><strong aria-hidden="true">6.3.</strong> 요리</a></li></ol></li><li class="chapter-item expanded "><a href="../ch07/index.html" class="book-toc-change" data-book-change="ch07/index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">7.</strong> 길드와 마을<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch07/facilities.html"><strong aria-hidden="true">7.1.</strong> 시설</a></li><li class="chapter-item expanded "><a href="../ch07/housing.html"><strong aria-hidden="true">7.2.</strong> 길드 내부 꾸미기</a></li><li class="chapter-item expanded "><a href="../ch07/town.html"><strong aria-hidden="true">7.3.</strong> 마을과 인구</a></li><li class="chapter-item expanded "><a href="../ch07/dining.html" class="book-toc-change" data-book-change="ch07/dining.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">7.4.</strong> 새 설계 03 · 식당 개편<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch07/maintenance.html" class="book-toc-change" data-book-change="ch07/maintenance.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">7.5.</strong> 새 설계 04 · 정비대<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch07/fortune-teller.html" class="book-toc-change" data-book-change="ch07/fortune-teller.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">7.6.</strong> 새 설계 19 · 점술가<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch07/herb-facility.html" class="book-toc-change" data-book-change="ch07/herb-facility.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">7.7.</strong> 새 설계 05 · 약초 시설<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch07/town-customers.html" class="book-toc-change" data-book-change="ch07/town-customers.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">7.8.</strong> 새 설계 06 · 마을 손님<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch07/placement.html" class="book-toc-change" data-book-change="ch07/placement.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">7.9.</strong> 새 설계 07 · 시설을 놓을 자리<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch07/grow-with-use.html" class="book-toc-change" data-book-change="ch07/grow-with-use.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">7.10.</strong> 새 설계 08 · 쓰면 조금씩 오름<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol></li><li class="chapter-item expanded "><a href="../ch08/index.html" class="book-toc-change" data-book-change="ch08/index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">8.</strong> 길드 승급<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../ch09/index.html" class="book-toc-change" data-book-change="ch09/index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">9.</strong> 경제<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch09/market.html"><strong aria-hidden="true">9.1.</strong> V4 소재 시장과 식당 순환</a></li><li class="chapter-item expanded "><a href="../ch09/flow.html"><strong aria-hidden="true">9.2.</strong> 돈의 흐름 한눈에 보기</a></li><li class="chapter-item expanded "><a href="../ch09/income.html"><strong aria-hidden="true">9.3.</strong> 길드 수입</a></li><li class="chapter-item expanded "><a href="../ch09/spending.html"><strong aria-hidden="true">9.4.</strong> 길드 지출</a></li><li class="chapter-item expanded "><a href="../ch09/adventurer.html"><strong aria-hidden="true">9.5.</strong> 모험가의 지갑</a></li><li class="chapter-item expanded "><a href="../ch09/measure.html"><strong aria-hidden="true">9.6.</strong> v1 기준 측정: 첫해 100판</a></li><li class="chapter-item expanded "><a href="../ch09/ledger.html"><strong aria-hidden="true">9.7.</strong> 장부와 관문 1</a></li><li class="chapter-item expanded "><a href="../ch09/issues.html"><strong aria-hidden="true">9.8.</strong> 알려진 문제와 열린 질문</a></li><li class="chapter-item expanded "><a href="../ch09/purchase-judgment.html" class="book-toc-change" data-book-change="ch09/purchase-judgment.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">9.9.</strong> 새 설계 18 · 모험가가 물건을 사는 판단<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol></li><li class="chapter-item expanded "><a href="../ch10/index.html" class="book-toc-change" data-book-change="ch10/index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">10.</strong> 화면<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch10/flow.html"><strong aria-hidden="true">10.1.</strong> 화면 흐름</a></li><li class="chapter-item expanded "><a href="../ch10/book.html"><strong aria-hidden="true">10.2.</strong> 길드 업무 일지(책 UI)</a></li><li class="chapter-item expanded "><a href="../ch10/miniview.html"><strong aria-hidden="true">10.3.</strong> 원정 미니 뷰</a></li><li class="chapter-item expanded "><a href="../ch10/hud.html"><strong aria-hidden="true">10.4.</strong> HUD · 대화 · 침공 화면</a></li><li class="chapter-item expanded "><a href="../ch10/visual.html"><strong aria-hidden="true">10.5.</strong> 비주얼과 사운드</a></li><li class="chapter-item expanded "><a href="../ch10/blocked-list.html" class="book-toc-change" data-book-change="ch10/blocked-list.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">10.6.</strong> 새 설계 16 · 막힘 알림<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol></li><li class="chapter-item expanded "><a href="../ch11/index.html"><strong aria-hidden="true">11.</strong> 세계관과 이야기</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../ch11/ending.html"><strong aria-hidden="true">11.1.</strong> 엔딩 · 마왕 · 간부</a></li><li class="chapter-item expanded "><a href="../ch11/characters.html"><strong aria-hidden="true">11.2.</strong> 인물과 이름</a></li></ol></li><li class="chapter-item expanded "><a href="../development/index.html"><strong aria-hidden="true">12.</strong> 개발 순서와 완료 기준</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../development/v6.html" class="book-toc-change" data-book-change="development/v6.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">12.1.</strong> V6 개편 개발 관리<span class="book-change-tag" aria-hidden="true">변경</span></a></li><li class="chapter-item expanded "><a href="../development/foundation.html"><strong aria-hidden="true">12.2.</strong> 1. 기준 확정·저장·정산 기반</a></li><li class="chapter-item expanded "><a href="../development/contracts.html"><strong aria-hidden="true">12.3.</strong> 2. 계약·지원·배치</a></li><li class="chapter-item expanded "><a href="../development/operations.html"><strong aria-hidden="true">12.4.</strong> 3. 거래·의뢰 관리·발주</a></li><li class="chapter-item expanded "><a href="../development/validation.html"><strong aria-hidden="true">12.5.</strong> 4. 보조금·통합 검증</a></li><li class="chapter-item expanded "><a href="../development/later.html"><strong aria-hidden="true">12.6.</strong> 5. 후속 사업과 보류 범위</a></li></ol></li><li class="chapter-item expanded "><li class="spacer"></li><li class="chapter-item expanded "><a href="../appendix/glossary.html"><strong aria-hidden="true">13.</strong> 부록 A. 용어집</a></li><li class="chapter-item expanded "><a href="../appendix/values.html"><strong aria-hidden="true">14.</strong> 부록 B. 주요 설정값</a></li><li class="chapter-item expanded "><a href="../appendix/pending.html"><strong aria-hidden="true">15.</strong> 부록 C. 결정 대기 목록</a></li><li class="chapter-item expanded "><a href="../appendix/sources.html"><strong aria-hidden="true">16.</strong> 부록 D. 원본 문서 지도</a></li><li class="chapter-item expanded "><a href="../appendix/ideas.html"><strong aria-hidden="true">17.</strong> 부록 E. 아이디어</a></li><li class="chapter-item expanded "><a href="../appendix/ideas_2026-11-19.html"><strong aria-hidden="true">18.</strong> 부록 E. 아이디어 메모 (2026-11-19)</a></li><li class="chapter-item expanded "><a href="../plan/index.html" class="book-toc-change" data-book-change="plan/index.html" aria-haspopup="dialog" title="V5 대비 변경 요약 보기"><strong aria-hidden="true">19.</strong> 부록 F. 개편안 19항목이 옮겨 간 자리<span class="book-change-tag" aria-hidden="true">변경</span></a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Project_F 기획 안내서 v6 — 개편 반영판</h1>
+
+                    <div class="right-buttons">
+<nav class="book-version-menu" aria-label="문서 버전"><select id="book-version-select" aria-label="문서 버전 선택"><option value="../../v1/ch04/requests.html">V1 원본</option><option value="../../v2/ch04/requests.html">V2 개선안</option><option value="../../v3/ch04/requests.html">V3 반영판</option><option value="../../v4/ch04/requests.html">V4 시장 제안판</option><option value="../../v5/ch04/requests.html">V5 경영 · 육성 개편안</option><option value="requests.html" selected>V6 개편 반영판</option></select><a href="../versions.html">버전 이력</a></nav>
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/applesoda01/Project_F" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+<p class="book-version-status">V6 개편 반영판 · V5를 보존하고, 2026-11-26 회의를 거친 경영 · 육성 개편안을 장마다 합치고 개발 관리 쪽을 넣은 판. 주황 목차·본문을 클릭하면 V5 대비 변경 요약을 볼 수 있습니다. 새 규칙은 게임 미반영이고 값은 모두 [임시]입니다.</p>
+                        <h1 id="리퀘스트서브-퀘스트"><a class="header" href="#리퀘스트서브-퀘스트">리퀘스트(서브 퀘스트)</a></h1>
+<p><strong>리퀘스트는 마을 사람 · 외지인 · 모험가가 길드에 가져오는 부탁이고, F급에는 28개가 있습니다.</strong> 들어주면 마을 이야기가 진행되고, 잠긴 설비와 마을 건물이 열립니다. 8개를 들어주면 메인 퀘스트가 나옵니다.</p>
+<h2 id="의뢰인-세-종류"><a class="header" href="#의뢰인-세-종류">의뢰인 세 종류</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>의뢰인</th><th>예</th><th>주로 맡기는 일</th></tr></thead><tbody>
+<tr><td>마을 사람</td><td>촌장 · 농부 · 목수 · 수녀 · 할머니</td><td>마을 문제, 공사 후원</td></tr>
+<tr><td>외지인</td><td>떠돌이 상인 · 학자 · 대장장이</td><td>물건 주문, 정착 지원 → 마을 건물 해금</td></tr>
+<tr><td>모험가</td><td>길드 소속 모험가</td><td>자기 사연, 길드 안 불편함</td></tr>
+</tbody></table>
+</div>
+<h2 id="서브-퀘스트-유형-8종-설계"><a class="header" href="#서브-퀘스트-유형-8종-설계">서브 퀘스트 유형 8종 (설계)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>#</th><th>유형</th><th>의뢰인</th><th>하는 일</th><th>지명</th><th>보상 성격</th></tr></thead><tbody>
+<tr><td>1</td><td>기부</td><td>주민 · 영주</td><td>돈을 냄</td><td>없음</td><td>마을 · 길드의 영구 확장</td></tr>
+<tr><td>2</td><td>납품</td><td>상인 · 주민</td><td>소재 n개</td><td>없음</td><td>금전 + 레시피 · 상품 해금</td></tr>
+<tr><td>3</td><td>토벌 지명</td><td>주민 · 영주</td><td>네임드 몬스터 처치</td><td>2~4명</td><td>전리품 장식</td></tr>
+<tr><td>4</td><td>호위</td><td>상인</td><td>2주 동행</td><td>2~3명</td><td>금전 + 상점 할인 (E급)</td></tr>
+<tr><td>5</td><td>수색</td><td>주민</td><td>실종자 찾기</td><td>1~3명</td><td>인구 + 애착</td></tr>
+<tr><td>6</td><td>모험가 개인</td><td>모험가(애착 65 이상)</td><td>그 사람의 사연</td><td>본인 포함 1~3명</td><td>애착 +10, 능력치 · 전직 보정</td></tr>
+<tr><td>7</td><td>시설 · 장식 요청</td><td>모험가 · 주민</td><td>"○○를 놓아 주세요"</td><td>없음</td><td>명성 · 신뢰도</td></tr>
+<tr><td>8</td><td>영주 요청</td><td>영주</td><td>상납금 또는 지명 토벌</td><td>0 또는 3~5명</td><td>영주 태도, 신뢰도 (E급)</td></tr>
+</tbody></table>
+</div>
+<p>F급 28개는 이 8종을 아래 "해결 방법 6가지"로 묶어 씁니다.</p>
+<h2 id="해결-방법-여섯-가지"><a class="header" href="#해결-방법-여섯-가지">해결 방법 여섯 가지</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>종류</th><th>사람을 보내나</th><th>해결</th></tr></thead><tbody>
+<tr><td>전투</td><td>지명 1~3명</td><td>게시판 의뢰와 같은 전투, 1~2주</td></tr>
+<tr><td>탐색</td><td>지명 1~2명</td><td>탐색 판정 + 전투 0~1회</td></tr>
+<tr><td>납품</td><td>아니요</td><td>창고의 소재를 바로 냄</td></tr>
+<tr><td>돈 내기</td><td>아니요</td><td>금고에서 지불</td></tr>
+<tr><td>설치 요청</td><td>아니요</td><td>해당 설비를 놓으면 완료</td></tr>
+<tr><td>마을 건물 해금</td><td>단계별</td><td>납품 → 돈 내기 2단계</td></tr>
+</tbody></table>
+</div>
+<ul>
+<li>지명형(전투 · 탐색)은 <strong>집무실(1,000G)</strong> 이 있어야 받을 수 있습니다.</li>
+<li>기한은 접수 뒤 6주입니다.</li>
+</ul>
+<h2 id="등장-규칙-카이로소프트-방식"><a class="header" href="#등장-규칙-카이로소프트-방식">등장 규칙 (카이로소프트 방식)</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>항목</th><th>규칙</th></tr></thead><tbody>
+<tr><td>판정</td><td>매주, 조건을 채운 퀘스트 중 하나가 50% 확률로 등장</td></tr>
+<tr><td>동시에 열린 수</td><td>상한 없음. 받은 부탁은 사라지지 않고 쌓임 (첫해 평균 2건 안팎, 한 판 최대 중앙 4건)</td></tr>
+<tr><td>조건</td><td>인구 · 명성 · 계절 · 앞 퀘스트 · "능력치 기준 이상인 모험가 1명 이상"</td></tr>
+<tr><td>힌트</td><td>아직 안 나온 것 중 조건에 가장 가까운 2개를 흐린 카드로 표시</td></tr>
+<tr><td>반복</td><td>축제 3개만 매년, 나머지는 한 번</td></tr>
+</tbody></table>
+</div>
+<blockquote>
+<p>2026-11-16 결정: <strong>리퀘스트는 거절할 수 없습니다.</strong> 들어줄 때 책에 "들어주기" · "보내기" 도장이 찍히고, 끝나면 완료 카드(의뢰인 초상 · 마을의 변화 · 받은 보상)가 뜹니다.</p>
+</blockquote>
+<h2 id="보상으로-열리는-설비-10개"><a class="header" href="#보상으로-열리는-설비-10개">보상으로 열리는 설비 10개</a></h2>
+<p>처음에는 테이블 2세트만 지을 수 있습니다. 테이블 3 · 4세트와 장식 8종(화분 · 게시판 장식 · 사물함 · 현수막 · 대기 벤치 · 낡은 지도 · 벽난로 · 트로피 장식장)이 리퀘스트 보상으로 하나씩 열립니다. 마을 건물 2개(대장간 · 물약 상점)도 리퀘스트로 생깁니다.</p>
+<h2 id="경제와-닿는-곳"><a class="header" href="#경제와-닿는-곳">경제와 닿는 곳</a></h2>
+<ul>
+<li><strong>돈 내기</strong>는 장부에서 "시설 건설비"처럼 투자 지출로 잡혀 운영 순이익에서 빠집니다.</li>
+<li>납품 금화 보상은 수입 "리퀘스트 보상"으로 잡힙니다. 첫해 월 평균 95G입니다(<a href="../ch09/measure.html">9장</a>).</li>
+</ul>
+<h2 id="길드-발주--quest-01--결정게임-반영-2026-11-18"><a class="header" href="#길드-발주--quest-01--결정게임-반영-2026-11-18">길드 발주 — QUEST-01 / 결정·게임 반영 (2026-11-18)</a></h2>
+<p><strong>급한 소재를 돈으로 앞당기는 기능입니다.</strong> 마스터가 소재와 개수를 정하면 그 값을 금고에서 먼저 내고, 개수가 다 찰 때까지 게시판이 그 소재 쪽으로 기울어 모험가가 먼저 가져옵니다. 외부 의뢰(주민 · 상단 · 왕국의 추가 제안)는 <strong>보류</strong>입니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>규칙</th><th>내용</th><th>근거</th></tr></thead><tbody>
+<tr><td>1개 값</td><td>소재 판매가 × <strong>1.5 [임시]</strong> — 고철 조각(6G)이면 9G. 평소 자동 매입(70% [임시])보다 2배 넘게 비쌈</td><td>결정 24</td></tr>
+<tr><td>선지급</td><td>발주할 때 개수 × 1개 값을 <strong>금고에서 바로 냄</strong>. 기한 없음</td><td>결정 25</td></tr>
+<tr><td>지급</td><td>그 소재를 가져온 파티에 1개 값씩 지급, 소재는 길드 창고로. 다 차면 발주 끝, 이후는 평소 매입</td><td>결정 25</td></tr>
+<tr><td>거두기</td><td>도중에 거두면 <strong>남은 개수만큼의 돈</strong>을 돌려받음 (화면에서 한 번 더 확인)</td><td>결정 25</td></tr>
+<tr><td>동시 건수</td><td><strong>2건까지 [임시]</strong> · 같은 소재 중복 불가 · 1~30개 · 지금 길드 등급 의뢰에서 나오지 않는 소재는 불가</td><td>결정 25</td></tr>
+<tr><td>게시판 쏠림</td><td>발주 중에는 새 의뢰의 <b>50% [임시]</b>가 그 소재가 나오는 의뢰로 바뀜(의뢰 수 · 수입은 그대로)</td><td>결정 26</td></tr>
+<tr><td>모험가</td><td>발주 소재가 나오는 의뢰를 <strong>가장 먼저</strong> 맡음</td><td>결정 26</td></tr>
+<tr><td>한 번에 모아 오는 양</td><td>몬스터 1마리 · 탐색 포인트 1곳마다 1개, 발주 중이면 모두 발주 소재 (<a href="../ch06/potion.html">물약과 소재</a>)</td><td>결정 27</td></tr>
+<tr><td>길드 실적</td><td>명성 · 신뢰 · 보조금 실적은 오르지 않음. 맡은 사람이 따로 없어 실패 · 취소 처리 없음</td><td>결정 25</td></tr>
+</tbody></table>
+</div>
+<h3 id="v4-변경--상시-발주-거쳐-간-단계--지금은-아래-길드-의뢰"><a class="header" href="#v4-변경--상시-발주-거쳐-간-단계--지금은-아래-길드-의뢰">V4 변경 — 상시 발주 (거쳐 간 단계 — 지금은 아래 "길드 의뢰")</a></h3>
+<blockquote>
+<p><strong>V4 변경 · 결정 36 (2026-11-19) · 기획: 제안 / 게임: 미반영</strong> — <a href="../ch09/market.html">소재 시장과 식당 순환</a></p>
+</blockquote>
+<p><strong>V4는 "한 번 모으면 끝"인 발주를 "목표 재고를 지키는" 상시 발주로 바꿉니다.</strong> 식당이 재료를 쓰면 창고가 줄고, 목표 아래로 떨어질 때마다 발주가 자동으로 다시 켜져 그 소재 의뢰가 게시판에 계속 올라옵니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>규칙</th><th>V3 (결정 24~27)</th><th>V4 제안 [임시]</th></tr></thead><tbody>
+<tr><td>방식</td><td>N개 모으면 끝</td><td>소재별 목표 창고 재고(예: 멧돼지 고기 10개), 아래로 떨어지면 자동으로 켜짐</td></tr>
+<tr><td>1개 값</td><td>판매가 × 1.5, 발주할 때 선지급</td><td>시세 × 1.2 · 1.5 · 2.0 중 선택, 들어올 때마다 금고에서 지급. 금고가 모자라면 그 주 멈춤</td></tr>
+<tr><td>게시판 쏠림</td><td>새 의뢰 50%</td><td>값에 따라 30 · 50 · 70%</td></tr>
+<tr><td>동시 건수</td><td>2건</td><td>3건</td></tr>
+<tr><td>개체수 (3단계)</td><td>—</td><td>사냥터 개체수가 낮으면 쏠림이 약해지고 잘 안 모임 → 메뉴를 바꿀지 판단</td></tr>
+</tbody></table>
+</div>
+<blockquote>
+<p><strong>V4 게임 반영 (2026-11-19) · 브랜치 <code>feature/market-stage1</code> · PR applesoda01/Project_F#9 (main 미병합)</strong> — 측정 <code>docs/balance/market_v4_stage1.md</code></p>
+</blockquote>
+<ul>
+<li><strong>게임 반영 [임시]:</strong> 동시 6건 · 양념(소금 · 향신료 · 신선한 물 · 밀가루)도 발주 가능(의뢰마다 양념이 나올 확률이 쏠림 비율까지) · 발주 쏠림으로 같은 의뢰는 게시판에 2장까지 · 뽑기는 쏠림 비율만큼만 발주 소재 · '발주 소재 의뢰를 가장 먼저 맡음'은 끔 · 개체수가 적은 사냥터는 쏠림이 약해짐.</li>
+</ul>
+<p><strong>예시 — 고철 조각 10개 발주</strong></p>
+<ol>
+<li>리퀘스트 장 → 길드 발주에서 고철 조각 10개를 고르면 <strong>90G</strong>(9G × 10)가 금고에서 나갑니다.</li>
+<li>게시판에 "고철이나 줍자" 같은 의뢰가 자주 올라오고, 카드에 <strong>발주</strong> 표시가 붙습니다.</li>
+<li>퀸 · 니나 파티가 슬라임 2마리 의뢰를 성공하면 고철 2개를 가져오고, 두 사람이 18G를 나눠 받습니다. 게시판 띠가 "고철 조각 2/10"이 됩니다.</li>
+<li>급한 일이 끝나 6/10에서 거두면 남은 4개 값 <strong>36G</strong>가 금고로 돌아옵니다.</li>
+</ol>
+<p>측정(50판): 10개가 다 모이는 기간은 처음 규칙(돈 보너스만) 17주 → 게시판 쏠림 + 소재 뽑기 후 <strong>중앙값 8주</strong>입니다. 발주를 하지 않으면 경제는 그대로입니다(관문 1 479G · 96.0%).</p>
+<h3 id="v4-변경--길드-의뢰-결정-4956"><a class="header" href="#v4-변경--길드-의뢰-결정-4956">V4 변경 — 길드 의뢰 (결정 49~56)</a></h3>
+<blockquote>
+<p><strong>V4 변경 · 결정 49~56 (2026-11-19) · 기획: 결정 / 게임: 미반영</strong> — 위의 상시 발주(브랜치 반영)를 이것으로 바꿀 예정입니다. 제안서 <code>docs/design/proposal_order_consign_v2.md</code></p>
+</blockquote>
+<p><strong>길드 발주는 "소재를 사는 것"이 아니라 "의뢰를 내는 것"입니다.</strong> 길드가 자기 돈으로 게시판에 의뢰를 올리고, 모험가는 다른 의뢰처럼 보상을 보고 맡습니다. 보이지 않는 확률(게시판 · 뽑기 쏠림)은 없앱니다.</p>
+<div class="table-wrapper"><table><thead><tr><th>규칙</th><th>상시 발주 (지금 브랜치)</th><th>길드 의뢰 (V4 결정)</th></tr></thead><tbody>
+<tr><td>무엇을 거나</td><td>소재 목표 재고</td><td><strong>게시판 의뢰 카드</strong> ('길드 의뢰' 띠)</td></tr>
+<tr><td>상한</td><td>동시 6건</td><td><strong>동시 건수</strong> — 길드 등급별 F 2 · E 3 · D 4 · C 5 …, 게시판 업그레이드 +1 [임시] (결정 49). 집무실이 있어야 함</td></tr>
+<tr><td>종류</td><td>소재</td><td><strong>① 소재 납품 ② 토벌 ③ 정찰</strong> 기본 + 해금형 ④⑤⑥ (결정 50)</td></tr>
+<tr><td>보상</td><td>시세 × 1.2 · 1.5 · 2.0</td><td><strong>플레이어가 정함</strong> (결정 51): 같은 등급 게시판 의뢰 보상의 <strong>50 ~ 300%</strong>, 10G 단위 (결정 54)</td></tr>
+<tr><td>돈</td><td>들어올 때마다 금고에서 지급</td><td><strong>거는 순간 금고에서 예약</strong>, 끝나면 지급, 기한(2 · 4 · 6주)이 지나면 예약을 풂 (결정 54)</td></tr>
+<tr><td>모험가</td><td>발주 소재 의뢰로 끌림</td><td>실수령 ÷ 기간 · 위험으로 고름 → <strong>보상이 높을수록 빨리 맡겨짐</strong>. 수수료가 없어 같은 보상이면 게시판 의뢰보다 실수령이 큼</td></tr>
+<tr><td>대가</td><td>금고</td><td>금고 + <strong>게시판 칸</strong> (일반 의뢰를 밀어내 수수료 · 보조금 수입이 줄어듦)</td></tr>
+<tr><td>실적 · 수수료</td><td>없음</td><td>없음 (의뢰인이 길드 자신) · 같은 종류 · 같은 대상은 1건</td></tr>
+</tbody></table>
+</div>
+<p><strong>기본 종류 (결정 50)</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>종류</th><th>정하는 것</th><th>결과</th><th>이어지는 시스템</th></tr></thead><tbody>
+<tr><td>① 소재 납품</td><td>소재 · 개수(1~20) · 보상</td><td>그 소재가 나오는 의뢰 틀로 원정. 가져온 그 소재는 매입 판단 없이 모두 길드로. <strong>덜 채우면 가져온 만큼 나눠 지급하고 남은 개수로 다시 게시</strong>(기한 그대로, 1건으로 셈) (결정 55)</td><td>식당 재료 · 납품 리퀘스트 · 대장간</td></tr>
+<tr><td>② 토벌</td><td>사냥터 · 처치 수 · 보상</td><td>그 사냥터 전투 원정. 이기면 개체수 −(처치 수 × 5). 떨어진 소재는 평소처럼 매입 판단</td><td>개체수 '많음' 피해 막기</td></tr>
+<tr><td>③ 정찰</td><td>자원지 · 보상</td><td>1주 비전투 판정(탐색). 성공하면 4주 동안 그 자원지 <strong>개체수를 숫자로 공개</strong>, 그 자원지 의뢰의 <strong>적 정보 오차 없앰</strong></td><td>개체수 표시(결정 44) · 의뢰 레벨 정보 오차(결정 35)</td></tr>
+</tbody></table>
+</div>
+<p><strong>해금 종류 (결정 56 — 이야기 · 시설에 연결, 열리면 리나가 알림)</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>종류</th><th>열리는 때 [임시]</th><th>맡기는 일 · 결과</th></tr></thead><tbody>
+<tr><td>④ 순찰 · 경비</td><td>F급 메인(침공) 전갈이 온 뒤</td><td>침공 첫 차례 적 약화, 소규모 습격(보류) 확률 감소</td></tr>
+<tr><td>⑤ 마을 일손</td><td>마을 인구 200 또는 민가 2단계</td><td>인구 증가 · 신뢰도</td></tr>
+<tr><td>⑥ 훈련 원정</td><td>모험가 관리소</td><td>지명한 신입 + 선배가 쉬운 사냥 → 신입 경험치 · 능력치 · 친밀도</td></tr>
+<tr><td>(아이디어) 전직 시험</td><td>—</td><td><a href="../appendix/ideas.html">부록 E. 아이디어</a></td></tr>
+</tbody></table>
+</div>
+<p><strong>예시 — 멧돼지 고기 10개 납품, 보상 100G</strong></p>
+<ol>
+<li>리퀘스트 장 → 길드 의뢰에서 '① 소재 납품 · 멧돼지 고기 10개 · 100G · 4주'를 겁니다. 금고 100G가 예약됩니다(동시 2건 중 1건).</li>
+<li>게시판에 '길드 의뢰' 띠를 단 카드가 올라오고, 수수료가 없어 실수령이 좋은 이 의뢰를 퀸 · 니나 파티가 먼저 맡습니다.</li>
+<li>4개를 가져오면 40G를 나눠 받고, 카드는 "멧돼지 고기 6개 · 60G"로 다시 게시됩니다.</li>
+<li>기한 안에 다 못 채우면 남은 예약이 풀립니다.</li>
+</ol>
+<blockquote>
+<p><strong>V4 게임 반영 (2026-11-20) · 브랜치 <code>feature/market-stage1</code></strong> — 측정 <code>docs/balance/market_v4_stage1.md</code> "2026-11-20"</p>
+</blockquote>
+<ul>
+<li><strong>①~⑥ 모두 게임 · 화면(리퀘스트 장 → 길드 의뢰 책갈피)에 넣었습니다.</strong> 상시 발주는 껐습니다(설정 <code>orderMode</code> 0).</li>
+<li><strong>구현하며 정한 것 [임시]:</strong> 1개 기준 = 그 소재가 나오는 의뢰 보상 ÷ 한 번에 가져오는 수(F급 약 40G) · ②③④⑤⑥ 기준 = 토벌은 그 의뢰 보상, 정찰 50% · 순찰 80% · 일손 60% · 훈련 100%(같은 등급 의뢰 보상 대비) · <strong>보상이 기준 이상이면 모든 모험가가 그 카드를 먼저 맡고, 아래면 다른 의뢰 다음에 맡음</strong> · 정찰 · 순찰 · 일손은 1주 비전투(정찰 민첩 · 지력, 순찰 힘 · 민첩, 일손 힘 · 기교) · 훈련 원정 카드는 지명한 모험가만 맡음 · 일손 해금은 인구 200만(민가 단계는 빼 둠).</li>
+<li><strong>측정:</strong> 월 순이익 417G · E급 승급 65판 · 재료 부족 품절 40%(상시 발주 때 8%). 길드가 의뢰 값 전체를 내므로 소재 1개가 시세의 4~6배 — <strong>1개 기준을 낮출지 다시 정해야 합니다.</strong></li>
+</ul>
+<blockquote>
+<p><strong>V4 변경 — 소재 납품을 매입가로 합침 (결정 63 · 게임 반영 2026-11-20)</strong></p>
+</blockquote>
+<ul>
+<li>위 '① 소재 납품'과 예시는 <strong>없어졌습니다.</strong> 길드가 소재를 얻는 길은 매입 하나입니다. 모험가는 의뢰를 고를 때 '보상 + 가져올 소재를 길드에 팔 값'을 함께 보므로, <strong>매입가가 곧 "그 소재를 얼마나 원하나"</strong> 입니다.</li>
+<li>희귀 소재가 필요하면 그 소재가 나오는 사냥터에 <strong>토벌 의뢰</strong>를 내고, 그 소재 <strong>매입가를 올립니다</strong>(경영 → 소재 관리, 골드로 입력).</li>
+<li>길드 의뢰는 이제 <strong>① 토벌 ② 정찰 기본, ③ 순찰 · 경비 ④ 마을 일손 ⑤ 훈련 원정 해금</strong>입니다(번호를 당김).</li>
+<li>식당 상시 재료는 시장에서 사므로 소재 납품이 없어도 품절이 거의 나지 않습니다 — <a href="../ch09/market.html">소재 시장과 식당 순환</a> "소재 기준가와 식당 재료".</li>
+</ul>
+<h2 id="길드-발주-화면-게임-반영"><a class="header" href="#길드-발주-화면-게임-반영">길드 발주 화면 (게임 반영)</a></h2>
+<p><img src="../assets/ui/guild-order-v2.png" alt="UI 02 — 리퀘스트 장의 길드 발주 책갈피" /></p>
+<p><a href="../assets/ui/guild-order-v2.png">큰 이미지 보기</a> · <strong>게임 화면 시안, 2026-11-18 사용자 확인 후 연결</strong></p>
+<ul>
+<li><strong>왼쪽 쪽:</strong> 발주 중(진행 막대 · 1개 값 · 남은 돈 · 거두기) · 빈 자리 · 들어온 소재(누가 몇 개, 지급액).</li>
+<li><strong>오른쪽 쪽:</strong> 아는 소재 중 길드 등급까지 고르기(발주 중 · 나오지 않는 소재는 흐림) → 개수 1~30 → 나오는 의뢰 → 1개 값과 지금 낼 돈 → 발주하기. 막히면 이유를 버튼 아래에 적음.</li>
+</ul>
+<p><img src="../assets/ui/guild-order-board-v2.png" alt="의뢰 게시판의 발주 띠와 발주 표시" /></p>
+<p>의뢰 게시판에는 "길드 발주: 고철 조각 3/10" 띠가 붙고, 발주 소재가 나오는 의뢰 카드에 청록 테두리와 <strong>발주</strong> 표시가 붙습니다.</p>
+<h2 id="장기-계약탐사"><a class="header" href="#장기-계약탐사">장기 계약·탐사</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>사업</th><th>처리</th><th>범위</th></tr></thead><tbody>
+<tr><td>상단 호위</td><td>관리비·수행 보수·선수금·실패 책임 분리</td><td>P3</td></tr>
+<tr><td>길드 투자 탐사</td><td>출발 전에 투자·전리품 지분 합의</td><td>후속</td></tr>
+<tr><td>던전·자원 독점</td><td>권리뿐 아니라 의무·기간·실패 책임 정의</td><td>최소판 제외</td></tr>
+</tbody></table>
+</div>
+<p><a href="nomination.html">지명·예약</a> · <a href="../ch09/adventurer.html">정산</a></p>
+<blockquote>
+<p><strong>지금 게임 (2026-11-20):</strong> 길드 의뢰는 <strong>① 토벌 ② 정찰</strong> 기본 + <strong>③ 순찰 · 경비 ④ 마을 일손 ⑤ 훈련 원정</strong> 해금. 토벌 · 정찰 화면에는 사냥터 버튼(대표 출몰 몬스터 그림) · 개체수 · 출현 몬스터 · 위험도 · 얻는 소재(확률)가 보입니다. 소재 개수는 성공했을 때 나온 몬스터 마릿수만큼이며 모험가 능력과는 상관없습니다(사용자: 지금대로). 상시 발주 · 소재 납품은 없습니다.</p>
+</blockquote>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../ch04/judge.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../ch04/requests-list.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../ch04/judge.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../ch04/requests-list.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../theme/mermaid-init.js"></script>
+
+
+    </div>
+    <script type="application/json" id="book-change-data" data-book-root="../" data-from="V5" data-to="V6">{"index.html":{"title":"들어가며","items":[{"before":"기존 「들어가며」 설명","after":"「들어가며」 안내를 보완했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"v6-overview.html":{"title":"새 설계 한눈에 — 2026-11-26 회의 요약","items":[{"before":"V5에는 이 문서가 없습니다.","after":"먼저 볼 다섯 줄 · 1. 돈의 구조 · 2. 퀘스트와 전투 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"versions.html":{"title":"버전 이력","items":[{"before":"기존 「버전 이력」 설명","after":"「버전 이력」 안내를 보완했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch01/index.html":{"title":"이 게임은","items":[{"before":"기존 「이 게임은」 설명","after":"새 설계 (V6) — 이 장에서 바뀌는 것 설명을 추가·수정했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch01/principles.html":{"title":"새 설계 01 · 원칙 다섯","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 왜 이 다섯인가 · 1. 관찰 — 막힘은 숫자로 늘 보인다. 어느 불부터 끌지는 플레이어가 정한다. 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch02/index.html":{"title":"한 판의 흐름","items":[{"before":"기존 「한 판의 흐름」 설명","after":"새 설계 (V6) — 이 장에서 바뀌는 것 설명을 추가·수정했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch02/timeline-v6.html":{"title":"새 설계 02 · 40주 진행표","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 사람이 두 그룹으로 나뉩니다 · A 그룹 — 누구와 무엇을 거래하고 무엇이 열리나 [임시] 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch03/attachment.html":{"title":"새 설계 11 · 애착","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 1. 누구나 매주 들릅니다 · 2. 다섯 칸 — 20마다 하나씩 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch03/idle-adventurers.html":{"title":"새 설계 13 · 노는 모험가","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 1. 왜 남는 사람이 생기는가 · 2. 뿌리는 의뢰의 수와 크기입니다 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch03/index.html":{"title":"모험가","items":[{"before":"기존 「모험가」 설명","after":"새 설계 (V6) — 이 장에서 바뀌는 것 설명을 추가·수정했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch03/milestones.html":{"title":"새 설계 14 · 모험가의 고비","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 1. 고비의 보너스 — 능력치를 나눠 줍니다 · 2. 승급 시험 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch03/newcomers.html":{"title":"새 설계 12 · 신입 모험가","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 지금 게임 · 1. 오는 레벨 — 길드의 지금 수준에 맞춥니다 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch03/training.html":{"title":"새 설계 09 · 수행","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 1. 수행의 틀 — 능력치마다 하나씩 다섯 · 2. 단계 — 여러 번 보내면 수행이 자란다 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch04/index.html":{"title":"의뢰와 퀘스트","items":[{"before":"기존 「의뢰와 퀘스트」 설명","after":"새 설계 (V6) — 이 장에서 바뀌는 것 설명을 추가·수정했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch04/quest-material-map.html":{"title":"새 설계 17 · 퀘스트와 소재의 지도","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 1. 맞물림 — 퀘스트가 소재를, 소재가 사람을 정합니다 · 2. B 그룹 — 다섯 사람 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch04/quest-structure.html":{"title":"새 설계 10 · 15 · 의뢰","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 이미 정해져 있던 것 (17 · 02) · 1. 지금 있는 리퀘스트 29개는 보관합니다 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch05/index.html":{"title":"전투","items":[{"before":"기존 「전투」 설명","after":"새 설계 (V6) — 이 장에서 바뀌는 것 설명을 추가·수정했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch06/index.html":{"title":"아이템","items":[{"before":"기존 「아이템」 설명","after":"새 설계 (V6) — 이 장에서 바뀌는 것 설명을 추가·수정했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch07/dining.html":{"title":"새 설계 03 · 식당 개편","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 왜 고치나 · 1. 재료가 오는 길 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch07/fortune-teller.html":{"title":"새 설계 19 · 점술가","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 왜 필요한가 · 정비대와 나란히 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch07/grow-with-use.html":{"title":"새 설계 08 · 쓰면 조금씩 오름","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 왜 필요한가 · 1. 시설의 레벨 — 네 시설에 같은 규칙 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch07/herb-facility.html":{"title":"새 설계 05 · 약초 시설","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 왜 필요한가 · 세 시설을 나란히 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch07/index.html":{"title":"길드와 마을","items":[{"before":"기존 「길드와 마을」 설명","after":"새 설계 (V6) — 이 장에서 바뀌는 것 설명을 추가·수정했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch07/maintenance.html":{"title":"새 설계 04 · 정비대","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 왜 필요한가 · 1. 정비는 싸움이 있는 퀘스트에서만 듣습니다 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch07/placement.html":{"title":"새 설계 07 · 시설을 놓을 자리","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 지금의 로비 (참고) · 1. 새 시설의 크기 — 2칸 × 2칸 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch07/town-customers.html":{"title":"새 설계 06 · 마을 손님","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 왜 필요한가 · 1. 마을 사람은 길드의 시설을 모두 이용합니다 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch08/index.html":{"title":"길드 승급","items":[{"before":"기존 「길드 승급」 설명","after":"새 설계 (V6) — 이 장에서 바뀌는 것 설명을 추가·수정했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch09/index.html":{"title":"경제","items":[{"before":"기존 「경제」 설명","after":"새 설계 (V6) — 이 장에서 바뀌는 것 설명을 추가·수정했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch09/purchase-judgment.html":{"title":"새 설계 18 · 모험가가 물건을 사는 판단","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 정해 둔 선 · 지금 게임 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch10/blocked-list.html":{"title":"새 설계 16 · 막힘 알림","items":[{"before":"V5에는 이 문서가 없습니다.","after":"한눈에 · 바탕 — 오전에 정한 것 · 1. 목록에 오르는 막힘 — 열 가지 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"ch10/index.html":{"title":"화면","items":[{"before":"기존 「화면」 설명","after":"새 설계 (V6) — 이 장에서 바뀌는 것 설명을 추가·수정했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"development/v6.html":{"title":"V6 개편 개발 관리","items":[{"before":"V5에는 이 문서가 없습니다.","after":"전체 진행 (13단위 · 끝남 0 · 남음 13) · 개발 단위 · 시작하기 전에 정할 것 설명을 추가했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]},"plan/index.html":{"title":"부록 F. 개편안 19항목이 옮겨 간 자리","items":[{"before":"기존 「V5 경영 · 육성 개편안 — 항목 목록」 설명","after":"「부록 F. 개편안 19항목이 옮겨 간 자리」 안내를 보완했습니다.","state":"V6 개편 반영판 (2026-11-26 회의 뒤). 기획: 새 설계를 장마다 합침 / 게임: 미반영 · 값은 모두 [임시]"}]}}</script>
+<dialog id="book-change-dialog" aria-labelledby="book-change-title"><button type="button" class="dialog-close" aria-label="변경 요약 닫기">×</button><h2 id="book-change-title">V5 대비 변경 요약</h2><div id="book-change-body"></div><div class="dialog-actions"><a id="book-change-open" href="requests.html">문서 열기</a><a href="../changes.html">전체 변경 비교표</a></div></dialog><script src="../../_book-ui.js"></script>
+</body>
+</html>

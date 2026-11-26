@@ -1,5 +1,7 @@
 # 기획 안내서 버전과 배포
 
+> **2026-11-26 V6 추가 (사용자 요청):** V5를 그대로 복사해 **V6**(`docs/book-v6/` → `docs/book/v6/`)를 만들었다. V5의 12장(경영 · 육성 개편안 19쪽)을 각 장의 「새 설계」 쪽으로 옮겨 합치고, 맨 앞에 「새 설계 한눈에」, 개발 장에 「V6 개편 개발 관리」를 넣었다. V5는 2026-11-26 회의 때의 모습으로 보존한다. V6는 V5 대비 변경을 주황색으로 표시한다. 새 규칙은 게임 미반영이고 값은 모두 [임시]다.
+
 > **2026-11-18 V3 추가 (사용자 요청):** V2는 처음 공유된 상태(`1755881`, 11-17 14:03)로 되돌려 보존하고, 그 뒤 Claude가 수정 · 기록 · 반영한 내용은 **V3**(`docs/book-v3/` → `docs/book/v3/`)로 옮겼다. V3는 V2 대비 변경을 **파란색**으로 표시한다. **앞으로 책 수정은 V3에만** 한다. 문서 검사는 V1 → V2(`book-preservation-exceptions.json`)와 V1 → V3(`book-preservation-exceptions-v3.json`)를 각각 확인한다.
 
 > **2026-11-24 V5 추가 (사용자 요청):** V4를 그대로 복사해 **V5**(`docs/book-v5/` → `docs/book/v5/`)를 만들고, 2026-11-24 설계 대화의 경영 · 육성 개편 15항목 목록을 새 장(`src/plan/README.md`)으로 넣었다. V5는 V4 대비 변경을 **보라색**으로 표시한다(`data-book-version=v5`). **앞으로 책 수정은 V5에만** 한다. 항목별 세부 기획은 `src/plan/` 아래에 한 쪽씩 추가한다. 바로 처리할 개선 · 버그는 책이 아니라 `docs/todo1124.md`에 둔다.
@@ -8,7 +10,7 @@
 
 ## 저장소에 보관하는 HTML
 
-- 최신 열람 파일: `docs/book/v5/index.html` (V5 경영 · 육성 개편안). V4 시장 제안판: `docs/book/v4/index.html`. V3 반영판: `docs/book/v3/index.html`. V2 개선안 원본 열람: `docs/book/v2/index.html`.
+- 최신 열람 파일: `docs/book/v6/index.html` (V6 개편 반영판). V5 경영 · 육성 개편안: `docs/book/v5/index.html`. V4 시장 제안판: `docs/book/v4/index.html`. V3 반영판: `docs/book/v3/index.html`. V2 개선안 원본 열람: `docs/book/v2/index.html`.
 - 버전 선택용 원본 HTML: `docs/book/v1/index.html`.
 - 공통 파일: `docs/book/_book-ui.css`, `docs/book/_book-ui.js`.
 - 기존 `docs/book/src`, `book.toml`, `theme` 원고·설정은 유지한다.
@@ -23,7 +25,8 @@
 - `docs/book-v2/`: 안내서 v2 (처음 공유된 개선안, 보존). 기존 `docs/design/v2/` 재분류 기획서와 다른 버전 체계.
 - `docs/book-v3/`: 안내서 v3 (V2 이후 Claude 반영판 · 보존).
 - `docs/book-v4/`: 안내서 v4 (소재 시장 · 식당 순환 제안판 · 보존).
-- `docs/book-v5/`: 안내서 v5 (경영 · 육성 개편안 · 앞으로 수정하는 곳).
+- `docs/book-v5/`: 안내서 v5 (경영 · 육성 개편안 · 2026-11-26 회의 때의 모습으로 보존).
+- `docs/book-v6/`: 안내서 v6 (개편 반영판 · 앞으로 수정하는 곳).
 - `docs/book-v2/src/changes.md`: 기능 ID별 변경 비교.
 - `docs/book-v2/src/features.md`: 버전별 기능·기획 상태·게임 구현 상태.
 - `docs/references/guild-economy-contracts-2026-11-16/original.html`: 첨부 원문 보관. 책에 별도 장으로 게시하지 않는다.
