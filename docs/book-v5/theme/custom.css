@@ -29,3 +29,5 @@ details > summary { cursor: pointer; font-weight: 700; }
 .pf-box { fill: var(--quote-bg); stroke: var(--table-border-color); stroke-width: 1; }
 .pf-box-acc { stroke: var(--links); stroke-width: 2; }
 .pf-arrow { stroke: currentColor; fill: none; stroke-width: 1.5; opacity: .6; }
+/* 표 안에서 낱말 가운데가 끊기지 않게 (한글은 띄어쓰기에서만 줄바꿈) */
+table th, table td { word-break: keep-all; overflow-wrap: break-word; }
