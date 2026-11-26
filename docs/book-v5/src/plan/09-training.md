@@ -6,6 +6,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「09-1」 ~ 「09-5」 · 2026-11-26 00:01 ~ 11:20)
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 길드가 돈을 내고 모험가를 한 주 수행에 보내면, 고른 능력치가 오릅니다 (한 번에 +2 · 30G).
+- 수행은 능력치마다 하나씩 다섯입니다. 여러 번 보내면 리퀘스트를 거쳐 윗단계로 자랍니다.
+- 모험가는 수행을 거절하지 않습니다. 「쓰면 오르는 스킬 숙련」은 넣지 않습니다.
+
+</div>
+
 ## 한눈에
 
 | 걸음 | 정한 것 |
@@ -43,11 +53,63 @@
 
 ## 2. 단계 — 여러 번 보내면 수행이 자란다
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 82" role="img" aria-label="그림 1. 수행이 자라는 차례 [임시]">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box" x="199.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box" x="394.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box pf-box-acc" x="589.0" y="14" width="167.0" height="58" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="87.5" y="39">수행을 10번 보냄</text>
+<text x="282.5" y="39">리퀘스트가 나옴</text>
+<text x="477.5" y="39">리퀘스트 해결</text>
+<text x="672.5" y="39">윗단계로 바뀜</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="87.5" y="59">길드 전체에서 센 횟수</text>
+<text x="282.5" y="59">그 능력치를 맡은 B 그룹 사람</text>
+<text x="477.5" y="59">모험가를 보내 해냄</text>
+<text x="672.5" y="59">이름 · 오르는 양 · 값</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="173.0" y1="43.0" x2="196.0" y2="43.0"/>
+<line x1="368.0" y1="43.0" x2="391.0" y2="43.0"/>
+<line x1="563.0" y1="43.0" x2="586.0" y2="43.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 1. 수행이 자라는 차례 [임시]</p>
+</div>
+
 | 차례 | 일어나는 일 |
 | :---: | --- |
 | ① | 그 수행을 n번 보냄 [임시: 10번] |
 | ② | 그 수행의 리퀘스트가 나옴 |
 | ③ | 리퀘스트를 해결하면 수행이 윗단계로 바뀜 (이름이 바뀜) |
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 204" role="img" aria-label="그림 2. 수행의 단계 [임시] — 「능력치 1의 값」은 같고, 한 주에 올릴 수 있는 양이 늡니다.">
+<line class="pf-track" x1="150" y1="100" x2="680.0" y2="100" stroke-width="6" stroke-linecap="round"/>
+<g text-anchor="middle">
+<text x="150.0" y="50" font-size="15" font-weight="700">1단계</text><text x="150.0" y="74" font-size="12" class="pf-soft">처음부터</text>
+<text x="150.0" y="130" font-size="12.5">한 번에 +2</text>
+<text x="150.0" y="148" font-size="12.5">30G</text>
+<text x="150.0" y="192" font-size="12.5">15G</text>
+<text x="415.0" y="50" font-size="15" font-weight="700">2단계</text><text x="415.0" y="74" font-size="12" class="pf-soft">리퀘스트를 풀면</text>
+<text x="415.0" y="130" font-size="12.5">한 번에 +3</text>
+<text x="415.0" y="148" font-size="12.5">45G</text>
+<text x="415.0" y="192" font-size="12.5">15G</text>
+<text x="680.0" y="50" font-size="15" font-weight="700">3단계</text><text x="680.0" y="74" font-size="12" class="pf-soft">리퀘스트를 풀면</text>
+<text x="680.0" y="130" font-size="12.5">한 번에 +4</text>
+<text x="680.0" y="148" font-size="12.5">60G</text>
+<text x="680.0" y="192" font-size="12.5">15G</text>
+</g>
+<circle class="pf-acc pf-ring" cx="150.0" cy="100" r="10"><title>1단계 — 처음부터</title></circle>
+<circle class="pf-acc pf-ring" cx="415.0" cy="100" r="10"><title>2단계 — 리퀘스트를 풀면</title></circle>
+<circle class="pf-acc pf-ring" cx="680.0" cy="100" r="10"><title>3단계 — 리퀘스트를 풀면</title></circle>
+<line class="pf-grid" x1="10" y1="174" x2="750" y2="174" stroke-width="1"/>
+<text x="10" y="192" font-size="12" class="pf-soft">능력치 1의 값</text>
+</svg>
+<p class="pf-cap">그림 2. 수행의 단계 [임시] — 「능력치 1의 값」은 같고, 한 주에 올릴 수 있는 양이 늡니다.</p>
+</div>
 
 | 단계 | 한 번에 오르는 양 [임시] | 한 번 값 [임시] |
 | :---: | :---: | :---: |

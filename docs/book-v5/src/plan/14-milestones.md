@@ -6,6 +6,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「14 모험가의 고비」 · 2026-11-26 15:13 ~ 15:41) · 지금 게임의 규칙: `docs/design/현황/14_모험가의_고비.md` · `14_방출_은퇴_2세_기존_설계.md`
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 고비 레벨(3 · 6 · 9 · 15 · 24 · 39 …)에 닿으면 보너스 5점을 받아, 다섯 능력치에 마음대로 나눕니다.
+- 승급은 저절로 되지 않고 시험을 봅니다. 높은 시험일수록 함께 갈 사람이 많이 필요합니다.
+- 애착 60에 털어놓는 「바람」을 이루면 중급 아이템을 받습니다. 큰 물건과 은퇴는 따로 다룹니다.
+
+</div>
+
 ## 한눈에
 
 | 걸음 | 정한 것 |
@@ -28,6 +38,37 @@
 | 새 규칙 | 더하지 않음 (하는 짓 · 스킬 같은 것 없음) |
 
 **고비 레벨 — 간격이 점점 벌어집니다 (사용자 15:25)**
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 172" role="img" aria-label="그림 1. 고비 레벨 [예시] — 앞의 두 수를 더하면 다음 수. 지금의 상한(Lv 50)으로는 39까지 여섯 번 닿습니다.">
+<line class="pf-track" x1="60" y1="70" x2="700" y2="70" stroke-width="6" stroke-linecap="round"/>
+<line class="pf-axis" x1="364.8" y1="50" x2="364.8" y2="122" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="364.8" y="138" font-size="12" text-anchor="middle" class="pf-soft">1차 직업 상한 Lv 30</text>
+<line class="pf-axis" x1="466.3" y1="50" x2="466.3" y2="122" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="466.3" y="138" font-size="12" text-anchor="middle" class="pf-soft">2차 Lv 40</text>
+<line class="pf-axis" x1="567.9" y1="50" x2="567.9" y2="122" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="567.9" y="138" font-size="12" text-anchor="middle" class="pf-soft">3차 Lv 50</text>
+<g text-anchor="middle">
+<text x="90.5" y="42" font-size="13.5" font-weight="700">3</text>
+<text x="121.0" y="42" font-size="13.5" font-weight="700">6</text>
+<text x="151.4" y="42" font-size="13.5" font-weight="700">9</text>
+<text x="212.4" y="42" font-size="13.5" font-weight="700">15</text>
+<text x="303.8" y="42" font-size="13.5" font-weight="700">24</text>
+<text x="456.2" y="42" font-size="13.5" font-weight="700">39</text>
+<text x="700.0" y="42" font-size="13.5" font-weight="700">63</text>
+</g>
+<circle class="pf-acc pf-ring" cx="90.5" cy="70" r="9"><title>3 </title></circle>
+<circle class="pf-acc pf-ring" cx="121.0" cy="70" r="9"><title>6 </title></circle>
+<circle class="pf-acc pf-ring" cx="151.4" cy="70" r="9"><title>9 </title></circle>
+<circle class="pf-acc pf-ring" cx="212.4" cy="70" r="9"><title>15 </title></circle>
+<circle class="pf-acc pf-ring" cx="303.8" cy="70" r="9"><title>24 </title></circle>
+<circle class="pf-acc pf-ring" cx="456.2" cy="70" r="9"><title>39 </title></circle>
+<circle class="pf-mute pf-ring" cx="700.0" cy="70" r="9"><title>63 </title></circle>
+<path class="pf-arrow" d="M78.5,26 V19 H163.4 V26"/><text x="121.0" y="12" font-size="12" text-anchor="middle" class="pf-soft">F급 안에서 겪는 세 번</text>
+<text x="380" y="166" font-size="12.5" text-anchor="middle">모험가의 레벨</text>
+</svg>
+<p class="pf-cap">그림 1. 고비 레벨 [예시] — 앞의 두 수를 더하면 다음 수. 지금의 상한(Lv 50)으로는 39까지 여섯 번 닿습니다.</p>
+</div>
 
 | 고비 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
 | --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -74,6 +115,31 @@
 | 떨어지면 | 벌 없음. 1주 뒤에 다시 볼 수 있음. 애착 · 명성은 내리지 않음 |
 | 죽음 | 시험에서는 죽지 않음. 부상은 보통 리퀘스트처럼 날 수 있음 |
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 228" role="img" aria-label="그림 2. 승급 시험의 인원 [임시] — 높은 고비는 혼자 못 넘습니다.">
+<g class="pf-grid" stroke-width="1"><line x1="212.0" y1="16" x2="212.0" y2="184"/><line x1="274.0" y1="16" x2="274.0" y2="184"/><line x1="336.0" y1="16" x2="336.0" y2="184"/><line x1="398.0" y1="16" x2="398.0" y2="184"/><line x1="460.0" y1="16" x2="460.0" y2="184"/></g>
+<line class="pf-axis" x1="150" y1="16" x2="150" y2="184" stroke-width="1"/>
+<text x="10" y="41" font-size="13.5" font-weight="700">E급 시험</text>
+<rect class="pf-acc" x="150" y="28" width="62.0" height="16" rx="3"><title>E급 시험 — 1명 — 본인 혼자 (프로토타입에서 겪는 것)</title></rect>
+<text x="222.0" y="41" font-size="12.5">1명 — 본인 혼자 (프로토타입에서 겪는 것)</text>
+<text x="10" y="75" font-size="13.5" font-weight="700">D급 시험</text>
+<rect class="pf-acc" x="150" y="62" width="124.0" height="16" rx="3"><title>D급 시험 — 2명</title></rect>
+<text x="284.0" y="75" font-size="12.5">2명</text>
+<text x="10" y="109" font-size="13.5" font-weight="700">C급 시험</text>
+<rect class="pf-acc" x="150" y="96" width="186.0" height="16" rx="3"><title>C급 시험 — 3명</title></rect>
+<text x="346.0" y="109" font-size="12.5">3명</text>
+<text x="10" y="143" font-size="13.5" font-weight="700">B급 시험</text>
+<rect class="pf-acc" x="150" y="130" width="248.0" height="16" rx="3"><title>B급 시험 — 4명</title></rect>
+<text x="408.0" y="143" font-size="12.5">4명</text>
+<text x="10" y="177" font-size="13.5" font-weight="700">A급 · S급 시험</text>
+<rect class="pf-acc" x="150" y="164" width="310.0" height="16" rx="3"><title>A급 · S급 시험 — 5명 — 파티의 최대</title></rect>
+<text x="470.0" y="177" font-size="12.5">5명 — 파티의 최대</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="150.0" y="200">0</text><text x="212.0" y="200">1</text><text x="274.0" y="200">2</text><text x="336.0" y="200">3</text><text x="398.0" y="200">4</text><text x="460.0" y="200">5</text></g>
+<text x="305.0" y="222" font-size="12.5" text-anchor="middle">필요한 인원</text>
+</svg>
+<p class="pf-cap">그림 2. 승급 시험의 인원 [임시] — 높은 고비는 혼자 못 넘습니다.</p>
+</div>
+
 | 승급 시험 | 필요한 인원 [임시] |
 | --- | :---: |
 | E급 | 1명 (본인 혼자) |
@@ -102,6 +168,23 @@
 - 「이루면 애착이 크게 오른다」(2026-11-24의 처음 말)와 「그 사람만의 칭호」는 넣지 않았습니다. 리퀘스트에 성공했을 때 보통 오르는 애착만 오릅니다.
 
 **보상의 층**
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 142" role="img" aria-label="그림 3. 보상의 층 — 어떤 물건인지는 「아이템의 전체 틀」에서 정합니다.">
+<line class="pf-track" x1="80" y1="100" x2="680.0" y2="100" stroke-width="6" stroke-linecap="round"/>
+<g text-anchor="middle">
+<text x="80.0" y="50" font-size="15" font-weight="700">보통 리퀘스트</text><text x="80.0" y="74" font-size="12" class="pf-soft">낮은 등급</text>
+<text x="380.0" y="50" font-size="15" font-weight="700">바람</text><text x="380.0" y="74" font-size="12" class="pf-soft">중급</text>
+<text x="380.0" y="130" font-size="12.5">애착 60에 열림</text>
+<text x="680.0" y="50" font-size="15" font-weight="700">보스</text><text x="680.0" y="74" font-size="12" class="pf-soft">레어</text>
+<text x="680.0" y="130" font-size="12.5">묶음마다 하나</text>
+</g>
+<circle class="pf-acc pf-ring" cx="80.0" cy="100" r="10"><title>보통 리퀘스트 — 낮은 등급</title></circle>
+<circle class="pf-acc pf-ring" cx="380.0" cy="100" r="10"><title>바람 — 중급</title></circle>
+<circle class="pf-acc pf-ring" cx="680.0" cy="100" r="10"><title>보스 — 레어</title></circle>
+</svg>
+<p class="pf-cap">그림 3. 보상의 층 — 어떤 물건인지는 「아이템의 전체 틀」에서 정합니다.</p>
+</div>
 
 | 어디서 | 받는 물건 |
 | --- | --- |
@@ -136,6 +219,10 @@
 
 **맞춰 볼 곳 6**
 
+
+<details>
+<summary>기존 설계(죽음 · 방출 · 2세)와 오늘까지 정한 것이 어긋나는 여섯 곳 (눌러서 펼치기)</summary>
+
 | # | 갈래 | 기존 설계 | 오늘까지 정한 것 |
 | :---: | --- | --- | --- |
 | 1 | 죽음 | 지금 게임은 F급 의뢰부터 | [01](01-principles.md): 죽음은 B급 이상의 의뢰와 침공에서만 [임시 · 한석님 안건] |
@@ -144,6 +231,8 @@
 | 4 | 2세 | 첫 1년은 애착과 관계없이 자주 방문 | 11: 누구나 매주 들름. 필요가 없어짐 |
 | 5 | 2세 | 스킬은 가장 높은 「단계」 1개를 물려받음 | [09](09-training.md): 스킬의 단계(숙련)는 넣지 않음 |
 | 6 | 2세 | 사망 6개월 뒤 늘 옴 | 12: 오는 수는 인구 칸과 상한이 정함. 2세의 자리는 따로인지 |
+
+</details>
 
 - 방출의 「명성 −5」는 12와 잘 맞습니다. 명성이 「좋은 사람이 올 확률」이 되었기 때문입니다.
 - 방출한 뒤 다음 사람이 오는 규칙은 12에서 정했습니다(다음 인구 칸).

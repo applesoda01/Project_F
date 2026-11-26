@@ -187,6 +187,14 @@
 <p>새로 오는 모험가가 <strong>언제 · 어떤 사람으로 · 몇 레벨로</strong> 오는가를 정합니다. 숨은 배수(신입 경험치 3배)로 뒤에서 끌어올리던 것을, 보이는 규칙으로 바꿉니다. 이 쪽을 쓰면서 새로 잰 것은 없습니다. 성장 수치는 한석님 안건입니다.</p>
 <p>대화 기록: 저장소의 <code>docs/design/세부기획_대화_2026-11-25.md</code> (「12 신입 모험가」 · 2026-11-26 14:32 ~ 14:53)</p>
 </blockquote>
+<div class="pf-key">
+<p><strong>이 쪽의 세 줄</strong></p>
+<ul>
+<li>신입은 Lv 1부터 「길드 평균 − 2」 사이로 옵니다. 숨은 경험치 배수(3배 · 2배 · 1.5배)와 따라잡기는 없앱니다.</li>
+<li>몇 명이 오는지는 마을 인구(25명마다 1명)가, 좋은 사람이 올 확률은 명성이 정합니다.</li>
+<li>자리가 차면 찾아온 사람이 한 주 머물다 갑니다. 받으려면 누군가를 방출해 자리를 내야 합니다.</li>
+</ul>
+</div>
 <h2 id="한눈에"><a class="header" href="#한눈에">한눈에</a></h2>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: center">걸음</th><th>정한 것</th></tr></thead><tbody>
 <tr><td style="text-align: center">1 오는 레벨</td><td>Lv 1부터 「길드 평균 레벨 − 2」 사이. Lv 1은 끝까지 옴. 신입 경험치 배수와 따라잡기는 없앰</td></tr>
@@ -204,12 +212,44 @@
 <tr><td>어떤 사람</td><td>직업 · 성향은 무작위. 별은 1성 65% · 2성 28% · 3성 7%. 버릇 30%</td></tr>
 <tr><td>고르는 길</td><td>없음</td></tr>
 </tbody></table>
+</div><div class="pf-fig">
+<svg viewBox="0 0 760 126" role="img" aria-label="그림 1. 지금 게임 — 숨은 배수가 있어도 나중에 온 모험가는 주력과 같이 가지 못합니다.">
+<g class="pf-grid" stroke-width="1"><line x1="242.5" y1="16" x2="242.5" y2="82"/><line x1="315.0" y1="16" x2="315.0" y2="82"/><line x1="387.5" y1="16" x2="387.5" y2="82"/><line x1="460.0" y1="16" x2="460.0" y2="82"/></g>
+<line class="pf-axis" x1="170" y1="16" x2="170" y2="82" stroke-width="1"/>
+<text x="10" y="41" font-size="13.5" font-weight="700">창립 멤버</text>
+<rect class="pf-acc" x="170" y="28" width="258.6" height="16" rx="3"><title>창립 멤버 — Lv 10.7</title></rect>
+<text x="438.6" y="41" font-size="12.5">Lv 10.7</text>
+<text x="10" y="75" font-size="13.5" font-weight="700">나중에 온 모험가</text>
+<rect class="pf-acc" x="170" y="62" width="142.6" height="16" rx="3"><title>나중에 온 모험가 — Lv 5.9 — 경험치 3배와 따라잡기가 있어도</title></rect>
+<text x="322.6" y="75" font-size="12.5">Lv 5.9 — 경험치 3배와 따라잡기가 있어도</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="170.0" y="98">0</text><text x="242.5" y="98">3</text><text x="315.0" y="98">6</text><text x="387.5" y="98">9</text><text x="460.0" y="98">12</text></g>
+<text x="315.0" y="120" font-size="12.5" text-anchor="middle">48주의 평균 레벨 (지금 게임 · 잰 값)</text>
+</svg>
+<p class="pf-cap">그림 1. 지금 게임 — 숨은 배수가 있어도 나중에 온 모험가는 주력과 같이 가지 못합니다.</p>
 </div>
 <ul>
 <li>그렇게 해도 48주에 창립 멤버는 Lv 10.7, 나중에 온 모험가는 Lv 5.9입니다. 그동안 주력과 같이 가지 못합니다.</li>
 </ul>
 <h2 id="1-오는-레벨--길드의-지금-수준에-맞춥니다"><a class="header" href="#1-오는-레벨--길드의-지금-수준에-맞춥니다">1. 오는 레벨 — 길드의 지금 수준에 맞춥니다</a></h2>
 <p><strong>신입은 Lv 1부터 「길드 모험가들의 평균 레벨 − 2」 사이에서 옵니다 [임시].</strong></p>
+<div class="pf-fig">
+<svg viewBox="0 0 760 160" role="img" aria-label="그림 2. 신입이 오는 레벨 [임시] — 길드 평균 − 2까지. 주력을 앞지르지 않습니다.">
+<g class="pf-grid" stroke-width="1"><line x1="303.3" y1="16" x2="303.3" y2="116"/><line x1="436.7" y1="16" x2="436.7" y2="116"/><line x1="570.0" y1="16" x2="570.0" y2="116"/></g>
+<line class="pf-axis" x1="170" y1="16" x2="170" y2="116" stroke-width="1"/>
+<text x="10" y="41" font-size="13.5" font-weight="700">길드 평균 Lv 3</text>
+<rect class="pf-acc" x="170" y="28" width="44.4" height="16" rx="3"><title>길드 평균 Lv 3 — Lv 1</title></rect>
+<text x="224.4" y="41" font-size="12.5">Lv 1</text>
+<text x="10" y="75" font-size="13.5" font-weight="700">길드 평균 Lv 6</text>
+<rect class="pf-acc" x="170" y="62" width="177.8" height="16" rx="3"><title>길드 평균 Lv 6 — Lv 1 ~ 4</title></rect>
+<text x="357.8" y="75" font-size="12.5">Lv 1 ~ 4</text>
+<text x="10" y="109" font-size="13.5" font-weight="700">길드 평균 Lv 9</text>
+<rect class="pf-acc" x="170" y="96" width="311.1" height="16" rx="3"><title>길드 평균 Lv 9 — Lv 1 ~ 7</title></rect>
+<text x="491.1" y="109" font-size="12.5">Lv 1 ~ 7</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="170.0" y="132">0</text><text x="303.3" y="132">3</text><text x="436.7" y="132">6</text><text x="570.0" y="132">9</text></g>
+<text x="370.0" y="154" font-size="12.5" text-anchor="middle">신입이 오는 레벨 (막대의 끝이 범위의 위쪽 끝 · 아래쪽 끝은 늘 Lv 1)</text>
+</svg>
+<p class="pf-cap">그림 2. 신입이 오는 레벨 [임시] — 길드 평균 − 2까지. 주력을 앞지르지 않습니다.</p>
+</div>
 <div class="table-wrapper"><table><thead><tr><th style="text-align: center">길드의 평균 레벨</th><th style="text-align: center">오는 신입</th></tr></thead><tbody>
 <tr><td style="text-align: center">Lv 3</td><td style="text-align: center">Lv 1</td></tr>
 <tr><td style="text-align: center">Lv 6</td><td style="text-align: center">Lv 1 ~ 4</td></tr>
@@ -242,6 +282,38 @@
 <tr><td>풋내기</td><td>범위의 아래쪽 절반 (Lv 1 포함)</td></tr>
 <tr><td>경험자</td><td>범위의 위쪽 절반</td></tr>
 </tbody></table>
+</div><div class="pf-fig">
+<svg viewBox="0 0 760 172" role="img" aria-label="그림 3. 인구 25명마다 1명 [임시] — 인구의 잰 값(150명에서 시작 · 24주 219명 · 48주 321명) 위에 얹어 본 것입니다. 새로 잰 것이 아닙니다.">
+<line class="pf-track" x1="60" y1="70" x2="700" y2="70" stroke-width="6" stroke-linecap="round"/>
+<line class="pf-axis" x1="60.0" y1="50" x2="60.0" y2="122" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="60.0" y="138" font-size="12" text-anchor="middle" class="pf-soft">시작 150명</text>
+<line class="pf-axis" x1="312.3" y1="50" x2="312.3" y2="122" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="312.3" y="138" font-size="12" text-anchor="middle" class="pf-soft">24주 · 219명</text>
+<line class="pf-axis" x1="685.4" y1="50" x2="685.4" y2="122" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="685.4" y="138" font-size="12" text-anchor="middle" class="pf-soft">48주 · 321명</text>
+<g text-anchor="middle">
+<text x="151.4" y="42" font-size="13.5" font-weight="700">신입 1</text>
+<text x="151.4" y="100" font-size="12">175명</text>
+<text x="242.9" y="42" font-size="13.5" font-weight="700">2</text>
+<text x="242.9" y="100" font-size="12">200명</text>
+<text x="334.3" y="42" font-size="13.5" font-weight="700">3</text>
+<text x="334.3" y="100" font-size="12">225명</text>
+<text x="425.7" y="42" font-size="13.5" font-weight="700">4</text>
+<text x="425.7" y="100" font-size="12">250명</text>
+<text x="517.1" y="42" font-size="13.5" font-weight="700">5</text>
+<text x="517.1" y="100" font-size="12">275명</text>
+<text x="608.6" y="42" font-size="13.5" font-weight="700">6</text>
+<text x="608.6" y="100" font-size="12">300명</text>
+</g>
+<circle class="pf-acc pf-ring" cx="151.4" cy="70" r="9"><title>신입 1 175명</title></circle>
+<circle class="pf-acc pf-ring" cx="242.9" cy="70" r="9"><title>2 200명</title></circle>
+<circle class="pf-acc pf-ring" cx="334.3" cy="70" r="9"><title>3 225명</title></circle>
+<circle class="pf-acc pf-ring" cx="425.7" cy="70" r="9"><title>4 250명</title></circle>
+<circle class="pf-acc pf-ring" cx="517.1" cy="70" r="9"><title>5 275명</title></circle>
+<circle class="pf-acc pf-ring" cx="608.6" cy="70" r="9"><title>6 300명</title></circle>
+<text x="380" y="166" font-size="12.5" text-anchor="middle">마을 인구</text>
+</svg>
+<p class="pf-cap">그림 3. 인구 25명마다 1명 [임시] — 인구의 잰 값(150명에서 시작 · 24주 219명 · 48주 321명) 위에 얹어 본 것입니다. 새로 잰 것이 아닙니다.</p>
 </div>
 <ul>
 <li>「마을이 커지면 사람이 모이고, 이름이 나면 좋은 사람이 찾아온다」.</li>

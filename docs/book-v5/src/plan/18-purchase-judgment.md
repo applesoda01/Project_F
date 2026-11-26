@@ -8,6 +8,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「03-3」 · 「18」) / 1차 측정: `docs/design/현황/18_사는_판단_1차_측정.md`
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 모험가는 「필요한가 → 길드에서 살 만한가 → 아니면 마을에서」의 차례로 판단합니다. 안 산 까닭은 모험가가 말합니다.
+- 평소에는 이번에 받을 몫 안에서만 쓰고, 큰일(보스 · 위험 · 침공) 앞에서는 지갑을 엽니다.
+- 모든 값은 「한 사람이 퀘스트 한 번에 버는 돈」에 견줘 세웁니다. 길드의 벌이는 시설 > 수수료 > 보조금으로 옮깁니다.
+
+</div>
+
 ## 한눈에
 
 | 정한 것 | 내용 |
@@ -57,6 +67,36 @@
 | **준비물** | 떠날 때마다 사는 것: 밥 · 물약 · (올 것) 정비 · 약초 주머니 | **이 시안의 판단** |
 | **큰 물건** | 돈을 모아서 사는 것: 장비 · (올 것) 스킬 | 지금 규칙 그대로 (모이면 삼) |
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 82" role="img" aria-label="그림 1. 준비물을 사는 차례 — 필요가 없으면 어디서도 사지 않습니다.">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box" x="160.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box" x="316.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box" x="472.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box" x="628.0" y="14" width="128.0" height="58" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="68.0" y="39">쓸 돈 정하기</text>
+<text x="224.0" y="39">줄 세우기</text>
+<text x="380.0" y="39">「살까」</text>
+<text x="536.0" y="39">「어디서 살까」</text>
+<text x="692.0" y="39">못 샀으면</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="68.0" y="59">① 주머니</text>
+<text x="224.0" y="59">④ 순서 · 필요한 것부터</text>
+<text x="380.0" y="59">② 필요</text>
+<text x="536.0" y="59">① 주머니 · ③ 견줌</text>
+<text x="692.0" y="59">까닭을 말함</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="134.0" y1="43.0" x2="157.0" y2="43.0"/>
+<line x1="290.0" y1="43.0" x2="313.0" y2="43.0"/>
+<line x1="446.0" y1="43.0" x2="469.0" y2="43.0"/>
+<line x1="602.0" y1="43.0" x2="625.0" y2="43.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 1. 준비물을 사는 차례 — 필요가 없으면 어디서도 사지 않습니다.</p>
+</div>
+
 준비물은 떠나기 전에 이렇게 삽니다.
 
 | 차례 | 하는 일 | 쓰는 기준 |
@@ -76,6 +116,35 @@
 ### 평소 — 이번에 받을 몫 안에서 씁니다
 
 > 이번 준비에 쓸 돈 = 이번 퀘스트에서 받을 내 몫 × 씀씀이 몫 (지갑에 있는 돈까지만)
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 240" role="img" aria-label="그림 2. 평소의 씀씀이 몫 [임시] — 어느 경우에도 100%를 넘지 않습니다.">
+<g font-size="12.5">
+<circle class="pf-sw pf-s1" cx="156" cy="12" r="5"/><text x="168" y="16">모으는 중</text>
+<circle class="pf-sw pf-s2" cx="244" cy="12" r="5"/><text x="256" y="16">모을 것 없음</text>
+</g>
+<g class="pf-grid" stroke-width="1"><line x1="272.5" y1="30" x2="272.5" y2="196"/><line x1="395.0" y1="30" x2="395.0" y2="196"/><line x1="517.5" y1="30" x2="517.5" y2="196"/><line x1="640.0" y1="30" x2="640.0" y2="196"/></g>
+<line class="pf-axis" x1="150" y1="30" x2="150" y2="196" stroke-width="1"/>
+<text x="10" y="60" font-size="13.5" font-weight="700">절약</text>
+<rect class="pf-sw pf-s1" x="150" y="36" width="147.0" height="16" rx="3"><title>절약 · 모으는 중 — 30%</title></rect>
+<text x="305.0" y="49" font-size="12.5">30%</text>
+<rect class="pf-sw pf-s2" x="150" y="56" width="245.0" height="16" rx="3"><title>절약 · 모을 것 없음 — 50%</title></rect>
+<text x="403.0" y="69" font-size="12.5">50%</text>
+<text x="10" y="116" font-size="13.5" font-weight="700">보통</text>
+<rect class="pf-sw pf-s1" x="150" y="92" width="245.0" height="16" rx="3"><title>보통 · 모으는 중 — 50%</title></rect>
+<text x="403.0" y="105" font-size="12.5">50%</text>
+<rect class="pf-sw pf-s2" x="150" y="112" width="343.0" height="16" rx="3"><title>보통 · 모을 것 없음 — 70%</title></rect>
+<text x="501.0" y="125" font-size="12.5">70%</text>
+<text x="10" y="172" font-size="13.5" font-weight="700">낭비</text>
+<rect class="pf-sw pf-s1" x="150" y="148" width="343.0" height="16" rx="3"><title>낭비 · 모으는 중 — 70%</title></rect>
+<text x="501.0" y="161" font-size="12.5">70%</text>
+<rect class="pf-sw pf-s2" x="150" y="168" width="441.0" height="16" rx="3"><title>낭비 · 모을 것 없음 — 90%</title></rect>
+<text x="599.0" y="181" font-size="12.5">90%</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="150.0" y="212">0%</text><text x="272.5" y="212">25%</text><text x="395.0" y="212">50%</text><text x="517.5" y="212">75%</text><text x="640.0" y="212">100%</text></g>
+<text x="395.0" y="234" font-size="12.5" text-anchor="middle">이번에 받을 내 몫 가운데 준비에 쓰는 몫</text>
+</svg>
+<p class="pf-cap">그림 2. 평소의 씀씀이 몫 [임시] — 어느 경우에도 100%를 넘지 않습니다.</p>
+</div>
 
 | 씀씀이 성향 | 모으는 중 | 모을 것 없음 |
 | --- | :---: | :---: |
@@ -123,6 +192,32 @@
 ### 값에 견주는 세 단계
 
 물건 값을 「남은 쓸 돈」에 견줍니다.
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 110" role="img" aria-label="그림 3. ① 주머니 — 값을 「남은 쓸 돈」에 견주는 세 단계 [임시]">
+<g text-anchor="middle">
+<text x="166.7" y="18" font-size="14.5" font-weight="700">넉넉하다</text>
+<text x="166.7" y="37" font-size="12.5">값이 남은 쓸 돈의 절반 이하</text>
+<text x="166.7" y="54" font-size="12.5">살 마음 × 1.0</text>
+<text x="380.0" y="18" font-size="14.5" font-weight="700">빠듯하다</text>
+<text x="380.0" y="37" font-size="12.5">값이 남은 쓸 돈 이하</text>
+<text x="380.0" y="54" font-size="12.5">살 마음 × 0.5</text>
+<text x="593.3" y="18" font-size="14.5" font-weight="700">못 산다</text>
+<text x="593.3" y="37" font-size="12.5">값이 남은 쓸 돈보다 큼</text>
+<text x="593.3" y="54" font-size="12.5">살 마음 × 0</text>
+</g>
+<rect class="pf-acc" opacity="0.90" x="61.0" y="64" width="211.3" height="18" rx="3"><title>넉넉하다</title></rect>
+<rect class="pf-acc" opacity="0.50" x="274.3" y="64" width="211.3" height="18" rx="3"><title>빠듯하다</title></rect>
+<rect class="pf-acc" opacity="0.15" x="487.7" y="64" width="211.3" height="18" rx="3"><title>못 산다</title></rect>
+<g font-size="12.5" text-anchor="middle" font-weight="700">
+<text x="273.3" y="100">쓸 돈의 절반</text>
+<text x="486.7" y="100">쓸 돈</text>
+</g>
+<g font-size="12" class="pf-soft"><text x="60" y="100" text-anchor="start">값이 쌈</text><text x="700" y="100" text-anchor="end">값이 비쌈</text></g>
+<g class="pf-axis" stroke-width="1"><line x1="273.3" y1="61" x2="273.3" y2="87"/><line x1="486.7" y1="61" x2="486.7" y2="87"/></g>
+</svg>
+<p class="pf-cap">그림 3. ① 주머니 — 값을 「남은 쓸 돈」에 견주는 세 단계 [임시]</p>
+</div>
 
 | 단계 | 조건 | 살 마음 | 안 살 때의 말 |
 | --- | --- | :---: | --- |
@@ -181,6 +276,31 @@
 
 - 메뉴판에 「여관에서는 20G」가 보입니다. 플레이어가 매긴 값을 여관의 값에 견줍니다.
 - 「여관에 없는 것을 판다」가 길이 됩니다. 고급 요리와 간판 메뉴가 그 자리에 들어갑니다.
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 110" role="img" aria-label="그림 4. ③ 견줌 — 마을의 같은 가게(식당은 여관)에 견주는 세 단계 [임시]">
+<g text-anchor="middle">
+<text x="166.7" y="18" font-size="14.5" font-weight="700">싸다</text>
+<text x="166.7" y="37" font-size="12.5">여관 값의 0.8배 이하</text>
+<text x="166.7" y="54" font-size="12.5">살 마음 × 1.2</text>
+<text x="380.0" y="18" font-size="14.5" font-weight="700">적당하다</text>
+<text x="380.0" y="37" font-size="12.5">0.8 ~ 1.25배</text>
+<text x="380.0" y="54" font-size="12.5">살 마음 × 1.0</text>
+<text x="593.3" y="18" font-size="14.5" font-weight="700">비싸다</text>
+<text x="593.3" y="37" font-size="12.5">1.25배 초과</text>
+<text x="593.3" y="54" font-size="12.5">살 마음 × 0.5</text>
+</g>
+<rect class="pf-acc" opacity="0.90" x="61.0" y="64" width="211.3" height="18" rx="3"><title>싸다</title></rect>
+<rect class="pf-acc" opacity="0.60" x="274.3" y="64" width="211.3" height="18" rx="3"><title>적당하다</title></rect>
+<rect class="pf-acc" opacity="0.25" x="487.7" y="64" width="211.3" height="18" rx="3"><title>비싸다</title></rect>
+<g font-size="12.5" text-anchor="middle" font-weight="700">
+<text x="273.3" y="100">0.8배 · 여관이 20G면 16G</text>
+<text x="486.7" y="100">1.25배 · 25G</text>
+</g>
+<g class="pf-axis" stroke-width="1"><line x1="273.3" y1="61" x2="273.3" y2="87"/><line x1="486.7" y1="61" x2="486.7" y2="87"/></g>
+</svg>
+<p class="pf-cap">그림 4. ③ 견줌 — 마을의 같은 가게(식당은 여관)에 견주는 세 단계 [임시]</p>
+</div>
 
 | 단계 | 조건 | 살 마음 | 안 살 때의 말 |
 | --- | --- | :---: | --- |
@@ -292,6 +412,10 @@
 
 ## 지금 길드 요리의 값 (게임 데이터에서 확인 · 2026-11-25 17:23)
 
+
+<details>
+<summary>지금 게임의 F급 요리 셋의 값과 재료비 (눌러서 펼치기)</summary>
+
 | F급 요리 | 재료 한 세트 | 그릇 | 한 그릇 재료비 | 기준 값 | 효과 |
 | --- | --- | :---: | :---: | :---: | --- |
 | 멧돼지 스테이크 정식 | 멧돼지 고기 8G + 향신료 12G | 2 | 10G | **25G** | 힘 · 기교 +3 |
@@ -304,6 +428,8 @@
 - 여관을 20G로 두면 셋의 비율은 0.85 · 1.15 · 1.25배로 모두 「적당하다」 안입니다. 스테이크는 경계에 걸립니다.
 - 양념(12G)이 주재료(6 ~ 8G)보다 비쌉니다. 양념을 플레이어가 직접 사게 되면(03-1) 사는 것이 재료비의 절반을 넘습니다.
 
+</details>
+
 ## 값의 짜임 (17:27 ~)
 
 ### 닻 — 모든 값은 「한 사람이 퀘스트 한 번에 버는 돈」에 견줘 세웁니다 (사용자 17:29 정함 · 17:34 고침)
@@ -313,6 +439,28 @@
 > **17:34 고침:** 처음에는 「퀘스트 한 번의 보상」이라고 했습니다. 그런데 보상은 파티가 똑같이 나누므로(사용자 17:33 「파티가 우리 최대 5명인데」), 보상 100G에 다섯이 가면 한 사람이 18G를 벌고 밥과 물약 40G를 못 삽니다. 닻을 「한 사람 몫」으로 고쳤습니다.
 
 **퀘스트의 보상 = 한 사람 몫 × 그 퀘스트에 알맞은 인원. 간 사람끼리 똑같이 나눕니다. 사람이 더 간다고 총액이 늘지 않습니다.** [임시 · 보상 수치를 바꾸는 일이라 한석님께 가져갈 시안]
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 192" role="img" aria-label="그림 5. 보상 = 한 사람 몫 × 알맞은 인원 [임시] — 사람이 더 가도 총액은 늘지 않습니다.">
+<g class="pf-grid" stroke-width="1"><line x1="255.0" y1="16" x2="255.0" y2="148"/><line x1="360.0" y1="16" x2="360.0" y2="148"/><line x1="465.0" y1="16" x2="465.0" y2="148"/><line x1="570.0" y1="16" x2="570.0" y2="148"/></g>
+<line class="pf-axis" x1="150" y1="16" x2="150" y2="148" stroke-width="1"/>
+<text x="10" y="38" font-size="13.5" font-weight="700">1명이 감</text>
+<text x="10" y="55" font-size="12" class="pf-soft">강해서 혼자 해냄</text>
+<rect class="pf-acc" x="150" y="28" width="420.0" height="16" rx="3"><title>1명이 감 — 200G — 두 사람 몫을 범</title></rect>
+<text x="580.0" y="41" font-size="12.5">200G — 두 사람 몫을 범</text>
+<text x="10" y="84" font-size="13.5" font-weight="700">2명이 감</text>
+<text x="10" y="101" font-size="12" class="pf-soft">알맞게 감</text>
+<rect class="pf-acc" x="150" y="74" width="210.0" height="16" rx="3"><title>2명이 감 — 100G</title></rect>
+<text x="370.0" y="87" font-size="12.5">100G</text>
+<text x="10" y="130" font-size="13.5" font-weight="700">3명이 감</text>
+<text x="10" y="147" font-size="12" class="pf-soft">안전하게 감</text>
+<rect class="pf-acc" x="150" y="120" width="140.7" height="16" rx="3"><title>3명이 감 — 67G — 그만큼 덜 범</title></rect>
+<text x="300.7" y="133" font-size="12.5">67G — 그만큼 덜 범</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="150.0" y="164">0</text><text x="255.0" y="164">50</text><text x="360.0" y="164">100</text><text x="465.0" y="164">150</text><text x="570.0" y="164">200</text></g>
+<text x="360.0" y="186" font-size="12.5" text-anchor="middle">한 사람이 받는 돈 (둘이 가야 하는 퀘스트 · 보상 200G)</text>
+</svg>
+<p class="pf-cap">그림 5. 보상 = 한 사람 몫 × 알맞은 인원 [임시] — 사람이 더 가도 총액은 늘지 않습니다.</p>
+</div>
 
 | 둘이 가야 하는 퀘스트 (보상 200G)에 | 한 사람이 받는 돈 | 뜻 |
 | :---: | :---: | --- |
@@ -382,6 +530,20 @@
 
 1차 측정에서 나온 지금 길드의 한 달 벌이입니다.
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 96" role="img" aria-label="그림 6. 지금 길드의 한 달 벌이 (1차 측정) — 새 설계는 이 순서를 시설 &gt; 수수료 &gt; 보조금으로 뒤집습니다.">
+<g font-size="12.5" text-anchor="middle">
+<text x="271.4" y="18" font-weight="700">왕국 보조금</text><text x="271.4" y="36">344G · 64%</text>
+<text x="544.3" y="18" font-weight="700">식사와 술</text><text x="544.3" y="36">122G · 23%</text>
+<text x="657.8" y="18" font-weight="700">수수료</text><text x="657.8" y="36">72G · 13%</text>
+</g>
+<rect class="pf-sw pf-s1" x="71.0" y="46" width="400.8" height="20" rx="4"><title>왕국 보조금 — 344G · 64%</title></rect>
+<rect class="pf-sw pf-s2" x="473.8" y="46" width="140.9" height="20" rx="4"><title>식사와 술 — 122G · 23%</title></rect>
+<rect class="pf-sw pf-s3" x="616.7" y="46" width="82.3" height="20" rx="4"><title>수수료 — 72G · 13%</title></rect>
+</svg>
+<p class="pf-cap">그림 6. 지금 길드의 한 달 벌이 (1차 측정) — 새 설계는 이 순서를 시설 > 수수료 > 보조금으로 뒤집습니다.</p>
+</div>
+
 | 들어오는 길 | 한 달 | 몫 | 누구의 돈인가 |
 | --- | :---: | :---: | --- |
 | 왕국 보조금 | 344G | 64% | 왕국 |
@@ -408,6 +570,31 @@
 ## 1차 측정에서 나온 것 (2026-11-25 · B세션 · 100판 · 48주)
 
 규칙을 측정 도구 안에서만 흉내 내어 잰 것입니다. 게임 파일은 그대로입니다.
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 228" role="img" aria-label="그림 7. 1차 측정 — 바꾼 것마다의 한 달 순수입. 차이는 지금의 ±10% 안입니다.">
+<g class="pf-grid" stroke-width="1"><line x1="234.0" y1="16" x2="234.0" y2="184"/><line x1="318.0" y1="16" x2="318.0" y2="184"/><line x1="402.0" y1="16" x2="402.0" y2="184"/><line x1="486.0" y1="16" x2="486.0" y2="184"/><line x1="570.0" y1="16" x2="570.0" y2="184"/></g>
+<line class="pf-axis" x1="150" y1="16" x2="150" y2="184" stroke-width="1"/>
+<text x="10" y="41" font-size="13.5" font-weight="700">지금</text>
+<rect class="pf-mute" x="150" y="28" width="351.1" height="16" rx="3"><title>지금 — 418G</title></rect>
+<text x="511.1" y="41" font-size="12.5">418G</text>
+<text x="10" y="75" font-size="13.5" font-weight="700">사는 판단만</text>
+<rect class="pf-acc" x="150" y="62" width="325.9" height="16" rx="3"><title>사는 판단만 — 388G (−31 ± 20)</title></rect>
+<text x="485.9" y="75" font-size="12.5">388G (−31 ± 20)</text>
+<text x="10" y="109" font-size="13.5" font-weight="700">보상 나누기만</text>
+<rect class="pf-acc" x="150" y="96" width="362.0" height="16" rx="3"><title>보상 나누기만 — 431G (+12 ± 6)</title></rect>
+<text x="522.0" y="109" font-size="12.5">431G (+12 ± 6)</text>
+<text x="10" y="143" font-size="13.5" font-weight="700">식당만</text>
+<rect class="pf-acc" x="150" y="130" width="382.2" height="16" rx="3"><title>식당만 — 455G (+36 ± 17)</title></rect>
+<text x="542.2" y="143" font-size="12.5">455G (+36 ± 17)</text>
+<text x="10" y="177" font-size="13.5" font-weight="700">전부</text>
+<rect class="pf-acc" x="150" y="164" width="384.7" height="16" rx="3"><title>전부 — 458G (+40 ± 18)</title></rect>
+<text x="544.7" y="177" font-size="12.5">458G (+40 ± 18)</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="150.0" y="200">0</text><text x="234.0" y="200">100</text><text x="318.0" y="200">200</text><text x="402.0" y="200">300</text><text x="486.0" y="200">400</text><text x="570.0" y="200">500</text></g>
+<text x="360.0" y="222" font-size="12.5" text-anchor="middle">한 달 순수입 (100판 · 48주)</text>
+</svg>
+<p class="pf-cap">그림 7. 1차 측정 — 바꾼 것마다의 한 달 순수입. 차이는 지금의 ±10% 안입니다.</p>
+</div>
 
 | 바꾼 것 | 한 달 순수입 | 지금 대비 | 식사 수입 |
 | --- | :---: | :---: | :---: |

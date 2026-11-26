@@ -31,3 +31,4 @@ details > summary { cursor: pointer; font-weight: 700; }
 .pf-arrow { stroke: currentColor; fill: none; stroke-width: 1.5; opacity: .6; }
 /* 표 안에서 낱말 가운데가 끊기지 않게 (한글은 띄어쓰기에서만 줄바꿈) */
 table th, table td { word-break: keep-all; overflow-wrap: break-word; }
+.pf-mute { fill: currentColor; opacity: .32; }

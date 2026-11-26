@@ -6,6 +6,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「10 · 15」 · 2026-11-26 15:42 ~ 16:06) · 지금 게임의 규칙: `docs/design/현황/10_15_의뢰_생성과_의뢰인.md` · `15_길드_의뢰와_소재_유입.md` · `10_리퀘스트_29개의_자리.md`
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 한 주에 붙는 퀘스트의 수를 모험가의 수에 맞춥니다 (두 명에 한 건 + 한 건).
+- 퀘스트의 레벨이 곧 알맞은 인원입니다. 모험가는 열린 레벨 안에서 제 힘에 맞게 골라 갑니다.
+- 길드 전체 신뢰도와 매입가는 없앱니다. 필요한 소재는 「주문」으로 구합니다.
+
+</div>
+
 ## 한눈에
 
 | 걸음 | 정한 것 |
@@ -51,6 +61,35 @@
 
 ## 2. 한 주에 붙는 퀘스트의 수 — 모험가의 수에 맞춥니다
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 240" role="img" aria-label="그림 1. 한 주에 붙는 퀘스트의 수 [임시] — 지금은 모험가가 네 배가 될 때 1.4배만 늡니다. 12주의 모험가는 2 ~ 3명이고, 새 설계는 2명으로 셈했습니다.">
+<g font-size="12.5">
+<circle class="pf-sw pf-s1" cx="176" cy="12" r="5"/><text x="188" y="16">지금 (잰 값)</text>
+<circle class="pf-sw pf-s2" cx="283" cy="12" r="5"/><text x="295" y="16">새 설계 (식으로 셈)</text>
+</g>
+<g class="pf-grid" stroke-width="1"><line x1="264.0" y1="30" x2="264.0" y2="196"/><line x1="358.0" y1="30" x2="358.0" y2="196"/><line x1="452.0" y1="30" x2="452.0" y2="196"/><line x1="546.0" y1="30" x2="546.0" y2="196"/><line x1="640.0" y1="30" x2="640.0" y2="196"/></g>
+<line class="pf-axis" x1="170" y1="30" x2="170" y2="196" stroke-width="1"/>
+<text x="10" y="60" font-size="13.5" font-weight="700">2명 · 12주쯤</text>
+<rect class="pf-sw pf-s1" x="170" y="36" width="155.1" height="16" rx="3"><title>2명 · 12주쯤 · 지금 (잰 값) — 1.65건</title></rect>
+<text x="333.1" y="49" font-size="12.5">1.65건</text>
+<rect class="pf-sw pf-s2" x="170" y="56" width="188.0" height="16" rx="3"><title>2명 · 12주쯤 · 새 설계 (식으로 셈) — 2건</title></rect>
+<text x="366.0" y="69" font-size="12.5">2건</text>
+<text x="10" y="116" font-size="13.5" font-weight="700">4명 · 24주쯤</text>
+<rect class="pf-sw pf-s1" x="170" y="92" width="191.8" height="16" rx="3"><title>4명 · 24주쯤 · 지금 (잰 값) — 2.04건</title></rect>
+<text x="369.8" y="105" font-size="12.5">2.04건</text>
+<rect class="pf-sw pf-s2" x="170" y="112" width="282.0" height="16" rx="3"><title>4명 · 24주쯤 · 새 설계 (식으로 셈) — 3건</title></rect>
+<text x="460.0" y="125" font-size="12.5">3건</text>
+<text x="10" y="172" font-size="13.5" font-weight="700">8명 · 48주쯤</text>
+<rect class="pf-sw pf-s1" x="170" y="148" width="217.1" height="16" rx="3"><title>8명 · 48주쯤 · 지금 (잰 값) — 2.31건</title></rect>
+<text x="395.1" y="161" font-size="12.5">2.31건</text>
+<rect class="pf-sw pf-s2" x="170" y="168" width="470.0" height="16" rx="3"><title>8명 · 48주쯤 · 새 설계 (식으로 셈) — 5건</title></rect>
+<text x="648.0" y="181" font-size="12.5">5건</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="170.0" y="212">0건</text><text x="264.0" y="212">1건</text><text x="358.0" y="212">2건</text><text x="452.0" y="212">3건</text><text x="546.0" y="212">4건</text><text x="640.0" y="212">5건</text></g>
+<text x="405.0" y="234" font-size="12.5" text-anchor="middle">한 주에 붙는 퀘스트</text>
+</svg>
+<p class="pf-cap">그림 1. 한 주에 붙는 퀘스트의 수 [임시] — 지금은 모험가가 네 배가 될 때 1.4배만 늡니다. 12주의 모험가는 2 ~ 3명이고, 새 설계는 2명으로 셈했습니다.</p>
+</div>
+
 | | 지금 | 새 설계 [임시] |
 | --- | --- | --- |
 | 붙는 수 | 기본 한 달 5건 × 신뢰도 · 인구 배수 | 모험가 두 명에 한 건 + 한 건 |
@@ -81,6 +120,36 @@
 
 **A 그룹 사람은, 자기가 받는 소재가 길드에 세 개 [임시] 모이면 리퀘스트를 들고 찾아옵니다. 해결하면 그 사람과의 거래가 시작됩니다.** 다섯 사람 모두 같은 규칙입니다.
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 82" role="img" aria-label="그림 2. A 그룹 사람을 만나는 길 [임시] — 어느 B 그룹의 일을 미느냐가 누구를 먼저 만날지를 정합니다.">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box" x="160.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box" x="316.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box" x="472.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box pf-box-acc" x="628.0" y="14" width="128.0" height="58" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="68.0" y="39">퀘스트를 해냄</text>
+<text x="224.0" y="39">소재가 세 개 모임</text>
+<text x="380.0" y="39">A 그룹이 찾아옴</text>
+<text x="536.0" y="39">리퀘스트 해결</text>
+<text x="692.0" y="39">거래 시작</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="68.0" y="59">예: 사냥꾼의 일</text>
+<text x="224.0" y="59">예: 가죽 3장</text>
+<text x="380.0" y="59">리퀘스트를 들고 옴</text>
+<text x="536.0" y="59">플레이어가 풀어 줌</text>
+<text x="692.0" y="59">예: 대장간이 열림</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="134.0" y1="43.0" x2="157.0" y2="43.0"/>
+<line x1="290.0" y1="43.0" x2="313.0" y2="43.0"/>
+<line x1="446.0" y1="43.0" x2="469.0" y2="43.0"/>
+<line x1="602.0" y1="43.0" x2="625.0" y2="43.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 2. A 그룹 사람을 만나는 길 [임시] — 어느 B 그룹의 일을 미느냐가 누구를 먼저 만날지를 정합니다.</p>
+</div>
+
 | 사람 | 찾아오게 하는 소재 | 그 소재가 나오는 일 |
 | --- | --- | --- |
 | 한스 | 목재 · 천 | 사냥꾼 · 세실리아 |
@@ -106,6 +175,29 @@
 ## 6. 알맞은 인원과 레벨
 
 **알맞은 인원은 그 퀘스트의 레벨과 같습니다 [임시].**
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 178" role="img" aria-label="그림 3. 알맞은 인원 = 퀘스트의 레벨 [임시] — 인원의 제한이 아니라 보상을 세는 기준입니다.">
+<line class="pf-track" x1="80" y1="100" x2="680.0" y2="100" stroke-width="6" stroke-linecap="round"/>
+<g text-anchor="middle">
+<text x="80.0" y="50" font-size="15" font-weight="700">Lv 1</text><text x="80.0" y="74" font-size="12" class="pf-soft">혼자</text>
+<text x="80.0" y="130" font-size="12.5">한 사람 몫 × 1</text>
+<text x="280.0" y="50" font-size="15" font-weight="700">Lv 2</text><text x="280.0" y="74" font-size="12" class="pf-soft">둘</text>
+<text x="280.0" y="130" font-size="12.5">한 사람 몫 × 2</text>
+<text x="480.0" y="50" font-size="15" font-weight="700">Lv 3</text><text x="480.0" y="74" font-size="12" class="pf-soft">셋</text>
+<text x="480.0" y="130" font-size="12.5">한 사람 몫 × 3</text>
+<text x="680.0" y="50" font-size="15" font-weight="700">보스</text><text x="680.0" y="74" font-size="12" class="pf-soft">셋</text>
+<text x="680.0" y="130" font-size="12.5">한 사람 몫 × 3</text>
+<text x="680.0" y="148" font-size="12.5">묶음의 둘을 Lv 3까지</text>
+<text x="680.0" y="166" font-size="12.5">해내면 나옴</text>
+</g>
+<circle class="pf-acc pf-ring" cx="80.0" cy="100" r="10"><title>Lv 1 — 혼자</title></circle>
+<circle class="pf-acc pf-ring" cx="280.0" cy="100" r="10"><title>Lv 2 — 둘</title></circle>
+<circle class="pf-acc pf-ring" cx="480.0" cy="100" r="10"><title>Lv 3 — 셋</title></circle>
+<circle class="pf-acc pf-ring" cx="680.0" cy="100" r="10"><title>보스 — 셋</title></circle>
+</svg>
+<p class="pf-cap">그림 3. 알맞은 인원 = 퀘스트의 레벨 [임시] — 인원의 제한이 아니라 보상을 세는 기준입니다.</p>
+</div>
 
 | 퀘스트 | 알맞은 인원 | 보상 ([18](18-purchase-judgment.md)) |
 | --- | :---: | --- |
@@ -140,6 +232,36 @@
 | 값 | 플레이어가 매김 | 그 퀘스트의 보상과 같은 값. 수수료 없음 |
 | 한 번에 | F급 2개 | 그대로 |
 | 평소의 소재 | 매입가가 시세의 일정 비율을 넘어야 길드에 팖 | 플레이어가 「받는다」로 켜 둔 소재는 모두 정해진 값으로 길드에 들어옴 |
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 82" role="img" aria-label="그림 4. 주문(길드 의뢰)의 차례 [임시] — 한 번에 둘까지.">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box" x="160.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box" x="316.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box" x="472.0" y="14" width="128.0" height="58" rx="8"/>
+<rect class="pf-box pf-box-acc" x="628.0" y="14" width="128.0" height="58" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="68.0" y="39">소재를 고름</text>
+<text x="224.0" y="39">퀘스트가 한 장 더</text>
+<text x="380.0" y="39">보상은 길드가 냄</text>
+<text x="536.0" y="39">모험가가 다녀옴</text>
+<text x="692.0" y="39">소재가 들어옴</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="68.0" y="59">예: 약초</text>
+<text x="224.0" y="59">그 소재가 나오는 일</text>
+<text x="380.0" y="59">퀘스트 보상과 같은 값</text>
+<text x="536.0" y="59">스스로 받아 감</text>
+<text x="692.0" y="59">주문 끝</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="134.0" y1="43.0" x2="157.0" y2="43.0"/>
+<line x1="290.0" y1="43.0" x2="313.0" y2="43.0"/>
+<line x1="446.0" y1="43.0" x2="469.0" y2="43.0"/>
+<line x1="602.0" y1="43.0" x2="625.0" y2="43.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 4. 주문(길드 의뢰)의 차례 [임시] — 한 번에 둘까지.</p>
+</div>
 
 | 차례 | 일어나는 일 |
 | :---: | --- |
