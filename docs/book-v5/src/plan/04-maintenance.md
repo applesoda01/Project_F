@@ -8,6 +8,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「04 정비대」)
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 정비(손질)는 싸움이 있는 퀘스트에서만 듣는 준비물입니다. 대장장이에게 소재 12개를 건네면 길드에 정비대가 열립니다.
+- 기본 손질 둘(날 세우기 · 덧대기)에서 윗급 둘로 오릅니다. 값은 20G(한 사람 몫의 20%)에서 시작하고 플레이어가 매깁니다.
+- 이용객이 쌓이면 정비대의 레벨이 오르고, 4주마다 대장장이의 품삯이 나갑니다. 본전은 「한 달에 한 번」입니다.
+
+</div>
+
 ## 한눈에
 
 | 걸음 | 정한 것 |
@@ -31,6 +41,38 @@
 | 보조금을 10%로 낮추면 새 시설이 메워야 할 돈이 생김 | 한 달 순수입 458G → 169G. 메워야 할 돈은 한 달 290G쯤 (2026-11-25 B세션 측정 · 100판) |
 | 퀘스트를 세게만 해서는 준비물이 팔리지 않음 | 세기를 1.75배로 올려도 출발한 사람의 95%가 「여유」. 떠나는 사람만 한 판 120.9명 → 92.0명으로 줆 (같은 측정 · 100판) |
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 126" role="img" aria-label="그림 1. 모험가가 길드에서 돈을 쓸 곳이 밥과 술뿐입니다.">
+<g class="pf-grid" stroke-width="1"><line x1="312.5" y1="16" x2="312.5" y2="82"/><line x1="385.0" y1="16" x2="385.0" y2="82"/><line x1="457.5" y1="16" x2="457.5" y2="82"/><line x1="530.0" y1="16" x2="530.0" y2="82"/></g>
+<line class="pf-axis" x1="240" y1="16" x2="240" y2="82" stroke-width="1"/>
+<text x="10" y="41" font-size="13.5" font-weight="700">모험가가 한 달에 버는 돈</text>
+<rect class="pf-acc" x="240" y="28" width="275.1" height="16" rx="3"><title>모험가가 한 달에 버는 돈 — 759G</title></rect>
+<text x="525.1" y="41" font-size="12.5">759G</text>
+<text x="10" y="75" font-size="13.5" font-weight="700">그 가운데 길드 시설에서 쓰는 돈</text>
+<rect class="pf-acc" x="240" y="62" width="44.6" height="16" rx="3"><title>그 가운데 길드 시설에서 쓰는 돈 — 123G (16%) — 식사 119G + 술 4G</title></rect>
+<text x="294.6" y="75" font-size="12.5">123G (16%) — 식사 119G + 술 4G</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="240.0" y="98">0</text><text x="312.5" y="98">200</text><text x="385.0" y="98">400</text><text x="457.5" y="98">600</text><text x="530.0" y="98">800</text></g>
+<text x="385.0" y="120" font-size="12.5" text-anchor="middle">첫해 모험가 한 명 · 한 달 (지금 게임 · 잰 값)</text>
+</svg>
+<p class="pf-cap">그림 1. 모험가가 길드에서 돈을 쓸 곳이 밥과 술뿐입니다.</p>
+</div>
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 126" role="img" aria-label="그림 2. 모험가의 지갑은 쌓이는데 길드 금고는 그렇지 않습니다.">
+<g class="pf-grid" stroke-width="1"><line x1="336.7" y1="16" x2="336.7" y2="82"/><line x1="433.3" y1="16" x2="433.3" y2="82"/><line x1="530.0" y1="16" x2="530.0" y2="82"/></g>
+<line class="pf-axis" x1="240" y1="16" x2="240" y2="82" stroke-width="1"/>
+<text x="10" y="41" font-size="13.5" font-weight="700">모험가들의 지갑 합계</text>
+<rect class="pf-acc" x="240" y="28" width="280.0" height="16" rx="3"><title>모험가들의 지갑 합계 — 5,794G</title></rect>
+<text x="530.0" y="41" font-size="12.5">5,794G</text>
+<text x="10" y="75" font-size="13.5" font-weight="700">길드 금고</text>
+<rect class="pf-acc" x="240" y="62" width="117.5" height="16" rx="3"><title>길드 금고 — 2,431G</title></rect>
+<text x="367.5" y="75" font-size="12.5">2,431G</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="240.0" y="98">0</text><text x="336.7" y="98">2000</text><text x="433.3" y="98">4000</text><text x="530.0" y="98">6000</text></g>
+<text x="385.0" y="120" font-size="12.5" text-anchor="middle">48주 (지금 게임 · 잰 값)</text>
+</svg>
+<p class="pf-cap">그림 2. 모험가의 지갑은 쌓이는데 길드 금고는 그렇지 않습니다.</p>
+</div>
+
 - 위 두 줄은 지금 규칙에서 잰 값이고, 정비대를 넣은 뒤의 값은 재지 않았습니다.
 - 넷째 줄이 뜻하는 것: 준비물은 「떠난 뒤에 사는 덤」이 아니라 「있어야 떠나는 것」이 되어야 합니다. [02 진행표](02-timeline.md)의 「위험해서 아무도 안 가요 → 정비대」가 그 자리입니다.
 
@@ -53,6 +95,36 @@
 **싸우지 않는 쪽의 구멍 → 19 점술가.** 이렇게 정하자 싸움이 없는 퀘스트(조사 · 채집 · 낚시)의 모험가는 준비물이 밥 하나뿐인 것이 드러났습니다. 「싸우는 일은 정비대, 싸우지 않는 일은 점술가」가 되도록 **점술가를 새 항목 19로 세웠습니다**(사용자 안). 견줄 마을 가게는 나중에 생길 마법학교로 봅니다.
 
 ## 2. 대장장이의 2단계에서 열립니다
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 100" role="img" aria-label="그림 3. 정비대가 열리는 차례 [임시]">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="167.0" height="76" rx="8"/>
+<rect class="pf-box" x="199.0" y="14" width="167.0" height="76" rx="8"/>
+<rect class="pf-box" x="394.0" y="14" width="167.0" height="76" rx="8"/>
+<rect class="pf-box pf-box-acc" x="589.0" y="14" width="167.0" height="76" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="87.5" y="39">대장장이의 리퀘스트</text>
+<text x="282.5" y="39">가죽과 광석이 들어옴</text>
+<text x="477.5" y="39">12개를 건넴</text>
+<text x="672.5" y="39">길드에 정비대</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="87.5" y="59">마을에 대장간이 열림</text>
+<text x="87.5" y="75">정비 값은 마을로</text>
+<text x="282.5" y="59">사냥꾼 · 탐험가의 퀘스트</text>
+<text x="282.5" y="75"></text>
+<text x="477.5" y="59">대장장이의 2단계</text>
+<text x="477.5" y="75"></text>
+<text x="672.5" y="59">정비 값이 길드로</text>
+<text x="672.5" y="75">장비는 그대로 마을로</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="173.0" y1="52.0" x2="196.0" y2="52.0"/>
+<line x1="368.0" y1="52.0" x2="391.0" y2="52.0"/>
+<line x1="563.0" y1="52.0" x2="586.0" y2="52.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 3. 정비대가 열리는 차례 [임시]</p>
+</div>
 
 | 순서 | 일어나는 일 | 모험가의 돈이 가는 곳 |
 | :---: | --- | --- |
@@ -81,6 +153,26 @@
 「아무 소재나 1개」로 두면 세 줄이 똑같은 연료가 되어 정비대에서는 어느 퀘스트를 밀든 차이가 없습니다. 고기는 스테이크, 버섯은 수프가 되듯 광석은 날, 가죽은 덧댐이 됩니다.
 
 ## 4. 손질의 계단
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 160" role="img" aria-label="그림 4. 손질의 계단 [임시] — 효과의 크기는 전투 수치라 한석님과 논의할 것입니다.">
+<line class="pf-track" x1="80" y1="100" x2="680.0" y2="100" stroke-width="6" stroke-linecap="round"/>
+<g text-anchor="middle">
+<text x="80.0" y="50" font-size="15" font-weight="700">마을 대장간</text><text x="80.0" y="74" font-size="12" class="pf-soft">정비 20G</text>
+<text x="80.0" y="130" font-size="12.5">돈이 마을로 감</text>
+<text x="380.0" y="50" font-size="15" font-weight="700">기본 손질</text><text x="380.0" y="74" font-size="12" class="pf-soft">20G · 대장장이 2단계</text>
+<text x="380.0" y="130" font-size="12.5">날 세우기 · 덧대기</text>
+<text x="380.0" y="148" font-size="12.5">승산 한 단계쯤</text>
+<text x="680.0" y="50" font-size="15" font-weight="700">윗급 손질</text><text x="680.0" y="74" font-size="12" class="pf-soft">40G 이상 · 3단계</text>
+<text x="680.0" y="130" font-size="12.5">둘째 묶음의 소재</text>
+<text x="680.0" y="148" font-size="12.5">승산 두 단계쯤</text>
+</g>
+<circle class="pf-acc pf-ring" cx="80.0" cy="100" r="10"><title>마을 대장간 — 정비 20G</title></circle>
+<circle class="pf-acc pf-ring" cx="380.0" cy="100" r="10"><title>기본 손질 — 20G · 대장장이 2단계</title></circle>
+<circle class="pf-acc pf-ring" cx="680.0" cy="100" r="10"><title>윗급 손질 — 40G 이상 · 3단계</title></circle>
+</svg>
+<p class="pf-cap">그림 4. 손질의 계단 [임시] — 효과의 크기는 전투 수치라 한석님과 논의할 것입니다.</p>
+</div>
 
 | 대장장이 | 손질 [이름은 임시] | 하는 일 | 쓰는 소재 | 나오는 곳 |
 | --- | --- | --- | --- | --- |
@@ -147,6 +239,41 @@
 
 > **한 달 품삯 = 그 레벨의 기본 손질 한 번 값.** [임시]
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 282" role="img" aria-label="그림 5. 레벨마다의 값과 품삯 [임시] — 본전은 어느 레벨에서나 「한 달에 한 번」입니다.">
+<g font-size="12.5">
+<circle class="pf-sw pf-s1" cx="156" cy="12" r="5"/><text x="168" y="16">받을 수 있는 값</text>
+<circle class="pf-sw pf-s2" cx="277" cy="12" r="5"/><text x="289" y="16">한 달 품삯</text>
+<circle class="pf-sw pf-s3" cx="369" cy="12" r="5"/><text x="381" y="16">세 번 팔리면 남는 돈</text>
+</g>
+<g class="pf-grid" stroke-width="1"><line x1="248.0" y1="30" x2="248.0" y2="256"/><line x1="346.0" y1="30" x2="346.0" y2="256"/><line x1="444.0" y1="30" x2="444.0" y2="256"/><line x1="542.0" y1="30" x2="542.0" y2="256"/><line x1="640.0" y1="30" x2="640.0" y2="256"/></g>
+<line class="pf-axis" x1="150" y1="30" x2="150" y2="256" stroke-width="1"/>
+<text x="10" y="70" font-size="13.5" font-weight="700">정비대 Lv 1</text>
+<rect class="pf-sw pf-s1" x="150" y="36" width="196.0" height="16" rx="3"><title>정비대 Lv 1 · 받을 수 있는 값 — 20G</title></rect>
+<text x="354.0" y="49" font-size="12.5">20G</text>
+<rect class="pf-sw pf-s2" x="150" y="56" width="196.0" height="16" rx="3"><title>정비대 Lv 1 · 한 달 품삯 — 20G</title></rect>
+<text x="354.0" y="69" font-size="12.5">20G</text>
+<rect class="pf-sw pf-s3" x="150" y="76" width="392.0" height="16" rx="3"><title>정비대 Lv 1 · 세 번 팔리면 남는 돈 — 40G</title></rect>
+<text x="550.0" y="89" font-size="12.5">40G</text>
+<text x="10" y="146" font-size="13.5" font-weight="700">Lv 2</text>
+<rect class="pf-sw pf-s1" x="150" y="112" width="215.6" height="16" rx="3"><title>Lv 2 · 받을 수 있는 값 — 22G</title></rect>
+<text x="373.6" y="125" font-size="12.5">22G</text>
+<rect class="pf-sw pf-s2" x="150" y="132" width="215.6" height="16" rx="3"><title>Lv 2 · 한 달 품삯 — 22G</title></rect>
+<text x="373.6" y="145" font-size="12.5">22G</text>
+<rect class="pf-sw pf-s3" x="150" y="152" width="431.2" height="16" rx="3"><title>Lv 2 · 세 번 팔리면 남는 돈 — 44G</title></rect>
+<text x="589.2" y="165" font-size="12.5">44G</text>
+<text x="10" y="222" font-size="13.5" font-weight="700">Lv 3</text>
+<rect class="pf-sw pf-s1" x="150" y="188" width="235.2" height="16" rx="3"><title>Lv 3 · 받을 수 있는 값 — 24G</title></rect>
+<text x="393.2" y="201" font-size="12.5">24G</text>
+<rect class="pf-sw pf-s2" x="150" y="208" width="235.2" height="16" rx="3"><title>Lv 3 · 한 달 품삯 — 24G</title></rect>
+<text x="393.2" y="221" font-size="12.5">24G</text>
+<rect class="pf-sw pf-s3" x="150" y="228" width="470.4" height="16" rx="3"><title>Lv 3 · 세 번 팔리면 남는 돈 — 48G</title></rect>
+<text x="628.4" y="241" font-size="12.5">48G</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="150.0" y="272">0G</text><text x="248.0" y="272">10G</text><text x="346.0" y="272">20G</text><text x="444.0" y="272">30G</text><text x="542.0" y="272">40G</text><text x="640.0" y="272">50G</text></g>
+</svg>
+<p class="pf-cap">그림 5. 레벨마다의 값과 품삯 [임시] — 본전은 어느 레벨에서나 「한 달에 한 번」입니다.</p>
+</div>
+
 | 정비대 | 받을 수 있는 값 | 한 달 품삯 | 한 달에 세 번 팔리면 남는 돈 |
 | --- | :---: | :---: | :---: |
 | Lv 1 | 20G | 20G | 40G |
@@ -177,6 +304,10 @@
 - 마을 사람도 이용객 누적에 들어갑니다. 마을 손님을 받으면 정비대가 더 빨리 큽니다.
 
 ## 9. 넘긴 것 — 장비 조합법 [참고]
+
+
+<details>
+<summary>장비 조합법의 시안과 소재 셈 — 소재 줄을 다시 나누기 전의 참고 자료 (눌러서 펼치기)</summary>
 
 > **2026-11-25 22:26:** 아래의 셈과 시안은 줄을 다시 나누기 **전**의 배정(대장장이가 뼈·뿔 · 가죽·깃털 · 광석 셋을 받음)으로 짠 것입니다. 지금은 대장장이가 광석과 가죽·깃털, 그레타가 약초와 뼈·뿔, 점술가가 마석과 옛 물건을 받습니다. 한 바퀴 뒤에 새 배정으로 다시 짭니다.
 
@@ -226,6 +357,8 @@
 | 나무 목걸이 | 광석 | 마석 |
 | 나무 묵주 | 뼈 | 약초 |
 | 가죽 장갑 | 가죽 | 천 |
+
+</details>
 
 ## 보이는 것
 

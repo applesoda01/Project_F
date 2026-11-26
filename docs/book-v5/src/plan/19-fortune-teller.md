@@ -8,6 +8,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「19 점술가」)
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 점술은 정비대의 거울입니다. 싸움이 없는 퀘스트에서만 듣고, 그 원정 동안 승산을 한 단계 올립니다.
+- 새 인물 「점술가」가 A 그룹의 다섯째 사람입니다. 마석과 「옛 물건」을 받고, 점 한 번에 1개를 씁니다.
+- 효과는 늘 같습니다. 점괘 한마디가 남고, 미신가는 점을 보면 비 오는 날에도 떠납니다.
+
+</div>
+
 ## 한눈에
 
 | 걸음 | 정한 것 |
@@ -22,6 +32,28 @@
 | 04와 같은 규칙 | 값 · 레벨 · 품삯 |
 
 ## 왜 필요한가
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 192" role="img" aria-label="그림 1. 싸우지 않는 퀘스트의 모험가는 길드에서 돈을 쓸 곳이 밥뿐이었습니다.">
+<g class="pf-grid" stroke-width="1"><line x1="343.3" y1="16" x2="343.3" y2="148"/><line x1="456.7" y1="16" x2="456.7" y2="148"/><line x1="570.0" y1="16" x2="570.0" y2="148"/></g>
+<line class="pf-axis" x1="230" y1="16" x2="230" y2="148" stroke-width="1"/>
+<text x="10" y="38" font-size="13.5" font-weight="700">싸우는 퀘스트</text>
+<text x="10" y="55" font-size="12" class="pf-soft">밥 · 정비 · 물약</text>
+<rect class="pf-acc" x="230" y="28" width="340.0" height="16" rx="3"><title>싸우는 퀘스트 — 3가지</title></rect>
+<text x="580.0" y="41" font-size="12.5">3가지</text>
+<text x="10" y="84" font-size="13.5" font-weight="700">싸우지 않는 퀘스트 (04까지)</text>
+<text x="10" y="101" font-size="12" class="pf-soft">밥</text>
+<rect class="pf-mute" x="230" y="74" width="113.3" height="16" rx="3"><title>싸우지 않는 퀘스트 (04까지) — 1가지</title></rect>
+<text x="353.3" y="87" font-size="12.5">1가지</text>
+<text x="10" y="130" font-size="13.5" font-weight="700">싸우지 않는 퀘스트 (점술가)</text>
+<text x="10" y="147" font-size="12" class="pf-soft">밥 · 점술</text>
+<rect class="pf-acc" x="230" y="120" width="226.7" height="16" rx="3"><title>싸우지 않는 퀘스트 (점술가) — 2가지</title></rect>
+<text x="466.7" y="133" font-size="12.5">2가지</text>
+<g font-size="12" text-anchor="middle" class="pf-soft"><text x="230.0" y="164">0</text><text x="343.3" y="164">1</text><text x="456.7" y="164">2</text><text x="570.0" y="164">3</text></g>
+<text x="400.0" y="186" font-size="12.5" text-anchor="middle">길드에서 살 수 있는 준비물의 가짓수</text>
+</svg>
+<p class="pf-cap">그림 1. 싸우지 않는 퀘스트의 모험가는 길드에서 돈을 쓸 곳이 밥뿐이었습니다.</p>
+</div>
 
 | | 싸우는 퀘스트 | 싸우지 않는 퀘스트 |
 | --- | --- | --- |
@@ -61,6 +93,34 @@
 
 > **앞의 결정을 고쳤습니다.** [17](17-quest-material-map.md)에서 정한 줄 배정을 다시 나눴습니다. 마석은 그레타에서 점술가로, 뼈·뿔은 대장장이에서 그레타로 옮겼고, 점술가가 받는 새 줄 「옛 물건」을 더했습니다. 식재료 세 줄은 그대로입니다.
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 134" role="img" aria-label="그림 2. 고리가 닫힙니다 — 조사가 마석을 가져오고, 조사를 떠나는 모험가가 점을 봅니다.">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box" x="199.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box" x="394.0" y="14" width="167.0" height="58" rx="8"/>
+<rect class="pf-box" x="589.0" y="14" width="167.0" height="58" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="87.5" y="39">헤르만의 조사 퀘스트</text>
+<text x="282.5" y="39">점술가에게 건넴</text>
+<text x="477.5" y="39">길드에 점술가의 자리</text>
+<text x="672.5" y="39">조사를 떠나는 모험가</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="87.5" y="59">마석이 나옴</text>
+<text x="282.5" y="59">단계가 오름</text>
+<text x="477.5" y="59">점 한 번에 마석 1개</text>
+<text x="672.5" y="59">점을 보고 떠남</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="173.0" y1="43.0" x2="196.0" y2="43.0"/>
+<line x1="368.0" y1="43.0" x2="391.0" y2="43.0"/>
+<line x1="563.0" y1="43.0" x2="586.0" y2="43.0"/>
+<path d="M672.5,74 V96 Q672.5,106 662.5,106 H97.5 Q87.5,106 87.5,96 V76"/>
+</g>
+<text x="380.0" y="126" font-size="12.5" text-anchor="middle">조사를 해내면 다시 마석이 들어옴</text>
+</svg>
+<p class="pf-cap">그림 2. 고리가 닫힙니다 — 조사가 마석을 가져오고, 조사를 떠나는 모험가가 점을 봅니다.</p>
+</div>
+
 | 받는 사람 | 17에서 | 지금 |
 | --- | --- | --- |
 | 마르타 | 고기 · 버섯·열매 · 생선 | 그대로 |
@@ -95,6 +155,36 @@
 **문턱은 한 바퀴 뒤에 봅니다.** 줄 수가 사람마다 다릅니다(마르타 셋 · 나머지 둘 · 점술가의 한 줄은 운). 한 단계를 누구나 12개로 두면 줄이 둘인 사람은 한 묶음에 6개만 남습니다. 「줄마다 4개」(줄 셋이면 12개 · 둘이면 8개)로 바꾸는 안을 임시 값 54번에 올려 두었습니다.
 
 ## 3. 열리는 순서 — 대장장이와 같은 세 단계
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 100" role="img" aria-label="그림 3. 점술가가 열리는 차례 [임시] — 대장장이와 같은 세 단계.">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="167.0" height="76" rx="8"/>
+<rect class="pf-box pf-box-acc" x="199.0" y="14" width="167.0" height="76" rx="8"/>
+<rect class="pf-box" x="394.0" y="14" width="167.0" height="76" rx="8"/>
+<rect class="pf-box" x="589.0" y="14" width="167.0" height="76" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="87.5" y="39">리퀘스트를 끝냄</text>
+<text x="282.5" y="39">마석 · 옛 물건을 건넴</text>
+<text x="477.5" y="39">맑은 마석을 건넴</text>
+<text x="672.5" y="39">뒤 등급</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="87.5" y="59">마을 어귀에 천막</text>
+<text x="87.5" y="75">점 값은 밖으로</text>
+<text x="282.5" y="59">길드에 점술가의 자리</text>
+<text x="282.5" y="75">점 값이 길드로</text>
+<text x="477.5" y="59">윗급 점</text>
+<text x="477.5" y="75"></text>
+<text x="672.5" y="59">천막 자리에 마법학원</text>
+<text x="672.5" y="75">(프로토타입 밖)</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="173.0" y1="52.0" x2="196.0" y2="52.0"/>
+<line x1="368.0" y1="52.0" x2="391.0" y2="52.0"/>
+<line x1="563.0" y1="52.0" x2="586.0" y2="52.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 3. 점술가가 열리는 차례 [임시] — 대장장이와 같은 세 단계.</p>
+</div>
 
 | 단계 | 대장장이 | 점술가 | 점 값이 가는 곳 |
 | :---: | --- | --- | --- |

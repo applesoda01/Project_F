@@ -8,6 +8,16 @@
 >
 > 대화 기록: 저장소의 `docs/design/세부기획_대화_2026-11-25.md` (「05 약초 시설」)
 
+<div class="pf-key">
+
+**이 쪽의 세 줄**
+
+- 모험가가 이미 사고 있는 물약을 길드에서도 팝니다. 그 돈의 갈 곳이 마을에서 길드로 바뀝니다.
+- 구급 주머니는 보험입니다. 승산은 올리지 않고, 쓰러졌을 때 부상을 한 번 막습니다.
+- 그레타에게 약초와 뼈를 건네면 길드에 약초 시설이 열립니다. 값 · 레벨 · 품삯은 정비대와 같은 규칙입니다.
+
+</div>
+
 ## 한눈에
 
 | 걸음 | 정한 것 |
@@ -67,6 +77,28 @@
 
 ## 2. 구급 주머니는 보험입니다
 
+<div class="pf-fig">
+<svg viewBox="0 0 760 82" role="img" aria-label="그림 1. 물약과 구급 주머니가 듣는 때 [임시]">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="232.0" height="58" rx="8"/>
+<rect class="pf-box" x="264.0" y="14" width="232.0" height="58" rx="8"/>
+<rect class="pf-box pf-box-acc" x="524.0" y="14" width="232.0" height="58" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="120.0" y="39">싸우는 중</text>
+<text x="380.0" y="39">쓰러지면</text>
+<text x="640.0" y="39">구급 주머니가 있으면</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="120.0" y="59">물약이 체력과 마력을 채움</text>
+<text x="380.0" y="59">지금은 부상으로 2주를 쉼</text>
+<text x="640.0" y="59">부상 없이 돌아옴 · 주머니는 없어짐</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="238.0" y1="43.0" x2="261.0" y2="43.0"/>
+<line x1="498.0" y1="43.0" x2="521.0" y2="43.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 1. 물약과 구급 주머니가 듣는 때 [임시]</p>
+</div>
+
 | | 물약 | 구급 주머니 |
 | --- | --- | --- |
 | 언제 듣나 | 싸우는 중 | 쓰러진 뒤 |
@@ -80,6 +112,31 @@
 - 재료가 뼈와 뿔이라 「구급 주머니」라는 이름이 어색할 수 있습니다(「보약」 같은 이름). 어젯밤 정한 이름이라 그대로 두고 [임시]로 둡니다.
 
 ## 3. 열리는 순서 — 대장장이 · 점술가와 같은 세 단계
+
+<div class="pf-fig">
+<svg viewBox="0 0 760 100" role="img" aria-label="그림 2. 약초 시설이 열리는 차례 [임시] — 대장장이 · 점술가와 같은 세 단계.">
+<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="currentColor"/></marker></defs>
+<rect class="pf-box" x="4.0" y="14" width="232.0" height="76" rx="8"/>
+<rect class="pf-box pf-box-acc" x="264.0" y="14" width="232.0" height="76" rx="8"/>
+<rect class="pf-box" x="524.0" y="14" width="232.0" height="76" rx="8"/>
+<g text-anchor="middle" font-size="14.5" font-weight="700">
+<text x="120.0" y="39">그레타의 리퀘스트</text>
+<text x="380.0" y="39">약초와 뼈를 건넴</text>
+<text x="640.0" y="39">둘째 묶음의 소재를 건넴</text>
+</g><g text-anchor="middle" font-size="11.5" class="pf-soft">
+<text x="120.0" y="59">마을에 물약 상점</text>
+<text x="120.0" y="75">물약 값은 마을로</text>
+<text x="380.0" y="59">길드에 약초 시설</text>
+<text x="380.0" y="75">물약 값이 길드로</text>
+<text x="640.0" y="59">윗급 물약 · 윗급 구급 주머니</text>
+<text x="640.0" y="75">길드로</text>
+</g><g class="pf-arrow" marker-end="url(#pfa)">
+<line x1="238.0" y1="52.0" x2="261.0" y2="52.0"/>
+<line x1="498.0" y1="52.0" x2="521.0" y2="52.0"/>
+</g>
+</svg>
+<p class="pf-cap">그림 2. 약초 시설이 열리는 차례 [임시] — 대장장이 · 점술가와 같은 세 단계.</p>
+</div>
 
 | 단계 | 일어나는 일 | 물약 값이 가는 곳 |
 | :---: | --- | --- |
