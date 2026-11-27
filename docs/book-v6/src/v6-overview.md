@@ -88,7 +88,7 @@
 | 12 | 퀘스트의 레벨 | 같은 틀을 3번 성공하면 +1 | 1번 성공에 +1 (Lv 3까지). 모험가는 열린 레벨 안에서 골라 감 | — | [17](ch04/quest-material-map.md) · [10 · 15](ch04/quest-structure.md) |
 | 13 | 알맞은 인원 | 없음 (파티의 54%가 혼자) | 레벨과 같음 — Lv 1 혼자 · Lv 2 둘 · Lv 3 셋 | — | [10 · 15](ch04/quest-structure.md) |
 | 14 | 퀘스트의 세기 | 출발의 73%가 승산 「여유」 · 성공률 90% | 준비 없이 가면 팽팽, 준비하면 여유. 준비물의 효과는 승산 한 단계 | 전투 | [18](ch09/purchase-judgment.md) · [03](ch07/dining.md) · [10 · 15](ch04/quest-structure.md) |
-| 15 | 준비물 | 요리 · 물약 | + 손질(싸움이 있는 퀘스트만) · 점(싸움이 없는 퀘스트만) · 구급 주머니(부상을 한 번 막음) | 전투 | [04](ch07/maintenance.md) · [19](ch07/fortune-teller.md) · [05](ch07/herb-facility.md) |
+| 15 | 준비물 | 요리 · 물약 | + 손질(~~싸움이 있는 퀘스트만~~ 몬스터 칸) · 점(~~싸움이 없는 퀘스트만~~ 일 칸 · 함정 · 보물상자 · 2026-11-27) · 구급 주머니(부상을 한 번 막음) | 전투 | [04](ch07/maintenance.md) · [19](ch07/fortune-teller.md) · [05](ch07/herb-facility.md) |
 | 16 | 죽음 | F · E급 1% · D · C급 3% | F ~ C급은 0. B급 이상의 의뢰와 침공에서만 | 전투 | [01](ch01/principles.md) · [14](ch03/milestones.md) |
 | 17 | 침공이 오는 조건 | 리퀘스트 10번 | 보스 열을 모두 해냄 | — | [02](ch02/timeline-v6.md) |
 | 18 | F급의 길이 | E급에 40주쯤 | 70건이 필요 (지금 박자로는 40주에 57건 · 계산으로 49주쯤) — 퀘스트의 수를 늘린 뒤 다시 잼 | 경제 | [17](ch04/quest-material-map.md) · [02](ch02/timeline-v6.md) |
