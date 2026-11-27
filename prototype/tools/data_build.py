@@ -13,7 +13,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'data')
 OUT = os.path.join(ROOT, 'js', 'data_gen.js')
 SCHEMA = json.load(open(os.path.join(ROOT, 'tools', 'balance_schema.json'), encoding='utf-8'))
-ALLOW_NEG = {'late.base'}   # 음수를 허용하는 설정 (늦장 기본 확률: 성향 보정과 더해 0 아래는 0으로 침, 2026-11-18 결정 30)
+ALLOW_NEG = {'late.base', 'adv.restRisk', 'adv.restSpend', 'adv.restSocial', 'adv.inviteSocial', 'adv.inviteRel', 'adv.inviteRisk'}   # 음수를 허용하는 설정 (늦장 기본 확률: 성향 보정과 더해 0 아래는 0으로 침, 2026-11-18 결정 30 · 2026-11-27 바닥 ①: 쉼 · 권유의 성향 보정 %p)
 
 GRADES = ['F', 'E', 'D', 'C', 'B', 'A', 'S']
 STATS = ['힘', '민첩', '지력', '정신', '기교']

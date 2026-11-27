@@ -65,11 +65,11 @@
     // 전투. units: unit() 배열, enemies: [{hp, atk, def, boss, name}], g: 의뢰 등급, R: 0~1 난수 함수(없으면 고정 씨앗), wantLog: 미니 뷰 기록
     // 기록(log): hit{by,to(적 순번),hp,c(치명타),k(스킬)} · hurt{to,hp} · heal{by,to,hp} · potion{to,hp} · down{to} · wave{n}. r = 라운드
     // 2026-11-27 바닥 공사 「짓는 차례」 1 (명세 ②-D): 한 번에 끝까지 돌던 것을 begin(상태 만들기) · step(한 라운드) · end(결과)로 나눔.
-    //   규칙은 그대로. 상태(st)에는 함수를 넣지 않음 — 난수는 step에 넘김. 아군은 st.P[k].ally · .id로 가리키고, step은 .a(모험가)를 읽지 않음.
+    //   규칙은 그대로. 상태(st)에는 함수도 모험가 객체도 넣지 않음 — 난수는 step에 넘기고, 아군은 .ally · .id로 가리킴.
     //   30라운드에서 물러나는 것(maxRounds)은 begin의 opt.maxRounds로만 켬 — fight(옛 길)는 켜고, 박자로 도는 새 원정은 끔(기한이 대신함 · 3-2).
     function begin(units, enemies, g, leaderRisk, opt) {
       opt = opt || {};
-      const P = units.map(u => Object.assign({}, u, { gauge: 0, ally: true, id: u.id != null ? u.id : (u.a ? u.a.id : undefined) }));
+      const P = units.map((u, k) => { const o = Object.assign({}, u, { gauge: 0, ally: true, id: u.id != null ? u.id : (u.a ? u.a.id : undefined), k }); delete o.a; return o; });   // 2026-11-27 바닥 ①: 상태에는 모험가 객체를 넣지 않고 아이디만 (저장할 때 모험가가 두 번 적히지 않게). k = 넘겨받은 순번
       P.sort((x, y) => POS[x.core] - POS[y.core] || y.maxHp - x.maxHp);                 // 자동 배치: 맨 앞 → 맨 뒤
       const E = enemies.map((e, i) => ({ i, name: e.name, mon: e.mon, hp: e.hp, maxHp: e.hp, atk: e.atk, def: e.def || 0, boss: !!e.boss, gauge: 0 }));
       if (DB && DB.on && DB.rare && P.some(u => u.rare)) for (const u of P) if (!u._rp) { u.atk *= 1 + DB.rareParty; u._rp = 1; }   // 2026-11-20 레어 장신구: 같은 파티 전원 공격 + (방을 이어 가도 한 번만)
@@ -161,7 +161,8 @@
       const rnd = R || mulberry(20261111);
       const st = begin(units, enemies, g, leaderRisk, { log: wantLog, maxRounds: C.maxRounds });
       while (!st.done) step(st, rnd);
-      return end(st);
+      const r = end(st); for (const u of r.units) if (units[u.k]) u.a = units[u.k].a;   // 옛 길을 부르는 곳은 u.a를 읽으므로 돌려줄 때 다시 붙임
+      return r;
     }
 
     // 출발 판단용 예상 성공 확률: 같은 조건으로 고정 씨앗 전투를 여러 번 돌려 이긴 비율을 구함 (같은 입력이면 항상 같은 값)

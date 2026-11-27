@@ -43,7 +43,10 @@
         gradeStat: [0, 3, 4, 5, 6, 8, 10],         // 2026-11-12 승급 시 능력치 5개에 각각 (balance.csv와 같게)
         gradeLv: [0, 4, 10, 18, 26, 35, 45], gradeAch: [0, 4, 5, 7, 7, 10, 10]   // 2026-11-20 사용자 결정 B: 승급 조건을 balance.csv로 (E급 Lv5 · 실적 5 → Lv4 · 실적 4)
       },
+      time: { beatsPerDay: 10, daysPerWeek: 7 },   // 2026-11-27 바닥 ①: 박자 (게임 쪽만 씀 · 설정을 읽으려고 기본값만 둠)
       adv: {
+        restBase: 0.5, restRisk: [0.2, 0, -0.2], restSpend: [-0.1, 0, 0.1], restSocial: [-0.1, 0, 0.1], restMin: 0.1, restMax: 0.9, restHurt: 0.5,   // 2026-11-27 바닥 ① (게임 쪽만 씀)
+        inviteBase: 0.5, inviteSocial: [-0.2, 0, 0.2], inviteRel: [-0.2, 0, 0.2], inviteRisk: [-0.1, 0, 0.1], waitBeats: 10, prepBeats: 1, regenPerBeat: 0.1, relookBeats: 10,
         arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,       // arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)
         zeroFameVisit: 0, founderMix: 1, founderWarrior: 1,   // founderWarrior: 2026-11-18 결정 33 — 첫 모험가는 전사, 나머지는 전사 외
           // 2026-11-17 의뢰 0건 판 대책 ②: 명성 0인 동안 N주마다 1명 방문 (0이면 끔)
@@ -98,7 +101,7 @@
         raidMonths: [8, 6, 5, 4, 3],
         sCandidates: 2
       },
-      deco: { attach: 1, trust: 1, mat: 1, fame: 1, gold: 5, xp: 5, injury: 1, x2PerMonth: 1 },   // F급 장식 효과 (2026-11-12, guild_interior.md 10-2). 시뮬레이터는 run.deco 목록에 있는 장식만 놓였다고 봄
+      deco: { attach: 1, trust: 1, mat: 1, fame: 1, gold: 5, xp: 5, injury: 1, x2PerMonth: 1, hearthRegen: 2 },   // F급 장식 효과 (2026-11-12, guild_interior.md 10-2). 시뮬레이터는 run.deco 목록에 있는 장식만 놓였다고 봄
       fame: {                                    // 명성 [가안]: 높을수록 모험가가 많이 찾아옴 (방문 수 = 기본 × 신뢰도 보정 × 명성 보정)
         succ: [1, 2, 3, 4, 5, 6, 8],              // 의뢰 성공 시 등급별 상승 (2026-11-12 정수화, D 이상 가안)
         fail: [1, 2, 3, 4, 5, 6, 8],              // 의뢰 실패 시 등급별 하락 (2026-11-12 정수화, D 이상 가안)

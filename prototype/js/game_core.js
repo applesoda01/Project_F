@@ -27,13 +27,14 @@
     '리타', '사일러스', '테오', '우나', '빅터', '윌라', '엘런', '노아', '아이다', '벤', '실비아', '조엘', '헬가', '라이언', '소피', '토빈', '마야', '다넬', '에이미', '고든'];
 
   function attachRng(s) { s.R = function () { s.rngState = (s.rngState + 0x6D2B79F5) >>> 0; let t = s.rngState; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; return s; }
+  const SAVE_VER = 6;   // 2026-11-27 바닥 ① (①-I): 박자로 도는 판. 옛 판(주 단위)의 저장은 불러오지 않음
   function serialize(s) { const o = Object.assign({}, s); delete o.R; return JSON.stringify(o); }
-  function deserialize(str) { return migrate(attachRng(JSON.parse(str))); }
+  function deserialize(str) { const o = JSON.parse(str); if (o.saveVer !== SAVE_VER) { const e = new Error('이 판에서는 열 수 없습니다'); e.oldSave = true; throw e; } return migrate(attachRng(o)); }
 
   function newGame(cfg, seed) {
     const s = {
       cfg, seed: seed >>> 0, rngState: seed >>> 0,
-      expireV: 1, up: {}, place: { items: [], next: 1 }, week: 0, grade: 0, gold: cfg.econ.startGold, trust: 50, fame: 0, pop: cfg.town.startPop,
+      expireV: 1, up: {}, place: { items: [], next: 1 }, week: 0, tick: 0, saveVer: SAVE_VER, pend: [], grade: 0, gold: cfg.econ.startGold, trust: 50, fame: 0, pop: cfg.town.startPop,
       built: { 게시판: true, 접수대: true, 주점: true, 판매창구: true }, eff: {}, meals: [0, 0, 0, 0, 0, 0, 0],
       filter: [4, 0, 0, 0, 0, 0, 0], filterV: 2, // 게시판 칸 배분: 등급별 비중 0(없음)·1(적게)·2(보통)·4(우선) (docs/design/popup_board.md)
       advs: [], board: [], active: [], nextId: 1, log: [], uidNext: 1, settled: {}, paidMonth: {},   // uidNext · settled · paidMonth: 경제 개편 V2 정산 1회 보장 (원정 번호 → 정산한 주, 월 보수 지급한 달)
@@ -175,7 +176,7 @@
       stats: [0, 0, 0, 0, 0].map((_, i) => i === core ? A.startCore + s.R() * 4 : A.startOther + s.R() * 3),
       lv: 1, xp: 0, bank: 0, grade: 0, ach: 0, attach: o.attach || 0,
       risk: ri(s, 3), spend: ri(s, 3), social: ri(s, 3), wallet: 0, gear: -1, eq: [-1, -1, -1], pots: 0, home: !!o.home, contract: null,   // contract: 계약 모험가 조건 (경제 개편 V2 2단계에서 채움, null = 자유 모험가)
-      state: 'away', until: 0, joined: s.week, alive: true, done: 0,
+      state: 'town', sub: 'idle', readyT: s.tick || 0, lookT: s.tick || 0, until: 0, joined: s.week, alive: true, done: 0,   // 2026-11-27 바닥 ①: 'away'(애착이 낮으면 안 옴)를 없앰 — 원정 · 부상이 아니면 늘 길드에 (1-2) · sub = 길드 안의 걸음 (idle · rest · wait · prep)
       cls1: CLASS1[core], line: [core], fin: false, promoCool: 0, skills: [{ line: core, form: CLASS1[core] }], career: [{ week: s.week, text: '길드에 처음 옴' }]
     };
     if (A.starOn !== 0) {   // 2026-11-23 모험가 개선작업 ③ 별 (21:14 사용자 「진행하자」 → 기본 켬, 끄려면 adv.starOn = 0) (사용자 20:40 「진행해줘」, 수치 [임시] · 한석님 검토): ★1~3 = 레벨업 성장 배율, 창립 · 튜토리얼은 ★1
@@ -337,7 +338,20 @@
     return p;
   }
   const isCombat = q => !!(q.enemies && q.enemies.length && COMBAT);
-  const unitOf = (s, a, mealB, sm) => CB.unit(a, i => finalStat(s, a, i) * (sm ? sm(a, i) : 1), eqOf(a), mealB);
+  // 2026-11-27 바닥 ① · ②-C: 체력과 마력이 이어짐. a.hp · a.mp = 지금 값, a.hpMax · a.mpMax = 그 값을 잰 최대치(밥 · 버릇 없이). 처음 올 때 가득
+  //   최대치가 바뀌면(레벨 · 장비) 늘어난 만큼 지금 값도 움직임. 전투 단위는 지금 값의 몫(지금 ÷ 최대)으로 시작 — 밥으로 최대치가 잠깐 늘어도 몫은 그대로
+  function hpSync(a, mh, mm) {
+    if (a.hpMax == null || a.hp == null) { a.hpMax = mh; a.hp = a.hp == null ? mh : Math.min(a.hp, mh); } else if (mh !== a.hpMax) { a.hp = Math.max(0, Math.min(mh, a.hp + (mh - a.hpMax))); a.hpMax = mh; }
+    if (a.mpMax == null || a.mp == null) { a.mpMax = mm; a.mp = a.mp == null ? mm : Math.min(a.mp, mm); } else if (mm !== a.mpMax) { a.mp = Math.max(0, Math.min(mm, a.mp + (mm - a.mpMax))); a.mpMax = mm; }
+  }
+  function maxOf(s, a) { if (!CB) return; const u = CB.unit(a, i => finalStat(s, a, i), eqOf(a), 0); hpSync(a, u.maxHp, u.maxMp); }
+  const hpFrac = a => a.hpMax > 0 ? Math.max(0, Math.min(1, a.hp / a.hpMax)) : 1, mpFrac = a => a.mpMax > 0 ? Math.max(0, Math.min(1, a.mp / a.mpMax)) : 1;
+  function hpBack(s, a, hp, maxHp, mp, maxMp, down) {   // 싸움이 끝난 뒤 되적음 (몫으로)
+    if (a.hpMax == null) maxOf(s, a);
+    a.hp = down ? 0 : a.hpMax * (maxHp > 0 ? Math.max(0, Math.min(1, hp / maxHp)) : 1);
+    if (mp != null && maxMp > 0) a.mp = a.mpMax * Math.max(0, Math.min(1, mp / maxMp));
+  }
+  const unitOf = (s, a, mealB, sm) => { const u = CB.unit(a, i => finalStat(s, a, i) * (sm ? sm(a, i) : 1), eqOf(a), mealB); if (!sm && !mealB) hpSync(a, u.maxHp, u.maxMp); else if (a.hpMax == null) maxOf(s, a); u.hp = u.maxHp * hpFrac(a); u.mp = u.maxMp * mpFrac(a); return u; };
   // 예상 성공 확률: 전투 의뢰는 예측 전투(게시 정보 기준), 비전투 의뢰는 능력치 판정
   function questP(s, party, q) { return isCombat(q) ? CB.predict(party.map(a => unitOf(s, a, 0)), q.seen, q.g, party[0].risk) : successP(s, party, q); }
   function perceived(s, a, p) { const err = Math.max(0, 0.10 - 0.02 * effN(s, '정보실')); return Math.min(1, p * [0.9, 1.0, 1.2][a.risk] + (s.R() * 2 - 1) * err); }
@@ -1151,8 +1165,8 @@
 
   function departOne(s, a, idle, o) {   // 2026-11-24 출발 판정을 한 명 단위로 (departures 와 같은 규칙) · o.wake: 늦잠 깨우기(버릇 건너뜀 판정을 다시 하지 않음)
     o = o || {}; const QC = s.cfg.quirk; let went = false;
-    if (a.state !== 'town') return false;
-    if (a.quirk && QC && !o.wake && qkSkip(s, a)) { a.idle = a.quirk === 'drunk' ? 'sleep' : 'rain'; return false; }   // 2026-11-20 버릇: 술꾼 늦잠 · 미신가 비 → 이번 주 게시판 의뢰를 맡지 않음
+    if (a.state !== 'town' || (a.sub && a.sub !== 'idle')) return false;
+    if (a.quirk && QC && !o.wake && qkSkipW(s, a)) { a.idle = a.quirk === 'drunk' ? 'sleep' : 'rain'; return false; }   // 2026-11-20 버릇: 술꾼 늦잠 · 미신가 비 → 이번 주 게시판 의뢰를 맡지 않음
     const range = [[-1, 0], [-1, 1], [0, 2]][a.risk];
     let hi = Math.min(s.grade, a.grade + range[1]), lo = Math.min(hi, Math.max(0, a.grade + range[0]));   // 2026-11-12: 길드보다 1등급 높은 모험가도 길드 최고 등급 의뢰는 고름
     let th = s.cfg.adv.departTh[a.risk], sneak = false;
@@ -1173,14 +1187,13 @@
         const RP = s.cfg.adv.relParty || 0;
         if (RP > 0 && mates.length > 1) mates = mates.map(b => ({ b, k: relOf(s, a.id, b.id) + (s.R() - 0.5) * RP })).sort((x, y) => y.k - x.k).map(x => x.b);
         mates = mates.slice(0, 4);
-        for (const m of mates) { party.push(m); if (perceived(s, a, questP(s, party, q)) >= thq) break; }
+        for (const m of mates) { if (m.sub === 'rest' && !inviteOk(s, a, m)) continue; party.push(m); if (perceived(s, a, questP(s, party, q)) >= thq) break; }   // 2026-11-27 바닥 ① (1-3): 쉬는 사람에게도 권함
         pp = perceived(s, a, questP(s, party, q));
       }
       if (pp < thq) continue;
       { const cw = QC && pp < 0.7 ? party.find(m => m.quirk === 'coward' && s.R() < qkRisk(s, m, QC.cowardQuit)) : null;   // 겁쟁이: 「팽팽」 · 「위험」 의뢰는 출발 직전에 빠짐 → 이번 주 출발 안 함
         if (cw) { qkLog(s, cw, 'cowardQuit', `${J(cw.name, '이', '가')} 「${q.name || qn(q)}」 출발 직전에 빠졌습니다. (겁쟁이 · 이번 주는 출발하지 않음)`); break; } }
-      s.board.splice(s.board.indexOf(q), 1);
-      launchParty(s, q, party, pp); went = true;
+      holdParty(s, q, party, pp); went = true;   // 2026-11-27 바닥 ① (5-4): 종이를 잡아 두고 준비 → adv.prepBeats 뒤에 떠남
       if (sneak) qkLog(s, a, 'sneak', `${J(a.name, '이', '가')} 몰래 ${qn(q)} 의뢰를 골라 떠났습니다. (허세꾼)`);
       break;
     }
@@ -1197,18 +1210,41 @@
     if (!went) log(s, `${J(a.name, '은', '는')} 이번 주에 맞는 의뢰가 없어 그대로 쉽니다.`, 'sys', { who: [a.name] });
     return { ok: true, went };
   }
+  // 2026-11-27 바닥 ①: 주에 한 번 모두를 내보내던 departures를 나눔 — 주가 바뀔 때는 표시(lastSeen · 쉬는 까닭)만, 출발은 박자마다(beatLook), 술은 주의 끝(weekDrinks)
   function departures(s) {
-    const Q = s.cfg.quest, E = s.cfg.econ;   // s.seatUsed(이번 주 식사한 좌석 수)는 stepWeek에서 0으로 (지명 출발이 먼저 식사하므로)
-    for (const a of s.advs) { if (!a.alive || a.state === 'quest') continue; if (a.state === 'injured' && s.week < a.until) continue; a.state = present(s, a) || reqReserved(s, a) ? 'town' : 'away'; if (a.state === 'town') a.lastSeen = s.week; }   // lastSeen: 마지막으로 길드에 온 주
-    if (mainBlocked(s)) return;   // 침공 1주 전: 의뢰 출발 금지 (2026-11-16)
-    const idle = s.advs.filter(a => a.state === 'town' && !reqReserved(s, a));   // 지명 예약자는 게시판 의뢰를 받지 않음
-    for (const a of s.advs) if (a.state === 'town') { a.idleW = s.week; a.idle = reqReserved(s, a) ? 'req' : 'rest'; }   // 2026-11-23 로비 표시용: 이번 주 출발하지 않은 까닭 (규칙 · 난수와 무관)
-    const QC = s.cfg.quirk;
-    for (const a of idle) departOne(s, a, idle);
-    // 술 (2026-11-12): 이번 주 마을에 남은 모험가가 씀씀이 성향별 확률(식사와 같은 econ.mealBuyRate)로 1잔. 길드 마진 econ.drinkMargin[길드 등급]
+    for (const a of s.advs) if (a.alive && a.state === 'town') { a.lastSeen = s.week; a.idleW = s.week; a.idle = reqReserved(s, a) ? 'req' : 'rest'; }   // 로비 표시용: 이번 주 출발하지 않은 까닭 (규칙 · 난수와 무관)
+  }
+  function weekDrinks(s) {   // 술 (2026-11-12): 이번 주 끝에 길드에 있는 모험가가 씀씀이 성향별 확률(식사와 같은 econ.mealBuyRate)로 1잔. 길드 마진 econ.drinkMargin[길드 등급]
+    const E = s.cfg.econ, QC = s.cfg.quirk;
     const DM = E.drinkMargin || [2, 3, 4, 5, 6, 7, 8]; s.drinks = [];
     for (const a of s.advs) if (a.alive && a.state === 'town' && s.R() < Math.min(1, E.mealBuyRate[a.spend] * (a.quirk === 'drunk' && QC ? QC.drunkDrink : 1))) { const m = (DM[s.grade] || DM[0]) + (upg(s, '주점') ? (E.upMargin || 5) : 0); s.gold += m; s.month.tavern += m; s.month.drinks = (s.month.drinks || 0) + 1; s.drinks.push(a.id); }
-    if (QC) for (const id of s.drinks) { const a = s.advs.find(x => x.id === id); if (!a || a.quirk !== 'drunk' || a.qkMo === Math.floor(s.week / WPM)) continue; const b = s.advs.find(x => x.id !== id && s.drinks.includes(x.id)); if (!b) continue; a.qkMo = Math.floor(s.week / WPM); b.attach = Math.min(100, b.attach + QC.drunkAttach); }   // 2026-11-20 술꾼: 함께 마신 동료 애착 + (한 달 1번)
+    if (QC) for (const id of s.drinks) { const a = s.advs.find(x => x.id === id); if (!a || a.quirk !== 'drunk' || a.qkMo === Math.floor(s.week / WPM)) continue; const b = s.advs.find(x => x.id !== id && s.drinks.includes(x.id)); if (!b) continue; a.qkMo = Math.floor(s.week / WPM); b.attach = Math.min(100, b.attach + QC.drunkAttach); relAdd(s, a.id, b.id, QC.drunkRel || 0); qkLog(s, a, 'drinkPal', `${J(a.name, '이', '가')} ${J(b.name, '과', '와')} 주점에서 한잔 기울였습니다. (술꾼)`); }
+  }
+  const qkSkipW = (s, a) => { if (a.qkW !== s.week) { a.qkW = s.week; a.qkS = qkSkip(s, a); } return a.qkS; };   // 버릇(늦잠 · 비)은 주에 한 번만 굴림 — 걸리면 그 주는 게시판 의뢰를 맡지 않음
+  // 쉬는 중에 파티 권유를 받을 마음 (1-3) [조정]: 체력을 반 넘게 잃어 쉬는 사람은 늘 거절
+  function inviteOk(s, lead, m) {
+    const A = s.cfg.adv; if (m.hpMax == null) maxOf(s, m);
+    if (m.hp < m.hpMax * A.restHurt) return false;
+    const t = relTier(relOf(s, lead.id, m.id)), ti = t === 'bad' ? 0 : t === 'good' ? 2 : 1;
+    const p = Math.max(A.restMin, Math.min(A.restMax, A.inviteBase + A.inviteSocial[m.social] + A.inviteRel[ti] + A.inviteRisk[m.risk]));
+    if (s.R() >= p) return false;
+    m.sub = 'idle'; return true;
+  }
+  function holdParty(s, q, party, pp) {   // 종이와 사람을 잡아 둠 (5-4) — adv.prepBeats 박자 뒤 launchPend에서 떠남
+    s.board.splice(s.board.indexOf(q), 1);
+    (s.pend = s.pend || []).push({ q, ids: party.map(m => m.id), pp, t: s.tick + (s.cfg.adv.prepBeats || 0) });
+    for (const m of party) m.sub = 'prep';
+  }
+  function launchPend(s) {
+    if (!s.pend || !s.pend.length) return;
+    const due = s.pend.filter(p => p.t <= s.tick); if (!due.length) return;
+    s.pend = s.pend.filter(p => p.t > s.tick);
+    for (const p of due) {
+      const party = p.ids.map(id => s.advs.find(a => a.id === id));
+      if (party.some(m => !m || !m.alive || m.state !== 'town')) { s.board.push(p.q); for (const m of party) if (m && m.sub === 'prep') m.sub = 'idle'; continue; }   // 그사이 갈 수 없게 됨 → 종이를 되돌림
+      for (const m of party) m.sub = 'idle';
+      launchParty(s, p.q, party, p.pp, { beat: true });
+    }
   }
   function qkSkip(s, a) {   // 이번 주 게시판 의뢰를 맡지 않는 버릇 (리스크 · 보호 구간 뒤)
     const QC = s.cfg.quirk;
@@ -1216,7 +1252,7 @@
     if (a.quirk === 'omen' && QKr().rainy(s.seed, s.week) && s.R() < qkRisk(s, a, QC.omenRain)) { qkLog(s, a, 'omenWait', `${J(a.name, '이', '가')} 비가 그칠 때까지 출발을 미뤘습니다. (미신가)`); return true; }
     return false;
   }
-  function launchParty(s, q, party, pp) {   // 2026-11-16: 게시판 출발과 지명(리퀘스트) 출발이 같은 처리를 씀
+  function launchParty(s, q, party, pp, lo) {   // 2026-11-16: 게시판 출발과 지명(리퀘스트) 출발이 같은 처리를 씀 · lo.beat = 박자로 돌아오는 게시판 원정 (2026-11-27)
     const Q = s.cfg.quest, E = s.cfg.econ;
     const w0 = party.map(m => m.wallet);   // 계약 지원(결정 4 · E3-3): 출발 때 식사 · 물약에 쓴 돈을 약정 한도 안에서 길드가 돌려줌
     {
@@ -1249,7 +1285,7 @@
           qkEv.push(...pr.ev);
           const r = CB.fight(U, q.enemies, q.g, s.R, pr.risk, true);
           fight = { win: r.win, result: r.result, rounds: r.rounds, log: r.log.map(e => e.hp != null ? Object.assign({}, e, { hp: Math.round(e.hp) }) : e),
-            units: r.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), maxMp: Math.round(u.maxMp || 0), hp: Math.round(u.hp), down: u.down, pots: u.pots, used: u.used, fled: u.fled || null, cov: u.covered || 0 })),
+            units: r.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), maxMp: Math.round(u.maxMp || 0), hp: Math.round(u.hp), mp: Math.round(u.mp || 0), down: u.down, pots: u.pots, used: u.used, fled: u.fled || null, cov: u.covered || 0 })),
             enemies: q.enemies.map(e => ({ name: e.name, mon: e.mon, boss: e.boss, maxHp: Math.round(e.hp), atk: Math.round(e.atk) })) };
           p = r.win ? 1 : 0;
         } else {
@@ -1263,7 +1299,8 @@
         party.forEach((m, i) => { const c = m.contract; if (!c || s.week < c.start || s.week > c.end) return; const used = Math.max(0, Math.floor(w0[i] - m.wallet)), back = Math.min(used, Math.max(0, c.sup - (c.supMonth || 0))); if (back > 0) { m.wallet += back; s.gold -= back; c.supMonth = (c.supMonth || 0) + back; ctLog(c, 'sup', back); s.month.csup = (s.month.csup || 0) - back; } });   // 금고 마이너스 허용(결정 7)
         if (fight) for (const u of fight.units) if (u.fled) qkEv.push({ k: u.fled === 'selfish' ? 'selfFlee' : 'cowardFlee', id: u.id });
         if (fight) for (const u of fight.units) if (u.cov) qkEv.push({ k: 'cover', id: u.id, n: u.cov });
-        s.active.push({ late, uid: s.uidNext++, rates: party.map(m => rateOf(s, m, q)), q, party: party.map(m => m.id), p, ok, rate, start: s.week, weeks, back: s.week + weeks, ate: eaters, dish: dish && eaters ? dish.name : null, ateIds: [...ate], fight, qk: qkEv.length ? qkEv : undefined });
+        const beatX = lo && lo.beat ? { startT: s.tick, backT: s.tick + weeks * BPW(s) } : {};   // 2026-11-27 바닥 ①: 게시판 종이(옛 방식)는 떠난 때부터 weeks × 70박자 뒤에 돌아옴. 리퀘스트 등은 주 단위 그대로
+        s.active.push(Object.assign(beatX, { late, uid: s.uidNext++, rates: party.map(m => rateOf(s, m, q)), q, party: party.map(m => m.id), p, ok, rate, start: s.week, weeks, back: beatX.backT != null ? Math.floor(beatX.backT / BPW(s)) : s.week + weeks, ate: eaters, dish: dish && eaters ? dish.name : null, ateIds: [...ate], fight, qk: qkEv.length ? qkEv : undefined }));
         log(s, `${J(names(party), '이', '가')} ${qn(q)} ${q.rq ? '리퀘스트' : '의뢰'}를 맡아 떠났습니다.${eaters ? ` (출발 전 ${dish.name} ${eaters}명)` : ''}`, 'depart', { who: party.map(x => x.name) });
       }
     }
@@ -1317,7 +1354,7 @@
   // 원정 결과 묶음 (출발 때 한꺼번에 · 화면 단계에서는 귀환 때) — 미니 뷰 기록 · 버릇 사건 · 정복 수치
   function dgPack(s, res, p0, prEv) {
     const DG = DGr(), Dc = DGC(s), ok = res.cleared3, last = res.last;
-    const sumU = res.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), maxMp: Math.round(u.maxMp || 0), hp: Math.round(u.hp), down: u.down, pots: u.pots, used: u.used, fled: u.fled || null, cov: u.covered || 0 }));
+    const sumU = res.units.map(u => ({ id: u.a.id, maxHp: Math.round(u.maxHp), maxMp: Math.round(u.maxMp || 0), hp: Math.round(u.hp), mp: Math.round(u.mp || 0), down: u.down, pots: u.pots, used: u.used, fled: u.fled || null, cov: u.covered || 0 }));
     const fight = last ? { win: ok, result: last.r.result, rounds: last.r.rounds, log: (last.r.log || []).map(e => e.hp != null ? Object.assign({}, e, { hp: Math.round(e.hp) }) : e), units: sumU, enemies: last.foes.map(e => ({ name: e.name, mon: e.mon, boss: e.boss, maxHp: Math.round(e.hp), atk: Math.round(e.atk) })), room: last.room } : null;
     const qkEv = (prEv || []).slice(); for (const u of sumU) { if (u.fled) qkEv.push({ k: u.fled === 'selfish' ? 'selfFlee' : 'cowardFlee', id: u.id }); if (u.cov) qkEv.push({ k: 'cover', id: u.id, n: u.cov }); }
     const gain = s.dg.clear ? 0 : DG.prog(Dc, p0, res);
@@ -1432,9 +1469,10 @@
       else if (e.k === 'cover') qkLog(s, a, 'cover', `${J(a.name, '이', '가')} 「${qname}」에서 위기에 빠진 동료를 감쌌습니다. (헌신)`, { n: e.n });
     }
   }
-  function returns(s) {
+  function returns(s, mode) {   // mode 'beat' = 박자로 도는 게시판 원정(backT), 그 밖 = 주 단위의 옛 원정 (2026-11-27 바닥 ①)
     const Q = s.cfg.quest, G = s.cfg.growth, A = s.cfg.adv, E = s.cfg.econ;
-    const back = s.active.filter(x => x.back <= s.week); s.active = s.active.filter(x => x.back > s.week);
+    const due = mode === 'beat' ? (x => x.backT != null && x.backT <= s.tick) : (x => x.backT == null && x.back <= s.week);
+    const back = s.active.filter(due); if (!back.length) return; s.active = s.active.filter(x => !due(x));
     for (const x of back) {
       if (x.uid != null) { if (s.settled[x.uid] != null) continue; s.settled[x.uid] = s.week; }   // 같은 원정은 한 번만 정산
 
@@ -1482,17 +1520,27 @@
       if (F) for (const u of F.units) {   // 전투의 대가: 물약 소모, 쓰러진 사람은 사망 판정 → 살면 부상
         const a = party.find(m => m && m.id === u.id); if (!a) continue;
         a.pots = u.pots; s.stats.potions += u.used;
+        hpBack(s, a, u.hp, u.maxHp, u.mp, u.maxMp, u.down && !u.fled);   // 2026-11-27 ②-C: 싸움이 끝난 체력 · 마력 그대로 (혼자 물러난 사람은 남은 만큼)
         if (!u.down || u.fled) continue;   // 2026-11-20 버릇: 혼자 물러난 사람(겁쟁이 · 이기적)은 부상 없음
         s.stats.injuries++;
         const d = (q.death != null ? q.death : Q.deathBase[q.g]) * CB.C.deathRisk[a.risk] * (1 - 0.15 * Math.min(1, effN(s, '의무실')));
         if (s.R() < d) { a.alive = false; a.dead = true; a.state = 'dead'; s.stats.deaths++; log(s, `${J(a.name, '이', '가')} ${qn(q)} 의뢰에서 쓰러져 돌아오지 못했습니다.`, 'death', { who: [a.name] }); continue; }
         const wk = Math.max(1, CB.C.injuryWeeks[q.g] - (s.built['의무실'] ? CB.C.injuryClinic : 0) - (hasDeco(s, 'fireplace') ? s.cfg.deco.injury : 0) + (CB.QK ? CB.QK.injAdj(s.cfg.quirk, a, u.cov ? { covered: u.cov } : null, x.start) : 0));   // 벽난로 −1주 · 2026-11-20 술꾼 −1주 / 헌신(감싸다 쓰러짐) +1주
-        a.state = 'injured'; a.until = s.week + wk; a.injuredAt = s.week; a.injuredFrom = q.name || `${GR[q.g]}급 ${QTYPE[q.type]} 의뢰`;   // 모험가 팝업 오버 창용
+        a.state = 'injured'; a.until = s.week + wk; a.untilT = s.tick + wk * BPW(s); a.injuredAt = s.week; a.injuredFrom = q.name || `${GR[q.g]}급 ${QTYPE[q.type]} 의뢰`;   // 모험가 팝업 오버 창용
         log(s, `${J(a.name, '이', '가')} 전투에서 쓰러져 부상을 입었습니다. ${wk}주 동안 쉽니다.`, 'injury', { who: [a.name] });
       }
       memQuest(s, x, ok, party, lv0);   // 2026-11-18 모험가 기억 (대사용, 규칙 영향 없음)
       if (x.qk) qkReturn(s, x, party, ok);   // 2026-11-20 버릇: 터진 일 → 친밀도 · 기록 · 말풍선
+      for (const a of party) if (a) afterReturn(s, a);   // 2026-11-27 바닥 ① (1-2): 쉴지 바로 나갈지
     }
+  }
+  // 돌아온 뒤 (1-2): 체력을 반 넘게 잃었으면 쉼. 아니면 쉬고 싶은 마음(성향 셋)의 확률로 쉼 [조정]. 쉼 = 체력 · 마력이 다 찰 때까지
+  function afterReturn(s, a) {
+    if (!a.alive || a.state !== 'town') return;
+    const A = s.cfg.adv; maxOf(s, a);
+    let rest = a.hp < a.hpMax * A.restHurt;
+    if (!rest) rest = s.R() < Math.max(A.restMin, Math.min(A.restMax, A.restBase + A.restRisk[a.risk] + A.restSpend[a.spend] + A.restSocial[a.social]));
+    a.sub = rest ? 'rest' : 'idle'; a.readyT = s.tick; a.lookT = s.tick;
   }
 
 
@@ -2004,10 +2052,10 @@
     const st = { castle: 0, down: new Set() }, U = reqSorted(defs).map(a => Object.assign(unitOf(s, a, 0), { pots: 0 }));
     if (!U.length) return { win: false, wave: 0, down: st.down, castle: 0 };
     for (let w = 0; w < MAIN_CFG.waves.length; w++) {
-      if (!mainWaveFight(s, U, w, R, st, false).win) return { win: false, wave: w, down: st.down, castle: st.castle };
+      if (!mainWaveFight(s, U, w, R, st, false).win) return { win: false, wave: w, down: st.down, castle: st.castle, U };
       if (w < MAIN_CFG.waves.length - 1) mainRest(U);
     }
-    return { win: true, wave: MAIN_CFG.waves.length, down: st.down, castle: st.castle };
+    return { win: true, wave: MAIN_CFG.waves.length, down: st.down, castle: st.castle, U };
   }
   function mainPredict(s, n) {   // 예상 승률 (0~1): 지금 길드로 n번 모의. 게임 난수(s.R)는 쓰지 않음
     if (!COMBAT) return 0; const defs = mainDefenders(s, true); if (!defs.length) return 0;
@@ -2019,6 +2067,7 @@
   function mainAccept(s) { const M = mainOf(s); if (M.state !== 'offer') return false; M.state = 'set'; M.at = s.week + MAIN_CFG.lead; log(s, `메인 퀘스트 「다리를 지켜라」를 받았습니다. ${MAIN_CFG.lead}주 뒤 몬스터가 다리로 쳐들어옵니다. 침공 ${MAIN_CFG.block}주 전부터는 의뢰 출발이 막힙니다.`, 'main'); return true; }
   function mainRun(s) {   // 자동 처리(검증 · 화면 없음): 한 번에 끝까지
     const defs = mainDefenders(s), r = mainFight(s, defs, s.R);
+    if (r.U) for (const u of r.U) hpBack(s, u.a, u.hp, u.maxHp, u.mp, u.maxMp, u.down);   // 2026-11-27 ②-C
     mainFinish(s, defs, r.win, r.wave, r.down, r.castle);
   }
   function mainFinish(s, defs, win, wave, down, castle) {
@@ -2030,7 +2079,7 @@
       s.stats.injuries++;
       if (!win && s.R() < C.deathLoss) { a.alive = false; a.dead = true; a.state = 'dead'; s.stats.deaths++; dead.push(a.name); log(s, `${J(a.name, '이', '가')} 다리를 지키다 쓰러져 돌아오지 못했습니다.`, 'death', { who: [a.name] }); continue; }
       const wk = Math.max(1, CB.C.injuryWeeks[0] - clinic - fire);
-      a.state = 'injured'; a.until = s.week + wk; a.injuredAt = s.week; a.injuredFrom = '메인 퀘스트 「다리를 지켜라」';
+      a.state = 'injured'; a.until = s.week + wk; a.untilT = s.tick + wk * BPW(s); a.injuredAt = s.week; a.injuredFrom = '메인 퀘스트 「다리를 지켜라」';
     }
     delete M.run;
     if (win) {
@@ -2057,7 +2106,7 @@
   function mainUnits(s, run) {
     return run.ids.map(id => s.advs.find(a => a.id === id)).filter(a => a && a.alive).map(a => {
       const u = unitOf(s, a, 0), h = run.hp[a.id];
-      u.hp = h == null ? u.maxHp : Math.min(u.maxHp, h); u.down = !!run.dn[a.id]; u.pots = run.pots[a.id] || 0; return u; });
+      u.hp = h == null ? u.hp : Math.min(u.maxHp, h); u.down = !!run.dn[a.id];   /* 2026-11-27 ②-C: 처음은 지금 체력 */ u.pots = run.pots[a.id] || 0; return u; });
   }
   function mainNextWave(s) {   // 다음 차례 하나: 화면용 구간을 돌려주고, 마지막이면 결과까지 반영
     const M = mainOf(s), run = M.run; if (M.state !== 'live' || !run) return null;
@@ -2069,7 +2118,7 @@
     if (r.win && !last) mainRest(U);
     for (const u of U) { run.hp[u.a.id] = u.hp; run.dn[u.a.id] = u.down; run.pots[u.a.id] = u.pots || 0; }
     run.segs = r.segs;
-    if (!r.win || last) { const defs = run.ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean); mainFinish(s, defs, r.win, r.win ? MAIN_CFG.waves.length : w, st.down, st.castle); stepWeekTail(s); return { segs: r.segs, wave: w, done: true, win: r.win }; }   // 끝나면 멈춰 둔 이 주의 나머지를 진행
+    if (!r.win || last) { const defs = run.ids.map(id => s.advs.find(a => a.id === id)).filter(Boolean); for (const u of U) hpBack(s, u.a, u.hp, u.maxHp, u.mp, u.maxMp, u.down); mainFinish(s, defs, r.win, r.win ? MAIN_CFG.waves.length : w, st.down, st.castle); stepWeekTail(s); return { segs: r.segs, wave: w, done: true, win: r.win }; }   // 끝나면 멈춰 둔 이 주의 나머지를 진행
     run.wave++;
     return { segs: r.segs, wave: w, done: false, win: true };
   }
@@ -2103,14 +2152,63 @@
   }
   function autoMain(s) { const M = mainOf(s); if (M.state === 'offer' && mainPredict(s) >= MAIN_CFG.autoAccept) mainAccept(s); }   // 검증용: 예상 승률이 autoAccept 이상이면 받음 (시뮬레이터와 같은 규칙)
 
-  function stepWeek(s) {
+  // ---------- 2026-11-27 바닥 ① 엔진과 시간 (명세 1장): 규칙이 박자마다 나아감. 한 주 = time.beatsPerDay × daysPerWeek = 70박자 ----------
+  const BPW = s => { const T = s.cfg.time || {}; return (T.beatsPerDay || 10) * (T.daysPerWeek || 7); };
+  function stepBeat(s) {
     if (s.main && s.main.state === 'live') return;   // 침공을 보는 동안 시간은 멈춤
-    expireQuests(s); gqWeekly(s); carWeekly(s);
-    generateQuests(s);   // 2026-11-12: 매주 게시 (예전에는 매달 초에만 = 월 유입의 1/4만 들어왔음)
-    returns(s);
-    mainWeekly(s);    // 메인 퀘스트(침공): 등장 · 침공 판정
-    if (s.main && s.main.state === 'live') return;   // 화면에서 침공을 보는 중: 이 주의 나머지(지명 · 출발 · 주 넘김)는 침공이 끝난 뒤 stepWeekTail로
-    stepWeekTail(s);
+    const W = BPW(s); if (s.tick == null) s.tick = s.week * W;
+    if (s.tick % W === 0 && s.calT !== s.tick) {     // 2. 주가 바뀌는 박자: 달력의 일 (게시판 종이는 아직 옛 방식 — 매주 게시 · 만료)
+      if (!s.tailPending) {
+        expireQuests(s); gqWeekly(s); carWeekly(s);
+        generateQuests(s);
+        returns(s, 'week');   // 주 단위의 옛 원정 (리퀘스트 · 던전 · 상단 · 튜토리얼)
+        mainWeekly(s);
+        if (s.main && s.main.state === 'live') { s.tailPending = true; return; }   // 화면에서 침공을 보는 중: 나머지는 침공이 끝난 뒤 stepWeekTail로
+      }
+      stepWeekTail(s);
+    }
+    returns(s, 'beat');   // 3 · 4. 게시판 원정의 귀환 (옛 방식: 미리 셈한 결과 · 떠난 때부터 70박자)
+    launchPend(s);        // 준비를 마친 파티가 떠남
+    for (const a of s.advs) if (a.alive && a.state === 'injured') { if (a.untilT == null) a.untilT = (a.until || 0) * W; if (s.tick >= a.untilT) { a.state = 'town'; a.sub = 'idle'; a.until = 0; a.untilT = null; a.readyT = s.tick; a.lookT = s.tick; } }   // 5. 부상이 끝남
+    regen(s);             // 6. 길드 안의 회복
+    beatLook(s);          // 7. 길드 안 사람들의 다음 걸음
+    if ((s.tick + 1) % W === 0) weekDrinks(s);   // 주의 끝: 술 (그 주에 길드에 남은 사람)
+    s.tick++;             // 8.
+    if (s.tick % W === 0) { s.week++; if (s.week % WPM === 0) monthly(s); }
+  }
+  function stepWeek(s) {   // 껍데기: 다음 주가 바뀌는 박자까지 stepBeat (검사 · 도구 · 자동 플레이가 지금처럼 부름)
+    const W = BPW(s); if (s.tick == null) s.tick = s.week * W;
+    const end = (Math.floor(s.tick / W) + 1) * W;
+    while (s.tick < end) { if (s.main && s.main.state === 'live') return; stepBeat(s); }
+  }
+  function regen(s) {     // ①-E: 길드에 있는 모든 사람(쉼 · 기다림 · 준비 중 포함)은 박자마다 최대치의 adv.regenPerBeat씩 참. 벽난로가 있으면 deco.hearthRegen 배. 부상 중은 차지 않음
+    const r = (s.cfg.adv.regenPerBeat || 0) * (hasDeco(s, 'fireplace') ? (s.cfg.deco.hearthRegen || 1) : 1); if (r <= 0) return;
+    for (const a of s.advs) {
+      if (!a.alive || a.state !== 'town') continue;
+      if (a.hpMax == null) maxOf(s, a);
+      if (a.hp < a.hpMax) a.hp = Math.min(a.hpMax, a.hp + a.hpMax * r);
+      if (a.mp < a.mpMax) a.mp = Math.min(a.mpMax, a.mp + a.mpMax * r);
+    }
+  }
+  function beatLook(s) {  // 7: 쉼 · 기다림이 끝난 사람, 그리고 다음 일을 고를 차례가 된 사람 (쉬기를 먼저 마친 사람부터 · 1-3)
+    const A = s.cfg.adv, W = BPW(s);
+    for (const a of s.advs) {
+      if (!a.alive || a.state !== 'town') continue;
+      if (a.sub === 'rest' && a.hp >= a.hpMax - 1e-9 && a.mp >= a.mpMax - 1e-9) { a.sub = 'idle'; a.readyT = s.tick; a.lookT = s.tick; }
+      else if (a.sub === 'wait' && s.tick >= (a.waitT || 0)) { a.sub = 'idle'; a.lookT = s.tick; }
+    }
+    if (mainBlocked(s) || (s.tut && s.tut.noGo)) return;   // 침공 1주 전 · 튜토리얼의 출발 막기
+    const turn = s.advs.filter(a => a.alive && a.state === 'town' && (a.sub || 'idle') === 'idle' && s.tick >= (a.lookT || 0) && !reqReserved(s, a));
+    if (!turn.length) return;
+    turn.sort((x, y) => (x.readyT || 0) - (y.readyT || 0));
+    for (const a of turn) {
+      if (!a.alive || a.state !== 'town' || (a.sub || 'idle') !== 'idle') continue;   // 앞사람의 동료가 되어 이미 떠남
+      const pool = s.advs.filter(b => b.alive && b.state === 'town' && ['idle', 'wait', 'rest'].includes(b.sub || 'idle') && !reqReserved(s, b));
+      if (departOne(s, a, pool)) continue;
+      if (a.qkW === s.week && a.qkS) { a.lookT = (s.week + 1) * W; continue; }   // 버릇(늦잠 · 비): 이번 주는 게시판 의뢰를 맡지 않음
+      if (a.idle === 'mates') { a.sub = 'wait'; a.waitT = s.tick + (A.waitBeats || 0); }   // 동료가 없음 → 하루 기다렸다가 다시 (1-3)
+      else a.lookT = s.tick + (A.relookBeats || 0);   // 갈 것이 없음 → 하루 뒤에 다시 (박자마다 다시 셈하지 않음)
+    }
   }
   // 명성 방문 (2026-11-17 결정: 5마다, progression_v1 2-2 · HUD '다음 모험가까지 명성 N'과 같은 규칙): 명성이 fameStep의 배수(5 · 10 · 15…)에 처음 닿을 때마다 1명.
   //   상한(길드 등급별)이 차 있으면 기다렸다가 자리가 나면(승급 등) 옴. 명성이 깎였다가 다시 올라도 같은 칸은 한 번만. 예전 저장은 지금 명성까지는 이미 온 것으로 봄
@@ -2123,7 +2221,11 @@
     const nx = fameNextOf(s);
     while ((s.fame || 0) >= s.fameNext) { if (s.advs.filter(x => x.alive).length < advCap(s)) spawnAdv(s, {}); else if ((s.cfg.adv || {}).fameSkip === 0) break; else s.fameSkip = (s.fameSkip || 0) + 1; s.fameNext += fameStepOf(s); }   // adv.fameSkip 0 = 예전처럼 자리가 날 때까지 기다림
   }
-  function stepWeekTail(s) {
+  function stepWeekTail(s) {   // 주가 바뀌는 박자의 나머지 (침공이 끝난 뒤 화면이 이어 부르기도 함)
+    if (s.tick == null) s.tick = s.week * BPW(s);
+    if (s.calT === s.tick) return;
+    s.calT = s.tick; s.tailPending = false;
+    for (const a of s.advs) if (a.alive && a.state === 'town') maxOf(s, a);   // 최대치를 다시 잼 (장비 · 레벨)
     fameArrivals(s);
     s.seatUsed = 0;   // 이번 주 식사한 좌석 수
     contractWeekly(s);   // 계약 모험가: 근무 주 세기 · 끝난 계약 정산 (경제 개편 V2 3단계)
@@ -2133,13 +2235,11 @@
     dgWeekly(s);      // 2026-11-20 던전: 12주에 열림 · 레어 장신구 주인 확인
     dgTail(s);        // 2026-11-20 던전: 예약 파티 출발 (리퀘스트 · 게시판보다 먼저)
     reqWeekly(s);     // 리퀘스트: 등장 판정 · 설치 요청 확인 · 지명 파티 출발(게시판보다 먼저)
-    if (!(s.tut && s.tut.noGo)) departures(s);   // 2026-11-18 튜토리얼: 첫 의뢰 ~ 첫 요리 동안은 게시판 출발을 막음 (모험가가 로비에 남아 대사를 받게)
-    s.week++;
-    if (s.week % WPM === 0) monthly(s);
+    departures(s);   // 2026-11-27: 표시만. 출발은 박자마다(beatLook) — 튜토리얼의 출발 막기(s.tut.noGo)도 거기서 봄
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, reqSorted, dgWhy, dgLaunch, dgPlan, dgChoose, dgPending, dgLean, dgCancel, dgOdds, dgCraftWhy, dgCraft, dgGive, dgItems, dgOn, dgDef, hintPeek, hintSaid, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
-  Object.assign(api, { live: false, wakeGo, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, isStaple, canMarket, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carBuy, carWarePrice, carTalk, carEscort, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log });   // 2026-11-20 main 병합: 시장 · 길드 의뢰 · 상단 쪽 API
+  const api = { live: false, reqSorted, dgWhy, dgLaunch, dgPlan, dgChoose, dgPending, dgLean, dgCancel, dgOdds, dgCraftWhy, dgCraft, dgGive, dgItems, dgOn, dgDef, hintPeek, hintSaid, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, stepBeat, BPW, hpFrac, mpFrac, maxOf, afterReturn, SAVE_VER, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  Object.assign(api, { live: false, wakeGo, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, isStaple, canMarket, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carBuy, carWarePrice, carTalk, carEscort, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, stepBeat, BPW, hpFrac, mpFrac, maxOf, afterReturn, SAVE_VER, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log });   // 2026-11-20 main 병합: 시장 · 길드 의뢰 · 상단 쪽 API
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

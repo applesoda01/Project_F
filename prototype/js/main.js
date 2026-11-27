@@ -3,6 +3,7 @@
   'use strict';
   const Gm = window.GuildGame, Sim = window.GuildSim;
   const WEEK_MS = 30000; // 1배속: 1주 = 30초 (1개월 = 120초)
+  const BEAT_MS = () => WEEK_MS / Gm.BPW(s);   // 2026-11-27 바닥 ① (①-G): 규칙이 박자마다 나아감 — 1주 = 70박자 ≈ 429ms
   // 저장 슬롯 (2026.11): 유저가 게임을 시작할 때 고른 슬롯이 곧 자동 저장 슬롯이다. 수동 저장·불러오기도 같은 슬롯을 쓴다.
   const SLOTS = 3, SLOT_PTR = 'guildProto2_slot', LEGACY_KEY = 'guildProto2';
   const slotKey = n => LEGACY_KEY + '_s' + n;
@@ -26,18 +27,23 @@
   let speed = 1, acc = 0, last = performance.now(), T = 0, debug = false, still = false, started = false;   // started: 타이틀·저장 칸 선택을 마치고 게임이 시작됐는가(플레이 시간 기록용)
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // 규칙 한 주 진행 → 전후 상태 비교 → 화면 대본(M2-7) · 알림 · 리나 대화
+  // 규칙 한 박자 진행 (2026-11-27 바닥 ①). 새 기록이 생기면 화면 대본(M2-7) · 알림 · 리나 대화를 그때그때, 주가 바뀌면 주의 일(성장 카드 · 튜토리얼 · 승급 · 자동 저장)
+  let wk = null;   // 그 주가 시작될 때의 비교 기준 (성장 카드 · 승급)
   function step() {
-    const before = Director.snap(s), g0 = s.grade, top = s.log[0], gb = UI.growSnap && UI.growSnap();
-    Gm.stepWeek(s);
-    if (UI.growShow) UI.growShow(gb);   // 2026-11-23 모험가 개선작업 ②: 원정 뒤 성장 카드
+    if (!wk) wk = { g0: s.grade, gb: UI.growSnap && UI.growSnap() };
+    const w0 = s.week, before = Director.snap(s), top = s.log[0];
+    Gm.stepBeat(s);
     if (s.subPaid) { UI.toast(`왕국 보조금 +${s.subPaid}G`, 'info'); delete s.subPaid; }   // 2026-11-23 4차 13번
-    Director.onWeek(before, s, Lobby.Board);
     const fresh = []; for (const L of s.log) { if (L === top) break; fresh.push(L); }
-    UI.onLogs(fresh.reverse());
-    Tutorial.onWeek();
-    if (s.grade > g0) UI.gradeUp(s.grade);
-    if (s.week % Gm.WPM === 0) save(true);
+    if (fresh.length) { Director.onWeek(before, s, Lobby.Board); UI.onLogs(fresh.reverse()); }
+    if (s.week !== w0) {
+      if (UI.growShow) UI.growShow(wk.gb);   // 2026-11-23 모험가 개선작업 ②: 원정 뒤 성장 카드
+      Tutorial.onWeek();
+      if (s.grade > wk.g0) UI.gradeUp(s.grade);
+      if (s.week % Gm.WPM === 0) save(true);
+      wk = null; return true;
+    }
+    return !!fresh.length;
   }
   let lastSp = 1;   // 스페이스로 다시 재생할 때 돌아갈 배속
   function setSpeed(v) { speed = v; if (v > 0) lastSp = v; UI.setSpeed(v); }
@@ -48,14 +54,14 @@
     if (n) useSlot(n);   // 불러온 슬롯이 이어서 자동 저장되는 슬롯이 된다
     if (!t) { UI.toast('저장된 게임이 없습니다.', 'warn'); return; }
     try { const ns = Gm.deserialize(t); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); swap(ns, UI.lines('load', { date: Gm.dateLabel(ns.week) })); tutGo(); }
-    catch (e) { UI.toast('저장 데이터를 불러오지 못했습니다.', 'warn'); }
+    catch (e) { UI.toast(e && e.oldSave ? '옛 판의 저장이라 이 판에서는 열 수 없습니다.' : '저장 데이터를 불러오지 못했습니다.', 'warn'); }
   }
   function saveTo(n) { useSlot(n); save(); }   // 이 칸에 저장 → 이후 자동 저장도 이 칸
   function loadSlot(n) {
     let t = null; try { t = localStorage.getItem(slotKey(n)); } catch (e) { /* 저장소 없음 */ }
     if (!t) { UI.toast('빈 슬롯입니다.', 'warn'); return; }
     try { const ns = Gm.deserialize(t); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); useSlot(n); swap(ns, UI.lines('load', { date: Gm.dateLabel(ns.week) })); tutGo(); }
-    catch (e) { UI.toast('저장 데이터를 불러오지 못했습니다.', 'warn'); }
+    catch (e) { UI.toast(e && e.oldSave ? '옛 판의 저장이라 이 판에서는 열 수 없습니다.' : '저장 데이터를 불러오지 못했습니다.', 'warn'); }
   }
   // 2026-11-18 튜토리얼: 새 게임은 모험가 0명으로 시작하고 튜토리얼이 첫 전사(FT0002) · 두 번째 모험가(FT0005)를 데려옴 (docs/design/튜토리얼.md)
   function freshGame() { const c = Sim.defaults(); c.adv.startCount = 0; const ns = Tutorial.fresh(Gm.newGame(c, (Date.now() % 1e9) >>> 0)); Gm.stepWeek(ns); return ns; }
@@ -155,7 +161,7 @@
       if (k === 'del') { if (!arm['d' + n]) { arm['d' + n] = 1; draw(); return; } try { localStorage.removeItem(slotKey(n)); localStorage.removeItem(stampKey(n)); } catch (er) { /* 무시 */ } delete arm['d' + n]; draw(); return; }
       if (k === 'ovw' && !arm['o' + n]) { arm['o' + n] = 1; draw(); return; }   // 덮어쓰기 경고: 두 번 눌러야 시작
       useSlot(n);
-      if (k === 'load') { const i = slotInfo(n); try { const ns = Gm.deserialize(i.raw); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); swap(ns, null); } catch (er) { UI.toast('저장 데이터를 불러오지 못했습니다.', 'warn'); return; } close(false); return; }
+      if (k === 'load') { const i = slotInfo(n); try { const ns = Gm.deserialize(i.raw); ns.cfg = Object.assign(Sim.defaults(), ns.cfg); swap(ns, null); } catch (er) { UI.toast(er && er.oldSave ? '옛 판의 저장이라 이 판에서는 열 수 없습니다.' : '저장 데이터를 불러오지 못했습니다.', 'warn'); return; } close(false); return; }
       if (k === 'ovw') { try { localStorage.removeItem(slotKey(n)); localStorage.removeItem(stampKey(n)); } catch (er) { /* 무시 */ } }
       if (k === 'new' || k === 'ovw') swap(freshGame(), null);   // 2026-11-18 튜토리얼: 새로 시작 = 모험가 0명 + 튜토리얼
       close(k === 'new' || k === 'ovw');   // 새로 시작: 프롤로그 영상 뒤 길드 (영상이 끝나거나 스킵하면 FT0001)
@@ -240,15 +246,16 @@
     // 2026-11-19 사용자 결정: 아래 대화창(리퀘스트 · 리나 · 침공 등)이 떠 있는 동안 게임 시계를 멈춤. 배속 버튼은 그대로, 대화가 끝나면 쓰던 배속으로 다시 흐름
     // 2026-11-19 사용자 결정(책 V2 7장 대조): 마을 화면에 들어가 있는 동안도 시계 멈춤 — 침공 중(Invasion.on)에는 흐름
     const run = (UI.dlgBusy && UI.dlgBusy()) || (Town.active && !(window.Invasion && Invasion.on)) ? 0 : speed;
-    if (run > 0) { acc += dt * 1000 * run; let n = 0; while (acc >= WEEK_MS) { acc -= WEEK_MS; step(); n++; } if (n) UI.hud(); }
-    UI.weekBar(acc / WEEK_MS);
-    Expedition.update(dt, acc / WEEK_MS, run);
+    const bm = BEAT_MS(), W = Gm.BPW(s), wf = Math.min(1, ((s.tick || 0) % W + acc / bm) / W);   // 주 막대 = (그 주에서 지난 박자 + 쌓인 몫) ÷ 70
+    if (run > 0) { acc += dt * 1000 * run; let hud = false; while (acc >= bm) { acc -= bm; if (step()) hud = true; if (s.main && s.main.state === 'live') { acc = 0; break; } } if (hud) UI.hud(); }
+    UI.weekBar(wf);
+    Expedition.update(dt, wf, run);
     // 화면 속 동작 빠르기: 배속이 오르면 함께 빨라지되 최대 3배 (일시정지면 멈춤 — 기본 튜토리얼 동안은 멈춰 있어도 모험가가 걸어 들어오고 나감)
     const as = speed === 0 && !Tutorial.active() ? 0 : Math.min(3, Math.max(1, speed * 0.6)), adt = dt * as;
     if (window.Invasion) Invasion.check(s);
-    Lobby.update(s, dt); Lina.update(adt); Director.update(adt); UI.update(dt); Tutorial.update(dt); Town.wf = acc / WEEK_MS; Town.still = still || reduce || !Snd.opt.fx; Town.update(s, dt); Snd.update(s, dt);
+    Lobby.update(s, dt); Lina.update(adt); Director.update(adt); UI.update(dt); Tutorial.update(dt); Town.wf = wf; Town.still = still || reduce || !Snd.opt.fx; Town.update(s, dt); Snd.update(s, dt);
     const g = stage.begin();
-    if (Town.active) Town.draw(g, s, T); else Lobby.draw(g, s, T, { debug, still: still || reduce || !Snd.opt.fx, weekFrac: acc / WEEK_MS });
+    if (Town.active) Town.draw(g, s, T); else Lobby.draw(g, s, T, { debug, still: still || reduce || !Snd.opt.fx, weekFrac: wf });
     requestAnimationFrame(frame);
   }
 

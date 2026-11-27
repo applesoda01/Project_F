@@ -76,11 +76,12 @@
   }
   function entry(s, x, done) {
     const weeks = x.weeks || x.q.weeks || 1, start = x.start != null ? x.start : x.back - weeks;
-    const raw = Math.max(0, Math.min(1, (s.week - 1 - start + frac) / weeks));
+    const W = root.GuildGame && root.GuildGame.BPW ? root.GuildGame.BPW(s) : 70, nowT = s.week * W + frac * W;   // 2026-11-27 바닥 ①: 박자로 도는 원정(startT · backT)은 박자로 진행을 셈
+    const raw = x.backT != null ? Math.max(0, Math.min(1, (nowT - x.startT) / Math.max(1, x.backT - x.startT))) : Math.max(0, Math.min(1, (s.week - 1 - start + frac) / weeks));
     // 2026-11-19 사용자 결정 8 ⓐ: 목록에는 파티가 로비를 걸어 나간 뒤에야 올라오므로, 처음 보인 순간을 0%로 다시 잡아 귀환(주 끝)까지 늘여 보여 줌. 정산 시점은 그대로
     const k = x.uid != null ? 'u' + x.uid : 'q' + x.q.id; if (!done && !seen0.has(k)) seen0.set(k, raw);
     const r0 = seen0.has(k) ? seen0.get(k) : 0, p = done ? 1 : r0 >= 0.98 ? raw : Math.max(0, Math.min(1, (raw - r0) / (1 - r0)));
-    return { x, id: x.q.id, p, done, weeks, left: Math.max(0, x.back - s.week) + (done ? 0 : 1) };
+    return { x, id: x.q.id, p, done, weeks, left: x.backT != null ? Math.max(0, Math.ceil((x.backT - nowT) / W)) : Math.max(0, x.back - s.week) + (done ? 0 : 1) };
   }
   const advOf = (s, id) => s.advs.find(a => a.id === id);
   function render() {
