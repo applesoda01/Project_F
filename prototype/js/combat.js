@@ -53,9 +53,11 @@
       const SP = DB && DB.on && Array.isArray(a.sp) ? a.sp.map(k => DGI[k]).filter(it => it && (it.rare ? DB.rare : DB.set)) : [];
       const spS = k => SP.reduce((t, it) => t + (it[k] || 0), 0), setN = {}; for (const it of SP) if (it.set) setN[it.set] = (setN[it.set] || 0) + 1;
       const set2 = Object.values(setN).some(n => n >= 2), set3 = Object.keys(setN).find(k => setN[k] >= 3);
-      const maxHp = C.classHp[c] + a.lv * C.classHpLv[c] + st(0) * C.hpPerStr + sum('hp') + (qk === 'drunk' ? QB.drunkHp : 0) + spS('hp') + (set2 ? DB.setHp : 0);
-      const maxMp = C.classMp[c] + a.lv * C.classMpLv[c] + st(2) * C.mpPerMind + sum('mp');
-      const atk = (C.classAtk[c] + a.lv * C.classAtkLv[c] + sum('atk') + st(c) + (qk === 'hot' ? QB.hotAtk : 0) + spS('atk') + (set2 ? DB.setAtk : 0)) * (1 + (mealB || 0)) * (set3 ? 1 + DB.set3Atk : 1);
+      // 2026-11-27 바닥 ② · ②-A (2-2): 레벨이 전투값에 바로 닿지 않음 — 체력 = hpBase + 힘 × hpPerStr · 마력 = mpBase + 지력 × mpPerMind · 공격력 = atkBase + 주력 × atkPerCore. 설정이 없으면 옛 식(class*)
+      const NEWF = !!(C.hpBase && C.atkBase);
+      const maxHp = (NEWF ? C.hpBase[c] : C.classHp[c] + a.lv * C.classHpLv[c]) + st(0) * C.hpPerStr + sum('hp') + (qk === 'drunk' ? QB.drunkHp : 0) + spS('hp') + (set2 ? DB.setHp : 0);
+      const maxMp = (NEWF ? C.mpBase[c] : C.classMp[c] + a.lv * C.classMpLv[c]) + st(2) * C.mpPerMind + sum('mp');
+      const atk = ((NEWF ? C.atkBase[c] + st(c) * C.atkPerCore[c] : C.classAtk[c] + a.lv * C.classAtkLv[c] + st(c)) + sum('atk') + (qk === 'hot' ? QB.hotAtk : 0) + spS('atk') + (set2 ? DB.setAtk : 0)) * (1 + (mealB || 0)) * (set3 ? 1 + DB.set3Atk : 1);
       let vs = null; if (set3) { vs = {}; for (const m in DGMON) if (DGMON[m] === DGI[SP.find(it => it.set === set3).key].dg) vs[m] = 1 + DB.set3Vs; }
       return { a, core: c, row: POS[c], hp: maxHp, maxHp, mp: maxMp, maxMp, atk, def: sum('def') + spS('def'), mdef: 0, vs, rare: SP.some(it => it.rare),
         evade: 0, crit: st(1) * C.critPerDex, speed: 1 + st(4) * C.speedPerSkill, agi: st(1),

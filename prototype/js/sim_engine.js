@@ -37,7 +37,7 @@
         xpBase: 80, xpGradeMult: 2.0,              // 성공 경험치 = xpBase × mult^등급
         xpFailRate: 0.3,
         lvA: 20, lvB: 1.55,                        // 다음 레벨 필요 경험치 = A × Lv^B
-        lvCap: [30, 40, 50],
+        lvCap: [30, 40, 50], core1: 2, mileLv: [3, 6, 9, 15, 24, 39], milePts: [4, 5, 6, 7, 8, 9],   // 2026-11-27 바닥 ②: 게임 쪽만 씀 (설정을 읽으려고 기본값만)
         trainPerWeek: 0.10,                        // 훈련장·도서관 주간 훈련량
         statCap: 100,
         gradeStat: [0, 3, 4, 5, 6, 8, 10],         // 2026-11-12 승급 시 능력치 5개에 각각 (balance.csv와 같게)
@@ -45,6 +45,7 @@
       },
       time: { beatsPerDay: 10, daysPerWeek: 7 },   // 2026-11-27 바닥 ①: 박자 (게임 쪽만 씀 · 설정을 읽으려고 기본값만 둠)
       adv: {
+        newXp: [[4, 3], [8, 2], [12, 1.5]], catchUp: 0.5,   // 2026-11-27 바닥 ②: 설정표에서 읽게 (게임 · 시뮬레이터 모두 cfg.adv.newXp를 읽음)
         restBase: 0.5, restRisk: [0.2, 0, -0.2], restSpend: [-0.1, 0, 0.1], restSocial: [-0.1, 0, 0.1], restMin: 0.1, restMax: 0.9, restHurt: 0.5,   // 2026-11-27 바닥 ① (게임 쪽만 씀)
         inviteBase: 0.5, inviteSocial: [-0.2, 0, 0.2], inviteRel: [-0.2, 0, 0.2], inviteRisk: [-0.1, 0, 0.1], waitBeats: 10, prepBeats: 1, regenPerBeat: 0.1, relookBeats: 10,
         arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,       // arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)

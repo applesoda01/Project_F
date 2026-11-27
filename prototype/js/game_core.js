@@ -174,7 +174,7 @@
     const a = {
       id: s.nextId++, name, core, cls: CLASS1[core], stage: 1, pair: null,
       stats: [0, 0, 0, 0, 0].map((_, i) => i === core ? A.startCore + s.R() * 4 : A.startOther + s.R() * 3),
-      lv: 1, xp: 0, bank: 0, grade: 0, ach: 0, attach: o.attach || 0,
+      lv: 1, xp: 0, bank: 0, grade: 0, ach: 0, attach: o.attach || 0, kept: [0, 0, 0, 0, 0], bonus: 0,   // kept: 한 일로 얻은 능력치 · bonus: 받은 고비 보너스의 합 (2026-11-27 바닥 ②)
       risk: ri(s, 3), spend: ri(s, 3), social: ri(s, 3), wallet: 0, gear: -1, eq: [-1, -1, -1], pots: 0, home: !!o.home, contract: null,   // contract: 계약 모험가 조건 (경제 개편 V2 2단계에서 채움, null = 자유 모험가)
       state: 'town', sub: 'idle', readyT: s.tick || 0, lookT: s.tick || 0, until: 0, joined: s.week, alive: true, done: 0,   // 2026-11-27 바닥 ①: 'away'(애착이 낮으면 안 옴)를 없앰 — 원정 · 부상이 아니면 늘 길드에 (1-2) · sub = 길드 안의 걸음 (idle · rest · wait · prep)
       cls1: CLASS1[core], line: [core], fin: false, promoCool: 0, skills: [{ line: core, form: CLASS1[core] }], career: [{ week: s.week, text: '길드에 처음 옴' }]
@@ -182,8 +182,8 @@
     if (A.starOn !== 0) {   // 2026-11-23 모험가 개선작업 ③ 별 (21:14 사용자 「진행하자」 → 기본 켬, 끄려면 adv.starOn = 0) (사용자 20:40 「진행해줘」, 수치 [임시] · 한석님 검토): ★1~3 = 레벨업 성장 배율, 창립 · 튜토리얼은 ★1
       const P = A.starP || [0.65, 0.28, 0.07], h = ((a.id * 2654435761) ^ (s.week * 40503) ^ 0x9e37) >>> 0, u = (h % 10007) / 10007;   // 게임 난수(s.R)를 쓰지 않음 → 다른 결과가 흔들리지 않게
       a.star = o.home ? 1 : u < P[0] ? 1 : u < P[0] + P[1] ? 2 : 3;
-      const L0 = o.home ? 1 : ((s.cfg.growth.gradeLv || [0, 4, 10, 18, 26, 35, 45])[s.grade] || 1);   // 합류 보정: 길드 등급의 최저 레벨로 옴 (F급 Lv 1 · E급 Lv 4 · D급 Lv 10)
-      while (a.lv < Math.max(1, L0)) { a.lv++; const gr = growthOf(a), m = starMul(s, a); for (let i = 0; i < 5; i++) a.stats[i] = Math.min(s.cfg.growth.statCap, a.stats[i] + gr[i] * m); }
+      const L0 = 1;   // 2026-11-27 바닥 ② · ②-L: 길드 등급의 승급 레벨로 맞춰 주던 것을 끔 (신입 단위에서 「Lv 1 ~ 길드 평균 − 2」로 대신) — 예전: o.home ? 1 : gradeLv[길드 등급]
+      while (a.lv < Math.max(1, L0)) { a.lv++; const gr = growthOf(a, s), m = starMul(s, a); for (let i = 0; i < 5; i++) a.stats[i] = Math.min(s.cfg.growth.statCap, a.stats[i] + gr[i] * m); }
     }
     if (!o.home && QKr()) a.quirk = QKr().roll(s.R, a, s.cfg.quirk);   // 2026-11-20 버릇: 새로 오는 모험가의 30% [임시] (창립 · 튜토리얼 모험가는 없음). 영입할 때 공개 (사용자 결정)
     a.st0 = a.stats.map(v => Math.round(v));   // 2026-11-24 개선 26: 처음 왔을 때 능력치 (승급 팝업 · 모험가 상세에서 견줌 · 표시만, 예전 저장에는 없음)
@@ -359,6 +359,15 @@
   const starMul = (s, a) => s.cfg.adv.starOn !== 0 ? ((s.cfg.adv.starMul || [1, 1.25, 1.5])[(a.star || 1) - 1] || 1) : 1;
   const NEWXP = [[4, 3], [8, 2], [12, 1.5]];   // 2026-11-24 낮은 레벨 몰림 대책 A안 (30판: 나중 합류 1년 평균 Lv 4.87 → 5.73, 순이익 · 성공률 변화 없음) [임시]
   const catchUp = (s, a) => { const A = s.cfg.adv; if (A.starOn === 0) return 0; const top = Math.max(...s.advs.filter(x => x.alive).map(x => x.lv)); return top - a.lv >= (A.catchGap || 3) ? (A.catchUp != null ? A.catchUp : 0.5) : 0; };   // 따라잡기: 길드 최고 레벨보다 3 이상 낮으면 경험치 +50% [임시]
+  // 2026-11-27 바닥 ② · ②-B (11-5): 능력치를 두 몫으로 적음 — a.stats(지금 값) 그대로 읽고, a.kept = 「한 일로 얻은 몫」(수행 · 퀘스트 · 리퀘스트 보상 · 선물). 레벨업 · 고비 보너스는 a.stats만
+  function statGain(s, a, i, v) { const cap = s.cfg.growth.statCap, b = a.stats[i]; a.stats[i] = Math.min(cap, b + v); const d = a.stats[i] - b; (a.kept = a.kept || [0, 0, 0, 0, 0])[i] += d; return d; }
+  // 고비 (2-3): 고비 레벨(growth.mileLv)에 닿으면 보너스(growth.milePts)를 a.bonus에 쌓음. 나누는 화면이 생길 때까지는 주력에 저절로 [임시]
+  function mileBonus(s, a) {
+    const G = s.cfg.growth, L = G.mileLv || [], P = G.milePts || [], k = L.indexOf(a.lv); if (k < 0) return 0;
+    const pts = P[k] || 0; if (!pts) return 0;
+    a.bonus = (a.bonus || 0) + pts; (a.bonusAt = a.bonusAt || []).push({ lv: a.lv, pts, to: a.core, week: s.week });
+    a.stats[a.core] = Math.min(G.statCap, a.stats[a.core] + pts); return pts;
+  }
   function gainXp(s, a, xp) {
     const G = s.cfg.growth, cu = catchUp(s, a); if (cu) { xp *= 1 + cu; a.cuW = s.week; }
     { const A = s.cfg.adv, age = s.week - (a.joined || 0), T = A.newXp != null ? A.newXp : NEWXP; if (T && !a.home) { if (Array.isArray(T)) { const t = T.find(x => age < x[0]); if (t) xp *= t[1]; } else if (age < (A.newWeeks || 4)) xp *= T; } }   // 2026-11-24 신입 경험치 (사용자 약한 단계 ①): 합류 뒤 1~4주 ×3 · 5~8주 ×2 · 9~12주 ×1.5, 창립 멤버 제외. 끄려면 adv.newXp = 0
@@ -368,8 +377,9 @@
       if (a.xp < need) break;
       if (a.lv >= lvCapOf(s, a)) { a.bank += a.xp; a.xp = 0; break; }
       a.xp -= need; a.lv++; if (a.lv % 5 === 0) remember(s, a, 'grow', { what: 'lv', lv: a.lv });
-      const gr = growthOf(a), sm = starMul(s, a);
+      const gr = growthOf(a, s), sm = starMul(s, a);
       for (let i = 0; i < 5; i++) a.stats[i] = Math.min(G.statCap, a.stats[i] + gr[i] * sm);
+      mileBonus(s, a);   // 2026-11-27 바닥 ②: 고비 보너스 (최대 체력이 늘면 다음 maxOf에서 늘어난 만큼 지금 체력에도 더해짐)
       // 같은 주에 여러 번 오르면 한 줄로 합침 (Lv 1 → 3)
       const lp = s.log.slice(0, 30).find(e => e.week === s.week && e.lvAdv === a.id);
       if (lp) { lp.lvTo = a.lv; lp.text = `${a.name}의 레벨이 올랐습니다. (Lv ${lp.lvFrom} → ${a.lv})`; }
@@ -400,11 +410,13 @@
   ].map(([from, name, req, town]) => ({ from, name, req, town, line: Object.keys(req).map(Number) }));
   const ATTACH_TITLE = ['방랑자', '신입', '동반자', '마을의 수호자'];
   const attachTier = a => a.attach >= 90 ? 3 : a.attach >= 60 ? 2 : a.attach >= 30 ? 1 : 0;
-  function lvCapOf(s, a) { return a.fin || a.stage >= 3 ? 50 : s.cfg.growth.lvCap[a.stage - 1]; }
+  function lvCapOf(s, a) { const C = s.cfg.growth.lvCap; return a.fin || a.stage >= 3 ? C[C.length - 1] : C[a.stage - 1]; }   // 2026-11-27 바닥 ② · ②-L: 끝값을 설정표의 마지막(70)으로 — 예전 50 고정
   // 레벨업 1회 성장치: 1차 주력 2.0·나머지 0.4 / 2차 특화 2.4·0.525 / 2차 조합 1.8·1.8·0.3 / 3차 심화 2.2·2.0(특화 2.8)·나머지 합 1.3
-  function growthOf(a) {
+  const CORE1 = () => { const v = GD.balance && GD.balance.growth && GD.balance.growth.core1; return v != null ? v : 2.0; };   // 2026-11-27 바닥 ② · ②-B (2-3): 1차 직업의 주력 2.0 → growth.core1 (1.0). 2 · 3차는 이번에 바꾸지 않음
+  function growthOf(a, s) {
     const g = [0, 0, 0, 0, 0], L = a.line || [a.core];
-    if (a.stage === 1) { for (let i = 0; i < 5; i++) g[i] = i === a.core ? 2.0 : 0.4; return g; }
+    const c1 = s && s.cfg.growth.core1 != null ? s.cfg.growth.core1 : CORE1();
+    if (a.stage === 1) { for (let i = 0; i < 5; i++) g[i] = i === a.core ? c1 : 0.4; return g; }
     if (a.stage === 2) { for (let i = 0; i < 5; i++) g[i] = L.length === 1 ? (L.includes(i) ? 2.4 : 0.525) : (L.includes(i) ? 1.8 : 0.3); return g; }
     if (L.length === 1) { for (let i = 0; i < 5; i++) g[i] = L.includes(i) ? 2.8 : 0.325; return g; }
     for (let i = 0; i < 5; i++) g[i] = i === L[0] ? 2.2 : i === L[1] ? 2.0 : 1.3 / 3;
@@ -1496,7 +1508,7 @@
         for (const a of party) {
           a.done++;
           gainXp(s, a, (G.xpBase * Math.pow(G.xpGradeMult, q.g) + (hasDeco(s, 'map') ? DV.xp : 0)) * (QKr() ? QKr().xpMul(s.cfg.quirk, a, rivalHere(s, a)) : 1));   // 2026-11-20 버릇: 이기적 · 경쟁심 경험치 +
-          a.stats[q.type] = Math.min(G.statCap, a.stats[q.type] + Q.subGrowth);
+          statGain(s, a, q.type, Q.subGrowth);   // 2026-11-27 ②-B: 퀘스트로 얻은 몫은 a.kept에도
           a.attach = Math.min(100, a.attach + A.attachSuccess + (hasDeco(s, 'plant') ? DV.attach : 0));
           if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
           tryGradeUp(s, a);
@@ -1866,7 +1878,7 @@
     const ex = rw.extra || {}, ow = s.advs.find(a => a.id === r.who);
     if (ex.popMonthly) { R.popMonthly += ex.popMonthly; log(s, `마을 인구가 매달 ${ex.popMonthly}명씩 더 늘어납니다.`, 'town'); }
     if (ex.recipe) { const dd = DISH.find(x => !x.dungeon && !s.dishes[x.name] && x.g <= s.grade); if (dd) { s.dishes[dd.name] = s.week; syncMeals(s); for (const m of dd.mats) s.knownMats[m] = true; log(s, `새 요리를 배웠습니다: ${dd.name}`, 'unlock'); } }
-    if (ex.ownerStat && ow && ow.alive) { ow.stats[ow.core] = Math.min(s.cfg.growth.statCap, ow.stats[ow.core] + ex.ownerStat); log(s, `${ow.name}의 ${STATS[ow.core]}이(가) ${ex.ownerStat} 올랐습니다.`, 'grow', { who: [ow.name] }); }
+    if (ex.ownerStat && ow && ow.alive) { statGain(s, ow, ow.core, ex.ownerStat);   /* 2026-11-27 ②-B: 리퀘스트 보상은 a.kept에도 */ log(s, `${ow.name}의 ${STATS[ow.core]}이(가) ${ex.ownerStat} 올랐습니다.`, 'grow', { who: [ow.name] }); }
     if (ex.ownerXp && ow && ow.alive) gainXp(s, ow, ex.ownerXp);
   }
   // ----- 지명 -----
@@ -2239,7 +2251,7 @@
   }
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
-  const api = { live: false, reqSorted, dgWhy, dgLaunch, dgPlan, dgChoose, dgPending, dgLean, dgCancel, dgOdds, dgCraftWhy, dgCraft, dgGive, dgItems, dgOn, dgDef, hintPeek, hintSaid, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, stepBeat, BPW, hpFrac, mpFrac, maxOf, afterReturn, SAVE_VER, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
-  Object.assign(api, { live: false, wakeGo, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, isStaple, canMarket, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carBuy, carWarePrice, carTalk, carEscort, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, stepBeat, BPW, hpFrac, mpFrac, maxOf, afterReturn, SAVE_VER, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log });   // 2026-11-20 main 병합: 시장 · 길드 의뢰 · 상단 쪽 API
+  const api = { live: false, reqSorted, dgWhy, dgLaunch, dgPlan, dgChoose, dgPending, dgLean, dgCancel, dgOdds, dgCraftWhy, dgCraft, dgGive, dgItems, dgOn, dgDef, hintPeek, hintSaid, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, stepBeat, BPW, hpFrac, mpFrac, maxOf, afterReturn, statGain, mileBonus, gainXp, tryGradeUp, SAVE_VER, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
+  Object.assign(api, { live: false, wakeGo, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, isStaple, canMarket, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carBuy, carWarePrice, carTalk, carEscort, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, stepBeat, BPW, hpFrac, mpFrac, maxOf, afterReturn, statGain, mileBonus, gainXp, tryGradeUp, SAVE_VER, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log });   // 2026-11-20 main 병합: 시장 · 길드 의뢰 · 상단 쪽 API
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);
