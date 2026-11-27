@@ -64,77 +64,104 @@
 
     // 전투. units: unit() 배열, enemies: [{hp, atk, def, boss, name}], g: 의뢰 등급, R: 0~1 난수 함수(없으면 고정 씨앗), wantLog: 미니 뷰 기록
     // 기록(log): hit{by,to(적 순번),hp,c(치명타),k(스킬)} · hurt{to,hp} · heal{by,to,hp} · potion{to,hp} · down{to} · wave{n}. r = 라운드
-    function fight(units, enemies, g, R, leaderRisk, wantLog) {
-      const rnd = R || mulberry(20261111);
-      const P = units.map(u => Object.assign({}, u, { gauge: 0 }));
+    // 2026-11-27 바닥 공사 「짓는 차례」 1 (명세 ②-D): 한 번에 끝까지 돌던 것을 begin(상태 만들기) · step(한 라운드) · end(결과)로 나눔.
+    //   규칙은 그대로. 상태(st)에는 함수를 넣지 않음 — 난수는 step에 넘김. 아군은 st.P[k].ally · .id로 가리키고, step은 .a(모험가)를 읽지 않음.
+    //   30라운드에서 물러나는 것(maxRounds)은 begin의 opt.maxRounds로만 켬 — fight(옛 길)는 켜고, 박자로 도는 새 원정은 끔(기한이 대신함 · 3-2).
+    function begin(units, enemies, g, leaderRisk, opt) {
+      opt = opt || {};
+      const P = units.map(u => Object.assign({}, u, { gauge: 0, ally: true, id: u.id != null ? u.id : (u.a ? u.a.id : undefined) }));
       P.sort((x, y) => POS[x.core] - POS[y.core] || y.maxHp - x.maxHp);                 // 자동 배치: 맨 앞 → 맨 뒤
       const E = enemies.map((e, i) => ({ i, name: e.name, mon: e.mon, hp: e.hp, maxHp: e.hp, atk: e.atk, def: e.def || 0, boss: !!e.boss, gauge: 0 }));
       if (DB && DB.on && DB.rare && P.some(u => u.rare)) for (const u of P) if (!u._rp) { u.atk *= 1 + DB.rareParty; u._rp = 1; }   // 2026-11-20 레어 장신구: 같은 파티 전원 공격 + (방을 이어 가도 한 번만)
-      const normal = E.filter(e => !e.boss), bosses = E.filter(e => e.boss), gs = groupMax(g), waves = [];
-      for (let k = 0; k < normal.length; k += gs) waves.push(normal.slice(k, k + gs));
-      for (const b of bosses) waves.push([b]);
-      const vary = () => 1 + (rnd() * 2 - 1) * C.dmgVar;
-      const potHeal = C.potionHeal[g], retreat = C.retreatHp[leaderRisk], log = wantLog ? [] : null;
-      const totalMax = P.reduce((t, u) => t + u.maxHp, 0);
-      let round = 0, result = null, wi = 0, selfChecked = false;
-      const push = e => { if (log) log.push(Object.assign({ r: round }, e)); };
+      const normal = E.filter(e => !e.boss), bosses = E.filter(e => e.boss), gs = groupMax(g), waves = [];   // 물결은 적의 순번(i)으로 적음 (저장할 수 있게)
+      for (let k = 0; k < normal.length; k += gs) waves.push(normal.slice(k, k + gs).map(e => e.i));
+      for (const b of bosses) waves.push([b.i]);
+      return { P, E, waves, g, potHeal: C.potionHeal[g], retreat: C.retreatHp[leaderRisk], maxRounds: opt.maxRounds || 0,
+        totalMax: P.reduce((t, u) => t + u.maxHp, 0), round: 0, wi: 0, open: false, selfChecked: false, result: null, done: waves.length === 0, log: opt.log ? [] : null };
+    }
+
+    // 한 라운드. 물결이 바뀌는 일(새 물결 알림 · 물결을 다 잡은 뒤의 판정)도 여기서 함. 끝나면 st.done
+    function step(st, R) {
+      if (st.done) return st;
+      const rnd = R || mulberry(20261111);
+      const { P, E } = st, C_ = C;
+      const W = st.waves[st.wi].map(i => E[i]);
+      const push = e => { if (st.log) st.log.push(Object.assign({ r: st.round }, e)); };
+      const vary = () => 1 + (rnd() * 2 - 1) * C_.dmgVar;
       const strike = (u, mult, tgt, k) => {                      // 한 번의 타격: (공격 × 배율 × 흔들림 [× 치명타]) − 방어, 0 미만이면 0
         let d = u.atk * mult * vary() * ((u.vs && tgt.mon && u.vs[tgt.mon]) || 1), crit = 0;   // 2026-11-20 세트 3부위: 그 던전 몬스터 상대 ×
-        if (rnd() < u.crit) { d *= C.critMult; crit = 1; }
+        if (rnd() < u.crit) { d *= C_.critMult; crit = 1; }
         const dealt = Math.max(0, d - tgt.def); tgt.hp -= dealt;
-        push({ t: 'hit', by: u.a.id, to: tgt.i, hp: Math.max(0, tgt.hp), c: crit, k, d: Math.round(dealt), mp: Math.round(u.mp) });
+        push({ t: 'hit', by: u.id, to: tgt.i, hp: Math.max(0, tgt.hp), c: crit, k, d: Math.round(dealt), mp: Math.round(u.mp) });
       };
       const front = list => list.find(e => e.hp > 0);
       const behind = (list, e) => { const k = list.indexOf(e); return list.slice(k + 1).find(x => x.hp > 0); };
-
-      while (!result && wi < waves.length) {
-        const W = waves[wi]; push({ t: 'wave', n: wi + 1 });
-        while (!result && W.some(e => e.hp > 0)) {
-          round++;
-          const actors = [...P.filter(u => !u.down), ...W.filter(e => e.hp > 0)];
-          for (const x of actors) { x.gauge += 100 * (x.speed || 1); x.n = Math.floor(x.gauge / 100); x.gauge -= x.n * 100; }
-          const order = actors.slice().sort((x, y) => (y.speed || 1) - (x.speed || 1));
-          const maxN = Math.max(0, ...order.map(x => x.n));
-          for (let step = 1; step <= maxN && !result; step++) {
-            for (const x of order) {
-              if (x.n < step) continue;
-              if (!W.some(e => e.hp > 0)) break;
-              if (x.a) {                                           // 아군 행동
-                if (x.down) continue;
-                const hurt = P.filter(p => !p.down && p.hp < p.maxHp * 0.5).sort((p, q) => p.hp / p.maxHp - q.hp / q.maxHp)[0];
-                if (x.heal && hurt && x.mp >= C.healMp) { x.mp -= C.healMp; const before = hurt.hp; hurt.hp = Math.min(hurt.maxHp, hurt.hp + x.heal); push({ t: 'heal', by: x.a.id, to: hurt.a.id, hp: hurt.hp, d: Math.round(hurt.hp - before), mp: Math.round(x.mp) }); continue; }
-                const t0 = front(W); if (!t0) break;
-                const cost = skillMp(x.core);
-                if (x.core !== 3 && x.mp >= cost && rnd() < skillRate()) {
-                  x.mp -= cost;
-                  if (x.core === 0 || x.core === 1) { strike(x, 1, t0, 'double'); const t1 = front(W); if (t1) strike(x, 1, t1, 'double'); }        // 더블 스윙 · 연사: 1배 두 번
-                  else if (x.core === 2) { const b = behind(W, t0); strike(x, 1.5, t0, 'fire'); if (b) strike(x, 1.5, b, 'fire'); }                // 파이어볼: 대상 + 바로 뒤 1명
-                  else strike(x, 1.5, t0, 'stab');                                                                                                    // 급소 찌르기: 1.5배 한 번
-                } else strike(x, 1, t0, null);
-              } else {                                             // 적 행동: 살아 있는 맨 앞 아군부터
-                if (x.hp <= 0) continue;
-                const live = P.filter(p => !p.down); if (!live.length) break;
-                let tgt = live[0];
-                if (tgt.hp < tgt.maxHp * 0.3) { const cv = live.find(p => p !== tgt && p.cover && p.hp >= p.maxHp * p.cover); if (cv) { if (!cv.covered) push({ t: 'cover', by: cv.a.id, to: tgt.a.id }); cv.covered = (cv.covered || 0) + 1; tgt = cv; } }   // 2026-11-20 헌신: 위기(체력 30% 아래)의 동료 대신 맞음
-                const dealt = Math.max(0, x.atk * vary() - tgt.def); tgt.hp -= dealt;
-                if (tgt.hp <= 0) { tgt.hp = 0; tgt.down = true; push({ t: 'hurt', to: tgt.a.id, hp: 0, d: Math.round(dealt) }); push({ t: 'down', to: tgt.a.id }); continue; }
-                push({ t: 'hurt', to: tgt.a.id, hp: tgt.hp, d: Math.round(dealt) });
-                if (tgt.hp < tgt.maxHp * tgt.potLine && tgt.pots > 0) { tgt.pots--; tgt.used++; const before = tgt.hp; tgt.hp = Math.min(tgt.maxHp, tgt.hp + tgt.maxHp * potHeal); push({ t: 'potion', to: tgt.a.id, hp: tgt.hp, d: Math.round(tgt.hp - before) }); }
-                if (tgt.flee && tgt.hp < tgt.maxHp * tgt.flee) { tgt.down = true; tgt.fled = 'coward'; push({ t: 'flee', to: tgt.a.id, why: 'coward' }); }   // 2026-11-20 겁쟁이: 「위험」 전투에서 체력이 낮으면 혼자 물러남 (쓰러짐과 달리 부상 없음)
-              }
+      const alive = () => P.reduce((t, u) => t + (u.down ? 0 : u.hp), 0);
+      if (!st.open) { st.open = true; push({ t: 'wave', n: st.wi + 1 }); }
+      if (W.some(e => e.hp > 0)) {
+        st.round++;
+        const actors = [...P.filter(u => !u.down), ...W.filter(e => e.hp > 0)];
+        for (const x of actors) { x.gauge += 100 * (x.speed || 1); x.n = Math.floor(x.gauge / 100); x.gauge -= x.n * 100; }
+        const order = actors.slice().sort((x, y) => (y.speed || 1) - (x.speed || 1));
+        const maxN = Math.max(0, ...order.map(x => x.n));
+        for (let k = 1; k <= maxN && !st.result; k++) {
+          for (const x of order) {
+            if (x.n < k) continue;
+            if (!W.some(e => e.hp > 0)) break;
+            if (x.ally) {                                        // 아군 행동
+              if (x.down) continue;
+              const hurt = P.filter(p => !p.down && p.hp < p.maxHp * 0.5).sort((p, q) => p.hp / p.maxHp - q.hp / q.maxHp)[0];
+              if (x.heal && hurt && x.mp >= C_.healMp) { x.mp -= C_.healMp; const before = hurt.hp; hurt.hp = Math.min(hurt.maxHp, hurt.hp + x.heal); push({ t: 'heal', by: x.id, to: hurt.id, hp: hurt.hp, d: Math.round(hurt.hp - before), mp: Math.round(x.mp) }); continue; }
+              const t0 = front(W); if (!t0) break;
+              const cost = skillMp(x.core);
+              if (x.core !== 3 && x.mp >= cost && rnd() < skillRate()) {
+                x.mp -= cost;
+                if (x.core === 0 || x.core === 1) { strike(x, 1, t0, 'double'); const t1 = front(W); if (t1) strike(x, 1, t1, 'double'); }        // 더블 스윙 · 연사: 1배 두 번
+                else if (x.core === 2) { const b = behind(W, t0); strike(x, 1.5, t0, 'fire'); if (b) strike(x, 1.5, b, 'fire'); }                // 파이어볼: 대상 + 바로 뒤 1명
+                else strike(x, 1.5, t0, 'stab');                                                                                                    // 급소 찌르기: 1.5배 한 번
+              } else strike(x, 1, t0, null);
+            } else {                                             // 적 행동: 살아 있는 맨 앞 아군부터
+              if (x.hp <= 0) continue;
+              const live = P.filter(q => !q.down); if (!live.length) break;
+              let tgt = live[0];
+              if (tgt.hp < tgt.maxHp * 0.3) { const cv = live.find(q => q !== tgt && q.cover && q.hp >= q.maxHp * q.cover); if (cv) { if (!cv.covered) push({ t: 'cover', by: cv.id, to: tgt.id }); cv.covered = (cv.covered || 0) + 1; tgt = cv; } }   // 2026-11-20 헌신: 위기(체력 30% 아래)의 동료 대신 맞음
+              const dealt = Math.max(0, x.atk * vary() - tgt.def); tgt.hp -= dealt;
+              if (tgt.hp <= 0) { tgt.hp = 0; tgt.down = true; push({ t: 'hurt', to: tgt.id, hp: 0, d: Math.round(dealt) }); push({ t: 'down', to: tgt.id }); continue; }
+              push({ t: 'hurt', to: tgt.id, hp: tgt.hp, d: Math.round(dealt) });
+              if (tgt.hp < tgt.maxHp * tgt.potLine && tgt.pots > 0) { tgt.pots--; tgt.used++; const before = tgt.hp; tgt.hp = Math.min(tgt.maxHp, tgt.hp + tgt.maxHp * st.potHeal); push({ t: 'potion', to: tgt.id, hp: tgt.hp, d: Math.round(tgt.hp - before) }); }
+              if (tgt.flee && tgt.hp < tgt.maxHp * tgt.flee) { tgt.down = true; tgt.fled = 'coward'; push({ t: 'flee', to: tgt.id, why: 'coward' }); }   // 2026-11-20 겁쟁이: 「위험」 전투에서 체력이 낮으면 혼자 물러남 (쓰러짐과 달리 부상 없음)
             }
           }
-          let left = P.reduce((t, u) => t + (u.down ? 0 : u.hp), 0);
-          if (!selfChecked && left < totalMax * (P.find(u => u.selfP)?.selfAt || 0)) { selfChecked = true; for (const u of P) if (u.selfP && !u.down && rnd() < u.selfP) { u.down = true; u.fled = 'selfish'; push({ t: 'flee', to: u.a.id, why: 'selfish' }); left -= u.hp; } }   // 2026-11-20 이기적: 파티가 기울면 혼자 후퇴 (전투당 1번 판정, 이기적이 있을 때만 난수)
-          if (!P.some(u => !u.down)) result = 'wipe';
-          else if (!W.some(e => e.hp > 0)) { /* 웨이브 종료 */ }
-          else if (left < totalMax * retreat) result = 'retreat';
-          else if (round >= C.maxRounds) result = 'retreat';
         }
-        if (!result) { wi++; if (wi >= waves.length) result = 'win'; else if (P.reduce((t, u) => t + (u.down ? 0 : u.hp), 0) < totalMax * retreat) result = 'retreat'; }
+        let left = alive();
+        if (!st.selfChecked && left < st.totalMax * (P.find(u => u.selfP)?.selfAt || 0)) { st.selfChecked = true; for (const u of P) if (u.selfP && !u.down && rnd() < u.selfP) { u.down = true; u.fled = 'selfish'; push({ t: 'flee', to: u.id, why: 'selfish' }); left -= u.hp; } }   // 2026-11-20 이기적: 파티가 기울면 혼자 후퇴 (전투당 1번 판정, 이기적이 있을 때만 난수)
+        if (!P.some(u => !u.down)) st.result = 'wipe';
+        else if (!W.some(e => e.hp > 0)) { /* 물결 끝 — 아래에서 */ }
+        else if (left < st.totalMax * st.retreat) st.result = 'retreat';
+        else if (st.maxRounds && st.round >= st.maxRounds) st.result = 'retreat';
       }
+      if (!st.result && !W.some(e => e.hp > 0)) {                 // 이 물결을 다 잡음 → 다음 물결 또는 승리
+        st.wi++; st.open = false;
+        if (st.wi >= st.waves.length) st.result = 'win';
+        else if (alive() < st.totalMax * st.retreat) st.result = 'retreat';
+      }
+      if (st.result) st.done = true;
+      return st;
+    }
+
+    // 결과 — 옛 fight가 돌려주던 모양 그대로
+    function end(st) {
+      const { P, E } = st;
       const enemyLeft = E.reduce((t, e) => t + Math.max(0, e.hp), 0) / Math.max(1, E.reduce((t, e) => t + e.maxHp, 0));
-      return { win: result === 'win', result, rounds: round, units: P, hpFrac: P.reduce((t, u) => t + (u.down ? 0 : u.hp), 0) / totalMax, enemyLeft, foesLeft: E.map(e => Math.max(0, e.hp)), log };   // foesLeft: 적마다 남은 체력 (침공 재참전용, 2026-11-16)
+      return { win: st.result === 'win', result: st.result, rounds: st.round, units: P, hpFrac: P.reduce((t, u) => t + (u.down ? 0 : u.hp), 0) / st.totalMax, enemyLeft, foesLeft: E.map(e => Math.max(0, e.hp)), log: st.log };   // foesLeft: 적마다 남은 체력 (침공 재참전용, 2026-11-16)
+    }
+
+    // 옛 길: 한 번 부르면 끝까지 (30라운드에서 물러남). 리퀘스트 · 던전 · 침공 · 상단 호위와 지금의 게시판 의뢰가 씀
+    function fight(units, enemies, g, R, leaderRisk, wantLog) {
+      const rnd = R || mulberry(20261111);
+      const st = begin(units, enemies, g, leaderRisk, { log: wantLog, maxRounds: C.maxRounds });
+      while (!st.done) step(st, rnd);
+      return end(st);
     }
 
     // 출발 판단용 예상 성공 확률: 같은 조건으로 고정 씨앗 전투를 여러 번 돌려 이긴 비율을 구함 (같은 입력이면 항상 같은 값)
@@ -232,7 +259,7 @@
       prog(Dc, p0, res) { if (!res.cleared3) return Dc.progFail; return (Dc.progOk[DG.chip(p0)] || 0) + Dc.progRisky * res.risky + (res.boss ? Dc.progBoss : 0); }
     };
 
-    return { ok: !!C, C, unit, fight, predict, gear, defaultGear, WEAPON, ARMOR, ACC, QK, DG };
+    return { ok: !!C, C, unit, fight, begin, step, end, predict, gear, defaultGear, WEAPON, ARMOR, ACC, QK, DG };
   }
 
   const api = { make, defaultGear, WEAPON, ARMOR, ACC };
