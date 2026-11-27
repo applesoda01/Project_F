@@ -41,7 +41,7 @@
     stage = st; getS = get; ui = stage.ui;
     const box = document.createElement('div');
     box.innerHTML = '<div id="hudExp"><div class="head"><span id="expHd">원정 중 (0)</span></div><div class="list" id="expList"></div></div>' +
-      '<div class="exTip" id="expTip"></div><div id="expView"><canvas width="480" height="203"></canvas><div class="msg" id="expMsg"></div></div>';
+      '<div class="exTip" id="expTip"></div><div id="expView"><div class="nwStrip"></div><canvas width="480" height="203"></canvas><div class="msg" id="expMsg"></div></div>';
     while (box.firstChild) ui.appendChild(box.firstChild);
     list = ui.querySelector('#expList'); tip = ui.querySelector('#expTip'); ev = ui.querySelector('#expView');
     cv = ev.querySelector('canvas'); g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
@@ -163,9 +163,11 @@
         return { id: a.id, name: a.name, adv: a, k, i, x: 0, anim: 'walk', t: Math.random(), flash: 0, glow: 0, dodge: 0, dir: 1, hp: u ? u.maxHp : 1, maxHp: u ? u.maxHp : 1, mp: u ? u.maxMp : 0, maxMp: u && mpLog ? u.maxMp : 0, acts: actTimes(F, a.id), down: false, show: 0 }; }),
       enemies: (F ? F.enemies : []).map((m, i) => ({ n: m.name, boss: m.boss, scale: m.boss ? 140 : 100, im: monImg(m.mon), sd: sdOn() ? MONSD[m.mon] : null, mt: 0, act: 'idle', x: 540 + i * 56, flash: 0, crit: 0, alpha: 1, hp: m.maxHp, maxHp: m.maxHp, shown: 1 })) };
     if (sdOn()) { view.actors.forEach(a => ['walk', 'run', 'attack', 'fall', 'search', 'idle'].forEach(n => sdSheet(a.k, n))); view.enemies.forEach(m => m.sd && ['idle', 'attack', 'fall'].forEach(n => monSheet(m.sd[0], n))); }   // 2026-11-16: 쓸 SD 시트를 열 때 미리 읽음 (처음 쓰는 순간 예전 도트가 잠깐 보이던 문제)
+    if (x.nw) { view.nw = true; view.combat = false; view.nwKey = null; view.strip = ''; view.actors.forEach(a => { a.show = 1; a.anim = 'idle'; }); }
+    ev.classList.toggle('nw', !!x.nw); const sb = ev.querySelector('.nwStrip'); if (sb) sb.innerHTML = '';
     ev.classList.add('on'); requestAnimationFrame(() => ev.classList.add('vis')); updSmall(); render();
   }
-  function close() { sel = null; view = null; if (!ev) return; ev.classList.remove('vis'); setTimeout(() => { if (!view) ev.classList.remove('on'); }, 200); ui.querySelector('#hudExp').classList.remove('small'); render(); }
+  function close() { sel = null; view = null; if (!ev) return; ev.classList.remove('vis'); setTimeout(() => { if (!view) ev.classList.remove('nw'); }, 200); setTimeout(() => { if (!view) ev.classList.remove('on'); }, 200); ui.querySelector('#hudExp').classList.remove('small'); render(); }
   X.close = close;
 
   const MEET_END = 0.34; // 전투 의뢰는 조우 직후 곧바로 교전 (조우 구간 30~34%)
@@ -268,8 +270,9 @@
     // 2026-11-23 3차 16: 던전은 방마다 구간을 나눠(질문 지점 DG_AT 사이) 그 방 싸움을 구간 안에서 끝까지 보여 줌 → 「방 클리어!」 뒤에 선택지
     const x = e.x, seg = dgSeg(x); let p = seg ? Math.max(0, Math.min(1, (e.p - seg[0]) / (seg[1] - seg[0]))) : e.p;
     if (v.replay) { v.replay.t += realDt; p = Math.min(1, 0.3 + 0.7 * v.replay.t / DG_REPLAY); if (v.replay.t > DG_REPLAY + 0.8) v.replay.done = true; }   // 미니 뷰를 늦게 열었으면 그 방 싸움을 처음부터 다시 보여 준 뒤 질문
+    if (v.nw) { nwSync(v, e); p = e.done ? 0.9 : 0.6; }   // 2026-11-27 6-나 ④-A: 새 의뢰는 지금 칸을 그대로 보여 줌 (「이동」 장면 없음)
     if (v.dgLp0 == null && seg) v.dgLp0 = p;
-    const ok = x.dgP && !x.dgP.done ? true : x.ok != null ? x.ok : (x.fight ? x.fight.win : true), ph = phaseOf(p, !!x.fight);
+    const ok = v.nw ? x.ok !== false : x.dgP && !x.dgP.done ? true : x.ok != null ? x.ok : (x.fight ? x.fight.win : true), ph = phaseOf(p, !!x.fight);
     if (ph !== v.phase && v.phaseT >= 0.5 / Math.max(speed, 1) || v.phase === null) {
       const was = v.phase; v.phase = ph; v.phaseT = 0;
       if (was && v.combat && !v.fresh) { const up = upOf(v), a = up[Math.floor(Math.random() * up.length)];   // ③ 교전 시작 · 결과 한마디
@@ -286,7 +289,7 @@
     v.fresh = false;
     g.clearRect(0, 0, EVW, EVH);
     v.cam += (P === 'move' ? 1 : 0) * 48 * dt;
-    const bg = BG[BGQ[x.q.type]] || BG.forest;
+    const bg = v.nw ? (x.q.side === 'fight' ? BG.forest : BG.grass) : BG[BGQ[x.q.type]] || BG.forest;
     for (const [k, x0] of bg.props) {
       const im = IM[k]; if (!im || !im.complete || !im.naturalWidth) continue; const xx = ((x0 - v.cam * 0.4) % 560 + 560) % 560 - 60;
       g.globalAlpha = .45; g.drawImage(im, xx, SURF + 2 - im.height * 0.8, im.width * 0.8, im.height * 0.8); g.globalAlpha = 1;
@@ -352,7 +355,8 @@
         const bx = Math.round(a.x) - Math.round(BW / 2); g.globalAlpha = a.show;
         let gv = 0;
         if (v.combat && !a.down && P === 'fight') { const T = a.acts; let k = 0; while (k < T.length && T[k] <= fp) k++; const nx = T[k], pv = k ? T[k - 1] : 0; const nx2 = nx == null ? 1 : nx; gv = Math.max(0, Math.min(1, (fp - pv) / Math.max(1e-6, nx2 - pv))); }   // 2026-11-16: 마지막 행동 뒤에도 비워 두지 않고 전투 끝까지 차오름
-        if (!v.combat) gv = P === 'result' ? 1 : P === 'fight' ? Math.max(0, Math.min(1, (p - 0.5) / 0.35)) : 0;   // 수행 의뢰: 수행 구간 진행도만큼 차오름
+        if (!v.combat) gv = P === 'result' ? 1 : P === 'fight' ? Math.max(0, Math.min(1, (p - 0.5) / 0.35)) : 0;
+        if (v.nw) gv = a.gv || 0;   // 수행 의뢰: 수행 구간 진행도만큼 차오름
         { const Bf = root.GuildGame && GuildGame.mealBuffOf ? GuildGame.mealBuffOf(getS(), a.adv) : null;   // 2026-11-19 요리 버프: 막대 위 왼쪽 끝 작은 동그란 요리 그림 (이번 의뢰 동안)
           if (Bf && Bf.icon) { const im = buffImg(Bf.icon); if (im.complete && im.naturalWidth) { const r = 8, cx = bx + r, cy = SURF - 112 - r - 2; g.save(); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fillStyle = '#fff3cf'; g.fill(); g.lineWidth = 1.2; g.strokeStyle = '#d9a64a'; g.stroke(); g.clip(); g.imageSmoothingEnabled = true; g.drawImage(im, cx - r + 1, cy - r + 1, r * 2 - 2, r * 2 - 2); g.restore(); } } }
         bar(bx, SURF - 112, BW, 4, gv, () => '#ffd23a');
@@ -393,7 +397,63 @@
     else if (ok) msg = downN.length ? `의뢰 성공! (${josa(downN.join(', '), '은', '는')} 부상)` : '의뢰 성공! 길드로 돌아갑니다';
     else if (x.fight && x.fight.result === 'wipe') msg = '전원 쓰러졌다…';
     else msg = downN.length ? `${josa(downN.join(', '), '이', '가')} 쓰러졌다… 후퇴!` : '더 버티기 어렵다… 후퇴!';
+    if (v.nw) msg = v.nwMsg || '';
     ui.querySelector('#expMsg').textContent = msg;
+  }
+  // ---------- 새 의뢰의 미니뷰 (2026-11-27 6-나 ④-A · 7-1) ----------
+  //   위 칸 띠(480 × 68: 이름 · 레벨 · 칸의 차례 · 남은 기한 네모 일곱 · 가져온 소재), 아래 무대 = 지금 칸. 몬스터 칸은 그 칸의 싸움(x.cs.st)을,
+  //   일 · 함정 칸은 몬스터 자리에 대상 그림과 줄어드는 막대. 싸움 기록(log)을 두지 않으므로 박자마다 체력 · 게이지가 바뀐 것을 보고 효과를 냄
+  const FRD_ = () => ((root.GAME_DATA || {}).frames || {});
+  const NW_SD = { dog: 'mon_01', thief: 'mon_02', slime: 'mon_03', boar: 'mon_07' };   // 움직이는 SD 시트가 맞는 몬스터만 (나머지는 정지 그림)
+  const nwFrame = q => (FRD_().frames || []).find(f => f.id === q.tid) || {};
+  function nwMon(key) { const M = (FRD_().monsters || {})[key] || {}, k = M.img || 'mon_unknown'; return { name: M.name || '?', im: img('mon/' + k), sd: sdOn() && NW_SD[key] ? MONSD[NW_SD[key]] : null }; }
+  function nwSync(v, e) {
+    const x = e.x, s = getS(), cs = x.cs, c = x.q.nodes[x.i], F = nwFrame(x.q), bf = (root.Director && root.Director.bf) || 0;
+    const st = cs && cs.k === 'M' ? cs.st : null, key = x.i + ':' + (cs ? cs.k : '-') + ':' + (st ? st.wi : '');
+    v.combat = !!st;
+    if (!e.done && cs && key !== v.nwKey) {   // 칸 · 물결이 바뀌면 무대의 상대를 새로
+      v.nwKey = key; v.nwRound = st ? st.round : null;
+      if (st) v.enemies = (st.waves[st.wi] || []).map(i => { const E = st.E[i], m = nwMon(E.mon); if (m.sd) { ['idle', 'attack', 'fall'].forEach(n => monSheet(m.sd[0], n)); }
+        return { idx: i, n: E.name || m.name, boss: E.boss, scale: 100, im: m.im, sd: m.sd, mt: 0, act: 'idle', x: 330 + i * 40, flash: 0, crit: 0, alpha: 1, hp: Math.max(0, E.hp), maxHp: E.maxHp, shown: Math.max(0, E.hp) / E.maxHp }; });
+      else { const W = cs.k === 'W', amt = c ? c.amt : 1;
+        v.enemies = [{ work: true, n: W ? (F.workName || '일') : '함정', im: img(W ? (F.workImg || 'o_barrels') : 'n_trap'), sd: null, scale: 100, mt: 0, act: 'idle', x: 360, flash: 0, crit: 0, alpha: 1, hp: Math.max(0, cs.left), maxHp: amt, shown: Math.max(0, cs.left) / amt }]; }   // [임시 글] 「함정」
+    }
+    // 상대의 체력: 줄면 붉게 · 숫자
+    for (const m of v.enemies) {
+      const h = m.work ? (cs && !st && key === v.nwKey ? Math.max(0, cs.left) : 0) : st && key === v.nwKey ? Math.max(0, st.E[m.idx].hp) : 0;
+      if (h < m.hp - 1e-6) { m.flash = 0.25; v.nums.push({ who: m, e: 1, txt: String(Math.round(m.hp - h)), t: 0, k: numK(v, m), ox: Math.random() * 10 - 5 }); }
+      m.hp = h;
+    }
+    // 모험가: 싸움 중이면 그 싸움의 몸, 아니면 모험가의 몸
+    for (const a of v.actors) {
+      const u = st && st.P.find(z => z.id === a.id), ad = a.adv, hp = u ? u.hp : ad.hp != null ? ad.hp : 1, mh = u ? u.maxHp : ad.hpMax || 1;
+      if (a.hp0 != null && hp < a.hp0 - 1e-6) { a.flash = 0.25; v.nums.push({ who: a, txt: String(Math.round(a.hp0 - hp)), t: 0, k: numK(v, a), ox: 0 }); const live = v.enemies.filter(m => m.hp > 0 && m.sd); if (live.length) { const m = live[Math.floor(Math.random() * live.length)]; m.act = 'attack'; m.mt = 0; } }
+      else if (a.hp0 != null && hp > a.hp0 + 0.5) { a.glow = 0.4; v.nums.push({ who: a, txt: '+' + Math.round(hp - a.hp0), heal: true, t: 0, k: numK(v, a), ox: 0 }); }
+      a.hp0 = hp; a.hp = Math.max(0, hp); a.maxHp = mh;
+      if (u && u.maxMp > 0) { a.mp = u.mp; a.maxMp = u.maxMp; } else if (ad.mpMax > 0) { a.mp = ad.mp; a.maxMp = ad.mpMax; }
+      if ((x.down || {})[a.id] || (u && u.down)) a.down = true;
+      a.gv = u ? Math.min(1, ((u.gauge || 0) + 100 * (u.speed || 1) * bf) / 100) : cs && !st ? bf : 0;
+    }
+    if (st && st.round !== v.nwRound) { v.nwRound = st.round; for (const u of st.P) if (u.n > 0 && !u.down) { const a = v.actors.find(z => z.id === u.id); if (a && !a.down) { a.atk = ATK_T; a.t = 0.15; } } }   // 이번 박자에 움직인 사람은 공격 모션
+    // 문구 [임시 글]
+    const dots = '.'.repeat(1 + Math.floor(v.t * 2) % 3), dn = v.actors.filter(a => a.down).map(a => a.name);
+    v.nwMsg = e.done ? (x.ok ? (dn.length ? `의뢰 성공! (${josa(dn.join(', '), '은', '는')} 부상)` : '의뢰 성공! 길드로 돌아갑니다') : x.why === 'time' ? '기한이 지나 돌아갑니다…' : x.why === 'wipe' ? '전원 쓰러졌다…' : '더 버티기 어렵다… 후퇴!')
+      : !cs ? `다음 곳으로 가는 중${dots}` : st ? (dn.length ? `${josa(dn.join(', '), '이', '가')} 쓰러졌다!` : `${josa(groupName(v.enemies.filter(m => m.hp > 0).map(m => ({ name: m.n }))) || v.enemies[0].n, '과', '와')} 교전 중`)
+      : cs.k === 'W' ? `${F.workName || '일'} 중${dots}` : `함정을 푸는 중${dots}`;
+    nwStrip(v, e, F);
+  }
+  function nwStrip(v, e, F) {
+    const x = e.x, s = getS(), sn = s.seen || {}, M = FRD_().monsters || {}, box = ev.querySelector('.nwStrip'); if (!box) return;
+    const days = e.done ? 0 : Math.max(0, Math.min(7, Math.ceil((x.deadT - s.tick) / DAYB(s)))), all = x.q.nodes.filter(c => c.k !== 'T').length;
+    const chips = x.q.nodes.map((c, i) => {
+      const here = !e.done && i === x.i, done = c.done;
+      if (c.k === 'T' && !done && !here) return '';   // 모르는 함정은 띠에 없음 (만나야 보임)
+      const nm = c.k === 'W' ? (F.workName || '일') : c.k === 'T' ? '함정' : (done || here || (sn.mon || {})[c.mon]) ? ((M[c.mon] || {}).name || '?') + (c.waves > 1 ? ' 무리' : '') : '?';   // [임시 글] 「무리」
+      return `<span class="ch ${done ? 'd' : here ? 'c' : ''}"><i></i>${esc(nm)}</span>`;
+    }).filter(Boolean).join('<u></u>');
+    let sq = ''; for (let k = 0; k < 7; k++) sq += `<b class="${k >= 7 - days ? 'on' : ''}"></b>`;
+    const h = `<div class="r1"><span class="t">${esc(x.q.name || '의뢰')}</span><span class="lv">Lv ${x.q.lv || 1}</span><span class="dl">기한 <em>${days}일</em> 남음 ${sq}</span></div><div class="r2"><div class="chs">${chips}</div><span class="nmat">소재 <em>${x.mats || 0}</em> / ${all}</span></div>`;
+    if (h !== v.strip) { v.strip = h; box.innerHTML = h; }
   }
 
   // ---------- 매 프레임 ----------

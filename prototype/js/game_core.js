@@ -1466,7 +1466,7 @@
   }
   // ③-H 정산 · ③-I 실패한 종이
   function nqEnd(s, x, ok, why) {
-    if (x.end) return; x.end = true; s.active = s.active.filter(y => y !== x);
+    if (x.end) return; x.end = true; x.ok = !!ok; x.why = why || null; s.active = s.active.filter(y => y !== x);
     const Q = s.cfg.quest, G = s.cfg.growth, A = s.cfg.adv, E = s.cfg.econ, DV = s.cfg.deco, q = x.q;
     const party = x.party.map(id => s.advs.find(a => a.id === id)).filter(Boolean);
     s.month.quests++; s.stats.combat++; if (ok) s.stats.combatWin++;
