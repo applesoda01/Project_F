@@ -1,0 +1,870 @@
+{
+  "note": "새 의뢰의 틀 · 몬스터 표 (바닥 공사 4 · 명세 ③-A · 덧붙임 16-1 ~ 16-18). prototype/tools/node_amounts.js --write 로 만듦 — 직접 고치지 말고 도구를 고쳐 다시 만드세요. 옛 몬스터 표(collegium_data.json의 monsters)는 리퀘스트 · 던전이 그대로 씀",
+  "made": "2026-11-27",
+  "fleeBase": 19,
+  "lvMul": [
+    1,
+    1.5,
+    2
+  ],
+  "monsters": {
+    "dog": {
+      "name": "들개",
+      "core": 0,
+      "st": [
+        2,
+        12,
+        2,
+        4,
+        10
+      ],
+      "hpBase": 91,
+      "atkBase": 0.3,
+      "def": 2,
+      "spdBase": 0.65,
+      "pack": 4,
+      "flee": false,
+      "boss": false,
+      "skill": null
+    },
+    "dogBoss": {
+      "name": "우두머리 들개",
+      "core": 0,
+      "st": [
+        4,
+        16,
+        3,
+        6,
+        14
+      ],
+      "hpBase": 482,
+      "atkBase": 0.6,
+      "def": 6,
+      "spdBase": 0.65,
+      "pack": 1,
+      "flee": false,
+      "boss": true,
+      "skill": null
+    },
+    "boar": {
+      "name": "멧돼지",
+      "core": 0,
+      "st": [
+        4,
+        5,
+        1,
+        6,
+        4
+      ],
+      "hpBase": 526,
+      "atkBase": 1.1,
+      "def": 8,
+      "spdBase": 0.6,
+      "pack": 1,
+      "flee": false,
+      "boss": false,
+      "skill": null
+    },
+    "boarBoss": {
+      "name": "순돌이",
+      "core": 0,
+      "st": [
+        6,
+        5,
+        2,
+        8,
+        4
+      ],
+      "hpBase": 733,
+      "atkBase": 0.2,
+      "def": 10,
+      "spdBase": 0.6,
+      "pack": 1,
+      "flee": false,
+      "boss": true,
+      "skill": null
+    },
+    "rock": {
+      "name": "돌슬라임",
+      "core": 0,
+      "st": [
+        2,
+        2,
+        3,
+        10,
+        2
+      ],
+      "hpBase": 144,
+      "atkBase": 0,
+      "def": 30,
+      "spdBase": 0.55,
+      "pack": 2,
+      "flee": false,
+      "boss": false,
+      "skill": null
+    },
+    "thief": {
+      "name": "도적",
+      "core": 1,
+      "st": [
+        6,
+        2,
+        8,
+        6,
+        16
+      ],
+      "hpBase": 187,
+      "atkBase": 1.4,
+      "def": 5,
+      "spdBase": 0.8,
+      "pack": 2,
+      "flee": false,
+      "boss": false,
+      "skill": null
+    },
+    "magpie": {
+      "name": "까치",
+      "core": 0,
+      "st": [
+        2,
+        28,
+        6,
+        4,
+        30
+      ],
+      "hpBase": 154,
+      "atkBase": 0,
+      "def": 0,
+      "spdBase": 0.35,
+      "pack": 3,
+      "flee": true,
+      "boss": false,
+      "skill": null
+    },
+    "slime": {
+      "name": "슬라임",
+      "core": 0,
+      "st": [
+        2,
+        2,
+        1,
+        4,
+        4
+      ],
+      "hpBase": 204,
+      "atkBase": 0.1,
+      "def": 12,
+      "spdBase": 0.75,
+      "pack": 2,
+      "flee": false,
+      "boss": false,
+      "skill": null
+    },
+    "plain": {
+      "name": "보통 몬스터",
+      "core": 0,
+      "st": [
+        2,
+        8,
+        4,
+        6,
+        8
+      ],
+      "hpBase": 223,
+      "atkBase": 0.2,
+      "def": 8,
+      "spdBase": 0.8,
+      "pack": 2,
+      "flee": false,
+      "boss": false,
+      "skill": null
+    }
+  },
+  "frames": [
+    {
+      "id": "q_slay_F",
+      "name": "광견병 물리치료",
+      "giver": 0,
+      "side": "fight",
+      "mon": "dog",
+      "work": 0,
+      "trap": false,
+      "lv": [
+        [
+          {
+            "k": "M",
+            "mon": "dog",
+            "waves": 1
+          },
+          {
+            "k": "M",
+            "mon": "dog",
+            "waves": 1
+          }
+        ],
+        [
+          {
+            "k": "M",
+            "mon": "dog",
+            "waves": 2
+          },
+          {
+            "k": "M",
+            "mon": "dog",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 0,
+            "amt": 255
+          }
+        ],
+        [
+          {
+            "k": "M",
+            "mon": "dog",
+            "waves": 2
+          },
+          {
+            "k": "M",
+            "mon": "dog",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 0,
+            "amt": 340
+          },
+          {
+            "k": "M",
+            "mon": "dog",
+            "waves": 2,
+            "boss": "dogBoss"
+          }
+        ]
+      ]
+    },
+    {
+      "id": "q_hunt_F_2",
+      "name": "오늘 저녁 삼겹살",
+      "giver": 0,
+      "side": "work",
+      "mon": "boar",
+      "work": 0,
+      "trap": false,
+      "lv": [
+        [
+          {
+            "k": "W",
+            "stat": 0,
+            "amt": 170
+          },
+          {
+            "k": "W",
+            "stat": 0,
+            "amt": 170
+          }
+        ],
+        [
+          {
+            "k": "W",
+            "stat": 0,
+            "amt": 255
+          },
+          {
+            "k": "W",
+            "stat": 0,
+            "amt": 255
+          },
+          {
+            "k": "M",
+            "mon": "boar",
+            "waves": 2
+          }
+        ],
+        [
+          {
+            "k": "W",
+            "stat": 0,
+            "amt": 340
+          },
+          {
+            "k": "W",
+            "stat": 0,
+            "amt": 340
+          },
+          {
+            "k": "M",
+            "mon": "boar",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 0,
+            "amt": 340
+          }
+        ]
+      ]
+    },
+    {
+      "id": "q_slay_F_2",
+      "name": "그 멧돼지는 이름이 있다",
+      "giver": 1,
+      "side": "fight",
+      "mon": "boar",
+      "work": 1,
+      "trap": false,
+      "lv": [
+        [
+          {
+            "k": "M",
+            "mon": "boar",
+            "waves": 1
+          },
+          {
+            "k": "M",
+            "mon": "boar",
+            "waves": 1
+          }
+        ],
+        [
+          {
+            "k": "M",
+            "mon": "boar",
+            "waves": 2
+          },
+          {
+            "k": "M",
+            "mon": "boar",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 1,
+            "amt": 255
+          }
+        ],
+        [
+          {
+            "k": "M",
+            "mon": "boar",
+            "waves": 2
+          },
+          {
+            "k": "M",
+            "mon": "boar",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 1,
+            "amt": 340
+          },
+          {
+            "k": "M",
+            "mon": "boar",
+            "waves": 2,
+            "boss": "boarBoss"
+          }
+        ]
+      ]
+    },
+    {
+      "id": "q_hunt_F",
+      "name": "장작이 부족해요",
+      "giver": 1,
+      "side": "work",
+      "mon": "dog",
+      "work": 1,
+      "trap": false,
+      "lv": [
+        [
+          {
+            "k": "W",
+            "stat": 1,
+            "amt": 170
+          },
+          {
+            "k": "W",
+            "stat": 1,
+            "amt": 170
+          }
+        ],
+        [
+          {
+            "k": "W",
+            "stat": 1,
+            "amt": 255
+          },
+          {
+            "k": "W",
+            "stat": 1,
+            "amt": 255
+          },
+          {
+            "k": "M",
+            "mon": "dog",
+            "waves": 2
+          }
+        ],
+        [
+          {
+            "k": "W",
+            "stat": 1,
+            "amt": 340
+          },
+          {
+            "k": "W",
+            "stat": 1,
+            "amt": 340
+          },
+          {
+            "k": "M",
+            "mon": "dog",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 1,
+            "amt": 340
+          }
+        ]
+      ]
+    },
+    {
+      "id": "q_study_F",
+      "name": "이거 마석 맞냐",
+      "giver": 2,
+      "side": "fight",
+      "mon": "rock",
+      "work": 2,
+      "trap": false,
+      "lv": [
+        [
+          {
+            "k": "M",
+            "mon": "rock",
+            "waves": 1
+          },
+          {
+            "k": "M",
+            "mon": "rock",
+            "waves": 1
+          }
+        ],
+        [
+          {
+            "k": "M",
+            "mon": "rock",
+            "waves": 2
+          },
+          {
+            "k": "M",
+            "mon": "rock",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 2,
+            "amt": 255
+          }
+        ],
+        [
+          {
+            "k": "M",
+            "mon": "rock",
+            "waves": 2
+          },
+          {
+            "k": "M",
+            "mon": "rock",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 2,
+            "amt": 340
+          },
+          {
+            "k": "M",
+            "mon": "rock",
+            "waves": 2
+          }
+        ]
+      ]
+    },
+    {
+      "id": "q_study_F_2",
+      "name": "먹어도 되나요",
+      "giver": 2,
+      "side": "work",
+      "mon": "boar",
+      "work": 2,
+      "trap": false,
+      "lv": [
+        [
+          {
+            "k": "W",
+            "stat": 2,
+            "amt": 170
+          },
+          {
+            "k": "W",
+            "stat": 2,
+            "amt": 170
+          }
+        ],
+        [
+          {
+            "k": "W",
+            "stat": 2,
+            "amt": 255
+          },
+          {
+            "k": "W",
+            "stat": 2,
+            "amt": 255
+          },
+          {
+            "k": "M",
+            "mon": "boar",
+            "waves": 2
+          }
+        ],
+        [
+          {
+            "k": "W",
+            "stat": 2,
+            "amt": 340
+          },
+          {
+            "k": "W",
+            "stat": 2,
+            "amt": 340
+          },
+          {
+            "k": "M",
+            "mon": "boar",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 2,
+            "amt": 340
+          }
+        ]
+      ]
+    },
+    {
+      "id": "q_guard_F",
+      "name": "무명천 사수작전",
+      "giver": 3,
+      "side": "fight",
+      "mon": "thief",
+      "work": 3,
+      "trap": false,
+      "lv": [
+        [
+          {
+            "k": "M",
+            "mon": "thief",
+            "waves": 1
+          },
+          {
+            "k": "M",
+            "mon": "thief",
+            "waves": 1
+          }
+        ],
+        [
+          {
+            "k": "M",
+            "mon": "thief",
+            "waves": 2
+          },
+          {
+            "k": "M",
+            "mon": "thief",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 3,
+            "amt": 255
+          }
+        ],
+        [
+          {
+            "k": "M",
+            "mon": "thief",
+            "waves": 2
+          },
+          {
+            "k": "M",
+            "mon": "thief",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 3,
+            "amt": 340
+          },
+          {
+            "k": "M",
+            "mon": "thief",
+            "waves": 2
+          }
+        ]
+      ]
+    },
+    {
+      "id": "q_guard_F_2",
+      "name": "잡초 말고 약초",
+      "giver": 3,
+      "side": "work",
+      "mon": "dog",
+      "work": 3,
+      "trap": false,
+      "lv": [
+        [
+          {
+            "k": "W",
+            "stat": 3,
+            "amt": 170
+          },
+          {
+            "k": "W",
+            "stat": 3,
+            "amt": 170
+          }
+        ],
+        [
+          {
+            "k": "W",
+            "stat": 3,
+            "amt": 255
+          },
+          {
+            "k": "W",
+            "stat": 3,
+            "amt": 255
+          },
+          {
+            "k": "M",
+            "mon": "dog",
+            "waves": 2
+          }
+        ],
+        [
+          {
+            "k": "W",
+            "stat": 3,
+            "amt": 340
+          },
+          {
+            "k": "W",
+            "stat": 3,
+            "amt": 340
+          },
+          {
+            "k": "M",
+            "mon": "dog",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 3,
+            "amt": 340
+          }
+        ]
+      ]
+    },
+    {
+      "id": "q_mine_F",
+      "name": "반짝이면 다 내 거",
+      "giver": 4,
+      "side": "fight",
+      "mon": "magpie",
+      "work": 4,
+      "trap": true,
+      "lv": [
+        [
+          {
+            "k": "M",
+            "mon": "magpie",
+            "waves": 1
+          },
+          {
+            "k": "M",
+            "mon": "magpie",
+            "waves": 1
+          },
+          {
+            "k": "T",
+            "amt": 60
+          }
+        ],
+        [
+          {
+            "k": "M",
+            "mon": "magpie",
+            "waves": 2
+          },
+          {
+            "k": "M",
+            "mon": "magpie",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 4,
+            "amt": 255
+          },
+          {
+            "k": "T",
+            "amt": 90
+          }
+        ],
+        [
+          {
+            "k": "M",
+            "mon": "magpie",
+            "waves": 2
+          },
+          {
+            "k": "M",
+            "mon": "magpie",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 4,
+            "amt": 340
+          },
+          {
+            "k": "M",
+            "mon": "magpie",
+            "waves": 2
+          },
+          {
+            "k": "T",
+            "amt": 120
+          }
+        ]
+      ]
+    },
+    {
+      "id": "q_mine_F_2",
+      "name": "펄떡이는 생선",
+      "giver": 4,
+      "side": "work",
+      "mon": "slime",
+      "work": 4,
+      "trap": true,
+      "lv": [
+        [
+          {
+            "k": "W",
+            "stat": 4,
+            "amt": 170
+          },
+          {
+            "k": "W",
+            "stat": 4,
+            "amt": 170
+          },
+          {
+            "k": "T",
+            "amt": 60
+          }
+        ],
+        [
+          {
+            "k": "W",
+            "stat": 4,
+            "amt": 255
+          },
+          {
+            "k": "W",
+            "stat": 4,
+            "amt": 255
+          },
+          {
+            "k": "M",
+            "mon": "slime",
+            "waves": 2
+          },
+          {
+            "k": "T",
+            "amt": 90
+          }
+        ],
+        [
+          {
+            "k": "W",
+            "stat": 4,
+            "amt": 340
+          },
+          {
+            "k": "W",
+            "stat": 4,
+            "amt": 340
+          },
+          {
+            "k": "M",
+            "mon": "slime",
+            "waves": 2
+          },
+          {
+            "k": "W",
+            "stat": 4,
+            "amt": 340
+          },
+          {
+            "k": "T",
+            "amt": 120
+          }
+        ]
+      ]
+    }
+  ],
+  "base": [
+    {
+      "lv": 1,
+      "mon": "plain",
+      "waves": 1,
+      "work": 170,
+      "trap": 60
+    },
+    {
+      "lv": 2,
+      "mon": "plain",
+      "waves": 2,
+      "work": 255,
+      "trap": 90
+    },
+    {
+      "lv": 3,
+      "mon": "plain",
+      "waves": 2,
+      "work": 340,
+      "trap": 120
+    }
+  ],
+  "gear": {
+    "F": {
+      "weapon": 8,
+      "heavy": {
+        "def": 1
+      },
+      "light": {
+        "def": 1,
+        "mp": 10
+      },
+      "robe": {
+        "def": 1,
+        "mp": 20
+      }
+    }
+  }
+}

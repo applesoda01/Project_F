@@ -518,6 +518,33 @@ if errors:
     sys.exit(1)
 data = {'balance': balance, 'questTypes': qtypes, 'names': names, 'meals': meals, 'skills': skills, 'speech': speech, 'dialog': dialog, 'tutorial': tutorial, 'talkMem': talk_mem, 'talkJoke': talk_joke, 'quirks': quirks, 'dungeons': dungeons}
 if content is not None: data['content'] = content       # 편집기 데이터가 없으면 넣지 않음 (게임은 balance 값만 씀)
+# 새 의뢰의 틀 · 몬스터 표 (2026-11-27 바닥 공사 4 · 명세 ③-A · 덧붙임 16장). prototype/tools/node_amounts.js --write 가 만든 data/quest_frames_F.json.
+#   편집기 파일(collegium_data.json) 밖에 둠 — 편집기가 다시 저장할 때 모르는 키를 지우지 않게 (빈 곳 11). 게임은 5번(퀘스트)부터 씀
+_qf = os.path.join(DATA, 'quest_frames_F.json')
+if os.path.exists(_qf):
+    _f = json.load(open(_qf, encoding='utf-8'))
+    _mons, _ferr = _f.get('monsters') or {}, []
+    _qids = {q.get('id') for q in (content or {}).get('quests', [])} if content is not None else None
+    for _k, _m in _mons.items():
+        if len(_m.get('st') or []) != 5: _ferr.append(f'몬스터 {_k}: 능력치가 다섯이 아닙니다')
+        if (_m.get('atkBase') or 0) < 0: _ferr.append(f'몬스터 {_k}: atkBase가 음수입니다')
+    _seen = set()
+    for _fr in _f.get('frames') or []:
+        _id = _fr.get('id')
+        if _id in _seen: _ferr.append(f'틀 {_id}: 아이디가 겹칩니다')
+        _seen.add(_id)
+        if _qids is not None and _id not in _qids: _ferr.append(f'틀 {_id}: collegium_data.json의 퀘스트에 없습니다')
+        if len(_fr.get('lv') or []) != 3: _ferr.append(f'틀 {_id}: 레벨이 셋이 아닙니다')
+        for _cells in _fr.get('lv') or []:
+            for _c in _cells:
+                if _c.get('k') == 'M' and (_c.get('mon') not in _mons or (_c.get('boss') and _c['boss'] not in _mons)): _ferr.append(f'틀 {_id}: 몬스터 {_c.get("mon")} · {_c.get("boss")} 가 표에 없습니다')
+                if _c.get('k') == 'W' and _c.get('stat') not in (0, 1, 2, 3, 4): _ferr.append(f'틀 {_id}: 일 칸의 능력치가 0 ~ 4가 아닙니다')
+    if _ferr:
+        print(f'오류 {len(_ferr)}건 (quest_frames_F.json) — 파일을 만들지 않았습니다.')
+        for e in _ferr: print('  -', e)
+        sys.exit(1)
+    data['frames'] = {'monsters': _mons, 'frames': _f.get('frames') or [], 'base': _f.get('base') or [], 'fleeBase': _f.get('fleeBase'), 'lvMul': _f.get('lvMul')}
+    print(f'새 의뢰의 틀 {len(data["frames"]["frames"])}개 · 몬스터 {len(_mons)}종')
 # 로비 배치 칸 (2026-11-12, tools/lobby_grid_editor.html 로 칠한 값). 없으면 게임은 모든 바닥 칸을 놓기 가능으로 봄
 _lg = os.path.join(DATA, 'lobby_grid.json')
 if os.path.exists(_lg):
