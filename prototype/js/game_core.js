@@ -527,8 +527,8 @@
     const W = expireWeeks(s), dt = s.cfg.quest.trustExpire != null ? s.cfg.quest.trustExpire : 1;
     for (let i = s.board.length - 1; i >= 0; i--) {
       const q = s.board[i]; if (q.gq != null || q.nw || s.week - q.posted < W) continue;   // 새 종이는 만료 없음 (③-C)   // 길드 의뢰 카드는 gqWeekly
-      s.board.splice(i, 1); s.trust = Math.max(0, s.trust - dt); s.month.expired = (s.month.expired || 0) + 1;
-      log(s, `${qn(q)} 의뢰가 기한(${W}주)이 지나 게시판에서 사라졌습니다. 신뢰도 −${dt}.`, 'expire');
+      s.board.splice(i, 1); s.month.expired = (s.month.expired || 0) + 1;
+      log(s, `${qn(q)} 의뢰가 기한(${W}주)이 지나 게시판에서 사라졌습니다.`, 'expire');
     }
   }
   function withdrawQuest(s, qid) {
@@ -539,7 +539,7 @@
     log(s, `${qn(q)} 의뢰서를 게시판에서 뗐습니다.`, 'withdraw');
     return true;
   }
-  function debugSetGrade(s, g) { const ng = Math.max(0, Math.min(6, g)); for (let k = s.grade + 1; k <= ng; k++) s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + s.cfg.fame.gradeUp[k]); const g0 = s.grade; s.grade = ng; openGrades(s, g0); log(s, `[디버그] 길드 등급을 ${GR[s.grade]}로 바꿨습니다.`, 'debug'); }
+  function debugSetGrade(s, g) { const ng = Math.max(0, Math.min(6, g)); for (let k = s.grade + 1; k <= ng; k++) s.fame = ((s.fame || 0) + s.cfg.fame.gradeUp[k]); const g0 = s.grade; s.grade = ng; openGrades(s, g0); log(s, `[디버그] 길드 등급을 ${GR[s.grade]}로 바꿨습니다.`, 'debug'); }
 
   // ---------- 진행 ----------
   function generateQuests(s) {
@@ -681,6 +681,7 @@
   const gqMax = s => { const E = s.cfg.econ, M = E.gqMax || [2, 3, 4, 5, 6, 7, 8]; return (M[s.grade] != null ? M[s.grade] : M[M.length - 1]) + (upg(s, '게시판') ? (E.gqUpBoard != null ? E.gqUpBoard : 1) : 0); };
   const GQ_KIND = {
     mat: { name: '소재 납품', open: () => false, lock: '매입가로 합쳤습니다 (결정 63)', off: true },   // 2026-11-20 결정 63: 낼 수 없음 (예전 저장의 진행 중 의뢰만 처리)
+    order: { name: '주문', open: s => NWQ(s) },   // 2026-11-27 바닥 5 (③-K · 8-1): 틀과 레벨을 골라 종이 한 장을 더 냄 — 다른 다섯은 고르는 화면에서 내림(코드는 둠 · 화면은 6번)
     hunt: { name: '토벌', open: () => true },
     scout: { name: '정찰', open: () => true },
     patrol: { name: '순찰 · 경비', open: s => mainOf(s).state !== 'none', lock: 'F급 메인 퀘스트(침공) 전갈이 오면 열립니다' },
@@ -711,7 +712,7 @@
   function gqPlaceName(s, kind, m) {   // 자원지 이름: 몬스터가 나오면 'OO · OO 사냥터', 아니면 그 의뢰 이름 (2026-11-20 사용자: 토벌 · 정찰 선택지가 소재 이름으로 보임)
     const S = gqSrcK(s, kind, m); if (!S) return ((MAT[m] || {}).name || m) + ' 나오는 곳'; const E = S.T.enemies || [];
     return E.length ? [...new Set(E.map(e => e.name))].slice(0, 2).join(' · ') + ' 사냥터' : ((MAT[m] || {}).name || m) + ' 채집지'; }
-  const gqLabel = o => o.kind === 'mat' ? `${(MAT[o.m] || {}).name || o.m} ${o.n}개 납품` : o.kind === 'hunt' || o.kind === 'scout' ? `${o.place || ((MAT[o.m] || {}).name || o.m) + ' 나오는 곳'} ${GQ_KIND[o.kind].name}` : o.kind === 'train' ? `훈련 원정 (${(o.adv && o.adv.name) || '모험가'})` : GQ_KIND[o.kind].name;
+  const gqLabel = o => o.kind === 'order' ? `${(FRB[o.tid] || {}).name || o.tid} Lv${o.lv} 주문` : o.kind === 'mat' ? `${(MAT[o.m] || {}).name || o.m} ${o.n}개 납품` : o.kind === 'hunt' || o.kind === 'scout' ? `${o.place || ((MAT[o.m] || {}).name || o.m) + ' 나오는 곳'} ${GQ_KIND[o.kind].name}` : o.kind === 'train' ? `훈련 원정 (${(o.adv && o.adv.name) || '모험가'})` : GQ_KIND[o.kind].name;
   const scoutOn = (s, m) => ((s.scout || {})[m] || -1) >= s.week;
   function gqWhy(s, kind, m, n, reward, weeks) {
     if (!gqOn(s)) return '길드 의뢰가 꺼져 있습니다';
@@ -759,7 +760,7 @@
     if (o.kind === 'hunt') { const kill = (q.enemies || []).length || 1; if (resOf(s, o.m) != null) s.res[o.m] = Math.max(0, s.res[o.m] - kill * (E.gqHuntTake != null ? E.gqHuntTake : 5)); log(s, `토벌 성공: ${(MAT[o.m] || {}).name || ''} 나오는 사냥터의 짐승이 줄었습니다.`, 'success'); }
     if (o.kind === 'scout') { (s.scout = s.scout || {})[o.m] = s.week + (E.gqScoutWeeks || 4); log(s, `정찰 성공: ${(MAT[o.m] || {}).name || ''} 나오는 곳의 개체수와 적 정보를 ${E.gqScoutWeeks || 4}주 동안 정확히 압니다.`, 'success'); }
     if (o.kind === 'patrol') { s.patrolUntil = s.week + (E.gqPatrolWeeks || 8); log(s, `순찰 성공: ${E.gqPatrolWeeks || 8}주 안에 침공이 오면 첫 차례 적이 약해집니다.`, 'success'); }
-    if (o.kind === 'help') { s.month.popAdd = (s.month.popAdd || 0) + (E.gqHelpPop2 || 5); s.trust = Math.min(100, s.trust + 1); log(s, `마을 일손 성공: 마을이 조금 더 늘어납니다. 신뢰도 +1.`, 'success'); }
+    if (o.kind === 'help') { s.month.popAdd = (s.month.popAdd || 0) + (E.gqHelpPop2 || 5); log(s, `마을 일손 성공: 마을이 조금 더 늘어납니다.`, 'success'); }
     if (o.kind === 'train') { const a = s.advs.find(x => x.id === o.m); if (a && party.includes(a)) { const G = s.cfg.growth; gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * (E.gqTrainXp != null ? E.gqTrainXp : 1)); a.attach = Math.min(100, a.attach + (E.gqTrainAttach != null ? E.gqTrainAttach : 3)); log(s, `훈련 원정 성공: ${a.name}이(가) 선배들에게 많이 배웠습니다.`, 'success'); } }
   }
   function gqAfter(s, q, ok, party) {   // 귀환 뒤: 다 찼으면 끝, 기한 안이면 다시 게시, 기한이 지났으면 남은 돈을 돌려받음
@@ -1281,6 +1282,7 @@
   const paperTaken = (s, tid) => s.board.some(q => q.tid === tid) || (s.pend || []).some(p => p.q.tid === tid) || s.active.some(x => x.q && x.q.tid === tid && x.nw);
   function boardFill(s) {   // ③-C: 주가 바뀌는 박자에 — 게시판에도 없고 원정 중도 아닌 틀마다 한 장 · 만료 없음
     if (!NWQ(s)) return;
+    nqWarnWeekly(s);   // ③-M: 지난 한 주 동안 아무도 못 간 종이
     for (const f of FRD.frames) { if (paperTaken(s, f.id)) continue; const q = makePaper(s, f.id); if (q) { markX2(s, q); s.board.push(q); } }
   }
   const nqLeft = q => q.nodes.filter(c => !c.done);
@@ -1318,6 +1320,29 @@
     }
     return best;
   }
+  // ③-K 주문 (8-1): 틀과 레벨(열린 레벨까지)을 골라 종이 한 장을 더 냄 — 보상 100 × 레벨을 금고에서 맡아 둠 · 수수료 0 · 한도 econ.gqMax(길드 의뢰와 같이 셈)
+  function nqOrderWhy(s, tid, lv) {
+    if (!NWQ(s) || !FRB[tid]) return '주문할 수 없는 의뢰입니다';
+    const V = qlvOf(s, tid); if (!(lv >= 1 && lv <= (V.lv || 1))) return `Lv${V.lv || 1}까지 주문할 수 있습니다`;
+    if ((s.gq || []).length >= gqMax(s)) return `길드 의뢰는 동시에 ${gqMax(s)}건까지입니다`;
+    const rw = (s.cfg.quest.rewardPerLv || 100) * lv; if (s.gold < rw) return '금고가 모자랍니다';
+    return null;
+  }
+  function nqOrder(s, tid, lv) {
+    const why = nqOrderWhy(s, tid, lv); if (why) return { ok: false, why };
+    const rw = (s.cfg.quest.rewardPerLv || 100) * lv, o = { id: s.uidNext++, kind: 'order', tid, lv, m: null, n: 1, got: 0, reward: rw, hold: rw, hot: false, end: s.week + 9999, g: 0, w: s.week };
+    s.gold -= rw; (s.gq = s.gq || []).push(o);
+    const q = makePaper(s, tid, lv); Object.assign(q, { gq: o.id, gqk: 'order', self: true, fee: 0, x2: false, reward: rw }); s.board.push(q); o.qid = q.id;
+    log(s, `${qn(q)} Lv${lv} 의뢰서를 주문했습니다.`, 'gq');   // [임시 글]
+    return { ok: true, q };
+  }
+  // ③-M 경고 카드의 자료: 한 주 동안 본 사람이 모두 넘긴 종이 → s.warn (같은 종이는 한 번만) · 까닭 = risk · time
+  function nqWarnWeekly(s) {
+    if (!NWQ(s)) return; s.warn = (s.warn || []).filter(w => s.board.some(q => q.id === w.qid));
+    for (const q of s.board) { if (!q.nw) continue; const n = q.why ? Object.values(q.why).reduce((t, v) => t + v, 0) : 0;
+      if (n > 0 && !q.warned) { q.warned = s.week; s.warn.push({ qid: q.id, tid: q.tid, lv: q.lv, why: Object.keys(q.why).sort((a, b) => q.why[b] - q.why[a])[0], w: s.week }); }
+      q.why = null; }
+  }
   function nqMeal(s, q, party) {   // 떠나기 전 식사 (지금 launchParty의 그 부분을 옮김 · 규칙 그대로)
     const Q = s.cfg.quest, E = s.cfg.econ; let eaters = 0; const dish = dishFor(s, q), ate = new Set();
     if (dish) for (const m of party) {
@@ -1334,6 +1359,7 @@
   function nqLaunch(s, q, party) {   // ③-G 떠남: 원정 x = { uid, q, party, startT, deadT, i, cs, mats, ev, rates }
     const w0 = party.map(m => m.wallet), C = CB.C, price = C.potionPrice[0];
     const ml = nqMeal(s, q, party);
+    for (const m of party) if (m.treat) { const d = DISH.find(z => z.name === m.treat.dish); if (d && (!ml.eaters || (ml.dish && ml.dish.name === d.name))) { ml.dish = d; ml.eaters++; ml.ate.add(m.id); } m.treat = null; }   // 6-7: 얻어먹은 밥의 효과는 다음 원정에서
     for (const m of party) { const want = C.potionCarry[m.spend] - (s.R() < 0.5 ? 1 : 0), p0 = m.pots; while (m.pots < want && m.wallet >= price) { m.wallet -= price; m.pots++; } if (m.pots > p0 && (s.townUnlock || {}).potion) { (s.potLog = s.potLog || []).unshift({ w: s.week, id: m.id, n: m.pots - p0, price }); if (s.potLog.length > 30) s.potLog.length = 30; } }
     party.forEach((m, i) => { const c = m.contract; if (!c || s.week < c.start || s.week > c.end) return; const used = Math.max(0, Math.floor(w0[i] - m.wallet)), back = Math.min(used, Math.max(0, c.sup - (c.supMonth || 0))); if (back > 0) { m.wallet += back; s.gold -= back; c.supMonth = (c.supMonth || 0) + back; ctLog(c, 'sup', back); s.month.csup = (s.month.csup || 0) - back; } });
     for (const m of party) { m.state = 'quest'; m.sub = 'idle'; m.until = s.week + 1; }
@@ -1380,6 +1406,50 @@
       if (done) { c.done = true; x.cs = null; x.i++; if (x.i >= x.q.nodes.length) nqEnd(s, x, true); }
     }
   }
+  // ③-J 보스 (6-8): 한 의뢰인의 두 틀을 모두 Lv 3까지 해내면 그 사람의 보스 종이가 나옴 — s.boss[의뢰인] = { state: 'open' | 'away' | 'done', q }
+  //   보낼 사람은 플레이어가 고름(셋까지 · bossSend). 떠남 · 진행 · 정산은 게시판 종이와 같은 길. 보상 300G · 한 번 해내면 끝 · 실패하면 지난 칸이 치워진 채 남음(③-I)
+  //   리퀘스트 장의 자리 · 뱃지 · 칭호는 6번(화면)과 「보스 열과 보상」 단위에서. 보스의 이름 · 그림은 아직 없음 [임시]
+  const BOSSD = FRD && FRD.bosses ? FRD.bosses : [];
+  function bossCheck(s) {
+    if (!NWQ(s) || !BOSSD.length) return; s.boss = s.boss || {};
+    for (const b of BOSSD) {
+      if (s.boss[b.giver]) continue;
+      if (!b.frames.every(tid => (s.qlv && s.qlv[tid] && s.qlv[tid].won3))) continue;
+      const nm = (FRD.monsters[b.mon] || {}).name || '보스';
+      const q = { id: s.nextId++, nw: true, boss: b.giver, tid: b.frames[0], g: 0, lv: 3, nodes: b.nodes.map(c => Object.assign({}, c)), reward: (s.cfg.quest.rewardPerLv || 100) * 3, name: nm, giver: b.giver, side: 'fight', type: b.giver, req: [b.giver], weeks: 1, posted: s.week };
+      s.boss[b.giver] = { state: 'open', q, at: s.week };
+      log(s, `${nm} 의뢰가 리퀘스트 장에 올라왔습니다.`, 'req');   // [임시 글]
+    }
+  }
+  function bossSendWhy(s, giver, ids) {
+    const B = (s.boss || {})[giver]; if (!B || B.state !== 'open') return '보낼 수 있는 보스 의뢰가 없습니다';
+    if (!ids || !ids.length || ids.length > 3) return '셋까지 고를 수 있습니다';
+    const P = ids.map(id => s.advs.find(a => a.id === id)); if (P.some(a => !a || !a.alive || a.state !== 'town' || (a.sub && !['idle', 'rest', 'wait'].includes(a.sub)))) return '길드에 있는 사람만 보낼 수 있습니다';
+    return null;
+  }
+  function bossSend(s, giver, ids) {
+    const why = bossSendWhy(s, giver, ids); if (why) return { ok: false, why };
+    const B = s.boss[giver], P = ids.map(id => s.advs.find(a => a.id === id)); B.state = 'away';
+    nqLaunch(s, B.q, P); return { ok: true };
+  }
+  function autoBoss(s) {   // 자동 플레이 · 경영 봇(⑤-A): 보스에는 길드에 있는 가장 센 셋을 보냄 (체력이 90% 넘게 찼을 때)
+    if (!NWQ(s)) return;
+    for (const g in (s.boss || {})) { const B = s.boss[g]; if (B.state !== 'open') continue;
+      const P = s.advs.filter(a => a.alive && a.state === 'town' && ['idle', 'rest', 'wait'].includes(a.sub || 'idle') && !reqReserved(s, a)).sort((x, y) => y.lv - x.lv || (y.hp / (y.hpMax || 1)) - (x.hp / (x.hpMax || 1))).slice(0, 3);
+      if (P.length >= 3 && P.every(a => a.hp >= (a.hpMax || 0) * 0.9)) bossSend(s, +g, P.map(a => a.id)); }
+  }
+  // 6-7 「저녁은 내가 살게」: 남이 지난 칸이 있는 종이를 끝냈고, 앞서 간 사람과 끝낸 사람이 모두 길드에 있으면 — 끝낸 사람이 사교적이고 주머니가 되면 식당의 한 끼를 삼
+  //   값은 끝낸 사람의 주머니에서 · 매출은 식당으로 · 얻어먹은 사람은 다음 원정에서 그 밥의 효과 · 둘의 친밀도 + (relAdd) · 대사 묶음은 글이 정해지면 (data/speech.js)
+  function nqTreat(s, q, party) {
+    const prev = (q.prev || []).filter(id => !party.some(a => a.id === id)).map(id => s.advs.find(a => a.id === id)).filter(a => a && a.alive && a.state === 'town');
+    if (!prev.length) return;
+    const host = party.find(a => a.social === 2), dish = DISH.find(d => s.dishes[d.name] && (!mealCookOn(s) || stockOf(s, d) > 0));
+    for (const b of prev) for (const a of party) relAdd(s, a.id, b.id, s.cfg.adv.relQuest || 2);
+    if (!host || !dish) return;
+    const price = mealCookOn(s) ? menuOf(s, dish).price : s.cfg.quest.reward[dish.g] * s.cfg.econ.mealPriceRate;
+    for (const b of prev) { if (host.wallet < price) break; host.wallet -= price; s.gold += price; s.month.meal += price; if (mealCookOn(s)) takeBowl(s, dish); b.treat = { dish: dish.name, from: host.id }; relAdd(s, host.id, b.id, s.cfg.adv.relQuest || 2);
+      log(s, `${J(host.name, '이', '가')} ${b.name}에게 ${dish.name}${J(dish.name, '을', '를').slice(dish.name.length)} 샀습니다.`, 'meal', { who: [host.name, b.name] }); }   // [임시 글]
+  }
   // ③-H 정산 · ③-I 실패한 종이
   function nqEnd(s, x, ok, why) {
     if (x.end) return; x.end = true; s.active = s.active.filter(y => y !== x);
@@ -1393,13 +1463,19 @@
     const lv0 = s.qlv && s.qlv[q.tid] ? s.qlv[q.tid].lv : null;
     if (ok) {
       s.stats.done++; s.month.success++; s.month.popAdd = (s.month.popAdd || 0) + (s.cfg.town.perSuccess[0] || 0);
-      const RW = q.reward * (q.x2 ? 2 : 1), sp = econSplit(RW, x.rates && x.rates.length === party.length ? x.rates : party.map(m => rateOf(s, m, q)));
+      const ord = q.gq != null ? (s.gq || []).find(o => o.id === q.gq) : null;
+      const RW = ord ? 0 : q.reward * (q.x2 ? 2 : 1), sp = econSplit(RW, x.rates && x.rates.length === party.length ? x.rates : party.map(m => rateOf(s, m, q)));
+      if (ord) { gqWin(s, ord, q, party); gqClose(s, ord, 'done'); }   // ③-K: 주문한 종이 — 맡아 둔 보상을 모두 파티에 (수수료 0)
       const fee = sp.guild + (hasDeco(s, 'bench') ? DV.gold : 0), resale = RW * E.resaleRate;
       s.gold += fee + resale; s.month.fee += fee; s.month.resale += resale;
       party.forEach((a, i) => { if (a.contract && x.start >= a.contract.start && x.start <= a.contract.end) { ctLog(a.contract, 'done'); ctLog(a.contract, 'net', sp.net[i]); ctLog(a.contract, 'fee', sp.fee[i]); } });
       party.forEach((a, i) => { a.wallet += sp.net[i]; (a.earn = a.earn || []).push({ w: s.week, b: sp.base[i] }); a.earn = a.earn.filter(e => e.w > s.week - (s.cfg.contract ? s.cfg.contract.look : 8)); });
+      { const T = QBYID[q.tid]; if (T) for (const r of (T.rewards || []).filter(r => r.p < 30)) if (s.R() * 100 < r.p) { s.mats[r.m] = (s.mats[r.m] || 0) + 1; if (!s.knownMats[r.m]) { s.knownMats[r.m] = true; const m = MAT[r.m]; if (m) log(s, `처음 보는 소재를 얻었습니다: ${m.name}`, 'unlock'); } } }   // 드문 소재(숫돌 5% · 양념 15% …): 성공했을 때 한 번씩 굴림 · 값 없이 창고로
+      nqTreat(s, q, party);   // 6-7 「저녁은 내가 살게」
       const V = qlvOf(s, q.tid), L = QLV(s), mx = (L && L.max) || 3;
-      if (q.lv === V.lv && V.lv < mx) { V.lv++; log(s, `「${q.name}」${J(q.name, '이', '가').slice(q.name.length)} Lv${V.lv}로 올랐습니다.`, 'unlock'); }   // ③-D: 열린 레벨과 같은 종이를 해내면 +1
+      if (q.lv === 3 && q.boss == null) V.won3 = true;   // ③-J: 그 틀의 Lv 3을 해냄 (보스 조건)
+      if (q.boss != null) { const B = (s.boss || {})[q.boss]; if (B) { B.state = 'done'; B.doneW = s.week; } }
+      else if (q.lv === V.lv && V.lv < mx) { V.lv++; log(s, `「${q.name}」${J(q.name, '이', '가').slice(q.name.length)} Lv${V.lv}로 올랐습니다.`, 'unlock'); }   // ③-D: 열린 레벨과 같은 종이를 해내면 +1
       for (const a of party) {
         a.done++; gainXp(s, a, xpOf(a));
         const key = q.tid + ':' + q.lv; a.first = a.first || {};
@@ -1408,14 +1484,13 @@
         if (a.grade === s.grade || a.grade < 1) a.ach++;
         tryGradeUp(s, a);
       }
-      s.trust = Math.min(100, s.trust + (s.cfg.quest.trustSucc || 0));
-      s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + (q.fameS != null ? q.fameS : s.cfg.fame.succ[0]) + (hasDeco(s, 'banner') ? DV.fame : 0));
+      s.fame = ((s.fame || 0) + (q.fameS != null ? q.fameS : s.cfg.fame.succ[0]) + (hasDeco(s, 'banner') ? DV.fame : 0));
       log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 성공했습니다.${q.x2 ? ' (×2 보상)' : ''} 길드 수입 ${Math.round(fee + resale)}G.`, 'success', { who: party.map(z => z.name) });
     } else {
       s.stats.fail++;
       for (const a of party) { gainXp(s, a, xpOf(a)); if (a.contract && x.start >= a.contract.start && x.start <= a.contract.end) ctLog(a.contract, 'fail'); }
-      q.done0 = q.nodes.filter(c => c.done).length;   // ③-I: 지난 칸에 done을 찍은 채로 게시판에 돌아옴 — 다음 파티는 남은 칸만
-      q.id = s.nextId++; s.board.push(q);
+      q.done0 = q.nodes.filter(c => c.done).length; if (passed) q.prev = [...new Set((q.prev || []).concat(party.map(a => a.id)))];   // ③-I: 지난 칸에 done을 찍은 채로 게시판에 돌아옴 — 다음 파티는 남은 칸만
+      q.id = s.nextId++; if (q.boss != null) { const B = (s.boss || {})[q.boss]; if (B) B.state = 'open'; } else s.board.push(q);   // 보스 종이는 리퀘스트 장으로 돌아감
       log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 실패했습니다.${passed ? ` (${passed}칸을 지남)` : ''}`, 'fail', { who: party.map(z => z.name) });   // [임시 글] 지난 칸의 수
     }
     for (const a of party) {
@@ -1601,7 +1676,7 @@
     if (Dc.set && !D.setRecipe && p0 < Dc.setAt && D.prog >= Dc.setAt) { D.setRecipe = s.week; log(s, `「${d.name}」 정복 ${Dc.setAt}% — 대장간에서 고블린 사냥꾼 세트를 만들 수 있게 되었습니다.`, 'dungeon'); }
     if (!D.clear && D.prog >= 100) {
       D.clear = s.week; log(s, `「${d.name}」을 정복했습니다!`, 'dungeon', { dgClear: d.key });
-      if (Dc.royal) { s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + Dc.clearFame); s.gold += Dc.clearGold; s.month.royal = (s.month.royal || 0) + Dc.clearGold; D.royal = s.week; log(s, `왕국에서 「${d.name}」 정복의 노고를 치하하며 포상금 ${Dc.clearGold}G를 보내왔습니다. 길드의 이름이 널리 퍼집니다. (명성 +${Dc.clearFame})`, 'dungeon', { dgRoyal: d.key }); }   // 2026-11-20 사용자: 100% 달성 때 왕국이 치하 (연출은 2단계 시안)
+      if (Dc.royal) { s.fame = ((s.fame || 0) + Dc.clearFame); s.gold += Dc.clearGold; s.month.royal = (s.month.royal || 0) + Dc.clearGold; D.royal = s.week; log(s, `왕국에서 「${d.name}」 정복의 노고를 치하하며 포상금 ${Dc.clearGold}G를 보내왔습니다. 길드의 이름이 널리 퍼집니다. (명성 +${Dc.clearFame})`, 'dungeon', { dgRoyal: d.key }); }   // 2026-11-20 사용자: 100% 달성 때 왕국이 치하 (연출은 2단계 시안)
       const rare = d.items.find(it => it.rare); if (Dc.rare && rare && !D.rare) { D.rare = { key: rare.key, holder: null, gone: null }; s.gearInv = s.gearInv || {}; s.gearInv[rare.key] = 1; log(s, `보물 「${rare.name}」을 손에 넣었습니다. 길드에 하나뿐인 장신구입니다.`, 'dungeon'); }
       const dd = DISH.find(z => z.dungeon === d.key); if (Dc.recipe && dd && !s.dishes[dd.name]) { s.dishes[dd.name] = s.week; syncMeals(s); for (const m of dd.mats) s.knownMats[m] = true; log(s, `던전에서 요리 조합법을 얻었습니다: ${dd.name}`, 'unlock'); }
       if (Dc.title) for (const a of party) if (a && a.alive) { (a.dgTitles = a.dgTitles || []).push(d.key); a.attach = Math.min(100, a.attach + Dc.titleAttach); (a.career = a.career || []).push({ week: s.week, text: `「${d.name}」 정복 — 칭호 「고블린 소탕꾼」` }); }
@@ -1685,15 +1760,14 @@
           if (q.g >= a.grade + 1 || (q.g >= a.grade && a.grade === s.grade)) a.ach++;
           tryGradeUp(s, a);
         }
-        s.trust = Math.min(100, s.trust + (q.trustS != null ? q.trustS : s.cfg.quest.trustSucc) + (hasDeco(s, 'boardDeco') ? DV.trust : 0));
-        s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + (q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g]) + (hasDeco(s, 'banner') ? DV.fame : 0));
+        s.fame = ((s.fame || 0) + (q.fameS != null ? q.fameS : s.cfg.fame.succ[q.g]) + (hasDeco(s, 'banner') ? DV.fame : 0));
         // 소재 획득: 편집기 보상표 확률대로 (요리는 이제 식당에서 조합으로만 발견 — 예전 '토벌·사냥 성공 시 50% 해금'은 없앰)
         dropMats(s, q, party);
         if (hasDeco(s, 'locker')) { const T = QBYID[q.tid], b = T && (T.rewards || []).reduce((x, r) => (!x || r.p > x.p ? r : x), null); if (b) { s.mats[b.m] = (s.mats[b.m] || 0) + DV.mat; if (!s.knownMats[b.m]) { s.knownMats[b.m] = true; const m = MAT[b.m]; if (m) log(s, `처음 보는 소재를 얻었습니다: ${m.name}`, 'unlock'); } } }   // 사물함: 기본 소재 +1
         log(s, `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 성공했습니다.${q.x2 ? ' (×2 보상)' : ''} 길드 수입 ${Math.round(fee + resale)}G.`, 'success', { who: party.map(x => x.name) });
       } else {
         const tr0 = s.trust, fa0 = s.fame || 0;
-        s.stats.fail++; if (x.late) s.stats.late = (s.stats.late || 0) + 1; else { s.trust = Math.max(0, s.trust - (q.trustF != null ? q.trustF : s.cfg.quest.trustFail)); s.fame = Math.max(0, (s.fame || 0) - (q.fameF != null ? q.fameF : s.cfg.fame.fail[q.g])); }   // 늦장 실패: 명성 · 신뢰 그대로 (결정 30)
+        s.stats.fail++; if (x.late) s.stats.late = (s.stats.late || 0) + 1;    // 늦장 실패: 명성 · 신뢰 그대로 (결정 30)
         for (const a of party) { gainXp(s, a, G.xpBase * Math.pow(G.xpGradeMult, q.g) * G.xpFailRate * (QKr() ? QKr().xpMul(s.cfg.quirk, a, rivalHere(s, a)) : 1)); if (a.contract && x.start >= a.contract.start && x.start <= a.contract.end) ctLog(a.contract, 'fail'); }
         log(s, x.late ? `${J(names(party), '이', '가')} 늦장을 부리다 ${qn(q)} 의뢰의 기한을 넘겼습니다. (명성 · 신뢰도는 그대로)` : `${J(names(party), '이', '가')} ${qn(q)} 의뢰에 실패했습니다. ${failWhy(x.fight)}${lossTxt(tr0 - s.trust, fa0 - (s.fame || 0))}`, 'fail', { who: party.map(x => x.name) });
       }
@@ -2034,10 +2108,9 @@
     const R = reqOf(s), d = NQ_BY[r.key], rw = d.rw, nom = reqNominated(d), got = [];
     if (!nom) {   // 지명형의 금화 · 명성 · 신뢰도는 귀환 처리(게시판과 같은 길)에서 이미 반영
       if (rw.gold) { s.gold += rw.gold; s.month.reqIn = (s.month.reqIn || 0) + rw.gold; (s.month.reqs = s.month.reqs || []).push({ n: reqName(s, r), g: rw.gold }); got.push(rw.gold + 'G'); }
-      if (rw.fame) s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + rw.fame);
-      if (rw.trust) s.trust = Math.min(100, s.trust + rw.trust);
+      if (rw.fame) s.fame = ((s.fame || 0) + rw.fame);
     }
-    if (rw.fame) got.push('명성 +' + rw.fame); if (rw.trust) got.push('신뢰도 +' + rw.trust);
+    if (rw.fame) got.push('명성 +' + rw.fame); 
     if (rw.pop) { s.month.popAdd = (s.month.popAdd || 0) + rw.pop; got.push('인구 +' + rw.pop); }
     if (rw.attach) { const [w, n] = rw.attach, list = w === 'all' ? aliveAdvs(s) : w === 'party' ? (party || []) : s.advs.filter(a => a.id === r.who); for (const a of list) if (a && a.alive) a.attach = Math.min(100, a.attach + n); got.push((w === 'all' ? '모든 모험가' : w === 'party' ? '참가자' : reqGiver(s, r)) + ' 애착 +' + n); }
     for (const [m, k] of Object.entries(rw.mats)) { s.mats[m] = (s.mats[m] || 0) + k; s.knownMats[m] = true; got.push((MAT[m] ? MAT[m].name : m) + ' ' + k); }
@@ -2174,7 +2247,7 @@
   // 검증용 자동 처리 (관문 1 · 개발 패널): 시뮬레이터 reqPolicy와 같은 규칙. 돈 내기는 내고도 1,500G가 남을 때, 납품은 소재가 있을 때,
   // 지명은 집무실(없으면 같은 여유 기준으로 지음)에서 조건을 채운 모험가부터 예상 성공률이 60%를 넘을 때까지 불러 보냄
   function autoRequests(s) {
-    autoMain(s);
+    autoMain(s); autoBoss(s);   // 2026-11-27 바닥 5: 보스에는 가장 센 셋
     const R = reqOf(s), keep = REQ_CFG.autoReserve;
     for (const r of R.open.slice()) {
       const d = NQ_BY[r.key]; if (r.state !== 'open') continue;
@@ -2270,14 +2343,14 @@
       M.state = 'done'; M.clear = s.week;
       const g0 = s.grade; s.grade = Math.max(s.grade, 1); openGrades(s, g0);
       s.gold += C.gold; s.month.reqIn = (s.month.reqIn || 0) + C.gold; (s.month.reqs = s.month.reqs || []).push({ n: '메인 퀘스트 「다리를 지켜라」', g: C.gold });
-      s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + C.fame);
+      s.fame = ((s.fame || 0) + C.fame);
       log(s, `몬스터를 모두 막아 냈습니다! ${castle ? '영주의 성까지 밀렸지만 다시 일어나 ' : ''}다리를 지켰습니다. (쓰러진 모험가 ${down.size}명)`, 'main');
       log(s, `길드가 E급으로 승급했습니다! 보상 ${C.gold}G · 명성 +${C.fame}. 모험가 관리소를 지을 수 있습니다.`, 'main');
       M.result = { win: true, gold: C.gold, fame: C.fame, down: down.size, castle };
     } else {
-      const lost = Math.floor(s.pop * C.popLoss); s.pop -= lost; s.trust = Math.max(0, s.trust - C.trustLoss);
+      const lost = Math.floor(s.pop * C.popLoss); s.pop -= lost;
       M.state = 'cool'; M.cool = s.week + C.retry;
-      log(s, `${C.waves[Math.min(wave, C.waves.length - 1)].boss ? '보스' : (wave + 1) + '차'} 공격을 막지 못해 영주의 성이 무너졌습니다. 인구 −${lost}명 · 신뢰도 −${C.trustLoss}. ${C.retry}주 뒤 다시 도전할 수 있습니다.`, 'main');
+      log(s, `${C.waves[Math.min(wave, C.waves.length - 1)].boss ? '보스' : (wave + 1) + '차'} 공격을 막지 못해 영주의 성이 무너졌습니다. 인구 −${lost}명. ${C.retry}주 뒤 다시 도전할 수 있습니다.`, 'main');
       M.result = { win: false, wave, pop: lost, trust: C.trustLoss, dead, retry: C.retry };
     }
   }
@@ -2344,6 +2417,7 @@
     if (s.tick % W === 0 && s.calT !== s.tick) {     // 2. 주가 바뀌는 박자: 달력의 일 (게시판 종이는 아직 옛 방식 — 매주 게시 · 만료)
       if (!s.tailPending) {
         expireQuests(s); gqWeekly(s); carWeekly(s);
+        bossCheck(s);      // 2026-11-27 바닥 5 (③-J): 보스 종이
         boardFill(s);      // 2026-11-27 바닥 5 (③-C): F급 틀마다 한 장 (게시판에도 없고 원정 중도 아닌 틀)
         generateQuests(s); // 옛 종이 — 새 틀이 있는 F급은 건너뜀 (E급 이상만)
         returns(s, 'week');   // 주 단위의 옛 원정 (리퀘스트 · 던전 · 상단 · 튜토리얼)
@@ -2426,7 +2500,7 @@
   function dateLabel(w) { const y = Math.floor(w / WPY) + 1, m = Math.floor((w % WPY) / WPM) + 1, wk = (w % WPM) + 1; return `${y}년차 ${m}월 ${wk}주`; }
 
   const api = { live: false, reqSorted, dgWhy, dgLaunch, dgPlan, dgChoose, dgPending, dgLean, dgCancel, dgOdds, dgCraftWhy, dgCraft, dgGive, dgItems, dgOn, dgDef, hintPeek, hintSaid, reqIsCombat, reqPartyRange, mealBuffOf, POT_BAG, potAttGot, potInfo, potWhy, potBrew, potGiveWhy, potGive, craftInfo, craftWhy, smithCraft, giftItems, gearType, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, stepBeat, BPW, hpFrac, mpFrac, maxOf, afterReturn, statGain, mileBonus, gainXp, tryGradeUp, SAVE_VER, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log };
-  Object.assign(api, { makePaper, boardFill, nqPick, nqEst, nqLaunchT: (s, q, party) => nqLaunch(s, q, party), nqBeatT: s => nqBeat(s), nqEnd });   // 2026-11-27 바닥 5: 시험 도구용
+  Object.assign(api, { nqOrder, nqOrderWhy, bossSend, bossSendWhy, autoBoss, bossCheck, makePaper, boardFill, nqPick, nqEst, nqLaunchT: (s, q, party) => nqLaunch(s, q, party), nqBeatT: s => nqBeat(s), nqEnd });   // 2026-11-27 바닥 5: 시험 도구용
   Object.assign(api, { live: false, wakeGo, MEM, memOf, memSaid, relOf, relTier, relAdd, remember, qlvOf, tutPost, tutLaunch, tutSpawn, tutReq, eqOf, eqNext, EQ_NAME, smithWhy, smithGift, fameStepOf, fameNextOf, orderSources, gqOn, gqMax, gqSrc, gqUnitBase, gqBase, gqRange, gqWeekOpts, gqWhy, gqPlace, gqCancel, gqOpen, autoGq, GQ_KIND, gqKindOpen, gqSrcK, gqBaseK, gqRangeK, gqLabel, gqPlaceName, scoutOn, sellTh, setBuyRate, setBuyGold, isStaple, canMarket, buyGoldOf, buyGoldMax, CARS, carOn, carState, carHere, carOpenList, carSell, carPrice, carBuy, carWarePrice, carTalk, carEscort, carLastMult, carRelLv, consN, consWant, orderPrice, orderWhy, orderPlace, orderCancel, orderBonus, orderEdit, questEta, matBase, mktLogOf: (s, id) => ((s.mktLog || {})[id] || []), reqReserve, setMenuLeft, salePrice, oldBowl, consignFeeOf, contractMinPay, resBand, resOf, baseMatOf, matPrice, mktMult, mktTrend, matPol, polRate, setMatPol, sellPreview, mktWeekly, orderLive, orderPriceOf, orderBiasOf, orderMultOpts, autoOrders, feeLock, SPICE, menuOf, setMenu, dishBase, priceK, stockOf, dishCost, shopPrice, kitchenWeekly, consignBuy, econSplit, rateOf, questFee, feeOptions, setGradeFee, setQuestFee, needsMoney, questEff, matSellPrice, matBuyPrice, sellMats, autoSell, contractOpen, contractWhy, contractTermsWhy, contractEval, contractPropose, contractDefault, earnMonthly, cActive, cCallsLeft, cPastEnd, reqWaitOf, reqReserved, mainStart, mainNextWave, mainBuy, mainLiveView, mainPotPrice, MAIN_CFG, mainView, mainAccept, mainPredict, mainBlocked, autoMain, scoutFee, NQ, NQ_BY, QLINES, REQ_CFG, SEASON_NAME, seasonOf, reqOf, reqView, reqHints, reqProgress, reqLock, reqNeed, reqCanPay, reqGive, reqRefuse, reqNomList, reqNominate, reqSendWhy, reqSend, reqLaunchTut, reqUnsend, reqPredict, reqChance, reqMeets, reqCheck, reqName, reqGiver, reqPartyOf, autoRequests, HOUSE_SLOTS, housingCap, autoPlace, hasDeco, seatsOf, DECO, DECO_BY, placeOk, placeBuy, capOf, unlockReward, placeMove, placeDestroy, placedN, cellsOf, tablesOf, lobbyGrid: grid, expireWeeks, stepBeat, BPW, hpFrac, mpFrac, maxOf, afterReturn, statGain, mileBonus, gainXp, tryGradeUp, SAVE_VER, upgrade, upg, upgCost, facCost, UPG, advCap, CLASS2, CLASS3, ATTACH_TITLE, attachTier, lvCapOf, growthOf, promoOptions, decidePromotion, finalStat, serialize, deserialize, GR, STATS, CLASS1, QTYPE, RISK, SPEND, SOCIAL, WPM, WPY, FAC_COST, newGame, stepWeek, setFilter, withdrawQuest, build, debugSetGrade, successP, questP, isCombat, boardQuota, FILTER_W, FILTER_NAME, filterLevel, openGrades, cook, autoCook, debugKitchen, DISH, dateLabel, boardCap, feeRate, spawnAdv, log });   // 2026-11-20 main 병합: 시장 · 길드 의뢰 · 상단 쪽 API
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.GuildGame = api;
 })(this);

@@ -301,9 +301,32 @@ out.push('## 8. 경험치 (받은 값 · lvA 160 · lvB 0.23 · xpNode 3.2)', ''
     `- Lv 2 · 3의 맨 앞 (싸움 쪽 들개 · 멧돼지 · 도적은 Lv 2 30 ~ 60% · Lv 3 30 ~ 65% · 그 밖은 위쪽만): ${bad.length ? '✕ ' + bad.map(r => r.fr.name).join(' · ') : '○'}`,
     '', `**판정: ${VERDICT ? '기준 안 — 틀 자료 · 새 몬스터 표 · 장비의 숫자를 넣음' : '기준 밖 — 넣지 않음'}**`, ''); }
 
+
+// ---------- 의뢰인의 보스 (6-8 · 명세 ③-J · 빈 곳 8) [임시] ----------
+//   종이 = 앞 3칸(그 의뢰인의 싸움 틀 몬스터 칸 · 일 틀의 일 칸 · 싸움 틀 몬스터 칸 — Lv 3의 양) + 보스 칸(보스 한 마리 · 졸개 없음)
+//   맞추는 것: 그 묶음의 기준 레벨 셋(전사 + 그 의뢰인의 일 능력치 직업 + 셋째 · 장비 없음)이 종이 전체 50박자쯤 · 맨 앞 체력 55%쯤 (6-8 · Lv 3의 목표 16-18과 같은 결)
+//   이름 · 그림은 아직 없음 — 이름 자리는 「(의뢰인)의 보스」 [임시 글]
+const GIVER = ['굼바', '사냥꾼', '헤르만', '세실리아', '탐험가'];
+const GBOSS = {};
+for (let gv = 0; gv < 5; gv++) {
+  const ff = FR.find(f => f.side === 'fight' && GIVER.indexOf(f.giver) === gv), wf = FR.find(f => f.side === 'work' && GIVER.indexOf(f.giver) === gv);
+  const key = 'gboss' + gv, m = MON[key] = { key, name: GIVER[gv] + '의 보스', core: 0, st: [4, 8, 4, 6, 8], def: 10, spdBase: 0.5, pack: 1, boss: true, hpBase: 0, atkBase: 0 };
+  const fm = cellsOf(ff, 3).find(c => c.k === 'M'), ww = cellsOf(wf, 3).find(c => c.k === 'W');
+  const nodes = [{ k: 'M', mon: fm.mon, waves: 2 }, ww, { k: 'M', mon: fm.mon, waves: 2 }, { k: 'M', mon: key, waves: 1, boss: key }];
+  const d = duoOf(ff), P3 = d.concat(thirdOf(d)).map(c => person(c, 0));
+  m.atkBase = 1;
+  for (let it = 0; it < 3; it++) {
+    m.hpBase = bisect(h => { m.hpBase = h; return paper(P3, nodes).beats >= 50; }, 1, 20000, 24);
+    m.atkBase = bisect(a => { m.atkBase = a; return paper(P3, nodes).front >= 0.55; }, 0, 200, 24);
+  }
+  m.hpBase = r0(m.hpBase); m.atkBase = r1(m.atkBase);
+  const e = paper(P3, nodes); GBOSS[gv] = { mon: key, nodes, party: P3.map(u => u.name), e };
+}
+out.push('## 10. 의뢰인의 보스 (6-8 · ③-J) [임시] — 앞 3칸 + 보스 한 마리 · 기준 레벨 셋 50박자쯤 · 맨 앞 55%쯤', '', '| 의뢰인 | 칸 | 셋 | 보스 체력 · 한 대 · 빠르기 | 박자 · 맨 앞 |', '| --- | --- | --- | --- | --- |');
+for (const gv in GBOSS) { const b = GBOSS[gv], v = combatVals(MON[b.mon]); out.push(`| ${GIVER[gv]} | ${b.nodes.map(c => c.k === 'W' ? '일 ' + c.amt : c.boss ? '보스' : MON[c.mon].name + ' 무리 ' + c.waves).join(' → ')} | ${b.party.join(' + ')} | ${r0(v.hp)} · ${r1(v.atk)} · ${r2(v.speed)} | ${tag(b.e)} |`); }
+out.push('', '- 보스의 이름과 그림은 아직 없습니다(글 · 그림이 필요한 자리). 보상 300G · 한 번 해내면 끝 · 실패하면 지난 칸이 치워진 채 남음.', '');
 // ---------- 틀 자료로 씀 (--write · 판정이 ○일 때만) — prototype/data/quest_frames_F.json ----------
 const FRAME_ID = { '광견병 물리치료': 'q_slay_F', '오늘 저녁 삼겹살': 'q_hunt_F_2', '그 멧돼지는 이름이 있다': 'q_slay_F_2', '장작이 부족해요': 'q_hunt_F', '이거 마석 맞냐': 'q_study_F', '먹어도 되나요': 'q_study_F_2', '무명천 사수작전': 'q_guard_F', '잡초 말고 약초': 'q_guard_F_2', '반짝이면 다 내 거': 'q_mine_F', '펄떡이는 생선': 'q_mine_F_2' };
-const GIVER = ['굼바', '사냥꾼', '헤르만', '세실리아', '탐험가'];
 if (process.argv.includes('--write')) {
   if (!VERDICT) { console.error('판정이 기준 밖이라 틀 자료를 쓰지 않았습니다.'); process.exit(1); }
   const monOut = {}; for (const k in MON) { const m = MON[k]; monOut[k] = { name: m.name, core: m.core, st: m.st, hpBase: m.hpBase, atkBase: m.atkBase, def: m.def, spdBase: m.spdBase, pack: m.pack, flee: !!m.flee, boss: !!m.boss, skill: null }; }
@@ -314,6 +337,7 @@ if (process.argv.includes('--write')) {
     monsters: monOut,
     frames: FR.map(fr => ({ id: FRAME_ID[fr.name], name: fr.name, giver: GIVER.indexOf(fr.giver), side: fr.side, mon: fr.mon, work: fr.work, trap: !!fr.trap, lv: [1, 2, 3].map(lv => cellsOf(fr, lv).map(cellOut)) })),
     base: [1, 2, 3].map(lv => ({ lv, mon: 'plain', waves: lv === 1 ? 1 : 2, work: workAmt(lv), trap: trapAmt(lv) })),
+    bosses: [0, 1, 2, 3, 4].map(gv => ({ giver: gv, mon: GBOSS[gv].mon, frames: FR.filter(f => GIVER.indexOf(f.giver) === gv).map(f => FRAME_ID[f.name]), nodes: GBOSS[gv].nodes.map(cellOut) })),
     gear: { F: { weapon: WEAP, heavy: { def: DEF[0] }, light: { def: DEF[1], mp: 10 }, robe: { def: DEF[2], mp: 20 } } },
   };
   fs.writeFileSync(path.join(__dirname, '..', 'data', 'quest_frames_F.json'), JSON.stringify(data, null, 2) + '\n');

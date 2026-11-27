@@ -178,6 +178,101 @@
       "flee": false,
       "boss": false,
       "skill": null
+    },
+    "gboss0": {
+      "name": "굼바의 보스",
+      "core": 0,
+      "st": [
+        4,
+        8,
+        4,
+        6,
+        8
+      ],
+      "hpBase": 3181,
+      "atkBase": 0,
+      "def": 10,
+      "spdBase": 0.5,
+      "pack": 1,
+      "flee": false,
+      "boss": true,
+      "skill": null
+    },
+    "gboss1": {
+      "name": "사냥꾼의 보스",
+      "core": 0,
+      "st": [
+        4,
+        8,
+        4,
+        6,
+        8
+      ],
+      "hpBase": 2863,
+      "atkBase": 0,
+      "def": 10,
+      "spdBase": 0.5,
+      "pack": 1,
+      "flee": false,
+      "boss": true,
+      "skill": null
+    },
+    "gboss2": {
+      "name": "헤르만의 보스",
+      "core": 0,
+      "st": [
+        4,
+        8,
+        4,
+        6,
+        8
+      ],
+      "hpBase": 3348,
+      "atkBase": 0.1,
+      "def": 10,
+      "spdBase": 0.5,
+      "pack": 1,
+      "flee": false,
+      "boss": true,
+      "skill": null
+    },
+    "gboss3": {
+      "name": "세실리아의 보스",
+      "core": 0,
+      "st": [
+        4,
+        8,
+        4,
+        6,
+        8
+      ],
+      "hpBase": 2668,
+      "atkBase": 29.6,
+      "def": 10,
+      "spdBase": 0.5,
+      "pack": 1,
+      "flee": false,
+      "boss": true,
+      "skill": null
+    },
+    "gboss4": {
+      "name": "탐험가의 보스",
+      "core": 0,
+      "st": [
+        4,
+        8,
+        4,
+        6,
+        8
+      ],
+      "hpBase": 3126,
+      "atkBase": 0,
+      "def": 10,
+      "spdBase": 0.5,
+      "pack": 1,
+      "flee": false,
+      "boss": true,
+      "skill": null
     }
   },
   "frames": [
@@ -849,6 +944,163 @@
       "waves": 2,
       "work": 340,
       "trap": 120
+    }
+  ],
+  "bosses": [
+    {
+      "giver": 0,
+      "mon": "gboss0",
+      "frames": [
+        "q_slay_F",
+        "q_hunt_F_2"
+      ],
+      "nodes": [
+        {
+          "k": "M",
+          "mon": "dog",
+          "waves": 2
+        },
+        {
+          "k": "W",
+          "stat": 0,
+          "amt": 340
+        },
+        {
+          "k": "M",
+          "mon": "dog",
+          "waves": 2
+        },
+        {
+          "k": "M",
+          "mon": "gboss0",
+          "waves": 1,
+          "boss": "gboss0"
+        }
+      ]
+    },
+    {
+      "giver": 1,
+      "mon": "gboss1",
+      "frames": [
+        "q_slay_F_2",
+        "q_hunt_F"
+      ],
+      "nodes": [
+        {
+          "k": "M",
+          "mon": "boar",
+          "waves": 2
+        },
+        {
+          "k": "W",
+          "stat": 1,
+          "amt": 340
+        },
+        {
+          "k": "M",
+          "mon": "boar",
+          "waves": 2
+        },
+        {
+          "k": "M",
+          "mon": "gboss1",
+          "waves": 1,
+          "boss": "gboss1"
+        }
+      ]
+    },
+    {
+      "giver": 2,
+      "mon": "gboss2",
+      "frames": [
+        "q_study_F",
+        "q_study_F_2"
+      ],
+      "nodes": [
+        {
+          "k": "M",
+          "mon": "rock",
+          "waves": 2
+        },
+        {
+          "k": "W",
+          "stat": 2,
+          "amt": 340
+        },
+        {
+          "k": "M",
+          "mon": "rock",
+          "waves": 2
+        },
+        {
+          "k": "M",
+          "mon": "gboss2",
+          "waves": 1,
+          "boss": "gboss2"
+        }
+      ]
+    },
+    {
+      "giver": 3,
+      "mon": "gboss3",
+      "frames": [
+        "q_guard_F",
+        "q_guard_F_2"
+      ],
+      "nodes": [
+        {
+          "k": "M",
+          "mon": "thief",
+          "waves": 2
+        },
+        {
+          "k": "W",
+          "stat": 3,
+          "amt": 340
+        },
+        {
+          "k": "M",
+          "mon": "thief",
+          "waves": 2
+        },
+        {
+          "k": "M",
+          "mon": "gboss3",
+          "waves": 1,
+          "boss": "gboss3"
+        }
+      ]
+    },
+    {
+      "giver": 4,
+      "mon": "gboss4",
+      "frames": [
+        "q_mine_F",
+        "q_mine_F_2"
+      ],
+      "nodes": [
+        {
+          "k": "M",
+          "mon": "magpie",
+          "waves": 2
+        },
+        {
+          "k": "W",
+          "stat": 4,
+          "amt": 340
+        },
+        {
+          "k": "M",
+          "mon": "magpie",
+          "waves": 2
+        },
+        {
+          "k": "M",
+          "mon": "gboss4",
+          "waves": 1,
+          "boss": "gboss4"
+        }
+      ]
     }
   ],
   "gear": {

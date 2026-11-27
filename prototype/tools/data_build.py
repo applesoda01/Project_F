@@ -543,7 +543,7 @@ if os.path.exists(_qf):
         print(f'오류 {len(_ferr)}건 (quest_frames_F.json) — 파일을 만들지 않았습니다.')
         for e in _ferr: print('  -', e)
         sys.exit(1)
-    data['frames'] = {'monsters': _mons, 'frames': _f.get('frames') or [], 'base': _f.get('base') or [], 'fleeBase': _f.get('fleeBase'), 'lvMul': _f.get('lvMul')}
+    data['frames'] = {'monsters': _mons, 'frames': _f.get('frames') or [], 'base': _f.get('base') or [], 'bosses': _f.get('bosses') or [], 'fleeBase': _f.get('fleeBase'), 'lvMul': _f.get('lvMul')}
     print(f'새 의뢰의 틀 {len(data["frames"]["frames"])}개 · 몬스터 {len(_mons)}종')
 # 로비 배치 칸 (2026-11-12, tools/lobby_grid_editor.html 로 칠한 값). 없으면 게임은 모든 바닥 칸을 놓기 가능으로 봄
 _lg = os.path.join(DATA, 'lobby_grid.json')
