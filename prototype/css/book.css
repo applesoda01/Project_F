@@ -1342,3 +1342,27 @@ body.bookOn #foodChip,.dlgOn #foodChip{opacity:0;pointer-events:none}
 .bk-av .rw{font-size:13px;color:#6b4a2b;white-space:nowrap}
 .bk-av .rt2 .dot.town{background:var(--ux-green)}.bk-av .rt2 .dot.quest{background:#4a78b8}.bk-av .rt2 .dot.injured{background:#c0473a}.bk-av .rt2 .dot.away{background:#9a8a78}
 .bk-av .rw b{color:#5a3d22}.bk-av .rw b.ok{color:#2f7a3a}
+/* 2026-11-27 바닥 공사 6 (④-D · 15-1 시안 확정): 새 의뢰서 — 목록의 이어진 점 · 인원 · 꼬리표 · 상세의 차례 · 함정 줄 · 레벨 세 조각 */
+.qcard.nq .r2{display:flex;align-items:center;gap:8px}
+.nq-dots{display:inline-flex;align-items:center;gap:0}.nq-dots i{width:10px;height:10px;border-radius:50%;border:1.6px solid #8a6a48;background:#fbf4e6;display:inline-block;position:relative}
+.nq-dots i+i{margin-left:5px}.nq-dots i+i::before{content:'';position:absolute;left:-6.5px;top:3px;width:5px;height:1.5px;background:#8a6a48}
+.nq-dots i.ok{background:#5d8a4a;border-color:#4a7339}.nq-dots i.ok::after{content:'✓';position:absolute;left:1px;top:-4px;font-size:9px;color:#fff;font-weight:700}
+.nq-dots i.t{width:9px;height:9px;border-radius:1px;transform:rotate(45deg);background:#e0913a;border-color:#b06a22}
+.nq-n{font-size:13px;color:var(--ux-muted)}.nq-fill{flex:1;border-bottom:1.5px dotted rgba(110,72,36,.35);margin:0 2px;align-self:center}
+.nq-tag{font-size:12px;padding:1px 6px;border-radius:4px;color:#fff;margin-right:auto}.nq-tag.fin{background:#a8662a}.nq-tag.no{background:#a83a2e}.nq-tag.prep{background:#5d7a4a}
+.qcard.nq .gold{margin-left:auto}
+.nq-det .nq-title{display:flex;align-items:center;gap:8px;border-bottom:1.5px solid rgba(110,72,36,.35);padding-bottom:8px}.nq-det .nq-title b{font:700 22px var(--hf)}
+.nq-det .nq-meta{margin-left:auto;display:flex;gap:8px;align-items:center;font-size:13px}
+.nq-tip{margin:10px 0;padding:10px 12px;border-left:3px solid #c9963f;background:rgba(255,248,230,.7);font-size:14px;line-height:1.5}
+.nq-lvs{display:flex;gap:6px;align-items:center;padding:4px 8px;border-radius:6px;background:rgba(255,248,230,.6);border:1px solid rgba(110,72,36,.2)}
+.nq-lvs span{font-size:12px;padding:1px 8px;border-radius:10px;border:1px solid rgba(110,72,36,.4)}.nq-lvs span.l1{background:#6d9a57;color:#fff}.nq-lvs span.on{outline:2px solid #c9963f}.nq-lvs span.lk{opacity:.55}
+.nq-lvs small{margin-left:6px;font-size:13px;color:var(--ux-muted)}
+.bk2 .bk-r .bkq-det .ux-h.nq-h{margin-top:12px;text-align:left;justify-content:flex-start}.nq-cells{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.nq-cell{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:rgba(255,248,230,.75);border:1px solid rgba(110,72,36,.18)}
+.nq-cell img{width:48px;height:40px;object-fit:contain;image-rendering:pixelated}.nq-cell b{display:block;font-size:14px}.nq-cell small{font-size:12px;color:var(--ux-muted)}
+.nq-cell.done{opacity:.55}.nq-cell.done b::after{content:' ✓';color:#4a7339}.nq-cell.unk b{color:#6a5a48}
+.nq-trap{display:flex;align-items:center;gap:8px;margin-top:6px;padding:5px 10px;border-radius:6px;background:rgba(224,145,58,.15);border:1px solid rgba(176,106,34,.35);font-size:13px}
+.nq-trap i{width:9px;height:9px;transform:rotate(45deg);background:#e0913a;display:inline-block}.nq-trap.done{opacity:.6}
+.nq-row{margin-top:12px;display:flex;gap:10px;align-items:baseline}.nq-row b{font:700 15px var(--hf)}.nq-row span{font-size:13px}
+.nq-rw{display:flex;align-items:center;gap:8px}.nq-rw .gold{font-size:18px;font-weight:700}.nq-mat{display:inline-flex;flex-direction:column;align-items:center}.nq-mat img{width:38px;height:38px}.nq-mat small{font-size:11px;color:var(--ux-muted)}.nq-mat.done{opacity:.5}
+.nq-note{margin-top:8px;font-size:13px;color:var(--ux-muted)}

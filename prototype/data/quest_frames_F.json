@@ -10,6 +10,7 @@
   "monsters": {
     "dog": {
       "name": "들개",
+      "img": "mon_01",
       "core": 0,
       "st": [
         2,
@@ -29,6 +30,7 @@
     },
     "dogBoss": {
       "name": "우두머리 들개",
+      "img": "mon_10",
       "core": 0,
       "st": [
         4,
@@ -48,6 +50,7 @@
     },
     "boar": {
       "name": "멧돼지",
+      "img": "mon_07",
       "core": 0,
       "st": [
         4,
@@ -67,6 +70,7 @@
     },
     "boarBoss": {
       "name": "순돌이",
+      "img": "mon_11",
       "core": 0,
       "st": [
         6,
@@ -86,6 +90,7 @@
     },
     "rock": {
       "name": "돌슬라임",
+      "img": "mon_09",
       "core": 0,
       "st": [
         2,
@@ -105,6 +110,7 @@
     },
     "thief": {
       "name": "도적",
+      "img": "mon_02",
       "core": 1,
       "st": [
         6,
@@ -124,6 +130,7 @@
     },
     "magpie": {
       "name": "까치",
+      "img": "mon_08",
       "core": 0,
       "st": [
         2,
@@ -143,6 +150,7 @@
     },
     "slime": {
       "name": "슬라임",
+      "img": "mon_03",
       "core": 0,
       "st": [
         2,
@@ -162,6 +170,7 @@
     },
     "plain": {
       "name": "보통 몬스터",
+      "img": "mon_unknown",
       "core": 0,
       "st": [
         2,
@@ -181,6 +190,7 @@
     },
     "gboss0": {
       "name": "굼바의 보스",
+      "img": "mon_unknown",
       "core": 0,
       "st": [
         4,
@@ -200,6 +210,7 @@
     },
     "gboss1": {
       "name": "사냥꾼의 보스",
+      "img": "mon_unknown",
       "core": 0,
       "st": [
         4,
@@ -219,6 +230,7 @@
     },
     "gboss2": {
       "name": "헤르만의 보스",
+      "img": "mon_unknown",
       "core": 0,
       "st": [
         4,
@@ -238,6 +250,7 @@
     },
     "gboss3": {
       "name": "세실리아의 보스",
+      "img": "mon_unknown",
       "core": 0,
       "st": [
         4,
@@ -257,6 +270,7 @@
     },
     "gboss4": {
       "name": "탐험가의 보스",
+      "img": "mon_unknown",
       "core": 0,
       "st": [
         4,
@@ -279,6 +293,8 @@
     {
       "id": "q_slay_F",
       "name": "광견병 물리치료",
+      "workName": "닭장 다시 세우기",
+      "workImg": "n_coop",
       "giver": 0,
       "side": "fight",
       "mon": "dog",
@@ -342,6 +358,8 @@
     {
       "id": "q_hunt_F_2",
       "name": "오늘 저녁 삼겹살",
+      "workName": "달아난 돼지 끌어오기",
+      "workImg": "n_pig",
       "giver": 0,
       "side": "work",
       "mon": "boar",
@@ -404,6 +422,8 @@
     {
       "id": "q_slay_F_2",
       "name": "그 멧돼지는 이름이 있다",
+      "workName": "발자국 쫓기",
+      "workImg": "n_tracks",
       "giver": 1,
       "side": "fight",
       "mon": "boar",
@@ -467,6 +487,8 @@
     {
       "id": "q_hunt_F",
       "name": "장작이 부족해요",
+      "workName": "장작 줍기",
+      "workImg": "n_firewood",
       "giver": 1,
       "side": "work",
       "mon": "dog",
@@ -529,6 +551,8 @@
     {
       "id": "q_study_F",
       "name": "이거 마석 맞냐",
+      "workName": "꺼낸 핵 감정하기",
+      "workImg": "n_core",
       "giver": 2,
       "side": "fight",
       "mon": "rock",
@@ -591,6 +615,8 @@
     {
       "id": "q_study_F_2",
       "name": "먹어도 되나요",
+      "workName": "버섯 조사",
+      "workImg": "n_mushroom",
       "giver": 2,
       "side": "work",
       "mon": "boar",
@@ -653,6 +679,8 @@
     {
       "id": "q_guard_F",
       "name": "무명천 사수작전",
+      "workName": "다친 상인 돌보기",
+      "workImg": "n_merchant",
       "giver": 3,
       "side": "fight",
       "mon": "thief",
@@ -715,6 +743,8 @@
     {
       "id": "q_guard_F_2",
       "name": "잡초 말고 약초",
+      "workName": "순례자 돌보기",
+      "workImg": "n_pilgrim",
       "giver": 3,
       "side": "work",
       "mon": "dog",
@@ -777,6 +807,8 @@
     {
       "id": "q_mine_F",
       "name": "반짝이면 다 내 거",
+      "workName": "둥지 털기",
+      "workImg": "n_nest",
       "giver": 4,
       "side": "fight",
       "mon": "magpie",
@@ -851,6 +883,8 @@
     {
       "id": "q_mine_F_2",
       "name": "펄떡이는 생선",
+      "workName": "슬라임 소매치기",
+      "workImg": "n_fishslime",
       "giver": 4,
       "side": "work",
       "mon": "slime",

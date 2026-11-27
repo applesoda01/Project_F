@@ -65,16 +65,16 @@ const foe = (k, boss) => { const m = MON[k], v = combatVals(m); return { name: m
 
 // ---------- 틀 열 (명세 3장 「틀 10개」 · 12-1) ----------
 const FR = [
-  { name: '광견병 물리치료', giver: '굼바', side: 'fight', mon: 'dog', work: 0, end: 'dogBoss', answer: [2], answerWhy: '마법사(파이어볼) · 갑옷' },
-  { name: '오늘 저녁 삼겹살', giver: '굼바', side: 'work', mon: 'boar', work: 0 },
-  { name: '그 멧돼지는 이름이 있다', giver: '사냥꾼', side: 'fight', mon: 'boar', work: 1, end: 'boarBoss', answer: [3], answerWhy: '성직자 · 물약' },
-  { name: '장작이 부족해요', giver: '사냥꾼', side: 'work', mon: 'dog', work: 1 },
-  { name: '이거 마석 맞냐', giver: '헤르만', side: 'fight', mon: 'rock', work: 2, answer: [2], answerWhy: '마법사 · 날 세우기' },
-  { name: '먹어도 되나요', giver: '헤르만', side: 'work', mon: 'boar', work: 2 },
-  { name: '무명천 사수작전', giver: '세실리아', side: 'fight', mon: 'thief', work: 3, answer: [3], answerWhy: '성직자의 치유 · 날 세우기' },
-  { name: '잡초 말고 약초', giver: '세실리아', side: 'work', mon: 'dog', work: 3 },
-  { name: '반짝이면 다 내 거', giver: '탐험가', side: 'fight', mon: 'magpie', work: 4, trap: true, answer: [4, 1], answerWhy: '도적 · 궁수 (놓친 마릿수로)', byFled: true },
-  { name: '펄떡이는 생선', giver: '탐험가', side: 'work', mon: 'slime', work: 4, trap: true },
+  { name: '광견병 물리치료', workName: '닭장 다시 세우기', workImg: 'n_coop', giver: '굼바', side: 'fight', mon: 'dog', work: 0, end: 'dogBoss', answer: [2], answerWhy: '마법사(파이어볼) · 갑옷' },
+  { name: '오늘 저녁 삼겹살', workName: '달아난 돼지 끌어오기', workImg: 'n_pig', giver: '굼바', side: 'work', mon: 'boar', work: 0 },
+  { name: '그 멧돼지는 이름이 있다', workName: '발자국 쫓기', workImg: 'n_tracks', giver: '사냥꾼', side: 'fight', mon: 'boar', work: 1, end: 'boarBoss', answer: [3], answerWhy: '성직자 · 물약' },
+  { name: '장작이 부족해요', workName: '장작 줍기', workImg: 'n_firewood', giver: '사냥꾼', side: 'work', mon: 'dog', work: 1 },
+  { name: '이거 마석 맞냐', workName: '꺼낸 핵 감정하기', workImg: 'n_core', giver: '헤르만', side: 'fight', mon: 'rock', work: 2, answer: [2], answerWhy: '마법사 · 날 세우기' },
+  { name: '먹어도 되나요', workName: '버섯 조사', workImg: 'n_mushroom', giver: '헤르만', side: 'work', mon: 'boar', work: 2 },
+  { name: '무명천 사수작전', workName: '다친 상인 돌보기', workImg: 'n_merchant', giver: '세실리아', side: 'fight', mon: 'thief', work: 3, answer: [3], answerWhy: '성직자의 치유 · 날 세우기' },
+  { name: '잡초 말고 약초', workName: '순례자 돌보기', workImg: 'n_pilgrim', giver: '세실리아', side: 'work', mon: 'dog', work: 3 },
+  { name: '반짝이면 다 내 거', workName: '둥지 털기', workImg: 'n_nest', giver: '탐험가', side: 'fight', mon: 'magpie', work: 4, trap: true, answer: [4, 1], answerWhy: '도적 · 궁수 (놓친 마릿수로)', byFled: true },
+  { name: '펄떡이는 생선', workName: '슬라임 소매치기', workImg: 'n_fishslime', giver: '탐험가', side: 'work', mon: 'slime', work: 4, trap: true },
 ];
 const LAYOUT = { fight: ['MM', 'MMW', 'MMWM'], work: ['WW', 'WWM', 'WWMW'] };
 const LVX = [0, 1, 1.5, 2];   // 16-10: 자리마다의 양 Lv 1 · 2 · 3 = 1 · 1.5 · 2배
@@ -307,6 +307,7 @@ out.push('## 8. 경험치 (받은 값 · lvA 160 · lvB 0.23 · xpNode 3.2)', ''
 //   맞추는 것: 그 묶음의 기준 레벨 셋(전사 + 그 의뢰인의 일 능력치 직업 + 셋째 · 장비 없음)이 종이 전체 50박자쯤 · 맨 앞 체력 55%쯤 (6-8 · Lv 3의 목표 16-18과 같은 결)
 //   이름 · 그림은 아직 없음 — 이름 자리는 「(의뢰인)의 보스」 [임시 글]
 const GIVER = ['굼바', '사냥꾼', '헤르만', '세실리아', '탐험가'];
+const MON_IMG = { dog: 'mon_01', thief: 'mon_02', slime: 'mon_03', boar: 'mon_07', magpie: 'mon_08', rock: 'mon_09', dogBoss: 'mon_10', boarBoss: 'mon_11' };   // assets/expedition/mon/ (리소스_진행_F급_10틀.md) · 보스 다섯 · 보통 몬스터는 그림이 없어 mon_unknown
 const GBOSS = {};
 for (let gv = 0; gv < 5; gv++) {
   const ff = FR.find(f => f.side === 'fight' && GIVER.indexOf(f.giver) === gv), wf = FR.find(f => f.side === 'work' && GIVER.indexOf(f.giver) === gv);
@@ -329,13 +330,13 @@ out.push('', '- 보스의 이름과 그림은 아직 없습니다(글 · 그림�
 const FRAME_ID = { '광견병 물리치료': 'q_slay_F', '오늘 저녁 삼겹살': 'q_hunt_F_2', '그 멧돼지는 이름이 있다': 'q_slay_F_2', '장작이 부족해요': 'q_hunt_F', '이거 마석 맞냐': 'q_study_F', '먹어도 되나요': 'q_study_F_2', '무명천 사수작전': 'q_guard_F', '잡초 말고 약초': 'q_guard_F_2', '반짝이면 다 내 거': 'q_mine_F', '펄떡이는 생선': 'q_mine_F_2' };
 if (process.argv.includes('--write')) {
   if (!VERDICT) { console.error('판정이 기준 밖이라 틀 자료를 쓰지 않았습니다.'); process.exit(1); }
-  const monOut = {}; for (const k in MON) { const m = MON[k]; monOut[k] = { name: m.name, core: m.core, st: m.st, hpBase: m.hpBase, atkBase: m.atkBase, def: m.def, spdBase: m.spdBase, pack: m.pack, flee: !!m.flee, boss: !!m.boss, skill: null }; }
+  const monOut = {}; for (const k in MON) { const m = MON[k]; monOut[k] = { name: m.name, img: MON_IMG[k] || 'mon_unknown', core: m.core, st: m.st, hpBase: m.hpBase, atkBase: m.atkBase, def: m.def, spdBase: m.spdBase, pack: m.pack, flee: !!m.flee, boss: !!m.boss, skill: null }; }
   const cellOut = c => c.k === 'M' ? Object.assign({ k: 'M', mon: c.mon, waves: c.waves }, c.boss ? { boss: c.boss } : {}) : c.k === 'W' ? { k: 'W', stat: c.w, amt: c.amt } : { k: 'T', amt: trapAmt(c.lv) };
   const data = {
     note: '새 의뢰의 틀 · 몬스터 표 (바닥 공사 4 · 명세 ③-A · 덧붙임 16-1 ~ 16-18). prototype/tools/node_amounts.js --write 로 만듦 — 직접 고치지 말고 도구를 고쳐 다시 만드세요. 옛 몬스터 표(collegium_data.json의 monsters)는 리퀘스트 · 던전이 그대로 씀',
     made: '2026-11-27', fleeBase: FLEE_BASE, lvMul: LVX.slice(1),
     monsters: monOut,
-    frames: FR.map(fr => ({ id: FRAME_ID[fr.name], name: fr.name, giver: GIVER.indexOf(fr.giver), side: fr.side, mon: fr.mon, work: fr.work, trap: !!fr.trap, lv: [1, 2, 3].map(lv => cellsOf(fr, lv).map(cellOut)) })),
+    frames: FR.map(fr => ({ id: FRAME_ID[fr.name], name: fr.name, workName: fr.workName, workImg: fr.workImg, giver: GIVER.indexOf(fr.giver), side: fr.side, mon: fr.mon, work: fr.work, trap: !!fr.trap, lv: [1, 2, 3].map(lv => cellsOf(fr, lv).map(cellOut)) })),
     base: [1, 2, 3].map(lv => ({ lv, mon: 'plain', waves: lv === 1 ? 1 : 2, work: workAmt(lv), trap: trapAmt(lv) })),
     bosses: [0, 1, 2, 3, 4].map(gv => ({ giver: gv, mon: GBOSS[gv].mon, frames: FR.filter(f => GIVER.indexOf(f.giver) === gv).map(f => FRAME_ID[f.name]), nodes: GBOSS[gv].nodes.map(cellOut) })),
     gear: { F: { weapon: WEAP, heavy: { def: DEF[0] }, light: { def: DEF[1], mp: 10 }, robe: { def: DEF[2], mp: 20 } } },

@@ -272,7 +272,7 @@
     v.cam += (P === 'move' ? 1 : 0) * 48 * dt;
     const bg = BG[BGQ[x.q.type]] || BG.forest;
     for (const [k, x0] of bg.props) {
-      const im = IM[k]; if (!im.complete || !im.naturalWidth) continue; const xx = ((x0 - v.cam * 0.4) % 560 + 560) % 560 - 60;
+      const im = IM[k]; if (!im || !im.complete || !im.naturalWidth) continue; const xx = ((x0 - v.cam * 0.4) % 560 + 560) % 560 - 60;
       g.globalAlpha = .45; g.drawImage(im, xx, SURF + 2 - im.height * 0.8, im.width * 0.8, im.height * 0.8); g.globalAlpha = 1;
     }
     const c0 = Math.floor(v.cam / 32);
