@@ -42,6 +42,7 @@
     - [메인 퀘스트](ch04/main.md)
     - [새 설계 17 · 퀘스트와 소재의 지도](ch04/quest-material-map.md)
     - [새 설계 10 · 15 · 의뢰](ch04/quest-structure.md)
+    - [새 설계 · 시간과 미니뷰](ch04/time-and-miniview.md)
 - [전투](ch05/README.md)
     - [전투 규칙](ch05/rules.md)
     - [출발 판단과 성공률](ch05/departure.md)
