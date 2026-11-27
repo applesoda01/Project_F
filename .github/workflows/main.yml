@@ -50,6 +50,8 @@ jobs:
         run: |
           node prototype/tools/gate1_check.js --md gate1.md || echo '::warning::관문 1 기준을 벗어났습니다. 밸런스 값을 확인해 주세요.'
           cat gate1.md >> "$GITHUB_STEP_SUMMARY"
+          node prototype/tools/seed_check.js --md seed.md || echo '::warning::씨앗 고정 검사 결과가 기준과 다릅니다. 의도한 변경이면 seed_check.js --update로 기준을 새로 쓰세요.'
+          cat seed.md >> "$GITHUB_STEP_SUMMARY"
       - name: 최신 빌드 압축 파일 (Actions 화면에서 받기)
         uses: actions/upload-artifact@v4
         with:
