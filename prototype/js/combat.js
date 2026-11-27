@@ -60,7 +60,7 @@
       const atk = ((NEWF ? C.atkBase[c] + st(c) * C.atkPerCore[c] : C.classAtk[c] + a.lv * C.classAtkLv[c] + st(c)) + sum('atk') + (qk === 'hot' ? QB.hotAtk : 0) + spS('atk') + (set2 ? DB.setAtk : 0)) * (1 + (mealB || 0)) * (set3 ? 1 + DB.set3Atk : 1);
       let vs = null; if (set3) { vs = {}; for (const m in DGMON) if (DGMON[m] === DGI[SP.find(it => it.set === set3).key].dg) vs[m] = 1 + DB.set3Vs; }
       return { a, core: c, row: POS[c], hp: maxHp, maxHp, mp: maxMp, maxMp, atk, def: sum('def') + spS('def'), mdef: 0, vs, rare: SP.some(it => it.rare),
-        evade: 0, crit: st(1) * C.critPerDex, speed: 1 + st(4) * C.speedPerSkill, agi: st(1),
+        evade: 0, crit: st(1) * C.critPerDex, speed: 1 + st(4) * C.speedPerSkill, agi: st(1), skill: st(4), stat: [st(0), st(1), st(2), st(3), st(4)],   // stat: 일 칸 · 함정의 셈 (2026-11-27 바닥 5)
         heal: c === 3 ? C.healBase + st(3) * C.healPerSpirit : 0, pots: a.pots || 0, potLine: C.potionHp[a.risk], down: false, used: 0, cover: qk === 'devoted' ? QB.devotedCover : 0 };
     }
 
@@ -73,7 +73,7 @@
       opt = opt || {};
       const P = units.map((u, k) => { const o = Object.assign({}, u, { gauge: 0, ally: true, id: u.id != null ? u.id : (u.a ? u.a.id : undefined), k }); delete o.a; return o; });   // 2026-11-27 바닥 ①: 상태에는 모험가 객체를 넣지 않고 아이디만 (저장할 때 모험가가 두 번 적히지 않게). k = 넘겨받은 순번
       P.sort((x, y) => POS[x.core] - POS[y.core] || y.maxHp - x.maxHp);                 // 자동 배치: 맨 앞 → 맨 뒤
-      const E = enemies.map((e, i) => ({ i, name: e.name, mon: e.mon, hp: e.hp, maxHp: e.hp, atk: e.atk, def: e.def || 0, boss: !!e.boss, gauge: 0 }));
+      const E = enemies.map((e, i) => ({ i, name: e.name, mon: e.mon, hp: e.hp, maxHp: e.hp, atk: e.atk, def: e.def || 0, boss: !!e.boss, gauge: 0, speed: e.speed || 1, crit: e.crit || 0 }));   // 2026-11-27 바닥 5 (16-3): 몬스터의 빠르기 · 치명타 (옛 몬스터는 1 · 0)
       if (DB && DB.on && DB.rare && P.some(u => u.rare)) for (const u of P) if (!u._rp) { u.atk *= 1 + DB.rareParty; u._rp = 1; }   // 2026-11-20 레어 장신구: 같은 파티 전원 공격 + (방을 이어 가도 한 번만)
       const normal = E.filter(e => !e.boss), bosses = E.filter(e => e.boss), gs = groupMax(g), waves = [];   // 물결은 적의 순번(i)으로 적음 (저장할 수 있게)
       for (let k = 0; k < normal.length; k += gs) waves.push(normal.slice(k, k + gs).map(e => e.i));
@@ -93,7 +93,7 @@
       const strike = (u, mult, tgt, k) => {                      // 한 번의 타격: (공격 × 배율 × 흔들림 [× 치명타]) − 방어, 0 미만이면 0
         let d = u.atk * mult * vary() * ((u.vs && tgt.mon && u.vs[tgt.mon]) || 1), crit = 0;   // 2026-11-20 세트 3부위: 그 던전 몬스터 상대 ×
         if (rnd() < u.crit) { d *= C_.critMult; crit = 1; }
-        const dealt = Math.max(0, d - tgt.def); tgt.hp -= dealt;
+        const dealt = Math.max(0, d - (u.core === 2 ? 0 : tgt.def)); tgt.hp -= dealt;   // 2026-11-27 바닥 5 (16-5): 마법사의 공격은 방어를 무시
         push({ t: 'hit', by: u.id, to: tgt.i, hp: Math.max(0, tgt.hp), c: crit, k, d: Math.round(dealt), mp: Math.round(u.mp) });
       };
       const front = list => list.find(e => e.hp > 0);
@@ -119,7 +119,7 @@
               if (x.core !== 3 && x.mp >= cost && rnd() < skillRate()) {
                 x.mp -= cost;
                 if (x.core === 0 || x.core === 1) { strike(x, 1, t0, 'double'); const t1 = front(W); if (t1) strike(x, 1, t1, 'double'); }        // 더블 스윙 · 연사: 1배 두 번
-                else if (x.core === 2) { const b = behind(W, t0); strike(x, 1.5, t0, 'fire'); if (b) strike(x, 1.5, b, 'fire'); }                // 파이어볼: 대상 + 바로 뒤 1명
+                else if (x.core === 2) { for (const e of W) if (e.hp > 0) strike(x, 1.5, e, 'fire'); }                // 파이어볼: 앞에 나온 무리 전체 (2026-11-27 바닥 5 · 16-11)
                 else strike(x, 1.5, t0, 'stab');                                                                                                    // 급소 찌르기: 1.5배 한 번
               } else strike(x, 1, t0, null);
             } else {                                             // 적 행동: 살아 있는 맨 앞 아군부터
@@ -127,7 +127,7 @@
               const live = P.filter(q => !q.down); if (!live.length) break;
               let tgt = live[0];
               if (tgt.hp < tgt.maxHp * 0.3) { const cv = live.find(q => q !== tgt && q.cover && q.hp >= q.maxHp * q.cover); if (cv) { if (!cv.covered) push({ t: 'cover', by: cv.id, to: tgt.id }); cv.covered = (cv.covered || 0) + 1; tgt = cv; } }   // 2026-11-20 헌신: 위기(체력 30% 아래)의 동료 대신 맞음
-              const dealt = Math.max(0, x.atk * vary() - tgt.def); tgt.hp -= dealt;
+              const dealt = Math.max(0, x.atk * vary() * (x.crit && rnd() < x.crit ? C_.critMult : 1) - tgt.def) * (tgt.dmgTaken || 1); tgt.hp -= dealt;   // 2026-11-27 바닥 5: 몬스터의 치명타(16-2 · 치명타가 있는 몬스터만 굴림) · 덧대기(받는 피해 ×)
               if (tgt.hp <= 0) { tgt.hp = 0; tgt.down = true; push({ t: 'hurt', to: tgt.id, hp: 0, d: Math.round(dealt) }); push({ t: 'down', to: tgt.id }); continue; }
               push({ t: 'hurt', to: tgt.id, hp: tgt.hp, d: Math.round(dealt) });
               if (tgt.hp < tgt.maxHp * tgt.potLine && tgt.pots > 0) { tgt.pots--; tgt.used++; const before = tgt.hp; tgt.hp = Math.min(tgt.maxHp, tgt.hp + tgt.maxHp * st.potHeal); push({ t: 'potion', to: tgt.id, hp: tgt.hp, d: Math.round(tgt.hp - before) }); }
@@ -262,7 +262,53 @@
       prog(Dc, p0, res) { if (!res.cleared3) return Dc.progFail; return (Dc.progOk[DG.chip(p0)] || 0) + Dc.progRisky * res.risky + (res.boss ? Dc.progBoss : 0); }
     };
 
-    return { ok: !!C, C, unit, fight, begin, step, end, predict, gear, defaultGear, WEAPON, ARMOR, ACC, QK, DG };
+
+    // ---------- 새 의뢰 (2026-11-27 바닥 공사 5 · 명세 ③-E · 결정 20-1 「고친 어림셈」) ----------
+    // 몬스터 표(GAME_DATA.frames.monsters)의 한 줄 → 전투값. 모험가와 같은 식 (16-2): 체력 = hpBase + 힘 × hpPerStr · 공격력 = atkBase + 주력 × atkPerCore · 치명타 = 민첩 × critPerDex · 빠르기 = spdBase + 기교 × speedPerSkill
+    function monUnit(m, key) {
+      return { name: m.name, mon: key, hp: m.hpBase + m.st[0] * C.hpPerStr, atk: m.atkBase + m.st[m.core] * C.atkPerCore[m.core], def: m.def || 0,
+        crit: m.st[1] * C.critPerDex, speed: m.spdBase + m.st[4] * C.speedPerSkill, boss: !!m.boss, flee: !!m.flee, dex: m.st[1] };
+    }
+    // 칸 하나의 무리들 → [[몬스터 키…]…]. 끝 무리는 우두머리가 대신할 수 있음 (c.boss)
+    function wavesOf(c, MON) { const out = []; for (let w = 0; w < c.waves; w++) out.push(c.boss && w === c.waves - 1 ? [c.boss] : Array((MON[c.mon] || {}).pack || 1).fill(c.mon)); return out; }
+    // 달아나기까지의 박자 (16-6): fleeBase × (파티에서 가장 높은 기교나 민첩 ÷ 그 몬스터의 민첩)
+    const fleeWin = (P, m, fleeBase) => m.flee && fleeBase ? fleeBase * Math.max(...P.map(u => Math.max(u.agi || 0, u.skill || 0))) / Math.max(1, m.dex) : 0;
+    // 어림셈 — 굴리지 않고 평균값으로 한 번. P = unit() 배열(앞에서부터 맨 앞 → 뒤 · hp는 지금 값) · cells = 남은 칸 · o: { MON, worse, fleeBase, seenMon(k), seenTrap, base(lv) }
+    //   고친 것 다섯 (도구의 표와 견줌 · tools/estimate_check.js): ① 무리 안에서 앞에서부터 하나씩 쓰러지고 게이지가 0에서 차므로 처음 한 대가 늦음 ② 치명타의 기댓값 ③ 파이어볼은 무리 전체
+    //   ④ 달아나는 무리는 창에서 끊김 ⑤ 성직자는 50% 아래로 내려갈 때마다 한 번씩 · 그리고 ⑥ 한 마리를 잡는 타수를 올림으로 셈(남는 피해가 버려짐)
+    //   모르는 몬스터(15-3)의 칸은 그 레벨의 「보통 몬스터」로, 모르는 함정(15-2)은 셈하지 않음
+    function estimate(P, cells, o) {
+      o = o || {}; const MON = o.MON, X = o.worse ? 1.15 : 1, cm = C.critMult, sr = skillRate();
+      const hp = P.map(u => u.hp), lost = P.map(() => 0); let beats = 0;
+      const up = k => lost[k] < hp[k];
+      for (const c of cells) {
+        if (c.done) continue;
+        if (c.k === 'M') {
+          const unknown = o.seenMon && !o.seenMon(c.mon) && o.plain;
+          const cc = unknown ? { mon: o.plain, waves: c.waves } : c;
+          for (const wv of wavesOf(cc, MON)) {
+            const vs = wv.map(k => monUnit(MON[k], k)), n = vs.length, alive = (n + 1) / 2, live = P.filter((u, k) => up(k));
+            if (!live.length) break;
+            let t = vs.reduce((sum, v) => sum + 1 / Math.max(1e-9, live.reduce((r, u) => {
+              const hit = Math.max(1e-9, u.atk * (1 + (u.crit || 0) * (cm - 1)) - (u.core === 2 ? 0 : v.def));
+              const fire = u.core === 2 && u.mp >= skillMp(2) ? (1 - sr) + sr * 1.5 * alive : 1;
+              return r + (u.speed || 1) * fire / Math.ceil(v.hp * X / hit - 1e-9); }, 0)), 0);
+            const win = fleeWin(live, vs[0], o.fleeBase); if (win && t > win) t = win;
+            beats += t;
+            let take = vs.reduce((sum, v, i) => sum + Math.max(0, v.atk * X * (1 + v.crit * (cm - 1)) - P[0].def) * (P[0].dmgTaken || 1) * Math.max(0, t * (i + 1) / n * v.speed - 0.5), 0);
+            for (let k = 0; k < P.length && take > 0; k++) { const d = Math.min(hp[k] - lost[k], take); lost[k] += d; take -= d; }
+          }
+        } else if (c.k === 'W') { const sum = P.reduce((t, u, k) => t + (up(k) ? (u.stat ? u.stat[c.stat] : 0) : 0), 0); beats += sum > 0 ? c.amt * X / sum : 999; }
+        else if (c.k === 'T') { if (o.seenTrap === false) continue; const sum = P.reduce((t, u) => t + (u.stat ? u.stat[4] : 0), 0), t = sum > 0 ? c.amt * X / sum : 99; if (t > 5) { beats += 5; P.forEach((u, k) => { lost[k] += u.maxHp * 0.3; }); } else beats += t; }
+      }
+      const cl = P.findIndex(u => u.core === 3);
+      if (cl >= 0) { let heals = Math.floor((P[cl].mp || 0) / C.healMp); while (heals > 0 && lost[0] > 0 && hp[0] - lost[0] < P[0].maxHp * 0.5) { lost[0] = Math.max(0, lost[0] - P[cl].heal); heals--; } }
+      P.forEach((u, k) => { if (u.pots > 0 && hp[k] - lost[k] < u.maxHp * u.potLine && hp[k] - lost[k] > 0) lost[k] = Math.max(0, lost[k] - u.maxHp * C.potionHeal[0] * Math.min(u.pots, 1)); });
+      const left = P.map((u, k) => Math.max(0, hp[k] - lost[k]) / u.maxHp);
+      return { beats, left, front: 1 - left[0], low: Math.min(...left), down: left.some(x => x <= 0) };
+    }
+
+    return { ok: !!C, C, unit, fight, begin, step, end, predict, gear, defaultGear, WEAPON, ARMOR, ACC, QK, DG, monUnit, wavesOf, fleeWin, estimate };
   }
 
   const api = { make, defaultGear, WEAPON, ARMOR, ACC };

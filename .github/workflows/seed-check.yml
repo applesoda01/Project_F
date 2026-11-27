@@ -1,6 +1,7 @@
 # dev/v6 에 올릴 때: 씨앗 고정 검사(게임 쪽 규칙 · 씨앗 7000~7019 · 20판 · 48주)를 돌린다 (2026-11-27)
 #  - 기준(prototype/tools/seed_baseline.json)과 다르면 실패로 표시된다. 의도한 변경이면 --update 로 기준을 새로 써서 함께 올린다
 #  - PR(data-check.yml)과 main(main.yml)에서는 원래 자리에서 돈다
+#  - 어림셈 지킴이 (2026-11-27 · 결정 20-1): 모험가의 어림셈(combat.js estimate)이 실제 전투와 15% 넘게 어긋나는 줄이 한도보다 늘면 실패
 name: 씨앗 고정 검사
 on:
   push:
@@ -10,6 +11,7 @@ on:
       - 'prototype/data/**'
       - 'prototype/tools/seed_check.js'
       - 'prototype/tools/seed_baseline.json'
+      - 'prototype/tools/estimate_check.js'
       - '.github/workflows/seed-check.yml'
   workflow_dispatch:
 permissions:
@@ -28,6 +30,10 @@ jobs:
         run: |
           set -o pipefail
           node prototype/tools/seed_check.js --md seed.md
+      - name: 어림셈 지킴이
+        if: always()
+        run: |
+          node prototype/tools/estimate_check.js --guard | tee -a "$GITHUB_STEP_SUMMARY"
       - name: 결과 정리
         if: always()
         run: |

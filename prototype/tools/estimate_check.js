@@ -1,26 +1,21 @@
 // 어림셈(estimate · 명세 ③-E)과 도구의 표(전투 규칙을 고정 씨앗 40번)를 틀마다 견줌 (2026-11-27 · 바닥 공사 5의 ① · 명세 덧붙임 「셈하는 법」)
 //   게임 코드를 건드리지 않음. 틀과 몬스터는 data/quest_frames_F.json(GAME_DATA.frames)에서 읽음.
 //   node prototype/tools/estimate_check.js [--md 파일]
-// 어림셈은 명세 ③-E 그대로 + 16장으로 생긴 것 둘만 더함: ① 몬스터의 빠르기를 잃는 체력에 곱함 ② 마법사는 방어를 빼지 않음.
+// 「명세의 어림셈」은 명세 ③-E 그대로 + 16장으로 생긴 것 둘(몬스터의 빠르기 · 마법은 방어 무시) — 견줌용. 「고친 어림셈」은 게임의 CB.estimate(combat.js)를 그대로 부름.
+//   --guard: 고친 어림셈의 15% 넘는 줄이 GUARD_MAX를 넘으면 실패(종료 코드 1) — 늘 돌리는 검사(.github/workflows)에서 씀
 //   몬스터 칸은 무리마다 셈(무리는 차례로 나옴 · 16-1). 성직자: 맨 앞이 50% 아래로 내려간 만큼을 마력이 닿는 만큼 치유로 뺌. 물약: 무릅쓰기의 선 아래로 내려가면 한 병만큼 뺌.
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const JS = path.join(__dirname, '..', 'js');
 const ctx = { console, Math, JSON, Date }; ctx.window = ctx; vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(JS, 'data_gen.js'), 'utf8'), ctx, { filename: 'data_gen.js' });
-const PATCH = [   // node_amounts.js와 같은 흉내 (5번에서 게임에 넣을 규칙)
-  ['boss: !!e.boss, gauge: 0 }));', 'boss: !!e.boss, gauge: 0, speed: e.speed || 1, crit: e.crit || 0, flee: 0 }));'],
-  ['const dealt = Math.max(0, d - tgt.def);', 'const dealt = Math.max(0, d - (u.core === 2 ? 0 : tgt.def));'],
-  ['const dealt = Math.max(0, x.atk * vary() - tgt.def);', 'const dealt = Math.max(0, x.atk * vary() * (rnd() < (x.crit || 0) ? C_.critMult : 1) - tgt.def) * (tgt.dmgTaken || 1);'],
-  ["else if (x.core === 2) { const b = behind(W, t0); strike(x, 1.5, t0, 'fire'); if (b) strike(x, 1.5, b, 'fire'); }", "else if (x.core === 2) { for (const e of W) if (e.hp > 0) strike(x, 1.5, e, 'fire'); }"],
-];
-let csrc = fs.readFileSync(path.join(JS, 'combat.js'), 'utf8');
-for (const [a, b] of PATCH) { if (!csrc.includes(a)) throw new Error('combat.js가 바뀌어 흉내 낼 자리를 못 찾음'); csrc = csrc.replace(a, b); }
+// 16장의 전투 규칙(몬스터의 빠르기 · 치명타 · 마법은 방어 무시 · 파이어볼은 무리 전체 · 덧대기)은 2026-11-27 바닥 5에서 combat.js에 들어감 — 흉내 내지 않고 그대로 씀
+const csrc = fs.readFileSync(path.join(JS, 'combat.js'), 'utf8');
 vm.runInContext(csrc, ctx, { filename: 'combat.js' });
 const GD = ctx.GAME_DATA, B = GD.balance, CB = ctx.GuildCombat.make(GD), C = B.combat, G = B.growth, FD = GD.frames;
 const CL = ['전사', '궁수', '마법사', '성직자', '도적'];
 const r0 = Math.round, r1 = x => Math.round(x * 10) / 10, pct = x => r0(x * 100) + '%';
-const RISK = 1, SEEDS = 40;
+const RISK = 1, SEEDS = 40, GUARD_MAX = 1;   // 지킴이 (A세션 2026-11-27 17:55): 고친 어림셈이 15% 넘게 어긋나는 줄이 이보다 늘면 알림 (지금 1줄 · 올림 셈을 넣기 전 3줄)
 function mulberry(seed) { let a = seed >>> 0; return function () { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
 // 기준 사람 (node_amounts.js와 같음 · F 첫 묶음 · Lv 1 · 장비 없음)
@@ -78,32 +73,8 @@ function estimate(party, cells, worse) {
 }
 
 
-// ---------- 고친 어림셈 (안 · 여전히 굴리지 않음) — 어긋남의 까닭 다섯을 손셈에 넣음 ----------
-//   ① 무리 안의 산 마릿수와 게이지: 앞에서부터 하나씩 쓰러지고(명세의 n ÷ 2는 한 마리일 때 반만 셈), 게이지가 0에서 차므로 처음 한 대가 늦음 ② 치명타의 기댓값(양쪽)
-//   ③ 파이어볼: 마법사는 skillRate의 몫만큼 무리 전체를 1.5배로 ④ 달아남: 창보다 길면 창에서 끊김 ⑤ 성직자: 50% 아래로 내려갈 때마다 한 번씩, 마력이 닿는 만큼
-function estimate2(party, cells, worse) {
-  const X = worse ? 1.15 : 1, hp = party.map(u => u.maxHp), lost = party.map(() => 0); let beats = 0;
-  const sr = C.skillRate != null ? C.skillRate : 0.2, cm = C.critMult;
-  const dmgTo = (u, def, n) => { const base = Math.max(0, u.atk * (1 + (u.crit || 0) * (cm - 1)) - (u.core === 2 ? 0 : def)) * (u.speed || 1); return u.core === 2 && u.mp >= 20 ? base * ((1 - sr) + sr * 1.5 * n) : base; };
-  for (const c of cells) {
-    if (c.k === 'M') {
-      for (const wv of wavesOf(c)) {
-        const vs = wv.map(mv), n = vs.length, sumHp = vs.reduce((t, v) => t + v.hp * X, 0), def = vs[0].def, alive = (n + 1) / 2;
-        const dmg = party.reduce((t, u, k) => t + (lost[k] < hp[k] ? dmgTo(u, def, alive) : 0), 0); let t = dmg > 0 ? sumHp / dmg : 999;
-        if (vs[0].flee) { const win = FD.fleeBase * Math.max(...party.map(u => Math.max(u.stats[1], u.stats[4]))) / vs[0].dex; if (t > win) t = win; }
-        beats += t;
-        // 앞에서부터 i번째가 t × i ÷ n 박자 살아 있고, 게이지가 0에서 차므로 그동안 floor(살아 있는 박자 × 빠르기)번 침 — 기댓값으로 (박자 × 빠르기 − 0.5)
-        let take = vs.reduce((s, v, i) => s + Math.max(0, v.atk * X * (1 + v.crit * (cm - 1)) - party[0].def) * Math.max(0, t * (i + 1) / n * v.speed - 0.5), 0);
-        for (let k = 0; k < party.length && take > 0; k++) { const can = hp[k] - lost[k], d = Math.min(can, take); lost[k] += d; take -= d; }
-      }
-    } else if (c.k === 'W') beats += c.amt * X / party.reduce((t, u, k) => t + (lost[k] < hp[k] ? u.stats[c.stat] : 0), 0);
-    else { const t = c.amt * X / party.reduce((t, u) => t + u.stats[4], 0); if (t > 5) { beats += 5; party.forEach((u, k) => { lost[k] += u.maxHp * 0.3; }); } else beats += t; }
-  }
-  const cl = party.findIndex(u => u.core === 3);
-  if (cl >= 0) { let heals = Math.floor(party[cl].maxMp / C.healMp); while (heals > 0 && lost[0] > hp[0] * 0.5) { lost[0] = Math.max(0, lost[0] - party[cl].heal); heals--; } }
-  if (party[0].pots > 0 && lost[0] > hp[0] * (1 - party[0].potLine)) lost[0] -= Math.min(lost[0], hp[0] * C.potionHeal[0]);
-  return { beats, front: Math.min(1, lost[0] / hp[0]), down: lost[0] >= hp[0] };
-}
+// ---------- 고친 어림셈 = 게임의 estimate (combat.js · 결정 20-1) ----------
+const estimate2 = (P, cells) => CB.estimate(P.map(u => Object.assign({}, u, { hp: u.maxHp, mp: u.maxMp })), cells, { MON, fleeBase: FD.fleeBase });
 
 // ---------- 견줄 사람들 (node_amounts.js와 같은 「알맞은 인원」) ----------
 const duoOf = fr => [0, fr.work === 0 ? 4 : fr.work], thirdOf = d => [4, 1, 2].find(c => !d.includes(c));
@@ -141,5 +112,11 @@ out.push('', '- ✕ = 도구에서 물러남/전멸이 나온 판이 있음 · �
     `| 씨앗 두 번 (평균) | ${pct(avg(two, 'b'))} · ${pct(mx(two, 'b'))} | ${r0(avg(two, 'f') * 100)}%p · ${r0(mx(two, 'f') * 100)}%p | ${r1(per * 2000)}µs |`, '');
   module.exports = { per, perE };
 }
-const md = out.join('\n'); console.log(md);
+const md = out.join('\n');
+if (process.argv.includes('--guard')) {
+  const n2 = rows.filter(r => r.bad2).length;
+  console.log(`어림셈 지킴이: 고친 어림셈이 15% 넘게 어긋난 줄 ${n2} / ${rows.length} (한도 ${GUARD_MAX})${n2 > GUARD_MAX ? ' — 늘었습니다: ' + rows.filter(r => r.bad2).map(r => r.fr.name + ' Lv' + r.lv).join(' · ') : ''}`);
+  process.exit(n2 > GUARD_MAX ? 1 : 0);
+}
+console.log(md);
 const mi = process.argv.indexOf('--md'); if (mi > 0 && process.argv[mi + 1]) fs.writeFileSync(process.argv[mi + 1], md + '\n');

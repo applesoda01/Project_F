@@ -13,14 +13,8 @@ const fs = require('fs'), path = require('path'), vm = require('vm');
 const JS = path.join(__dirname, '..', 'js');
 const ctx = { console, Math, JSON, Date }; ctx.window = ctx; vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(JS, 'data_gen.js'), 'utf8'), ctx, { filename: 'data_gen.js' });
-const PATCH = [   // [찾을 글, 바꿀 글, 무엇]
-  ['boss: !!e.boss, gauge: 0 }));', 'boss: !!e.boss, gauge: e.gauge0 || 0, speed: e.speed || 1, crit: e.crit || 0, flee: 0 }));', '① 몬스터의 빠르기 · 치명타'],
-  ['const dealt = Math.max(0, d - tgt.def);', 'const dealt = Math.max(0, d - (u.core === 2 ? 0 : tgt.def));', '② 마법은 방어를 무시'],
-  ['const dealt = Math.max(0, x.atk * vary() - tgt.def);', 'const dealt = Math.max(0, x.atk * vary() * (rnd() < (x.crit || 0) ? C_.critMult : 1) - tgt.def) * (tgt.dmgTaken || 1);', '① 몬스터의 치명타 · ⑦ 덧대기'],
-  ["else if (x.core === 2) { const b = behind(W, t0); strike(x, 1.5, t0, 'fire'); if (b) strike(x, 1.5, b, 'fire'); }", "else if (x.core === 2) { for (const e of W) if (e.hp > 0) strike(x, 1.5, e, 'fire'); }", '⑥ 파이어볼은 무리 전체'],
-];
-let csrc = fs.readFileSync(path.join(JS, 'combat.js'), 'utf8');
-for (const [a, b, what] of PATCH) { if (!csrc.includes(a)) throw new Error('combat.js가 바뀌어 흉내 낼 자리를 못 찾음: ' + what); csrc = csrc.replace(a, b); }
+// 16장의 전투 규칙(몬스터의 빠르기 · 치명타 · 마법은 방어 무시 · 파이어볼은 무리 전체 · 덧대기)은 2026-11-27 바닥 5에서 combat.js에 들어감 — 흉내 내지 않고 그대로 씀
+const csrc = fs.readFileSync(path.join(JS, 'combat.js'), 'utf8');
 vm.runInContext(csrc, ctx, { filename: 'combat.js' });
 const GD = ctx.GAME_DATA, B = GD.balance, CB = ctx.GuildCombat.make(GD), C = B.combat, G = B.growth;
 const CL = ['전사', '궁수', '마법사', '성직자', '도적'], ST = ['힘', '민첩', '지력', '정신', '기교'];
