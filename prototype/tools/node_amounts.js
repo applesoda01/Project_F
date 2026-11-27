@@ -6,7 +6,7 @@
 //   게임의 전투 규칙(combat.js의 begin · step)을 그대로 돌려 고정 씨앗 SEEDS번의 평균을 낸다. 같은 입력이면 늘 같은 표.
 //   아직 게임에 없는 16장의 규칙 넷은 이 도구 안에서만 흉내 낸다 (5번에서 게임에 넣음):
 //     ① 몬스터의 빠르기 · 치명타(16-2 · 16-3) ② 마법사의 공격은 방어를 무시(16-5) ③ 칸의 무리 = 종류마다의 pack(16-1) ④ 달아나는 무리(16-6)
-//     ⑤ 무리가 나타나면 첫 박자에 한 번 침(16-9) ⑥ 파이어볼은 앞에 나온 무리 전체(16-11) ⑦ 덧대기 = 받는 피해 × dmgTaken(16-12의 준비물 줄)
+//     (16-9 먼저 달려듦은 16-17로 거둠) ⑥ 파이어볼은 앞에 나온 무리 전체(16-11) ⑦ 덧대기 = 받는 피해 × dmgTaken(16-12의 준비물 줄)
 //   일 칸: 박자 = 양 ÷ 그 능력치의 합 · 함정: 양(60 × 레벨) ÷ 기교 합, 5박자를 넘으면 모두 최대 체력의 30%
 'use strict';
 const fs = require('fs'), path = require('path'), vm = require('vm');
@@ -25,7 +25,7 @@ vm.runInContext(csrc, ctx, { filename: 'combat.js' });
 const GD = ctx.GAME_DATA, B = GD.balance, CB = ctx.GuildCombat.make(GD), C = B.combat, G = B.growth;
 const CL = ['전사', '궁수', '마법사', '성직자', '도적'], ST = ['힘', '민첩', '지력', '정신', '기교'];
 const r1 = x => Math.round(x * 10) / 10, r2 = x => Math.round(x * 100) / 100, r0 = Math.round, pct = x => r0(x * 100) + '%';
-const SEEDS = 40, RISK = 1, FIRST = !process.argv.includes('--no-first');   // 16-9: 무리가 나타나면 첫 박자에 한 번 침 (--no-first = 옛 규칙 · 게이지 0)   // 고정 씨앗 40번 · 무릅쓰기 「보통」(체력 합이 30% 아래면 물러남)
+const SEEDS = 40, RISK = 1, FIRST = false;   // 16-17: 16-9(먼저 달려듦)를 거둠 — 몬스터의 게이지는 지금 코드 그대로 0에서 시작   // 고정 씨앗 40번 · 무릅쓰기 「보통」(체력 합이 30% 아래면 물러남)
 function mulberry(seed) { let a = seed >>> 0; return function () { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
 // ---------- 기준이 되는 사람 (별 하나 · 처음 능력치의 가운데(주력 17 · 나머지 7.5) · 고비 보너스는 주력에) ----------
@@ -55,9 +55,9 @@ function person(core, b, gear, prep) {
 //   T = Lv 1 종이(몬스터 칸 둘 = 무리 둘)의 박자 · loss = 전사가 잃는 체력 · 지력 · 정신은 F급에서 쓰이지 않음(16-8 · 값만 적어 둠)
 const SHAPE = {   // st = [힘, 민첩, 지력, 정신, 기교] [제 안]
   dog: { name: '들개', habit: '떼', core: 0, st: [2, 12, 2, 4, 10], def: 2, spdBase: 0.25, pack: 4, T: 18, loss: 0.45 },
-  boar: { name: '멧돼지', habit: '큰 놈 하나 · 느리고 아픔', core: 0, st: [10, 5, 1, 6, 4], def: 8, spdBase: 0.2, pack: 1, T: 22, loss: 0.45 },
+  boar: { name: '멧돼지', habit: '큰 놈 하나 · 느리고 아픔', core: 0, st: [10, 5, 1, 6, 4], def: 8, spdBase: 0.2, pack: 1, T: 22, loss: 0.50, bigHit: true },
   rock: { name: '돌슬라임', habit: '단단한 놈', core: 0, st: [2, 2, 3, 10, 2], def: 30, spdBase: 0.2, pack: 2, T: 24, loss: 0.30 },
-  thief: { name: '도적', habit: '아픈 놈', core: 1, st: [6, 6, 8, 6, 16], def: 5, spdBase: 0.25, pack: 2, T: 18, loss: 0.50 },
+  thief: { name: '도적', habit: '아픈 놈', core: 1, st: [6, 6, 8, 6, 16], def: 5, spdBase: 0.25, pack: 2, T: 18, loss: 0.50, bigHit: true },
   magpie: { name: '까치', habit: '달아나는 놈 · 빠르고 약함', core: 0, st: [2, 28, 6, 4, 30], def: 0, spdBase: 0.25, pack: 3, T: 20, loss: 0.30, flee: true },
   slime: { name: '슬라임', habit: '생선의 끼어드는 칸', core: 0, st: [6, 2, 1, 4, 4], def: 12, spdBase: 0.2, pack: 2, T: 20, loss: 0.35 },
 };
@@ -67,7 +67,7 @@ const BOSS = {   // Lv 3의 끝 칸에서 마지막 무리 대신 나옴. 체력
 };
 const MON = {};
 const combatVals = m => ({ hp: m.hpBase + m.st[0] * C.hpPerStr, atk: m.atkBase + m.st[m.core] * C.atkPerCore[m.core], crit: m.st[1] * C.critPerDex, speed: m.spdBase + m.st[4] * C.speedPerSkill });
-const foe = (k, boss) => { const m = MON[k], v = combatVals(m); return { name: m.name, mon: k, hp: v.hp, atk: v.atk, def: m.def, speed: v.speed, crit: v.crit, boss: !!boss, gauge0: FIRST ? 100 - 100 * v.speed : 0 }; };
+const foe = (k, boss) => { const m = MON[k], v = combatVals(m); return { name: m.name, mon: k, hp: v.hp, atk: v.atk, def: m.def, speed: v.speed, crit: v.crit, boss: !!boss, gauge0: 0 }; };
 
 // ---------- 틀 열 (명세 3장 「틀 10개」 · 12-1) ----------
 const FR = [
@@ -85,13 +85,11 @@ const FR = [
 const LAYOUT = { fight: ['MM', 'MMW', 'MMWM'], work: ['WW', 'WWM', 'WWMW'] };
 const LVX = [0, 1, 1.5, 2];   // 16-10: 자리마다의 양 Lv 1 · 2 · 3 = 1 · 1.5 · 2배
 const WORK_PER_CELL = 10, workAmt = lv => r0(17 * WORK_PER_CELL * LVX[lv]), TRAP = 60, trapAmt = lv => r0(TRAP * LVX[lv]);   // 일 칸 170 · 255 · 340 · 함정 60 · 90 · 120
-// 몬스터 칸의 무리 수 (16-10): Lv 1 = 칸마다 1 · Lv 2 = 앞 칸 1, 뒤 칸 2 · Lv 3 = 칸마다 2. Lv 3의 끝 칸은 한 무리를 우두머리가 대신함
-//   일 쪽 틀의 Lv 2는 몬스터 칸이 하나뿐 → 「앞 칸」으로 보아 1 [읽은 것 · 여쭘]
+// 몬스터 칸의 무리 수 (16-14): Lv 1 = 칸마다 1 · Lv 2 · 3 = 칸마다 2 (싸움 쪽 무리의 합 2 · 4 · 6 · 일 쪽의 하나뿐인 칸도 2). Lv 3의 끝 칸은 한 무리를 우두머리가 대신함
 function cellsOf(fr, lv) {
-  let mi = 0;
   const cells = LAYOUT[fr.side][lv - 1].split('').map((ch, i, arr) => {
     if (ch === 'W') return { k: 'W', w: fr.work, amt: workAmt(lv) };
-    const waves = lv === 1 ? 1 : lv === 2 ? (mi++ === 0 ? 1 : 2) : 2;
+    const waves = lv === 1 ? 1 : 2;
     const boss = lv === 3 && i === arr.length - 1 && fr.end;
     return { k: 'M', mon: fr.mon, waves, boss: boss ? fr.end : null };
   });
@@ -147,10 +145,42 @@ function solve(m, T, loss) {
   }
   m.hpBase = r0(m.hpBase); m.atkBase = r1(m.atkBase);
 }
-for (const k in SHAPE) { MON[k] = Object.assign({ key: k, hpBase: 0, atkBase: 0 }, SHAPE[k]); solve(MON[k], SHAPE[k].T, SHAPE[k].loss); }
-for (const k in BOSS) {
-  const b = BOSS[k], of = MON[b.of], v = combatVals(of);
-  MON[k] = Object.assign({ key: k, pack: 1, boss: true }, b, { hpBase: r0(v.hp * of.pack * b.hpX - b.st[0] * C.hpPerStr), atkBase: r1(v.atk * b.atkX - b.st[b.core] * C.atkPerCore[b.core]) });
+// 빠르기를 찾음 (16-17): spdBase를 SPD_GRID에서 하나씩 놓고 → 전사 혼자 Lv 1로 hpBase · atkBase를 풂 → 알맞은 인원의 Lv 2 · 3을 재어 목표에 가장 가까운 것을 고름
+//   목표(16-14 · 16-16): 싸움 쪽 맨 앞 Lv 2 40 ~ 50% · Lv 3 50 ~ 60% · 박자 Lv 2 ≤ 35 · Lv 3 ≤ 45 · 일 쪽 맨 앞 10 ~ 30% · 물러남 없음
+//   큰 한 대(멧돼지 · 도적): 전사 + 다른 직업 Lv 2 = 55 ~ 70% · 쓰러지지 않음 · 전사 + 성직자는 그보다 15%p 넘게 덜 잃음 (16-16 ② ③)
+const SPD_GRID = [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0];
+const duoOf = fr => [0, fr.work === 0 ? 4 : fr.work];   // 알맞은 둘 = 전사 + 그 틀의 일 능력치의 직업(힘이면 도적)
+const thirdOf = d => [4, 1, 2].find(c => !d.includes(c));   // 셋째: 성직자 없이 — 도적 · 궁수 · 마법사 가운데 아직 없는 직업
+const band = (x, lo, hi) => x < lo ? (lo - x) ** 2 : x > hi ? (x - hi) ** 2 : 0, over = (x, hi) => x > hi ? ((x - hi) / hi) ** 2 : 0;
+function bossFor(k) { for (const bk in BOSS) if (BOSS[bk].of === k) { const b = BOSS[bk], of = MON[k], v = combatVals(of);
+  MON[bk] = Object.assign({ key: bk, pack: 1, boss: true }, b, { spdBase: of.spdBase, hpBase: r0(v.hp * of.pack * b.hpX - b.st[0] * C.hpPerStr), atkBase: r1(v.atk * b.atkX - b.st[b.core] * C.atkPerCore[b.core]) }); } }
+function judge(k) {   // 그 몬스터가 나오는 틀들의 재기 → { pen, rows }
+  let pen = 0; const rows = [];
+  for (const fr of FR.filter(f => f.mon === k)) {
+    const d = duoOf(fr), t = d.concat(thirdOf(d)), e2 = paper(d.map(c => person(c, 0)), cellsOf(fr, 2)), e3 = paper(t.map(c => person(c, 0)), cellsOf(fr, 3));
+    const row = { fr, e2, e3 };
+    if (fr.side === 'work') pen += band(e2.front, 0.1, 0.3) + band(e3.front, 0.1, 0.3);
+    else pen += band(e2.front, 0.40, 0.50) + band(e3.front, 0.50, 0.60);
+    pen += over(e2.beats, 35) + over(e3.beats, 45) + (e2.fail + e3.fail) * 0.5;
+    if (fr.side === 'fight' && MON[k].bigHit) {
+      const oth = [1, 2, 4].map(c => paper([person(0, 0), person(c, 0)], cellsOf(fr, 2), { fightOnly: true })), cl = paper([person(0, 0), person(3, 0)], cellsOf(fr, 2), { fightOnly: true });
+      const of_ = oth.reduce((t, e) => t + e.front, 0) / 3, down = Math.max(...oth.map(e => e.fail));
+      pen += 2 * band(of_, 0.55, 0.70) + 2 * Math.max(0, 0.15 - (of_ - cl.front)) ** 2 + down;
+      Object.assign(row, { of_, cl, down });
+    }
+    rows.push(row);
+  }
+  return { pen, rows };
+}
+const SEARCH = {};
+for (const k in SHAPE) {
+  MON[k] = Object.assign({ key: k, hpBase: 0, atkBase: 0 }, SHAPE[k]); let best = null; SEARCH[k] = [];
+  for (const sp of SPD_GRID) {
+    MON[k].spdBase = sp; solve(MON[k], SHAPE[k].T, SHAPE[k].loss); bossFor(k);
+    const j = judge(k), v = combatVals(MON[k]); SEARCH[k].push({ sp, pen: j.pen, hit: v.atk / W0.maxHp, rows: j.rows, hpBase: MON[k].hpBase, atkBase: MON[k].atkBase });
+    if (!best || j.pen < best.pen) best = { sp, pen: j.pen, hpBase: MON[k].hpBase, atkBase: MON[k].atkBase };
+  }
+  Object.assign(MON[k], { spdBase: best.sp, hpBase: best.hpBase, atkBase: best.atkBase }); bossFor(k);
 }
 // ④ fleeBase (16-6 · 16-12 ⑤): 혼자 갈 때 도적 · 궁수는 다 잡고 전사는 절반쯤 놓침 — Lv 1 종이(까치 두 무리 · 6마리)의 놓친 몫으로 잼
 const MAG2 = [{ k: 'M', mon: 'magpie', waves: 1 }, { k: 'M', mon: 'magpie', waves: 1 }];
@@ -205,8 +235,6 @@ out.push('', `- 평균: 장비 없음 ${r1(bare.beats)}박자 · ${pct(bare.fron
 
 out.push('## 5. Lv 2 · 3 — 둘 · 셋 (Lv 1 기준 사람 · 장비 없음 · 16-10: 양 1 · 1.5 · 2배 · 무리 수 Lv 2 = 앞 칸 1 · 뒤 칸 2 / Lv 3 = 칸마다 2)', '', '목표: Lv 2 둘이 30박자쯤 · 맨 앞 50 ~ 65% / Lv 3 셋이 40박자쯤 · 65 ~ 85%', '',
   '| 틀 | 둘 (전사 +) | Lv 2 | 셋 (+) | Lv 3 | Lv 3 · F 무기 + 갑옷 |', '| --- | --- | :---: | --- | :---: | :---: |');
-const duoOf = fr => [0, fr.work === 0 ? 4 : fr.work];   // 둘째 = 그 틀의 일 능력치의 직업(힘이면 도적)
-const thirdOf = d => [4, 1, 2].find(c => !d.includes(c));   // 셋째: 성직자 없이(16-1) — 도적 · 궁수 · 마법사 가운데 아직 없는 직업
 const sum2 = [], sum3 = [];
 for (const fr of FR) {
   const d = duoOf(fr), t = d.concat(thirdOf(d)), P2 = d.map(c => person(c, 0)), P3 = t.map(c => person(c, 0)), P3g = t.map(c => person(c, 0, GEAR));
