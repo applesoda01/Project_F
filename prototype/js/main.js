@@ -249,6 +249,7 @@
     const bm = BEAT_MS(), W = Gm.BPW(s), wf = Math.min(1, ((s.tick || 0) % W + acc / bm) / W);   // 주 막대 = (그 주에서 지난 박자 + 쌓인 몫) ÷ 70
     if (run > 0) { acc += dt * 1000 * run; let hud = false; while (acc >= bm) { acc -= bm; if (step()) hud = true; if (s.main && s.main.state === 'live') { acc = 0; break; } } if (hud) UI.hud(); }
     UI.weekBar(wf);
+    Director.bf = Math.min(1, acc / bm);   // 2026-11-27 6-나 ④-C: 박자 사이의 몫 (로비 막대가 부드럽게 차오르게)
     Expedition.update(dt, wf, run);
     // 화면 속 동작 빠르기: 배속이 오르면 함께 빨라지되 최대 3배 (일시정지면 멈춤 — 기본 튜토리얼 동안은 멈춰 있어도 모험가가 걸어 들어오고 나감)
     const as = speed === 0 && !Tutorial.active() ? 0 : Math.min(3, Math.max(1, speed * 0.6)), adt = dt * as;

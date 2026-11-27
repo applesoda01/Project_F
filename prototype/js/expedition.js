@@ -97,22 +97,38 @@
       const pc = root.Director && root.Director.partyColor ? root.Director.partyColor(e.id) : null;   // 2026-11-12 파티 색 띠: 로비 발밑 원·모험가 목록과 같은 색
       if (pc) { r.classList.add('pty'); r.style.setProperty('--pc', pc); }
       let ticks = ''; for (let w = 1; w < e.weeks; w++) ticks += `<b style="left:${w / e.weeks * 100}%"></b>`;
+      if (x.nw) {   // 2026-11-27 6-나 ④-B: 새 의뢰 — 레벨 · 칸 진행 점 · 「N일 남음」 · 상태(7-2)
+        const [sc, stx] = nwSt(s, e);
+        r.innerHTML = `<div class="badge">${GR[q.g]}</div><div class="l1"><span class="nm">${nm}</span><span class="qn">${q.name || '의뢰'}</span><span class="qlv">Lv${q.lv || 1}</span></div>
+          <div class="l2"><div class="nwd">${nwDots(x, e.done)}</div><span class="left">${leftText(e)}</span><span class="risk ${sc}">${stx}</span></div>`;
+      } else
       r.innerHTML = `<div class="badge">${GR[q.g]}</div><div class="l1"><span class="nm">${nm}</span><span class="qn">${q.name || GR[q.g] + '급 ' + QTYPE[q.type] + ' 의뢰'}</span></div>
         <div class="l2"><div class="pb"><i style="width:${e.p * 100}%"></i>${ticks}</div><span class="left">${leftText(e)}</span><span class="risk ${rc}">${rt}</span></div>`;
       r.onclick = () => open(e.id);
       r.onmouseenter = () => {
         tip.style.display = 'block'; tip.style.top = (PANEL.y + r.offsetTop - list.scrollTop) + 'px';
         const en = x.fight ? groupName(x.fight.enemies) : null;
+        if (x.nw) { const z = e.done ? null : Gm.nqStatus(getS(), x), dd = b => Math.ceil(b / DAYB(getS()));
+          tip.innerHTML = `<b>${q.name || '의뢰'}</b> (Lv${q.lv || 1} · ${(q.nodes || []).filter(c => c.done).length}/${(q.nodes || []).length}곳)<br>${z ? `가장 지친 사람의 체력 ${Math.round(z.lo * 100)}%<br>남은 길 어림 ${isFinite(z.est) ? dd(z.est) + '일' : '?'} · 기한 ${dd(z.left)}일` : '귀환'}<br>파티: ${party.map(a => `<span style="white-space:nowrap">${a.name}(${a.cls} Lv${a.lv})</span>`).join(', ')}`;   // [임시 글]
+          return; }
         tip.innerHTML = `<b>${q.name || QTYPE[q.type] + ' 의뢰'}</b> (${GR[q.g]}급 ${QTYPE[q.type]})<br>${q.tutorial ? '첫 의뢰 연습 · 무사히 돌아와요' : `예상 성공률 ${Math.min(100, rate)}%`}<br>${en ? '적: ' + en : '비전투 의뢰'}<br>파티: ${party.map(a => `<span style="white-space:nowrap">${a.name}(${a.cls} Lv${a.lv})</span>`).join(', ')}`;
       };
       r.onmouseleave = () => { tip.style.display = 'none'; };
       list.appendChild(r);
     });
   }
-  const leftText = e => e.done ? '귀환' : e.left <= 1 ? '곧 귀환' : e.left + '주 남음';
+  const DAYB = s => (Gm.BPW ? Gm.BPW(s) : 70) / 7;   // 하루 = 한 주의 7분의 1
+  const leftText = e => e.done ? '귀환' : e.x.nw ? Math.max(0, Math.ceil((e.x.deadT - getS().tick) / DAYB(getS()))) + '일 남음' : e.left <= 1 ? '곧 귀환' : e.left + '주 남음';
+  // 칸 진행 점: 지난 곳 ● · 지금 곳 ◐(밝게) · 남은 곳 ○
+  const nwDots = (x, done) => (x.q.nodes || []).map((c, i) => `<i class="${c.done || done ? 'd' : i === x.i ? 'c' : ''}"></i>`).join('');
+  const NW_ST = { ok: ['r-safe', '● 순조'], hard: ['r-warn', '◆ 고전'], tight: ['r-warn', '◆ 빠듯'], crit: ['r-risk', '▲ 위급'], late: ['r-risk', '▲ 늦음'] };
+  const nwSt = (s, e) => e.done ? ['r-safe', ''] : e.x.q.tutorial ? ['r-safe', '✎ 연습'] : NW_ST[Gm.nqStatus(s, e.x).st] || NW_ST.ok;
   function soft() { // 진행 바·남은 기간만 갱신
     const E = entries();
-    list.querySelectorAll('.row').forEach(r => { const e = E.find(o => o.id == r.dataset.id); if (!e) return; r.querySelector('.pb i').style.width = e.p * 100 + '%'; r.querySelector('.left').textContent = leftText(e); });
+    const s = getS();
+    list.querySelectorAll('.row').forEach(r => { const e = E.find(o => o.id == r.dataset.id); if (!e) return; r.querySelector('.left').textContent = leftText(e);
+      if (e.x.nw) { const d = r.querySelector('.nwd'), h = nwDots(e.x, e.done); if (d && d.innerHTML !== h) d.innerHTML = h; const k = r.querySelector('.risk'), [sc, stx] = nwSt(s, e); if (k && k.textContent !== stx) { k.className = 'risk ' + sc; k.textContent = stx; } return; }
+      r.querySelector('.pb i').style.width = e.p * 100 + '%'; });
   }
 
   // ---------- 미니 뷰 ----------

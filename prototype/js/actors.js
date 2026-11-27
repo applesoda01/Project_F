@@ -500,6 +500,27 @@
   D.nameplate = NP;
   const headY = ac => ac.y - (ac.pose === 'sit' ? 135 : 141);   // 서 있을 때 명찰이 머리에 더 붙도록 150 → 141
   const BUFFI = {}; const buffImg = src => { if (!BUFFI[src]) { const im = new Image(); im.src = 'assets/' + src; BUFFI[src] = im; } return BUFFI[src]; };
+  // 이름표 아래 체력(빨강) · 마력(파랑) 막대 (7-3 · 6-나 ④-C): 둘 다 가득이면 숨김. 길드 안에서 차오르는 사람은 박자 사이도 부드럽게 채우고(실시간),
+  //   옅은 초록 = 다음 2박자 동안 찰 만큼 [조정] · 초록 「+」 = 회복 중. 원정 중 · 부상 중은 차지 않음
+  function hpBars(a) {
+    const s = D.s, G = root.GuildGame; if (!s || !G || !G.hpFrac || a.hpMax == null) return null;
+    let h = G.hpFrac(a), m = a.mpMax > 0 ? G.mpFrac(a) : null;
+    if (h >= 0.999 && (m == null || m >= 0.999)) return null;
+    const r = a.state === 'town' && a.alive ? (s.cfg.adv.regenPerBeat || 0) * (G.hasDeco && G.hasDeco(s, 'fireplace') ? (s.cfg.deco.hearthRegen || 1) : 1) : 0, bf = D.bf || 0;
+    if (r > 0) { h = Math.min(1, h + r * bf); if (m != null) m = Math.min(1, m + r * bf); }
+    return { hp: h, mp: m, up: r > 0 ? r * 2 : 0 };
+  }
+  function drawBars(g, b, cx, y) {
+    const W = 60, x = cx - W / 2, one = (v, c, yy, hh) => {
+      g.fillStyle = 'rgba(46,32,18,.88)'; g.beginPath(); g.roundRect(x - 1.5, yy - 1.5, W + 3, hh + 3, 3); g.fill();
+      g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(x, yy, W, hh);
+      if (b.up && v < 1) { g.fillStyle = 'rgba(150,230,140,.55)'; g.fillRect(x + W * v, yy, W * Math.min(1 - v, b.up), hh); }
+      g.fillStyle = c; g.fillRect(x, yy, W * v, hh);
+    };
+    g.save(); one(b.hp, '#e0483a', y, 5); if (b.mp != null) one(b.mp, '#3f8be0', y + 7, 4);
+    if (b.up) { g.font = '700 14px sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.lineWidth = 3; g.strokeStyle = 'rgba(46,32,18,.9)'; g.strokeText('+', x + W + 4, y + 4); g.fillStyle = '#7be07a'; g.fillText('+', x + W + 4, y + 4); }
+    g.restore();
+  }
   function plate(g, ac) {
     const a = ac.a; if (!a || a.alive === false) return 0;
     const GRs = (root.GuildGame && root.GuildGame.GR) || ['F', 'E', 'D', 'C', 'B', 'A', 'S'], L = GRs[a.grade] || 'F', im = badgeImg(L);
@@ -507,7 +528,9 @@
     const FF = '"MaruBuri", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
     g.save(); g.font = `700 ${NP.fs}px ${FF}`;
     const nw = Math.ceil(g.measureText(nm).width); g.font = `700 ${NP.lfs}px ${FF}`; const lw = Math.ceil(g.measureText(lv).width);
-    const w = pad + bs + gap + nw + gap + lw + pad, x0 = ac.x - w / 2 + NP.dx, yb = headY(ac) - NP.lift - (ac.pose === 'sit' ? NP.sitDy : 0), y0 = yb - H;
+    const hb = hpBars(a), bh = hb ? (hb.mp != null ? 13 : 8) : 0;   // 2026-11-27 6-나 ④-C: 체력 · 마력 막대가 있으면 그만큼 명찰을 올림
+    const w = pad + bs + gap + nw + gap + lw + pad, x0 = ac.x - w / 2 + NP.dx, yb = headY(ac) - NP.lift - (ac.pose === 'sit' ? NP.sitDy : 0) - bh, y0 = yb - H;
+    if (hb) drawBars(g, hb, ac.x + NP.dx, yb + 1);
     if (NP.pill) {
       g.shadowColor = 'rgba(40,25,12,.35)'; g.shadowBlur = 5; g.shadowOffsetY = 2;
       g.beginPath(); g.roundRect(x0, y0, w, H, H / 2); g.fillStyle = 'rgba(255,249,232,.94)'; g.fill();
@@ -527,9 +550,10 @@
     { const B = root.GuildGame && GuildGame.mealBuffOf && root.Director && D.s ? GuildGame.mealBuffOf(D.s, a) : null;   // 2026-11-19 요리 버프 (이번 원정 동안): 명찰 왼쪽 바깥 동그란 요리 그림
       if (B && B.icon) { const im = buffImg(B.icon); if (im.complete && im.naturalWidth) { const r = 13, cx = x0 - r - 3, cy = y0 + H / 2; g.save(); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fillStyle = '#fff3cf'; g.fill(); g.lineWidth = 2; g.strokeStyle = '#d9a64a'; g.stroke(); g.clip(); g.drawImage(im, cx - r + 2, cy - r + 2, r * 2 - 4, r * 2 - 4); g.restore(); } } }
     let extra = 0;
-    if (ac.lab) {   // 상태 문구 (2026-11-12): 명찰 바로 위 작은 글씨
+    const lab = a.sub === 'prep' && a.state === 'town' ? '준비 중' : ac.lab;   // 2026-11-27 6-나 ④-C: 종이를 잡아 두고 떠날 채비를 하는 사람 (5-4 · 7-3 ③)
+    if (lab) {   // 상태 문구 (2026-11-12): 명찰 바로 위 작은 글씨
       g.font = `700 14px ${FF}`; g.textAlign = 'center'; g.lineWidth = 3.5; g.strokeStyle = NP.outline;
-      const sy = y0 - 9; g.strokeText(ac.lab, ac.x + NP.dx, sy); g.fillStyle = '#f1dfb8'; g.fillText(ac.lab, ac.x + NP.dx, sy); extra = 18;
+      const sy = y0 - 9; g.strokeText(lab, ac.x + NP.dx, sy); g.fillStyle = '#f1dfb8'; g.fillText(lab, ac.x + NP.dx, sy); extra = 18;
     }
     g.restore(); return (headY(ac) - y0) + 8 + NP.bubbleGap + extra;   // 말풍선 꼬리 끝이 명찰 위 8px 에 오도록
   }
