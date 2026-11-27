@@ -247,7 +247,7 @@
   const rowOn = id => !!document.querySelector(`.ux-row.on[data-adv="${id}"]`);
   const req2Of = s => s.req && s.req.open.find(r => r.sure && r.state === 'open');
   const LEDGER_ST = [
-    ['.lg-book .sec.in', '수입: 의뢰 수수료 · 판매 · 왕국 보조금이 여기 모여요 (눌러서 넘기기)'],
+    ['.lg-book .sec.in', '수입: 의뢰 수수료 · 판매 같은 들어온 돈이 여기 모여요 (눌러서 넘기기)'],
     ['.lg-book .sec.out', '지출: 소재 매입 · 식당 재료 · 섭외비 같은 나간 돈이에요 (눌러서 넘기기)'],
     ['.lg-book .tot', '순이익: 수입 − 지출. 마이너스면 금고가 줄어요 (눌러서 넘기기)'],
     ['.lg-grade', '길드 승급: 이 조건을 채우면 다음 등급 의뢰와 시설이 열려요 (눌러서 끝)']

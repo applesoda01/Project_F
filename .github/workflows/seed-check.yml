@@ -1,0 +1,34 @@
+# dev/v6 에 올릴 때: 씨앗 고정 검사(게임 쪽 규칙 · 씨앗 7000~7019 · 20판 · 48주)를 돌린다 (2026-11-27)
+#  - 기준(prototype/tools/seed_baseline.json)과 다르면 실패로 표시된다. 의도한 변경이면 --update 로 기준을 새로 써서 함께 올린다
+#  - PR(data-check.yml)과 main(main.yml)에서는 원래 자리에서 돈다
+name: 씨앗 고정 검사
+on:
+  push:
+    branches: [dev/v6]
+    paths:
+      - 'prototype/js/**'
+      - 'prototype/data/**'
+      - 'prototype/tools/seed_check.js'
+      - 'prototype/tools/seed_baseline.json'
+      - '.github/workflows/seed-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false            # 그림 파일은 필요 없음 (LFS 사용량 절약)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: 씨앗 고정 검사
+        run: |
+          set -o pipefail
+          node prototype/tools/seed_check.js --md seed.md
+      - name: 결과 정리
+        if: always()
+        run: |
+          if [ -f seed.md ]; then cat seed.md >> "$GITHUB_STEP_SUMMARY"; else echo '씨앗 고정 검사를 실행하지 못했습니다.' >> "$GITHUB_STEP_SUMMARY"; fi
