@@ -127,5 +127,12 @@
 "quirk.rate": 0, "quirk.safeWeeks": 0, "quirk.homeAt": 0, "quirk.homeMul": 0, "quirk.hotAtk": 0, "quirk.hotRel": 0, "quirk.hotFight": 0, "quirk.hotFightAtk": 0, "quirk.hotFightRel": 0, "quirk.drunkHp": 0, "quirk.drunkInj": 0, "quirk.drunkSleep": 0, "quirk.drunkDrink": 0, "quirk.drunkAttach": 0, "quirk.cowardFlee": 0, "quirk.cowardStat": 0, "quirk.cowardQuit": 0, "quirk.bluffNom": 0, "quirk.bluffNew": 0, "quirk.bluffSneak": 0, "quirk.bluffTh": 0, "quirk.devotedNom": 0, "quirk.devotedCover": 0, "quirk.devotedInj": 0, "quirk.selfishXp": 0, "quirk.selfishAt": 0, "quirk.selfishFlee": 0, "quirk.selfishRel": 0, "quirk.glutBuff": 0, "quirk.glutMeal": 0, "quirk.glutHunger": 0, "quirk.glutHungerMul": 0, "quirk.omenRare": 0, "quirk.omenRain": 0, "quirk.rivalXp": 0, "quirk.rivalRush": 0,
 "dungeon.on": 0, "dungeon.branch": 0, "dungeon.cont": 0, "dungeon.push": 0, "dungeon.set": 0, "dungeon.rare": 0, "dungeon.recipe": 0, "dungeon.title": 0, "dungeon.keep": 0, "dungeon.openWeek": 0, "dungeon.weeks": 0, "dungeon.party": 2, "dungeon.progOk": 3, "dungeon.progFail": 0, "dungeon.progRisky": 0, "dungeon.progBoss": 0, "dungeon.setAt": 0, "dungeon.foeRisky": 0, "dungeon.foeSafe": 0, "dungeon.foeKeep": 0, "dungeon.matRoom": 0, "dungeon.matRisky": 0, "dungeon.matBoss": 0, "dungeon.rareMat": 0, "dungeon.contHp": 0, "dungeon.autoTh": 0, "dungeon.autoMode": 0, "dungeon.clearFame": 0, "dungeon.clearGold": 0, "dungeon.royal": 0, "dungeon.auto": 0, "dungeon.autoGap": 0, "dungeon.autoWait": 0, "dungeon.setHp": 0, "dungeon.setAtk": 0, "dungeon.set3Vs": 0, "dungeon.set3Atk": 0, "dungeon.rareParty": 0, "dungeon.craftFee": 0, "dungeon.titleAttach": 0,
 "adv.restBase": 0, "adv.restRisk": 3, "adv.restSpend": 3, "adv.restSocial": 3, "adv.restMin": 0, "adv.restMax": 0, "adv.restHurt": 0, "adv.inviteBase": 0, "adv.inviteSocial": 3, "adv.inviteRel": 3, "adv.inviteRisk": 3, "adv.waitBeats": 0, "adv.prepBeats": 0, "adv.regenPerBeat": 0, "adv.relookBeats": 0, "deco.hearthRegen": 0, "time.beatsPerDay": 0, "time.daysPerWeek": 0,
-"combat.hpBase": 5, "combat.mpBase": 5, "combat.atkBase": 5, "combat.atkPerCore": 5, "growth.core1": 0, "growth.mileLv": 6, "growth.milePts": 6, "adv.newXp": 0, "adv.catchUp": 0
+"combat.hpBase": 5, "combat.mpBase": 5, "combat.atkBase": 5, "combat.atkPerCore": 5, "growth.core1": 0, "growth.mileLv": 6, "growth.milePts": 6, "adv.newXp": 0, "adv.catchUp": 0,
+"quest.firstGrowth": 0,
+"quest.rewardPerLv": 0,
+"quest.partyMaxOver": 0,
+"growth.xpNode": 0,
+"growth.xpNone": 0,
+"adv.riskTh": 3,
+"adv.riskMap": 6
 }

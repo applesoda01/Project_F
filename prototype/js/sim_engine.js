@@ -31,12 +31,14 @@
         soloMul: 0.5, partyFrom: [12, 24], partyRate: [0.2, 0.33], partyMul: [2, 3],   // 2026-11-19 보호 구간 혼자 판 · 그 뒤 파티 판 (balance.csv가 덮어씀)
         subGrowth: 0.2,                            // 성공 시 유형 능력치 성장
         diff: [1, 1, 1, 1, 1, 1, 1],                // 의뢰 난이도 배수 (등급별): 판정 기준치와 적 체력 · 공격력에 곱함 (2026-11-16)
-        bossMult: 1.15                             // 보스급 기준치 배수
+        bossMult: 1.15,                            // 보스급 기준치 배수
+        firstGrowth: 1, rewardPerLv: 100, partyMaxOver: 1   // 2026-11-27 바닥 5: 게임 쪽만 씀 (설정을 읽으려고 기본값만)
       },
       growth: {
         xpBase: 80, xpGradeMult: 2.0,              // 성공 경험치 = xpBase × mult^등급
         xpFailRate: 0.3,
         lvA: 20, lvB: 1.55,                        // 다음 레벨 필요 경험치 = A × Lv^B
+        xpNode: 3.2, xpNone: 0.1,   // 2026-11-27 바닥 5: 게임 쪽만 씀
         lvCap: [30, 40, 50], core1: 2, mileLv: [3, 6, 9, 15, 24, 39], milePts: [4, 5, 6, 7, 8, 9],   // 2026-11-27 바닥 ②: 게임 쪽만 씀 (설정을 읽으려고 기본값만)
         trainPerWeek: 0.10,                        // 훈련장·도서관 주간 훈련량
         statCap: 100,
@@ -48,6 +50,7 @@
         newXp: [[4, 3], [8, 2], [12, 1.5]], catchUp: 0.5,   // 2026-11-27 바닥 ②: 설정표에서 읽게 (게임 · 시뮬레이터 모두 cfg.adv.newXp를 읽음)
         restBase: 0.5, restRisk: [0.2, 0, -0.2], restSpend: [-0.1, 0, 0.1], restSocial: [-0.1, 0, 0.1], restMin: 0.1, restMax: 0.9, restHurt: 0.5,   // 2026-11-27 바닥 ① (게임 쪽만 씀)
         inviteBase: 0.5, inviteSocial: [-0.2, 0, 0.2], inviteRel: [-0.2, 0, 0.2], inviteRisk: [-0.1, 0, 0.1], waitBeats: 10, prepBeats: 1, regenPerBeat: 0.1, relookBeats: 10,
+        riskTh: [0.05, 0.15, 0.35], riskMap: [0.02, 0.05, 0.15, 0.15, 0.35, 0.6],   // 2026-11-27 바닥 5: 게임 쪽만 씀
         arrivalPerMonth: 0.8, arrivalPerGrade: 0.10,       // arrivalPerGrade: 명성 도입 전 공식 (참고용, 지금은 쓰지 않음)
         zeroFameVisit: 0, founderMix: 1, founderWarrior: 1,   // founderWarrior: 2026-11-18 결정 33 — 첫 모험가는 전사, 나머지는 전사 외
           // 2026-11-17 의뢰 0건 판 대책 ②: 명성 0인 동안 N주마다 1명 방문 (0이면 끔)
