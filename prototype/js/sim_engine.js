@@ -59,13 +59,13 @@
         relParty: 30   // 2026-11-19: 동료를 고를 때 친밀도 흔들림 폭 [임시] (2026-11-20부터 시뮬레이터도 씀, balance.csv와 같게)
       },
       econ: {
-        startGold: 3000, feeBase: 0.10, feePerInfo: 0.02,
+        startGold: 3000, feeBase: 0.20, feePerInfo: 0.02,   // 2026-11-27 V6 1단위: 기본값만 balance.csv와 맞춤 (규칙은 맞추지 않음)
         subsidy: [300, 500, 800, 1200, 2000, 3000, 4500],
         buildCost: [0, 2000, 4000, 8000, 15000, 30000, 0],
         upkeepRate: 0,   // 2026-11-05 시설 유지비 없앰 (balance.csv와 같게)
         tavernPerAdvWeek: 4, tavernGradeMult: 1.6,
         feeOpt: [0.05, 0.1, 0.15, 0.2], restK: 0.5,   // 2026-11-19 결정 42: 5% 추가   // 결정 22: 높은 수수료를 거르는 세기 [임시]
-        subsidyMode: 1, subsidyRate: 0.5, subsidyEvery: 1,   // 2026-11-17 V2 결정 13: 반기 지급 · 성공 보상 합의 50% [임시] (0 = 예전 매달 고정)   // 2026-11-17 V2 결정 11: 의뢰별 요율 선택지 [임시]
+        subsidyMode: 1, subsidyRate: 0, subsidyEvery: 1,   // 2026-11-27 V6 1단위: 보조금 0 (balance.csv와 같음)   // 2026-11-17 V2 결정 13: 반기 지급 · 성공 보상 합의 50% [임시] (0 = 예전 매달 고정)   // 2026-11-17 V2 결정 11: 의뢰별 요율 선택지 [임시]
         resaleRate: 0, matBuyRate: 0.7, consignFee: 0.1, orderMult: 1.5, orderMax: 6, orderDup: 2, orderBias: 0.5, orderMode: 1, orderMultOpt: [1.2, 1.5, 2], orderBiasOpt: [0.3, 0.5, 0.7], orderTarget: 6, orderFirst: 0, carOn: 1, carStay: 1, carNotice: 2, carKinds: 3, carMult: [1.1, 1.6], carQty: [5, 15], carQtyLv: 5, carRel: [200, 600], consWeeks: 8, consEdge: 0.1, gqHuntTake: 5, gqScoutWeeks: 4, gqPatrolWeeks: 8, gqHelpPop: 200, gqHelpPop2: 5, gqTrainXp: 1, gqTrainAttach: 3, gqAutoHunt: 1,   /* 2026-11-20 결정 57~62: 떠돌이 상단 · 길드 의뢰 ② 토벌 (balance.csv와 같게) */ gqOn: 1, gqOffice: 1, gqMax: [2, 3, 4, 5, 6, 7, 8], gqUpBoard: 1, gqPct: [0.5, 3], gqWeeks: [2, 4, 6], gqAutoLow: 4, gqAutoN: 6, gqAutoPct: 0.5, gqAutoWeeks: 4, gqAutoKeep: 200, buyRateMin: 0.5, buyRateMax: 1.2, buyRateStep: 0.05, sellTh: [0.9, 0.85, 0.75], sellAttach: [60, 90], sellAttachCut: [0.05, 0.1],   /* 2026-11-20 결정 49~56: 길드 의뢰 · 매입 개편 (balance.csv와 같게) */   /* 2026-11-19 결정 41: 상시 발주 */ drawMode: 1, drawPts: [2, 3],   // 2026-11-17 V2 결정 12: 소재 자동 차익 8% 없앰 → 자동 매입 70% · 위탁 10% [임시] (balance.csv와 같게)
         effectCost: [0.10, 0.20, 0.35],
         effectOpen: 0,                             // 시설 효과 개방 (0 = 끔. 2026-11-12: 프로토타입 게임에는 없으므로 시뮬레이터도 끔)

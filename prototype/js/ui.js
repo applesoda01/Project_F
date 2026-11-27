@@ -1471,7 +1471,8 @@
     let h = `<div class="lg-book"><table class="lg"><colgroup><col><col class="c"><col class="c"></colgroup>
       <tr class="hd"><th><button class="lg-sum-btn${lgSel ? '' : ' on'}" data-lgk="">요약 보기</button><button class="lg-sum-btn${lgSel === '@adv' ? ' on' : ''}" data-lgk="@adv">모험가 보기</button></th><th class="n">지난달</th><th class="n">이번 달</th></tr>
       <tr class="sec in"><th colspan="3">수입</th></tr>`;
-    const lgShow = k => ['fee', 'meal', 'subsidy'].includes(k) || (prev && prev[k]) || cur[k];   // 2026-11-23 책 정리: 두 달 모두 0G인 줄은 숨김 (핵심 수입 3줄은 늘 보임)   // 2026-11-17: 쓸 때만 보이는 줄 (위탁 · 계약 · 침공 물약) — 장부가 책 한 쪽을 넘지 않게
+    const subOn = s.cfg.econ.subsidyMode !== 1 || (s.cfg.econ.subsidyRate || 0) > 0;   // 2026-11-27 V6 1단위: 보조금 비율이 0이면 늘 보이는 줄에서 뺌 (받은 달이 있을 때만 보임)
+    const lgShow = k => ['fee', 'meal'].includes(k) || (k === 'subsidy' && subOn) || (prev && prev[k]) || cur[k];   // 2026-11-23 책 정리: 두 달 모두 0G인 줄은 숨김 (핵심 수입 3줄은 늘 보임)   // 2026-11-17: 쓸 때만 보이는 줄 (위탁 · 계약 · 침공 물약) — 장부가 책 한 쪽을 넘지 않게
     for (const [k, n] of LG_IN) if (lgShow(k)) h += `<tr class="lg-k${lgSel === k ? ' on' : ''}" data-lgk="${k}"><td>${n}</td>${cell(k, prev, false)}${cell(k, cur, true)}</tr>`;
     h += `<tr class="sum in"><td>수입 합계</td><td class="n">${prev ? gG(lgIn(prev)) : '—'}</td><td class="n">${gG(lgIn(cur))}</td></tr>
       <tr class="sec out"><th colspan="3">지출</th></tr>`;
