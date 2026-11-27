@@ -508,9 +508,9 @@
   function withdrawQuest(s, qid) {
     const i = s.board.findIndex(q => q.id === qid); if (i < 0) return false;
     if (s.board[i].gq != null) return gqCancel(s, s.board[i].gq).ok;   // 길드 의뢰는 위약금 없이 거둠
-    const q = s.board[i]; const cost = Math.round(q.reward * 0.10);
-    s.board.splice(i, 1); s.gold -= cost; s.month.other -= cost; (s.month.wd = s.month.wd || []).push({ g: q.g, type: q.type, name: q.name || '', cost }); s.trust = Math.max(0, s.trust - 2);
-    log(s, `${qn(q)} 의뢰를 게시판에서 뗐습니다. 등록비·위약금 ${cost}G, 신뢰도 −2.`, 'withdraw');
+    const q = s.board[i];
+    s.board.splice(i, 1);   // 2026-11-27 V6 6-4 · 7-4: 「의뢰서 떼기」 — 위약금(보상의 10%) · 신뢰도 −2를 없앰. 뗀 종이가 다시 붙는 규칙은 바닥 공사에서
+    log(s, `${qn(q)} 의뢰서를 게시판에서 뗐습니다.`, 'withdraw');
     return true;
   }
   function debugSetGrade(s, g) { const ng = Math.max(0, Math.min(6, g)); for (let k = s.grade + 1; k <= ng; k++) s.fame = Math.min(s.cfg.fame.cap, (s.fame || 0) + s.cfg.fame.gradeUp[k]); const g0 = s.grade; s.grade = ng; openGrades(s, g0); log(s, `[디버그] 길드 등급을 ${GR[s.grade]}로 바꿨습니다.`, 'debug'); }
